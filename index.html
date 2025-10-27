@@ -1244,8 +1244,10 @@
             <div class="modal-body">
                 <!-- 修改这里的表单 -->
                 <form id="signup-form" class="signup-form" action="https://formspree.io/f/mrbobwnd" method="POST">
+                    <!-- Formspree 必要字段 -->
                     <input type="hidden" name="_subject" value="🎯 新的产品报名 - 电商平台">
                     <input type="hidden" name="_replyto" id="signup-email-input">
+                    <input type="hidden" name="_next" value="https://your-domain.com/success.html"> <!-- 修改为你的成功页面 -->
                     
                     <div class="form-group">
                         <label>报名产品</label>
@@ -1692,54 +1694,62 @@
                 chatMessages.appendChild(messageDiv);
                 chatMessages.scrollTop = chatMessages.scrollHeight;
             }
-
-            // 报名表单
-            document.getElementById('signup-form').addEventListener('submit', (e) => {
-                e.preventDefault();
-                if (!currentUser) {
-                    alert('请先登录');
-                    loginModal.style.display = 'flex';
-                    return;
-                }
-                
-                const productName = document.getElementById('signup-product-name').value;
-                const name = document.getElementById('signup-name').value;
-                const phone = document.getElementById('signup-phone').value;
-                const email = document.getElementById('signup-email').value;
-                const address = document.getElementById('signup-address').value;
-                const notes = document.getElementById('signup-notes').value;
-                
-                // 创建新订单
-                const newOrder = {
-                    id: Date.now(),
-                    productId: currentProduct.id,
-                    productName: productName,
-                    price: currentProduct.price,
-                    image: currentProduct.image,
-                    status: 'review',
-                    date: new Date().toISOString().split('T')[0],
-                    customerInfo: { name, phone, email, address, notes }
-                };
-                
-                userOrders.push(newOrder);
-                saveUserOrders();
-                
-                // 发送给客服
-                const customerMessage = `新的产品报名：\n产品：${productName}\n姓名：${name}\n电话：${phone}\n邮箱：${email}\n地址：${address}\n备注：${notes}`;
-                addMessage(customerMessage, 'service');
-                
-                alert('报名信息已提交！客服会尽快与您联系。');
-                signupModal.style.display = 'none';
-                
-                // 清空表单
-                document.getElementById('signup-form').reset();
-                
-                // 更新用户中心订单
-                if (userCenter.style.display === 'block') {
-                    renderUserOrders();
-                }
-            });
-
+			
+			// 报名表单 - 修改这部分代码
+			document.getElementById('signup-form').addEventListener('submit', function(e) {
+			    // 不要阻止默认提交行为，让 Formspree 正常工作
+			    if (!currentUser) {
+			        e.preventDefault();
+			        alert('请先登录');
+			        document.getElementById('login-modal').style.display = 'flex';
+			        return;
+			    }
+			    
+			    // 设置回复邮箱
+			    const email = document.getElementById('signup-email').value;
+			    document.getElementById('signup-email-input').value = email;
+			    
+			    // 这里不调用 e.preventDefault()，让表单正常提交到 Formspree
+			    // 表单提交后，Formspree 会自动处理并重定向
+			    
+			    // 可选：添加本地存储（保留原有功能）
+			    const productName = document.getElementById('signup-product-name').value;
+			    const name = document.getElementById('signup-name').value;
+			    const phone = document.getElementById('signup-phone').value;
+			    const address = document.getElementById('signup-address').value;
+			    const notes = document.getElementById('signup-notes').value;
+			    
+			    // 创建新订单（本地存储）
+			    const newOrder = {
+			        id: Date.now(),
+			        productId: currentProduct.id,
+			        productName: productName,
+			        price: currentProduct.price,
+			        image: currentProduct.image,
+			        status: 'review',
+			        date: new Date().toISOString().split('T')[0],
+			        customerInfo: { name, phone, email, address, notes }
+			    };
+			    
+			    userOrders.push(newOrder);
+			    saveUserOrders();
+			    
+			    // 发送给客服
+			    const customerMessage = `新的产品报名：\n产品：${productName}\n姓名：${name}\n电话：${phone}\n邮箱：${email}\n地址：${address}\n备注：${notes}`;
+			    addMessage(customerMessage, 'service');
+			    
+			    // 清空表单
+			    setTimeout(() => {
+			        document.getElementById('signup-form').reset();
+			        closeModal('signup-modal');
+			        
+			        // 更新用户中心订单
+			        if (userCenter.style.display === 'block') {
+			            renderUserOrders();
+			        }
+			    }, 1000);
+			});
+            
             // 用户中心订单标签切换
             const orderTabs = document.querySelectorAll('.order-tab');
             orderTabs.forEach(tab => {
