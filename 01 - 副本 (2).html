@@ -1802,6 +1802,13 @@
             <div class="admin-actions">
                 <button class="btn btn-primary" id="add-product-btn">添加产品</button>
                 <button class="btn btn-secondary" id="excel-upload-btn">Excel批量上传</button>
+                <div style="flex: 1;"></div>
+                <label style="margin-right: 15px; display: flex; align-items: center; gap: 5px;">
+                    <input type="checkbox" id="select-all-products" style="width: 18px; height: 18px; cursor: pointer;">
+                    <span>全选</span>
+                </label>
+                <button class="btn btn-warning" id="batch-edit-btn" style="display: none;">批量编辑</button>
+                <button class="btn btn-danger" id="batch-delete-btn" style="display: none;">批量删除</button>
             </div>
             
             <div class="admin-content">
@@ -2248,6 +2255,67 @@
 	                <div class="form-actions">
 	                    <button type="submit" class="btn btn-primary">保存修改</button>
 	                    <button type="button" class="btn btn-secondary" id="cancel-edit-btn">取消</button>
+	                </div>
+	            </form>
+	        </div>
+	    </div>
+	</div>
+
+	<!-- 批量编辑产品模态框 -->
+	<div class="modal" id="batch-edit-modal">
+	    <div class="modal-content">
+	        <div class="modal-header">
+	            <h3>批量编辑产品</h3>
+	            <button class="close-modal">&times;</button>
+	        </div>
+	        <div class="modal-body">
+	            <form id="batch-edit-form">
+	                <div class="alert alert-info" style="margin-bottom: 20px; padding: 15px; background: #e3f2fd; border-left: 4px solid #2196f3; border-radius: 4px;">
+	                    <i class="fas fa-info-circle"></i> 
+	                    已选择 <strong id="batch-edit-count">0</strong> 个产品。留空的字段将不会被修改。
+	                </div>
+	                <div class="form-group">
+	                    <label for="batch-edit-price-action">价格操作</label>
+	                    <select id="batch-edit-price-action" class="form-control">
+	                        <option value="">不修改</option>
+	                        <option value="set">设置为固定值</option>
+	                        <option value="increase">增加金额</option>
+	                        <option value="decrease">减少金额</option>
+	                        <option value="multiply">乘以倍数</option>
+	                    </select>
+	                </div>
+	                <div class="form-group" id="batch-price-value-group" style="display: none;">
+	                    <label for="batch-edit-price-value">价格值</label>
+	                    <input type="number" id="batch-edit-price-value" class="form-control" step="0.01" min="0">
+	                </div>
+	                <div class="form-group">
+	                    <label for="batch-edit-stock-action">库存操作</label>
+	                    <select id="batch-edit-stock-action" class="form-control">
+	                        <option value="">不修改</option>
+	                        <option value="set">设置为固定值</option>
+	                        <option value="increase">增加数量</option>
+	                        <option value="decrease">减少数量</option>
+	                    </select>
+	                </div>
+	                <div class="form-group" id="batch-stock-value-group" style="display: none;">
+	                    <label for="batch-edit-stock-value">库存值</label>
+	                    <input type="number" id="batch-edit-stock-value" class="form-control" min="0">
+	                </div>
+	                <div class="form-group">
+	                    <label for="batch-edit-category">修改分类</label>
+	                    <select id="batch-edit-category" class="form-control">
+	                        <option value="">不修改</option>
+	                        <option value="electronics">电子产品</option>
+	                        <option value="home">家居用品</option>
+	                        <option value="clothing">服装鞋帽</option>
+	                        <option value="beauty">美妆护肤</option>
+	                        <option value="sports">运动户外</option>
+	                        <option value="other">其他</option>
+	                    </select>
+	                </div>
+	                <div class="form-actions">
+	                    <button type="submit" class="btn btn-primary">应用修改</button>
+	                    <button type="button" class="btn btn-secondary close-modal">取消</button>
 	                </div>
 	            </form>
 	        </div>
@@ -3183,6 +3251,40 @@
             document.getElementById('add-product-btn').addEventListener('click', () => {
                 alert('添加产品功能开发中...');
             });
+
+            // 批量操作按钮
+            const selectAllProductsCheckbox = document.getElementById('select-all-products');
+            if (selectAllProductsCheckbox) {
+                selectAllProductsCheckbox.addEventListener('change', toggleSelectAllProducts);
+            }
+
+            const batchEditBtn = document.getElementById('batch-edit-btn');
+            if (batchEditBtn) {
+                batchEditBtn.addEventListener('click', openBatchEditModal);
+            }
+
+            const batchDeleteBtn = document.getElementById('batch-delete-btn');
+            if (batchDeleteBtn) {
+                batchDeleteBtn.addEventListener('click', batchDeleteProducts);
+            }
+
+            // 批量编辑表单
+            const batchEditForm = document.getElementById('batch-edit-form');
+            if (batchEditForm) {
+                batchEditForm.addEventListener('submit', applyBatchEdit);
+                
+                // 价格操作下拉框变化
+                document.getElementById('batch-edit-price-action').addEventListener('change', function() {
+                    const valueGroup = document.getElementById('batch-price-value-group');
+                    valueGroup.style.display = this.value ? 'block' : 'none';
+                });
+                
+                // 库存操作下拉框变化
+                document.getElementById('batch-edit-stock-action').addEventListener('change', function() {
+                    const valueGroup = document.getElementById('batch-stock-value-group');
+                    valueGroup.style.display = this.value ? 'block' : 'none';
+                });
+            }
 
             // 后台管理导航切换
             const adminNavBtns = document.querySelectorAll('.admin-nav-btn');
@@ -4407,6 +4509,10 @@
             
             adminProductsGrid.innerHTML = products.map(product => `
                 <div class="product-card" data-product-id="${product.id}">
+                    <div style="position: absolute; top: 10px; left: 10px; z-index: 10;">
+                        <input type="checkbox" class="product-checkbox" data-product-id="${product.id}" 
+                               style="width: 20px; height: 20px; cursor: pointer;">
+                    </div>
                     <div class="product-image" style="background-image: url('${product.image}')"></div>
                     <div class="product-info">
                         <h3 class="product-title">${product.name}</h3>
@@ -4463,14 +4569,19 @@
                                 if (products.length === 0) {
                                     adminProductsGrid.innerHTML = '<div class="no-products">暂无商品，请添加或导入商品</div>';
                                 }
-                                alert(`✅ 成功删除产品: ${product.name}`);
+                                showNotification(`成功删除产品: ${product.name}`, 'success');
                             }, 300);
                             
                         } catch (error) {
-                            alert('删除失败：' + error.message);
+                            showNotification('删除失败：' + error.message, 'error');
                         }
                     }
                 });
+            });
+            
+            // 复选框变化监听
+            document.querySelectorAll('.product-checkbox').forEach(checkbox => {
+                checkbox.addEventListener('change', updateBatchButtons);
             });
         }
         
@@ -5064,6 +5175,227 @@
                 `;
             });
         }
+
+        // ===================== 批量操作功能 =====================
+        
+        // 更新批量操作按钮显示状态
+        function updateBatchButtons() {
+            const selectedCheckboxes = document.querySelectorAll('.product-checkbox:checked');
+            const batchEditBtn = document.getElementById('batch-edit-btn');
+            const batchDeleteBtn = document.getElementById('batch-delete-btn');
+            
+            if (selectedCheckboxes.length > 0) {
+                batchEditBtn.style.display = 'inline-block';
+                batchDeleteBtn.style.display = 'inline-block';
+            } else {
+                batchEditBtn.style.display = 'none';
+                batchDeleteBtn.style.display = 'none';
+            }
+        }
+
+        // 全选/取消全选
+        function toggleSelectAllProducts() {
+            const selectAllCheckbox = document.getElementById('select-all-products');
+            const productCheckboxes = document.querySelectorAll('.product-checkbox');
+            
+            productCheckboxes.forEach(checkbox => {
+                checkbox.checked = selectAllCheckbox.checked;
+            });
+            
+            updateBatchButtons();
+        }
+
+        // 获取选中的产品ID列表
+        function getSelectedProductIds() {
+            const selectedCheckboxes = document.querySelectorAll('.product-checkbox:checked');
+            return Array.from(selectedCheckboxes).map(cb => parseInt(cb.getAttribute('data-product-id')));
+        }
+
+        // 批量删除产品
+        function batchDeleteProducts() {
+            const selectedIds = getSelectedProductIds();
+            
+            if (selectedIds.length === 0) {
+                showNotification('请先选择要删除的产品', 'warning');
+                return;
+            }
+            
+            const selectedProducts = products.filter(p => selectedIds.includes(parseInt(p.id)));
+            const productNames = selectedProducts.map(p => p.name).join('、');
+            
+            if (!confirm(`确定要删除以下 ${selectedIds.length} 个产品吗？\n\n${productNames}\n\n此操作不可撤销！`)) {
+                return;
+            }
+            
+            // 删除产品
+            products = products.filter(p => !selectedIds.includes(parseInt(p.id)));
+            saveProducts();
+            
+            // 重新渲染产品列表
+            renderAdminProducts();
+            
+            // 取消全选状态
+            document.getElementById('select-all-products').checked = false;
+            updateBatchButtons();
+            
+            showNotification(`成功删除 ${selectedIds.length} 个产品`, 'success');
+        }
+
+        // 打开批量编辑模态框
+        function openBatchEditModal() {
+            const selectedIds = getSelectedProductIds();
+            
+            if (selectedIds.length === 0) {
+                showNotification('请先选择要编辑的产品', 'warning');
+                return;
+            }
+            
+            // 更新选中数量
+            document.getElementById('batch-edit-count').textContent = selectedIds.length;
+            
+            // 重置表单
+            document.getElementById('batch-edit-form').reset();
+            document.getElementById('batch-price-value-group').style.display = 'none';
+            document.getElementById('batch-stock-value-group').style.display = 'none';
+            
+            // 显示模态框
+            document.getElementById('batch-edit-modal').style.display = 'flex';
+        }
+
+        // 应用批量编辑
+        function applyBatchEdit(e) {
+            e.preventDefault();
+            
+            const selectedIds = getSelectedProductIds();
+            if (selectedIds.length === 0) {
+                showNotification('没有选中的产品', 'error');
+                return;
+            }
+            
+            const priceAction = document.getElementById('batch-edit-price-action').value;
+            const priceValue = parseFloat(document.getElementById('batch-edit-price-value').value) || 0;
+            const stockAction = document.getElementById('batch-edit-stock-action').value;
+            const stockValue = parseInt(document.getElementById('batch-edit-stock-value').value) || 0;
+            const category = document.getElementById('batch-edit-category').value;
+            
+            let updatedCount = 0;
+            
+            // 遍历选中的产品并应用修改
+            products.forEach(product => {
+                if (selectedIds.includes(parseInt(product.id))) {
+                    // 价格操作
+                    if (priceAction && priceValue) {
+                        switch (priceAction) {
+                            case 'set':
+                                product.price = priceValue;
+                                break;
+                            case 'increase':
+                                product.price += priceValue;
+                                break;
+                            case 'decrease':
+                                product.price = Math.max(0, product.price - priceValue);
+                                break;
+                            case 'multiply':
+                                product.price *= priceValue;
+                                break;
+                        }
+                        product.price = Math.round(product.price * 100) / 100; // 保留两位小数
+                    }
+                    
+                    // 库存操作
+                    if (stockAction && stockValue >= 0) {
+                        switch (stockAction) {
+                            case 'set':
+                                product.stock = stockValue;
+                                break;
+                            case 'increase':
+                                product.stock += stockValue;
+                                break;
+                            case 'decrease':
+                                product.stock = Math.max(0, product.stock - stockValue);
+                                break;
+                        }
+                    }
+                    
+                    // 分类修改
+                    if (category) {
+                        product.category = category;
+                    }
+                    
+                    updatedCount++;
+                }
+            });
+            
+            // 保存修改
+            saveProducts();
+            
+            // 关闭模态框
+            document.getElementById('batch-edit-modal').style.display = 'none';
+            
+            // 重新渲染产品列表
+            renderAdminProducts();
+            
+            // 取消全选状态
+            document.getElementById('select-all-products').checked = false;
+            updateBatchButtons();
+            
+            showNotification(`成功编辑 ${updatedCount} 个产品`, 'success');
+        }
+
+        // ===================== 数据同步改进 =====================
+        
+        // 添加数据同步通知
+        function showSyncNotification() {
+            const syncNotification = document.createElement('div');
+            syncNotification.id = 'sync-notification';
+            syncNotification.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                background: #ff9800;
+                color: white;
+                padding: 15px 20px;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                z-index: 10001;
+                max-width: 400px;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            `;
+            syncNotification.innerHTML = `
+                <i class="fas fa-sync-alt fa-spin"></i>
+                <div>
+                    <div style="font-weight: 600;">数据已更新</div>
+                    <div style="font-size: 12px; opacity: 0.9;">其他设备需要刷新页面才能看到最新数据</div>
+                </div>
+            `;
+            
+            document.body.appendChild(syncNotification);
+            
+            setTimeout(() => {
+                syncNotification.remove();
+            }, 5000);
+        }
+
+        // 改进saveProducts函数，添加同步提示
+        const originalSaveProducts = saveProducts;
+        saveProducts = function() {
+            const result = originalSaveProducts();
+            if (result && isAdmin()) {
+                showSyncNotification();
+            }
+            return result;
+        };
+
+        // 改进saveAllUsers函数，添加同步提示
+        const originalSaveAllUsers = saveAllUsers;
+        saveAllUsers = function() {
+            originalSaveAllUsers();
+            if (isAdmin()) {
+                showSyncNotification();
+            }
+        };
     </script>
 </body>
 </html>
