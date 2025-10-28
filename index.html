@@ -142,9 +142,9 @@
         
         .container {
             width: 100%;
-            max-width: 1200px;
+            max-width: 1600px;
             margin: 0 auto;
-            padding: 0 15px;
+            padding: 0 30px;
         }
         
         /* 导航栏样式 */
@@ -315,60 +315,77 @@
         
         .products-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-            gap: 20px;
-            margin-bottom: 40px;
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+            gap: 35px;
+            margin-bottom: 4000px;
+            max-width: 100%;
+            margin-left: auto;
+            margin-right: auto;
         }
         
         .product-card {
             background: white;
-            border-radius: 8px;
+            border-radius: 12px;
             overflow: hidden;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
-            transition: transform 0.3s, box-shadow 0.3s;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
             cursor: pointer;
+            border: 1px solid rgba(0,0,0,0.06);
         }
         
         .product-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+            transform: translateY(-8px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+            border-color: rgba(52, 152, 219, 0.3);
         }
         
         .product-image {
-            height: 280px !important;
+            height: 350px !important;
             background-size: cover !important;
             background-position: center !important;
+            position: relative;
         }
         
         .product-info {
-            padding: 15px;
+            padding: 24px;
         }
         
         .product-title {
             font-size: 18px;
-            margin-bottom: 10px;
+            font-weight: 600;
+            margin-bottom: 14px;
             color: var(--dark);
+            line-height: 1.5;
+            height: 54px;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            line-clamp: 2;
+            -webkit-box-orient: vertical;
         }
         
         .product-price {
-            font-size: 20px;
+            font-size: 28px;
             font-weight: bold;
-            color: var(--primary);
-            margin-bottom: 15px;
+            color: #e74c3c;
+            margin-bottom: 20px;
         }
         
         .product-actions {
             display: flex;
+            gap: 10px;
             justify-content: space-between;
         }
         
         .btn {
-            padding: 8px 15px;
+            padding: 10px 18px;
             border: none;
-            border-radius: 4px;
+            border-radius: 6px;
             cursor: pointer;
             font-weight: 500;
-            transition: background 0.3s;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            flex: 1;
         }
         
         .btn-primary {
@@ -378,6 +395,8 @@
         
         .btn-primary:hover {
             background: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
         }
         
         .btn-secondary {
@@ -387,6 +406,8 @@
         
         .btn-secondary:hover {
             background: #27ae60;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(46, 204, 113, 0.3);
         }
         
         .btn-danger {
@@ -1042,6 +1063,58 @@
         .orders-table-container {
             overflow-x: auto;
         }
+        
+        /* 用户表格列宽优化 */
+        #users-table th:nth-child(1),
+        #users-table td:nth-child(1) {
+            width: 60px;
+            min-width: 60px;
+        }
+        
+        #users-table th:nth-child(2),
+        #users-table td:nth-child(2) {
+            width: 120px;
+            min-width: 120px;
+        }
+        
+        #users-table th:nth-child(3),
+        #users-table td:nth-child(3) {
+            width: 180px;
+            min-width: 180px;
+        }
+        
+        #users-table th:nth-child(4),
+        #users-table td:nth-child(4) {
+            width: 100px;
+            min-width: 100px;
+        }
+        
+        #users-table th:nth-child(5),
+        #users-table td:nth-child(5) {
+            width: 100px;
+            min-width: 100px;
+            text-align: center;
+        }
+        
+        #users-table th:nth-child(6),
+        #users-table td:nth-child(6) {
+            width: 180px;
+            min-width: 180px;
+        }
+        
+        #users-table th:nth-child(7),
+        #users-table td:nth-child(7) {
+            width: 100px;
+            min-width: 100px;
+            text-align: center;
+        }
+        
+        #users-table th:nth-child(8),
+        #users-table td:nth-child(8) {
+            width: 150px;
+            min-width: 150px;
+            text-align: center;
+        }
 
         .order-filters {
             display: flex;
@@ -1619,7 +1692,32 @@
             font-size: 14px;
         }
         
+        /* 控制面板按钮样式 */
+        #control-panel-btn:hover {
+            background: #2980b9 !important;
+            box-shadow: 0 2px 8px rgba(52, 152, 219, 0.3);
+        }
+        
+        #control-panel-dropdown button:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+        
         /* 响应式设计 */
+        @media (max-width: 1600px) {
+            .products-grid {
+                grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+                gap: 25px;
+            }
+        }
+        
+        @media (max-width: 1200px) {
+            .products-grid {
+                grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+                gap: 20px;
+            }
+        }
+        
         @media (max-width: 768px) {
             .nav-container {
                 flex-direction: column;
@@ -1650,6 +1748,15 @@
                 font-size: 22px;
             }
             
+            .products-grid {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+                gap: 15px;
+            }
+            
+            .product-image {
+                height: 250px !important;
+            }
+            
             .product-detail-content {
                 flex-direction: column;
             }
@@ -1661,6 +1768,17 @@
             .chat-window {
                 width: 300px;
                 height: 400px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .products-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            
+            .product-card {
+                max-width: 100%;
             }
         }
     </style>
@@ -1683,12 +1801,58 @@
             </div>
             
             <div class="user-actions">
-                <!-- 云端同步状态指示器 -->
-                <div id="sync-status" style="display:flex; align-items:center; margin-right:15px; font-size:13px; color:#666; cursor:pointer;" 
-                     title="点击查看同步状态详情">
-                    <i class="fas fa-circle" id="sync-icon" style="font-size:8px; margin-right:5px; color:#ccc;"></i>
-                    <span id="sync-text">本地模式</span>
+                <!-- 管理员控制面板（仅管理员可见） -->
+                <div id="admin-control-panel" style="display:none; position:relative; margin-right:15px;">
+                    <button id="control-panel-btn" style="background:#3498db; color:white; border:none; padding:8px 15px; border-radius:6px; cursor:pointer; display:flex; align-items:center; gap:8px; font-size:14px; transition:all 0.3s;">
+                        <i class="fas fa-cog"></i>
+                        <span id="current-mode-text">☁️ 云端模式</span>
+                        <i class="fas fa-chevron-down" style="font-size:10px;"></i>
+                    </button>
+                    
+                    <!-- 下拉菜单 -->
+                    <div id="control-panel-dropdown" style="display:none; position:absolute; top:45px; right:0; background:white; border:1px solid #ddd; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.15); min-width:280px; z-index:1000;">
+                        <div style="padding:15px; border-bottom:1px solid #eee;">
+                            <div style="font-weight:600; color:#2c3e50; margin-bottom:10px; display:flex; align-items:center; gap:8px;">
+                                <i class="fas fa-database"></i>
+                                数据源模式
+                            </div>
+                            <div style="padding:12px; background:#e3f2fd; border:2px solid #3498db; border-radius:8px;">
+                                <div style="display:flex; align-items:center; gap:10px;">
+                                    <i class="fas fa-cloud" style="color:#3498db; font-size:20px;"></i>
+                                    <div style="flex:1;">
+                                        <div style="font-weight:600; color:#3498db; font-size:14px;">☁️ 云端模式</div>
+                                        <div style="font-size:12px; color:#7f8c8d;">所有数据实时同步云端</div>
+                                    </div>
+                                    <i class="fas fa-check-circle" style="color:#27ae60; font-size:18px;"></i>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div style="padding:15px; border-bottom:1px solid #eee;">
+                            <div style="font-weight:600; color:#2c3e50; margin-bottom:10px; display:flex; align-items:center; gap:8px;">
+                                <i class="fas fa-vial"></i>
+                                测试功能
+                            </div>
+                            <button id="test-cloud-connection" style="width:100%; padding:10px; background:#27ae60; color:white; border:none; border-radius:6px; cursor:pointer; margin-bottom:8px; font-size:13px; transition:all 0.3s;">
+                                <i class="fas fa-cloud"></i> 测试云端连接
+                            </button>
+                            <button id="force-sync" style="width:100%; padding:10px; background:#e67e22; color:white; border:none; border-radius:6px; cursor:pointer; margin-bottom:8px; font-size:13px; transition:all 0.3s;">
+                                <i class="fas fa-sync-alt"></i> 强制同步数据
+                            </button>
+                            <button id="clear-cache" style="width:100%; padding:10px; background:#e74c3c; color:white; border:none; border-radius:6px; cursor:pointer; font-size:13px; transition:all 0.3s;">
+                                <i class="fas fa-trash"></i> 清除本地缓存
+                            </button>
+                        </div>
+                        
+                        <div style="padding:12px; background:#f8f9fa; border-radius:0 0 8px 8px;">
+                            <div style="font-size:12px; color:#7f8c8d; display:flex; align-items:center; gap:6px;">
+                                <i class="fas fa-info-circle"></i>
+                                <span id="sync-status-text">状态：已连接</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
+                
                 <a href="#" id="login-link"><i class="fas fa-user"></i> 登录</a>
                 <a href="#" id="register-link"><i class="fas fa-user-plus"></i> 注册</a>
                 <a href="#" id="logout-link" style="display:none"><i class="fas fa-sign-out-alt"></i> 退出</a>
@@ -1898,7 +2062,8 @@
                         </div>
                     </div>
 
-                    <div class="security-section">
+                    <!-- 云端同步设置 - 已隐藏,用户无需关心技术细节 -->
+                    <div class="security-section" style="display:none;">
                         <h4>云端同步</h4>
                         <div class="security-item">
                             <div class="security-info">
@@ -2559,14 +2724,21 @@
 	</div>
 
     <script>
-        // 数据存储
-        let products = JSON.parse(localStorage.getItem('products')) || [];
-        let userOrders = JSON.parse(localStorage.getItem('userOrders')) || [];
-        let userAddresses = JSON.parse(localStorage.getItem('userAddresses')) || [];
-        let userProfile = JSON.parse(localStorage.getItem('userProfile')) || {};
-        let allUsers = JSON.parse(localStorage.getItem('allUsers')) || [];
+        // ========== 数据存储 - 始终从云端加载最新数据 ==========
+        // 注意:不再从localStorage初始化数据,而是在登录后从云端同步
+        // 这确保用户始终获取最新的云端数据,避免本地缓存过期问题
+        
+        let products = [];  // 产品数据将在登录后从云端加载
+        let userOrders = [];  // 订单数据将在登录后从云端加载
+        let userAddresses = [];  // 地址数据将在登录后从云端加载
+        let userProfile = {};  // 用户资料将在登录后从云端加载
+        let allUsers = [];  // 所有用户数据(仅管理员使用,从云端加载)
         let currentProduct = null;
         let currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
+        
+        // 清除本地所有缓存数据,确保从云端获取最新数据
+        // 注意:只有在首次加载时清理,登录状态保留
+        console.log('🔄 清理本地缓存,准备从云端加载最新数据...');
 
         // 预定义管理员账号
         const ADMIN_ACCOUNTS = {
@@ -2831,13 +3003,13 @@
                         console.warn('⚠️ 首次同步失败:', syncError.message);
                     }
                     
-                    // 定期同步（每30秒检查一次，实现近实时同步）
+                    // 定期同步（每1秒检查一次，实现实时同步）
                     this.syncInterval = setInterval(() => {
                         this.syncAllData().catch(err => {
                             console.warn('⚠️ 定期同步失败:', err.message);
                         });
-                    }, 30 * 1000);
-                    console.log('⏰ 已设置定期同步 (每30秒)');
+                    }, 1 * 1000);
+                    console.log('⏰ 已设置定期同步 (每1秒)');
                     
                     // 更新UI状态指示器
                     this.updateSyncStatusUI(true);
@@ -3470,6 +3642,17 @@
                     if (cloudUsers && Array.isArray(cloudUsers) && cloudUsers.length > 0) {
                         allUsers = cloudUsers;
                         localStorage.setItem('allUsers', JSON.stringify(allUsers));
+                        
+                        // 如果当前用户已登录，刷新currentUser对象
+                        if (currentUser && currentUser.account) {
+                            const updatedUser = allUsers.find(u => u.account === currentUser.account);
+                            if (updatedUser) {
+                                currentUser.username = updatedUser.username;
+                                currentUser.status = updatedUser.status;
+                                console.log('✅ 已刷新当前用户信息:', currentUser.username);
+                            }
+                        }
+                        
                         console.log('✅ 已从云端加载所有用户数据');
                         return true;
                     }
@@ -3513,6 +3696,19 @@
                     if (cloudUsers && Array.isArray(cloudUsers) && !this.syncInProgress) {
                         allUsers = cloudUsers;
                         localStorage.setItem('allUsers', JSON.stringify(allUsers));
+                        
+                        // 如果当前用户已登录，刷新currentUser对象
+                        if (currentUser && currentUser.account) {
+                            const updatedUser = allUsers.find(u => u.account === currentUser.account);
+                            if (updatedUser) {
+                                currentUser.username = updatedUser.username;
+                                currentUser.status = updatedUser.status;
+                                // 更新用户个人信息显示
+                                if (document.getElementById('user-profile')?.classList.contains('active')) {
+                                    loadUserProfile();
+                                }
+                            }
+                        }
                         
                         // 刷新用户管理显示
                         const adminPanel = document.getElementById('admin-panel');
@@ -4012,10 +4208,19 @@
             }, 3000);
         }
 
-        // 初始化数据（已禁用自动加载演示产品）
+        // ========== 初始化数据 - 完全移除本地演示数据 ==========
+        // 新策略:不再使用任何预设演示数据,所有数据从云端获取
+        // 这确保了数据的一致性和实时性
         function initData() {
-            // 不再自动初始化演示产品
-            // 如需添加演示产品，请使用管理员后台的"导入演示数据"功能
+            // ✅ 已移除所有演示产品的自动加载
+            // ✅ 数据仅在登录成功后从云端加载
+            // ✅ 如需添加产品,请管理员登录后通过后台管理添加
+            
+            console.log('📋 系统初始化完成');
+            console.log('ℹ️ 产品数据:', products.length, '个');
+            console.log('ℹ️ 订单数据:', userOrders.length, '个');
+            console.log('ℹ️ 用户数据:', allUsers.length, '个');
+            
             updateUserInterface();
         }
         
@@ -4520,6 +4725,8 @@
                 loginModal.style.display = 'flex';
             });
             
+            // 已移除数据源选择功能，强制使用云端模式
+            
             registerLink.addEventListener('click', (e) => {
                 e.preventDefault();
                 registerModal.style.display = 'flex';
@@ -4533,8 +4740,8 @@
             
             // 统一的点击外部关闭逻辑在底部注册
 
-            // 登录表单
-            document.getElementById('login-form').addEventListener('submit', (e) => {
+            // 登录表单 - 优化:登录后从云端加载最新数据
+            document.getElementById('login-form').addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const account = document.getElementById('login-account').value;
                 const password = document.getElementById('login-password').value;
@@ -4544,13 +4751,88 @@
                     return;
                 }
                 
+                // ========== 防止重复登录 ==========
+                if (currentUser && currentUser.account === account) {
+                    showNotification('该账号已在其他设备登录', 'warning');
+                    loginModal.style.display = 'none';
+                    return;
+                }
+                
                 const authResult = authenticateUser(account, password);
                 if (authResult && !authResult.banned) {
                     currentUser = authResult;
                     saveCurrentUser();
-                    showNotification(`登录成功！欢迎 ${authResult.username}`, 'success');
+                    
+                    showNotification(`登录成功！正在从云端加载数据...`, 'success');
                     loginModal.style.display = 'none';
+                    
+                    // ========== 强制使用云端模式加载数据 ==========
+                    console.log('🔄 登录成功，强制使用云端模式');
+                    
+                    try {
+                        // 云端模式：从云端加载最新数据
+                        if (cloudSync && cloudSync.isInitialized) {
+                            console.log('☁️ 云端模式 - 从云端数据库加载数据...');
+                            
+                            // 加载产品数据
+                            const cloudProducts = await cloudSync.downloadData('products');
+                            if (cloudProducts && cloudProducts.length > 0) {
+                                products = cloudProducts;
+                                localStorage.setItem('products', JSON.stringify(products));
+                                console.log('✅ 产品数据已从云端加载:', products.length, '个产品');
+                            } else {
+                                console.log('ℹ️ 云端暂无产品数据');
+                                products = [];
+                            }
+                            
+                            // 加载用户数据(仅管理员)
+                            if (authResult.role === 'admin') {
+                                const cloudUsers = await cloudSync.downloadData('users');
+                                if (cloudUsers && cloudUsers.length > 0) {
+                                    allUsers = cloudUsers;
+                                    localStorage.setItem('allUsers', JSON.stringify(allUsers));
+                                    console.log('✅ 用户数据已从云端加载:', allUsers.length, '个用户');
+                                }
+                            }
+                            
+                            // 加载订单数据
+                            const cloudOrders = await cloudSync.downloadData('orders');
+                            if (cloudOrders && cloudOrders.length > 0) {
+                                userOrders = cloudOrders;
+                                localStorage.setItem('userOrders', JSON.stringify(userOrders));
+                                console.log('✅ 订单数据已从云端加载:', userOrders.length, '个订单');
+                            }
+                            
+                            showNotification(`☁️ 云端数据加载完成！欢迎 ${authResult.username}`, 'success');
+                        } else {
+                            // 云端同步未启用,回退到本地缓存
+                            console.log('⚠️ 云端同步未启用,使用本地缓存数据');
+                            products = JSON.parse(localStorage.getItem('products')) || [];
+                            userOrders = JSON.parse(localStorage.getItem('userOrders')) || [];
+                            allUsers = JSON.parse(localStorage.getItem('allUsers')) || [];
+                            showNotification(`💾 云端未连接，已加载本地数据！欢迎 ${authResult.username}`, 'warning');
+                        }
+                    } catch (error) {
+                        console.error('❌ 数据加载失败:', error);
+                        showNotification('数据加载失败,使用本地缓存', 'warning');
+                        // 失败时使用本地缓存
+                        products = JSON.parse(localStorage.getItem('products')) || [];
+                        userOrders = JSON.parse(localStorage.getItem('userOrders')) || [];
+                        allUsers = JSON.parse(localStorage.getItem('allUsers')) || [];
+                    }
+                    
+                    // 更新界面显示
                     updateUserInterface();
+                    renderProducts(products);
+                    
+                    // 如果是管理员，显示控制面板
+                    if (authResult.role === 'admin') {
+                        const controlPanel = document.getElementById('admin-control-panel');
+                        if (controlPanel) {
+                            controlPanel.style.display = 'block';
+                        }
+                    }
+                    
                 } else if (authResult && authResult.banned) {
                     // 账号被禁用
                     showNotification(authResult.message, 'error');
@@ -4615,6 +4897,114 @@
             if (syncStatus) {
                 syncStatus.addEventListener('click', () => {
                     showSyncStatusDialog();
+                });
+            }
+            
+            // ========== 管理员控制面板事件 ==========
+            const controlPanelBtn = document.getElementById('control-panel-btn');
+            const controlPanelDropdown = document.getElementById('control-panel-dropdown');
+            
+            // 点击按钮切换下拉菜单
+            if (controlPanelBtn) {
+                controlPanelBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const isVisible = controlPanelDropdown.style.display === 'block';
+                    controlPanelDropdown.style.display = isVisible ? 'none' : 'block';
+                });
+            }
+            
+            // 点击页面其他地方关闭下拉菜单
+            document.addEventListener('click', (e) => {
+                if (controlPanelDropdown && !controlPanelDropdown.contains(e.target) && e.target !== controlPanelBtn) {
+                    controlPanelDropdown.style.display = 'none';
+                }
+            });
+            
+            // 强制使用云端模式 - 所有数据从云端获取
+            window.currentDataSourceMode = 'cloud';
+            localStorage.setItem('dataSourceMode', 'cloud');
+            console.log('🔒 已启用云端模式，所有数据实时同步');
+            
+            // 初始化时从云端加载数据
+            if (cloudSync && cloudSync.isInitialized) {
+                console.log('📥 从云端加载最新数据...');
+            }
+            
+            // 测试云端连接
+            const testCloudBtn = document.getElementById('test-cloud-connection');
+            if (testCloudBtn) {
+                testCloudBtn.addEventListener('click', async function() {
+                    this.disabled = true;
+                    this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 测试中...';
+                    
+                    try {
+                        if (cloudSync && cloudSync.isInitialized) {
+                            await cloudSync.testConnection();
+                            showNotification('✅ 云端连接正常！', 'success');
+                            document.getElementById('sync-status-text').textContent = '状态：连接正常';
+                        } else {
+                            showNotification('云端同步未初始化', 'warning');
+                            document.getElementById('sync-status-text').textContent = '状态：未连接';
+                        }
+                    } catch (error) {
+                        console.error('连接测试失败:', error);
+                        showNotification('❌ 连接失败: ' + error.message, 'error');
+                        document.getElementById('sync-status-text').textContent = '状态：连接失败';
+                    }
+                    
+                    this.disabled = false;
+                    this.innerHTML = '<i class="fas fa-cloud"></i> 测试云端连接';
+                });
+            }
+            
+            // 强制同步数据
+            const forceSyncBtn = document.getElementById('force-sync');
+            if (forceSyncBtn) {
+                forceSyncBtn.addEventListener('click', async function() {
+                    this.disabled = true;
+                    this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 同步中...';
+                    
+                    try {
+                        if (cloudSync && cloudSync.isInitialized) {
+                            await cloudSync.syncAllData();
+                            showNotification('✅ 数据同步完成！', 'success');
+                            
+                            // 重新加载数据
+                            products = JSON.parse(localStorage.getItem('products')) || [];
+                            renderProducts(products);
+                            if (document.getElementById('admin-panel').style.display !== 'none') {
+                                renderAdminProducts();
+                            }
+                        } else {
+                            showNotification('云端同步未初始化', 'warning');
+                        }
+                    } catch (error) {
+                        console.error('同步失败:', error);
+                        showNotification('❌ 同步失败: ' + error.message, 'error');
+                    }
+                    
+                    this.disabled = false;
+                    this.innerHTML = '<i class="fas fa-sync-alt"></i> 强制同步数据';
+                });
+            }
+            
+            // 清除本地缓存
+            const clearCacheBtn = document.getElementById('clear-cache');
+            if (clearCacheBtn) {
+                clearCacheBtn.addEventListener('click', function() {
+                    if (confirm('确定要清除所有本地缓存数据吗？此操作不可恢复！')) {
+                        localStorage.removeItem('products');
+                        localStorage.removeItem('userOrders');
+                        localStorage.removeItem('allUsers');
+                        products = [];
+                        userOrders = [];
+                        allUsers = [];
+                        renderProducts(products);
+                        if (document.getElementById('admin-panel').style.display !== 'none') {
+                            renderAdminProducts();
+                        }
+                        showNotification('✅ 本地缓存已清除！', 'success');
+                    }
                 });
             }
 
@@ -6105,7 +6495,7 @@
             const usernameDisplay = document.getElementById('username-display');
             
             if (currentUser) {
-                // 检查当前用户是否被禁用
+                // 检查当前用户是否被禁用，并获取最新用户信息
                 const user = allUsers.find(u => u.account === currentUser.account);
                 if (user && user.status === 'banned') {
                     // 用户已被禁用，强制登出
@@ -6125,6 +6515,11 @@
                     document.getElementById('user-center').style.display = 'none';
                     document.getElementById('admin-panel').style.display = 'none';
                     return;
+                }
+                
+                // 如果在allUsers中找到用户，更新currentUser的username
+                if (user && user.username) {
+                    currentUser.username = user.username;
                 }
                 
                 loginLink.style.display = 'none';
@@ -6297,7 +6692,11 @@
             
             // 如果用户已登录，预填用户信息
             if (currentUser) {
-                document.getElementById('signup-name').value = currentUser.username || '';
+                // 从allUsers数组中获取最新的用户名
+                const latestUserData = allUsers.find(u => u.account === currentUser.account);
+                const username = latestUserData ? latestUserData.username : currentUser.username;
+                
+                document.getElementById('signup-name').value = username || '';
                 document.getElementById('signup-email').value = currentUser.account.includes('@') ? currentUser.account : '';
                 document.getElementById('signup-phone').value = !currentUser.account.includes('@') ? currentUser.account : '';
             }
@@ -6451,6 +6850,7 @@
                                 ? `<button class="btn btn-sm btn-success" onclick="unbanUser('${user.account}')">解禁</button>` 
                                 : `<button class="btn btn-sm btn-danger" onclick="banUser('${user.account}')">禁用</button>`
                             ) : ''}
+                            ${user.role !== 'admin' ? `<button class="btn btn-sm btn-danger" onclick="deleteUserAccount('${user.account}')" style="background-color: #c0392b;">删除账号</button>` : ''}
                         </td>
                     </tr>
                 `;
@@ -6693,6 +7093,125 @@
                     const modals = document.querySelectorAll('.modal');
                     modals.forEach(modal => modal.remove());
                 }
+            }
+        }
+        
+        // ========== 删除用户账号功能 ==========
+        // 彻底删除用户账号及其所有相关数据
+        async function deleteUserAccount(account) {
+            const user = allUsers.find(u => u.account === account);
+            if (!user) {
+                showNotification('用户不存在', 'error');
+                return;
+            }
+            
+            // 二次确认删除操作
+            const confirmDelete = confirm(
+                `⚠️ 警告：您即将彻底删除用户账号！\n\n` +
+                `用户信息：\n` +
+                `账号：${account}\n` +
+                `用户名：${user.username}\n` +
+                `注册时间：${user.registerTime}\n\n` +
+                `此操作将删除：\n` +
+                `✓ 用户账号\n` +
+                `✓ 所有订单记录\n` +
+                `✓ 收货地址\n` +
+                `✓ 个人资料\n\n` +
+                `⚠️ 此操作不可撤销！确定要继续吗？`
+            );
+            
+            if (!confirmDelete) {
+                return;
+            }
+            
+            // 再次确认
+            const finalConfirm = prompt(
+                `最后确认：请输入用户账号 "${account}" 以确认删除\n\n` +
+                `⚠️ 输入错误将取消删除操作`,
+                ''
+            );
+            
+            if (finalConfirm !== account) {
+                showNotification('账号输入不匹配，删除操作已取消', 'warning');
+                return;
+            }
+            
+            try {
+                console.log('🗑️ 开始删除用户账号:', account);
+                
+                // 1. 删除用户账号
+                const userIndex = allUsers.findIndex(u => u.account === account);
+                if (userIndex !== -1) {
+                    allUsers.splice(userIndex, 1);
+                    console.log('✅ 用户账号已删除');
+                }
+                
+                // 2. 删除用户的所有订单
+                const ordersBefore = userOrders.length;
+                userOrders = userOrders.filter(order => 
+                    order.customerInfo.email !== account && 
+                    order.customerInfo.phone !== account
+                );
+                const deletedOrders = ordersBefore - userOrders.length;
+                console.log('✅ 已删除', deletedOrders, '个订单');
+                
+                // 3. 删除用户的收货地址
+                const addressesBefore = userAddresses.length;
+                userAddresses = userAddresses.filter(addr => addr.account !== account);
+                const deletedAddresses = addressesBefore - userAddresses.length;
+                console.log('✅ 已删除', deletedAddresses, '个收货地址');
+                
+                // 4. 删除用户的个人资料
+                if (userProfile[account]) {
+                    delete userProfile[account];
+                    console.log('✅ 个人资料已删除');
+                }
+                
+                // 5. 保存所有更改到本地和云端
+                saveAllUsers();
+                saveUserOrders();
+                saveUserAddresses();
+                saveUserProfile();
+                
+                // 6. 同步到云端
+                if (cloudSync && cloudSync.isInitialized) {
+                    console.log('☁️ 同步删除操作到云端...');
+                    await cloudSync.syncAllUsers();
+                    await cloudSync.syncOrders();
+                    console.log('✅ 已同步到云端');
+                }
+                
+                // 7. 更新界面
+                renderUsersTable();
+                
+                // 8. 关闭用户详情模态框
+                const modals = document.querySelectorAll('.modal');
+                modals.forEach(modal => modal.remove());
+                
+                // 9. 显示成功消息
+                showNotification(
+                    `✅ 用户账号 "${account}" 及所有相关数据已彻底删除\n` +
+                    `删除了 ${deletedOrders} 个订单和 ${deletedAddresses} 个地址`,
+                    'success'
+                );
+                
+                console.log('🎉 用户账号删除完成');
+                
+                // 10. 如果被删除的用户正在登录，强制其退出
+                if (currentUser && currentUser.account === account) {
+                    currentUser = null;
+                    localStorage.removeItem('currentUser');
+                    updateUserInterface();
+                    showNotification('您的账号已被管理员删除', 'error');
+                    // 跳转到首页
+                    document.getElementById('home-page').style.display = 'block';
+                    document.getElementById('user-center').style.display = 'none';
+                    document.getElementById('admin-panel').style.display = 'none';
+                }
+                
+            } catch (error) {
+                console.error('❌ 删除用户失败:', error);
+                showNotification('删除用户失败: ' + error.message, 'error');
             }
         }
 
@@ -7483,8 +8002,12 @@
         function loadUserProfile() {
             if (!currentUser) return;
             
+            // 从allUsers数组中获取最新的用户信息
+            const latestUserData = allUsers.find(u => u.account === currentUser.account);
+            const username = latestUserData ? latestUserData.username : currentUser.username;
+            
             const profile = userProfile[currentUser.account] || {};
-            document.getElementById('profile-username').value = currentUser.username || '';
+            document.getElementById('profile-username').value = username || '';
             document.getElementById('profile-account').value = currentUser.account || '';
             document.getElementById('profile-nickname').value = profile.nickname || '';
             document.getElementById('profile-phone').value = profile.phone || '';
