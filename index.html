@@ -2501,7 +2501,7 @@
             }
             
             // 初始化 Firebase
-            init() {
+            async init() {
                 try {
                     if (typeof firebase === 'undefined') {
                         console.warn('Firebase SDK 未加载，云端同步功能不可用');
@@ -2518,16 +2518,22 @@
                     
                     console.log('✅ Firebase 云端同步已初始化');
                     
+                    // 首先从云端加载数据
+                    await this.loadProducts();
+                    await this.loadAllUsers();
+                    
                     // 设置实时监听
                     this.setupRealtimeListeners();
                     
-                    // 首次同步
-                    this.syncAllData();
+                    // 首次同步本地数据到云端
+                    await this.syncAllData();
                     
                     // 定期同步（每5分钟）
                     this.syncInterval = setInterval(() => {
                         this.syncAllData();
                     }, 5 * 60 * 1000);
+                    
+                    showNotification('云端同步已启用', 'success');
                     
                 } catch (error) {
                     console.error('Firebase 初始化失败:', error);
@@ -2550,10 +2556,13 @@
                 try {
                     console.log('🔄 开始云端同步...');
                     
-                    // 同步产品数据
+                    // 同步产品数据（全局共享）
                     await this.syncProducts();
                     
-                    // 同步用户数据
+                    // 同步所有用户数据（全局共享）
+                    await this.syncAllUsers();
+                    
+                    // 同步用户订单和地址
                     if (currentUser) {
                         await this.syncUserData();
                         await this.syncOrders();
@@ -2562,7 +2571,6 @@
                     
                     this.lastSyncTime = new Date();
                     console.log('✅ 云端同步完成');
-                    showNotification('数据已同步到云端', 'success');
                     
                 } catch (error) {
                     console.error('云端同步失败:', error);
@@ -2706,6 +2714,41 @@
                 return false;
             }
             
+            // 同步所有用户数据（全局共享）
+            async syncAllUsers() {
+                try {
+                    const usersRef = this.db.ref('allUsers');
+                    
+                    // 上传所有用户到云端
+                    await usersRef.set(allUsers);
+                    
+                    console.log('✅ 所有用户数据已同步');
+                } catch (error) {
+                    console.error('用户数据同步失败:', error);
+                    throw error;
+                }
+            }
+            
+            // 从云端加载所有用户数据
+            async loadAllUsers() {
+                if (!this.isInitialized) return;
+                
+                try {
+                    const snapshot = await this.db.ref('allUsers').once('value');
+                    const cloudUsers = snapshot.val();
+                    
+                    if (cloudUsers && Array.isArray(cloudUsers) && cloudUsers.length > 0) {
+                        allUsers = cloudUsers;
+                        localStorage.setItem('allUsers', JSON.stringify(allUsers));
+                        console.log('✅ 已从云端加载所有用户数据');
+                        return true;
+                    }
+                } catch (error) {
+                    console.error('加载云端用户失败:', error);
+                }
+                return false;
+            }
+            
             // 设置实时监听
             setupRealtimeListeners() {
                 if (!this.isInitialized) return;
@@ -2719,9 +2762,38 @@
                         localStorage.setItem('products', JSON.stringify(products));
                         
                         // 刷新产品显示
-                        if (typeof displayProducts === 'function') {
-                            displayProducts();
+                        const homePage = document.getElementById('home-page');
+                        const adminPanel = document.getElementById('admin-panel');
+                        
+                        if (homePage && homePage.style.display !== 'none') {
+                            renderProducts(products);
                         }
+                        if (adminPanel && adminPanel.style.display !== 'none') {
+                            renderAdminProducts();
+                        }
+                        
+                        console.log('🔄 产品数据已从云端更新');
+                    }
+                });
+                
+                // 监听所有用户数据变化
+                const allUsersRef = this.db.ref('allUsers');
+                allUsersRef.on('value', (snapshot) => {
+                    const cloudUsers = snapshot.val();
+                    if (cloudUsers && Array.isArray(cloudUsers) && !this.syncInProgress) {
+                        allUsers = cloudUsers;
+                        localStorage.setItem('allUsers', JSON.stringify(allUsers));
+                        
+                        // 刷新用户管理显示
+                        const adminPanel = document.getElementById('admin-panel');
+                        if (adminPanel && adminPanel.style.display !== 'none') {
+                            const activeTab = document.querySelector('.admin-tab.active')?.dataset.tab;
+                            if (activeTab === 'users') {
+                                renderUserManagement();
+                            }
+                        }
+                        
+                        console.log('🔄 用户数据已从云端更新');
                     }
                 });
                 
@@ -2737,9 +2809,12 @@
                             localStorage.setItem('userOrders', JSON.stringify(userOrders));
                             
                             // 刷新订单显示
-                            if (typeof displayOrders === 'function') {
-                                displayOrders();
+                            const userCenter = document.getElementById('user-center');
+                            if (userCenter && userCenter.style.display !== 'none') {
+                                renderUserOrders();
                             }
+                            
+                            console.log('🔄 订单数据已从云端更新');
                         }
                     });
                 }
@@ -3714,7 +3789,7 @@
             });
 
             // 注册表单
-            document.getElementById('register-form').addEventListener('submit', (e) => {
+            document.getElementById('register-form').addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const account = document.getElementById('register-account').value;
                 const password = document.getElementById('register-password').value;
@@ -3740,10 +3815,16 @@
                 
                 if (result.success) {
                     currentUser = { account, username, role: 'user' };
-                saveCurrentUser();
-                alert('注册成功！');
-                registerModal.style.display = 'none';
-                updateUserInterface();
+                    saveCurrentUser();
+                    
+                    // 同步到云端
+                    if (cloudSync && cloudSync.isInitialized) {
+                        await cloudSync.syncAllUsers();
+                    }
+                    
+                    alert('注册成功！');
+                    registerModal.style.display = 'none';
+                    updateUserInterface();
                 } else {
                     alert(result.message);
                 }
@@ -6139,20 +6220,30 @@
             }, 5000);
         }
 
-        // 改进saveProducts函数，添加同步提示
+        // 改进saveProducts函数，添加同步提示和云同步
         const originalSaveProducts = saveProducts;
-        saveProducts = function() {
+        saveProducts = async function() {
             const result = originalSaveProducts();
-            if (result && isAdmin()) {
-                showSyncNotification();
+            if (result) {
+                // 同步到云端
+                if (cloudSync && cloudSync.isInitialized) {
+                    await cloudSync.syncProducts();
+                }
+                if (isAdmin()) {
+                    showSyncNotification();
+                }
             }
             return result;
         };
 
-        // 改进saveAllUsers函数，添加同步提示
+        // 改进saveAllUsers函数，添加同步提示和云同步
         const originalSaveAllUsers = saveAllUsers;
-        saveAllUsers = function() {
+        saveAllUsers = async function() {
             originalSaveAllUsers();
+            // 同步到云端
+            if (cloudSync && cloudSync.isInitialized) {
+                await cloudSync.syncAllUsers();
+            }
             if (isAdmin()) {
                 showSyncNotification();
             }
