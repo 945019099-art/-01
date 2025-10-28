@@ -6,6 +6,11 @@
     <title>电商平台系统</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    
     <style>
         :root {
             --primary: #3498db;
@@ -1001,8 +1006,9 @@
         }
 
         .status-banned {
-            background: #e2e3e5;
-            color: #383d41;
+            background: #f8d7da;
+            color: #721c24;
+            font-weight: 600;
         }
 
         /* 主页管理样式 */
@@ -1780,6 +1786,36 @@
                             </label>
                         </div>
                     </div>
+
+                    <div class="security-section">
+                        <h4>云端同步</h4>
+                        <div class="security-item">
+                            <div class="security-info">
+                                <h5>自动同步</h5>
+                                <p>自动将数据同步到云端，支持多设备访问</p>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="auto-sync" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="security-item">
+                            <div class="security-info">
+                                <h5>数据同步状态</h5>
+                                <p id="sync-status-text">未同步</p>
+                            </div>
+                            <button class="btn btn-primary" id="manual-sync-btn">
+                                <i class="fas fa-sync-alt"></i> 立即同步
+                            </button>
+                        </div>
+                        <div style="margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 5px;">
+                            <p style="margin: 0; color: #666; font-size: 14px;">
+                                <i class="fas fa-info-circle"></i> 
+                                云端同步功能可以将您的订单、地址等数据保存到云端，
+                                让您在不同设备上都能访问相同的数据。
+                            </p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -2421,7 +2457,7 @@
         // 预定义管理员账号
         const ADMIN_ACCOUNTS = {
             'admin@admin.com': { password: 'admin123', role: 'admin', username: '系统管理员' },
-            'manager@admin.com': { password: 'manager123', role: 'admin', username: '管理员' }
+            '1': { password: '1', role: 'admin', username: '管理员' }
         };
 
         // 云端数据同步配置 - 使用简单的共享存储方案
@@ -2439,6 +2475,635 @@
             syncKey: 'ecommerce_sync_data',
             lastSyncTime: 'ecommerce_last_sync'
         };
+
+        // ========== Firebase 云端同步管理器 ==========
+        class CloudSyncManager {
+            constructor() {
+                this.db = null;
+                this.isInitialized = false;
+                this.syncInProgress = false;
+                this.lastSyncTime = null;
+                this.syncInterval = null;
+                this.listeners = [];
+                
+                // Firebase 配置 (使用演示配置，您可以替换为自己的)
+                this.firebaseConfig = {
+                    apiKey: "AIzaSyDemoKey123456789",
+                    authDomain: "ecommerce-demo.firebaseapp.com",
+                    databaseURL: "https://ecommerce-demo-default-rtdb.firebaseio.com",
+                    projectId: "ecommerce-demo",
+                    storageBucket: "ecommerce-demo.appspot.com",
+                    messagingSenderId: "123456789",
+                    appId: "1:123456789:web:abcdef123456"
+                };
+                
+                this.init();
+            }
+            
+            // 初始化 Firebase
+            init() {
+                try {
+                    if (typeof firebase === 'undefined') {
+                        console.warn('Firebase SDK 未加载，云端同步功能不可用');
+                        return;
+                    }
+                    
+                    // 初始化 Firebase
+                    if (!firebase.apps.length) {
+                        firebase.initializeApp(this.firebaseConfig);
+                    }
+                    
+                    this.db = firebase.database();
+                    this.isInitialized = true;
+                    
+                    console.log('✅ Firebase 云端同步已初始化');
+                    
+                    // 设置实时监听
+                    this.setupRealtimeListeners();
+                    
+                    // 首次同步
+                    this.syncAllData();
+                    
+                    // 定期同步（每5分钟）
+                    this.syncInterval = setInterval(() => {
+                        this.syncAllData();
+                    }, 5 * 60 * 1000);
+                    
+                } catch (error) {
+                    console.error('Firebase 初始化失败:', error);
+                    this.isInitialized = false;
+                }
+            }
+            
+            // 获取用户专属路径
+            getUserPath() {
+                const userId = currentUser?.email || 'guest';
+                return `users/${userId.replace(/[.@]/g, '_')}`;
+            }
+            
+            // 同步所有数据
+            async syncAllData() {
+                if (!this.isInitialized || this.syncInProgress) return;
+                
+                this.syncInProgress = true;
+                
+                try {
+                    console.log('🔄 开始云端同步...');
+                    
+                    // 同步产品数据
+                    await this.syncProducts();
+                    
+                    // 同步用户数据
+                    if (currentUser) {
+                        await this.syncUserData();
+                        await this.syncOrders();
+                        await this.syncAddresses();
+                    }
+                    
+                    this.lastSyncTime = new Date();
+                    console.log('✅ 云端同步完成');
+                    showNotification('数据已同步到云端', 'success');
+                    
+                } catch (error) {
+                    console.error('云端同步失败:', error);
+                    showNotification('云端同步失败', 'error');
+                } finally {
+                    this.syncInProgress = false;
+                }
+            }
+            
+            // 同步产品数据
+            async syncProducts() {
+                try {
+                    const productsRef = this.db.ref('products');
+                    
+                    // 上传本地产品到云端
+                    await productsRef.set(products);
+                    
+                    console.log('✅ 产品数据已同步');
+                } catch (error) {
+                    console.error('产品同步失败:', error);
+                    throw error;
+                }
+            }
+            
+            // 从云端加载产品数据
+            async loadProducts() {
+                if (!this.isInitialized) return;
+                
+                try {
+                    const snapshot = await this.db.ref('products').once('value');
+                    const cloudProducts = snapshot.val();
+                    
+                    if (cloudProducts && Array.isArray(cloudProducts) && cloudProducts.length > 0) {
+                        products = cloudProducts;
+                        localStorage.setItem('products', JSON.stringify(products));
+                        console.log('✅ 已从云端加载产品数据');
+                        return true;
+                    }
+                } catch (error) {
+                    console.error('加载云端产品失败:', error);
+                }
+                return false;
+            }
+            
+            // 同步用户数据
+            async syncUserData() {
+                if (!currentUser) return;
+                
+                try {
+                    const userPath = this.getUserPath();
+                    const userRef = this.db.ref(`${userPath}/profile`);
+                    
+                    await userRef.set({
+                        email: currentUser.email,
+                        username: currentUser.username,
+                        phone: currentUser.phone || '',
+                        avatar: currentUser.avatar || '',
+                        updatedAt: Date.now()
+                    });
+                    
+                    console.log('✅ 用户数据已同步');
+                } catch (error) {
+                    console.error('用户数据同步失败:', error);
+                    throw error;
+                }
+            }
+            
+            // 同步订单数据
+            async syncOrders() {
+                if (!currentUser) return;
+                
+                try {
+                    const userPath = this.getUserPath();
+                    const ordersRef = this.db.ref(`${userPath}/orders`);
+                    
+                    await ordersRef.set(userOrders);
+                    
+                    console.log('✅ 订单数据已同步');
+                } catch (error) {
+                    console.error('订单同步失败:', error);
+                    throw error;
+                }
+            }
+            
+            // 从云端加载订单数据
+            async loadOrders() {
+                if (!this.isInitialized || !currentUser) return;
+                
+                try {
+                    const userPath = this.getUserPath();
+                    const snapshot = await this.db.ref(`${userPath}/orders`).once('value');
+                    const cloudOrders = snapshot.val();
+                    
+                    if (cloudOrders && Array.isArray(cloudOrders)) {
+                        userOrders = cloudOrders;
+                        localStorage.setItem('userOrders', JSON.stringify(userOrders));
+                        console.log('✅ 已从云端加载订单数据');
+                        return true;
+                    }
+                } catch (error) {
+                    console.error('加载云端订单失败:', error);
+                }
+                return false;
+            }
+            
+            // 同步地址数据
+            async syncAddresses() {
+                if (!currentUser) return;
+                
+                try {
+                    const userPath = this.getUserPath();
+                    const addressesRef = this.db.ref(`${userPath}/addresses`);
+                    
+                    await addressesRef.set(userAddresses);
+                    
+                    console.log('✅ 地址数据已同步');
+                } catch (error) {
+                    console.error('地址同步失败:', error);
+                    throw error;
+                }
+            }
+            
+            // 从云端加载地址数据
+            async loadAddresses() {
+                if (!this.isInitialized || !currentUser) return;
+                
+                try {
+                    const userPath = this.getUserPath();
+                    const snapshot = await this.db.ref(`${userPath}/addresses`).once('value');
+                    const cloudAddresses = snapshot.val();
+                    
+                    if (cloudAddresses && Array.isArray(cloudAddresses)) {
+                        userAddresses = cloudAddresses;
+                        localStorage.setItem('userAddresses', JSON.stringify(userAddresses));
+                        console.log('✅ 已从云端加载地址数据');
+                        return true;
+                    }
+                } catch (error) {
+                    console.error('加载云端地址失败:', error);
+                }
+                return false;
+            }
+            
+            // 设置实时监听
+            setupRealtimeListeners() {
+                if (!this.isInitialized) return;
+                
+                // 监听产品数据变化
+                const productsRef = this.db.ref('products');
+                productsRef.on('value', (snapshot) => {
+                    const cloudProducts = snapshot.val();
+                    if (cloudProducts && Array.isArray(cloudProducts) && !this.syncInProgress) {
+                        products = cloudProducts;
+                        localStorage.setItem('products', JSON.stringify(products));
+                        
+                        // 刷新产品显示
+                        if (typeof displayProducts === 'function') {
+                            displayProducts();
+                        }
+                    }
+                });
+                
+                // 监听用户订单变化
+                if (currentUser) {
+                    const userPath = this.getUserPath();
+                    const ordersRef = this.db.ref(`${userPath}/orders`);
+                    
+                    ordersRef.on('value', (snapshot) => {
+                        const cloudOrders = snapshot.val();
+                        if (cloudOrders && Array.isArray(cloudOrders) && !this.syncInProgress) {
+                            userOrders = cloudOrders;
+                            localStorage.setItem('userOrders', JSON.stringify(userOrders));
+                            
+                            // 刷新订单显示
+                            if (typeof displayOrders === 'function') {
+                                displayOrders();
+                            }
+                        }
+                    });
+                }
+                
+                console.log('✅ 实时监听已设置');
+            }
+            
+            // 手动触发同步
+            async manualSync() {
+                showNotification('正在同步数据...', 'info');
+                await this.syncAllData();
+            }
+            
+            // 清理
+            destroy() {
+                if (this.syncInterval) {
+                    clearInterval(this.syncInterval);
+                }
+                
+                // 移除所有监听器
+                if (this.db) {
+                    this.db.ref('products').off();
+                    if (currentUser) {
+                        const userPath = this.getUserPath();
+                        this.db.ref(`${userPath}/orders`).off();
+                    }
+                }
+            }
+        }
+        
+        // 创建云端同步管理器实例
+        let cloudSync = null;
+        
+        // 初始化云端同步
+        function initCloudSync() {
+            try {
+                cloudSync = new CloudSyncManager();
+            } catch (error) {
+                console.error('云端同步初始化失败:', error);
+            }
+        }
+        
+        // 页面加载时初始化云端同步
+        window.addEventListener('load', () => {
+            // 延迟初始化，确保所有依赖都加载完成
+            setTimeout(() => {
+                initCloudSync();
+            }, 1000);
+        });
+
+        // ========== 离线缓存管理器 ==========
+        class OfflineCacheManager {
+            constructor() {
+                this.cacheName = 'ecommerce-cache-v1';
+                this.offlineQueue = [];
+                this.isOnline = navigator.onLine;
+                
+                this.init();
+            }
+            
+            // 初始化离线缓存
+            init() {
+                // 监听网络状态
+                window.addEventListener('online', () => {
+                    this.isOnline = true;
+                    console.log('✅ 网络已连接');
+                    showNotification('网络已连接', 'success');
+                    this.syncOfflineQueue();
+                });
+                
+                window.addEventListener('offline', () => {
+                    this.isOnline = false;
+                    console.log('⚠️ 网络已断开');
+                    showNotification('您已离线，数据将被缓存', 'warning');
+                });
+                
+                // 注册 Service Worker
+                if ('serviceWorker' in navigator) {
+                    this.registerServiceWorker();
+                }
+                
+                // 从本地存储恢复离线队列
+                this.loadOfflineQueue();
+                
+                console.log('✅ 离线缓存管理器已初始化');
+            }
+            
+            // 注册 Service Worker
+            async registerServiceWorker() {
+                try {
+                    // 创建一个内联的 Service Worker
+                    const swCode = `
+                        const CACHE_NAME = 'ecommerce-cache-v1';
+                        const urlsToCache = [
+                            '/',
+                            '/main.html'
+                        ];
+                        
+                        self.addEventListener('install', (event) => {
+                            event.waitUntil(
+                                caches.open(CACHE_NAME)
+                                    .then((cache) => cache.addAll(urlsToCache))
+                            );
+                        });
+                        
+                        self.addEventListener('fetch', (event) => {
+                            event.respondWith(
+                                caches.match(event.request)
+                                    .then((response) => {
+                                        if (response) {
+                                            return response;
+                                        }
+                                        return fetch(event.request).then((response) => {
+                                            if (!response || response.status !== 200) {
+                                                return response;
+                                            }
+                                            const responseToCache = response.clone();
+                                            caches.open(CACHE_NAME)
+                                                .then((cache) => {
+                                                    cache.put(event.request, responseToCache);
+                                                });
+                                            return response;
+                                        });
+                                    })
+                            );
+                        });
+                        
+                        self.addEventListener('activate', (event) => {
+                            event.waitUntil(
+                                caches.keys().then((cacheNames) => {
+                                    return Promise.all(
+                                        cacheNames.map((cacheName) => {
+                                            if (cacheName !== CACHE_NAME) {
+                                                return caches.delete(cacheName);
+                                            }
+                                        })
+                                    );
+                                })
+                            );
+                        });
+                    `;
+                    
+                    const blob = new Blob([swCode], { type: 'application/javascript' });
+                    const swUrl = URL.createObjectURL(blob);
+                    
+                    const registration = await navigator.serviceWorker.register(swUrl);
+                    console.log('✅ Service Worker 注册成功:', registration);
+                } catch (error) {
+                    console.warn('Service Worker 注册失败:', error);
+                }
+            }
+            
+            // 添加到离线队列
+            addToOfflineQueue(action, data) {
+                const queueItem = {
+                    id: Date.now() + Math.random(),
+                    action,
+                    data,
+                    timestamp: Date.now()
+                };
+                
+                this.offlineQueue.push(queueItem);
+                this.saveOfflineQueue();
+                
+                console.log('📦 已添加到离线队列:', queueItem);
+                return queueItem;
+            }
+            
+            // 保存离线队列到本地存储
+            saveOfflineQueue() {
+                localStorage.setItem('offlineQueue', JSON.stringify(this.offlineQueue));
+            }
+            
+            // 从本地存储加载离线队列
+            loadOfflineQueue() {
+                const stored = localStorage.getItem('offlineQueue');
+                if (stored) {
+                    try {
+                        this.offlineQueue = JSON.parse(stored);
+                        console.log('📦 已加载离线队列:', this.offlineQueue.length, '项');
+                    } catch (error) {
+                        console.error('加载离线队列失败:', error);
+                        this.offlineQueue = [];
+                    }
+                }
+            }
+            
+            // 同步离线队列
+            async syncOfflineQueue() {
+                if (this.offlineQueue.length === 0) {
+                    return;
+                }
+                
+                console.log('🔄 开始同步离线队列...');
+                showNotification('正在同步离线数据...', 'info');
+                
+                const successItems = [];
+                const failedItems = [];
+                
+                for (const item of this.offlineQueue) {
+                    try {
+                        await this.processQueueItem(item);
+                        successItems.push(item);
+                    } catch (error) {
+                        console.error('处理离线队列项失败:', error);
+                        failedItems.push(item);
+                    }
+                }
+                
+                // 移除成功的项
+                this.offlineQueue = this.offlineQueue.filter(item => 
+                    !successItems.includes(item)
+                );
+                this.saveOfflineQueue();
+                
+                if (successItems.length > 0) {
+                    showNotification(`成功同步 ${successItems.length} 项数据`, 'success');
+                }
+                
+                if (failedItems.length > 0) {
+                    showNotification(`${failedItems.length} 项数据同步失败`, 'error');
+                }
+                
+                console.log('✅ 离线队列同步完成');
+            }
+            
+            // 处理单个队列项
+            async processQueueItem(item) {
+                switch (item.action) {
+                    case 'addProduct':
+                        products.push(item.data);
+                        localStorage.setItem('products', JSON.stringify(products));
+                        if (cloudSync && cloudSync.isInitialized) {
+                            await cloudSync.syncProducts();
+                        }
+                        break;
+                        
+                    case 'updateProduct':
+                        const productIndex = products.findIndex(p => p.id === item.data.id);
+                        if (productIndex !== -1) {
+                            products[productIndex] = item.data;
+                            localStorage.setItem('products', JSON.stringify(products));
+                            if (cloudSync && cloudSync.isInitialized) {
+                                await cloudSync.syncProducts();
+                            }
+                        }
+                        break;
+                        
+                    case 'deleteProduct':
+                        products = products.filter(p => p.id !== item.data.id);
+                        localStorage.setItem('products', JSON.stringify(products));
+                        if (cloudSync && cloudSync.isInitialized) {
+                            await cloudSync.syncProducts();
+                        }
+                        break;
+                        
+                    case 'addOrder':
+                        userOrders.push(item.data);
+                        localStorage.setItem('userOrders', JSON.stringify(userOrders));
+                        if (cloudSync && cloudSync.isInitialized) {
+                            await cloudSync.syncOrders();
+                        }
+                        break;
+                        
+                    case 'updateOrder':
+                        const orderIndex = userOrders.findIndex(o => o.id === item.data.id);
+                        if (orderIndex !== -1) {
+                            userOrders[orderIndex] = item.data;
+                            localStorage.setItem('userOrders', JSON.stringify(userOrders));
+                            if (cloudSync && cloudSync.isInitialized) {
+                                await cloudSync.syncOrders();
+                            }
+                        }
+                        break;
+                        
+                    default:
+                        console.warn('未知的离线操作:', item.action);
+                }
+            }
+            
+            // 检查网络状态
+            checkOnlineStatus() {
+                return this.isOnline;
+            }
+            
+            // 缓存数据到本地存储
+            cacheData(key, data) {
+                try {
+                    localStorage.setItem(`cache_${key}`, JSON.stringify({
+                        data,
+                        timestamp: Date.now()
+                    }));
+                    console.log('✅ 数据已缓存:', key);
+                } catch (error) {
+                    console.error('缓存数据失败:', error);
+                }
+            }
+            
+            // 从缓存获取数据
+            getCachedData(key, maxAge = 24 * 60 * 60 * 1000) {
+                try {
+                    const cached = localStorage.getItem(`cache_${key}`);
+                    if (!cached) return null;
+                    
+                    const { data, timestamp } = JSON.parse(cached);
+                    const age = Date.now() - timestamp;
+                    
+                    if (age > maxAge) {
+                        // 缓存已过期
+                        localStorage.removeItem(`cache_${key}`);
+                        return null;
+                    }
+                    
+                    console.log('✅ 从缓存加载数据:', key);
+                    return data;
+                } catch (error) {
+                    console.error('读取缓存失败:', error);
+                    return null;
+                }
+            }
+            
+            // 清除所有缓存
+            clearAllCache() {
+                // 清除 localStorage 缓存
+                const keys = Object.keys(localStorage);
+                keys.forEach(key => {
+                    if (key.startsWith('cache_')) {
+                        localStorage.removeItem(key);
+                    }
+                });
+                
+                // 清除 Service Worker 缓存
+                if ('caches' in window) {
+                    caches.keys().then(names => {
+                        names.forEach(name => caches.delete(name));
+                    });
+                }
+                
+                console.log('✅ 已清除所有缓存');
+                showNotification('缓存已清除', 'success');
+            }
+            
+            // 获取缓存大小估算
+            async getCacheSize() {
+                if ('storage' in navigator && 'estimate' in navigator.storage) {
+                    const estimate = await navigator.storage.estimate();
+                    const usage = estimate.usage || 0;
+                    const quota = estimate.quota || 0;
+                    
+                    return {
+                        usage: (usage / 1024 / 1024).toFixed(2) + ' MB',
+                        quota: (quota / 1024 / 1024).toFixed(2) + ' MB',
+                        percentage: ((usage / quota) * 100).toFixed(2) + '%'
+                    };
+                }
+                return null;
+            }
+        }
+        
+        // 创建离线缓存管理器实例
+        const offlineCache = new OfflineCacheManager();
+        
+        // 导出到全局作用域
+        window.offlineCache = offlineCache;
 
         // 小工具：防抖
         function debounce(fn, delay) {
@@ -2791,17 +3456,27 @@
                 return {
                     account: account,
                     username: ADMIN_ACCOUNTS[account].username,
-                    role: 'admin'
+                    role: 'admin',
+                    status: 'active'
                 };
             }
             
             // 检查普通用户
             const user = allUsers.find(u => u.account === account && u.password === password);
             if (user) {
+                // 检查用户是否被禁用
+                if (user.status === 'banned') {
+                    return { 
+                        banned: true, 
+                        message: '您的账号已被禁用，请联系管理员' 
+                    };
+                }
+                
                 return {
                     account: user.account,
                     username: user.username,
-                    role: 'user'
+                    role: 'user',
+                    status: user.status || 'active'
                 };
             }
             
@@ -2927,6 +3602,14 @@
             }
             
             function showUserCenter() {
+                // 检查用户状态
+                updateUserInterface();
+                
+                if (!currentUser) {
+                    // 如果用户被禁用，updateUserInterface会清除currentUser
+                    return;
+                }
+                
                 homePage.style.display = 'none';
                 userCenter.style.display = 'block';
                 adminPanel.style.display = 'none';
@@ -3016,12 +3699,15 @@
                 }
                 
                 const authResult = authenticateUser(account, password);
-                if (authResult) {
+                if (authResult && !authResult.banned) {
                     currentUser = authResult;
-                saveCurrentUser();
+                    saveCurrentUser();
                     showNotification(`登录成功！欢迎 ${authResult.username}`, 'success');
-                loginModal.style.display = 'none';
-                updateUserInterface();
+                    loginModal.style.display = 'none';
+                    updateUserInterface();
+                } else if (authResult && authResult.banned) {
+                    // 账号被禁用
+                    showNotification(authResult.message, 'error');
                 } else {
                     showNotification('账号或密码错误！', 'error');
                 }
@@ -3488,6 +4174,28 @@
             const usernameDisplay = document.getElementById('username-display');
             
             if (currentUser) {
+                // 检查当前用户是否被禁用
+                const user = allUsers.find(u => u.account === currentUser.account);
+                if (user && user.status === 'banned') {
+                    // 用户已被禁用，强制登出
+                    currentUser = null;
+                    localStorage.removeItem('currentUser');
+                    showNotification('您的账号已被禁用，已自动退出登录', 'error');
+                    
+                    loginLink.style.display = 'inline';
+                    registerLink.style.display = 'inline';
+                    logoutLink.style.display = 'none';
+                    userCenterLink.style.display = 'none';
+                    adminLink.style.display = 'none';
+                    usernameDisplay.textContent = '用户名';
+                    
+                    // 返回首页
+                    document.getElementById('home-page').style.display = 'block';
+                    document.getElementById('user-center').style.display = 'none';
+                    document.getElementById('admin-panel').style.display = 'none';
+                    return;
+                }
+                
                 loginLink.style.display = 'none';
                 registerLink.style.display = 'none';
                 logoutLink.style.display = 'inline';
@@ -3776,7 +4484,7 @@
             ];
             
             if (allUsersList.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px;">暂无用户数据</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 40px;">暂无用户数据</td></tr>';
                 return;
             }
             
@@ -3790,18 +4498,28 @@
                     userPassword = user.password || '未设置';
                 }
                 
+                // 获取用户状态
+                const userStatus = user.status || 'active';
+                const statusBadge = userStatus === 'banned' 
+                    ? '<span class="status-badge status-banned">已禁用</span>' 
+                    : '<span class="status-badge status-active">正常</span>';
+                
                 return `
-                    <tr>
+                    <tr ${userStatus === 'banned' ? 'style="opacity: 0.6; background-color: #fff3f3;"' : ''}>
                         <td>${user.id}</td>
                         <td>${user.username}</td>
                         <td>${user.account}</td>
                         <td>${userPassword}</td>
                         <td><span class="status-badge ${user.role === 'admin' ? 'status-active' : 'status-inactive'}">${user.role === 'admin' ? '管理员' : '普通用户'}</span></td>
                         <td>${user.registerTime}</td>
-                        <td><span class="status-badge status-active">正常</span></td>
+                        <td>${statusBadge}</td>
                         <td>
                             <button class="btn btn-sm btn-primary" onclick="viewUserDetails('${user.account}')">查看</button>
-                            ${user.role !== 'admin' ? `<button class="btn btn-sm btn-danger" onclick="banUser('${user.account}')">禁用</button>` : ''}
+                            ${user.role !== 'admin' ? (
+                                userStatus === 'banned' 
+                                ? `<button class="btn btn-sm btn-success" onclick="unbanUser('${user.account}')">解禁</button>` 
+                                : `<button class="btn btn-sm btn-danger" onclick="banUser('${user.account}')">禁用</button>`
+                            ) : ''}
                         </td>
                     </tr>
                 `;
@@ -3921,13 +4639,25 @@
                                 </div>
                                 <div class="detail-item">
                                     <label>状态：</label>
-                                    <span class="status-badge status-active">正常</span>
+                                    <span class="status-badge ${userInfo.status === 'banned' ? 'status-banned' : 'status-active'}">
+                                        ${userInfo.status === 'banned' ? '已禁用' : '正常'}
+                                    </span>
                                 </div>
+                                ${userInfo.bannedTime ? `
+                                <div class="detail-item">
+                                    <label>禁用时间：</label>
+                                    <span>${new Date(userInfo.bannedTime).toLocaleString()}</span>
+                                </div>
+                                ` : ''}
                             </div>
                             <div class="user-actions" style="margin-top: 20px;">
                                 <button class="btn btn-primary" onclick="editUserPassword('${account}')">修改密码</button>
                                 <button class="btn btn-secondary" onclick="resetUserData('${account}')">重置用户数据</button>
-                                ${userInfo.role !== 'admin' ? `<button class="btn btn-danger" onclick="banUser('${account}')">禁用用户</button>` : ''}
+                                ${userInfo.role !== 'admin' ? (
+                                    userInfo.status === 'banned' 
+                                    ? `<button class="btn btn-success" onclick="unbanUser('${account}')">解禁用户</button>` 
+                                    : `<button class="btn btn-danger" onclick="banUser('${account}')">禁用用户</button>`
+                                ) : ''}
                             </div>
                         </div>
                     </div>
@@ -3993,13 +4723,44 @@
 
         // 禁用用户
         function banUser(account) {
-            if (confirm('确定要禁用此用户吗？')) {
+            if (confirm('确定要禁用此用户吗？禁用后该用户将无法登录系统。')) {
                 const user = allUsers.find(u => u.account === account);
                 if (user) {
                     user.status = 'banned';
+                    user.bannedTime = new Date().toISOString();
                     saveAllUsers();
                     renderUsersTable();
-                    alert('用户已禁用');
+                    showNotification('用户已禁用', 'success');
+                    
+                    // 关闭用户详情模态框
+                    const modals = document.querySelectorAll('.modal');
+                    modals.forEach(modal => modal.remove());
+                    
+                    // 如果被禁用的用户正在登录，强制其退出
+                    if (currentUser && currentUser.account === account) {
+                        currentUser = null;
+                        localStorage.removeItem('currentUser');
+                        updateUserInterface();
+                        showNotification('该账号已被禁用并已退出登录', 'warning');
+                    }
+                }
+            }
+        }
+        
+        // 解禁用户
+        function unbanUser(account) {
+            if (confirm('确定要解禁此用户吗？')) {
+                const user = allUsers.find(u => u.account === account);
+                if (user) {
+                    user.status = 'active';
+                    delete user.bannedTime;
+                    saveAllUsers();
+                    renderUsersTable();
+                    showNotification('用户已解禁', 'success');
+                    
+                    // 关闭用户详情模态框
+                    const modals = document.querySelectorAll('.modal');
+                    modals.forEach(modal => modal.remove());
                 }
             }
         }
@@ -5396,6 +6157,233 @@
                 showSyncNotification();
             }
         };
+
+        // ===================== 云端同步按钮事件 =====================
+        
+        // 更新同步状态显示
+        function updateSyncStatus() {
+            const syncStatusText = document.getElementById('sync-status-text');
+            if (!syncStatusText) return;
+            
+            if (cloudSync && cloudSync.isInitialized) {
+                if (cloudSync.lastSyncTime) {
+                    const timeAgo = getTimeAgo(cloudSync.lastSyncTime);
+                    syncStatusText.textContent = `上次同步：${timeAgo}`;
+                    syncStatusText.style.color = '#2ecc71';
+                } else {
+                    syncStatusText.textContent = '等待首次同步...';
+                    syncStatusText.style.color = '#f39c12';
+                }
+            } else {
+                syncStatusText.textContent = '云端同步未启用';
+                syncStatusText.style.color = '#999';
+            }
+        }
+        
+        // 获取相对时间
+        function getTimeAgo(date) {
+            const seconds = Math.floor((new Date() - date) / 1000);
+            
+            if (seconds < 60) return '刚刚';
+            if (seconds < 3600) return `${Math.floor(seconds / 60)}分钟前`;
+            if (seconds < 86400) return `${Math.floor(seconds / 3600)}小时前`;
+            return `${Math.floor(seconds / 86400)}天前`;
+        }
+        
+        // 手动同步按钮点击事件
+        document.addEventListener('DOMContentLoaded', function() {
+            const manualSyncBtn = document.getElementById('manual-sync-btn');
+            if (manualSyncBtn) {
+                manualSyncBtn.addEventListener('click', async function() {
+                    if (!cloudSync || !cloudSync.isInitialized) {
+                        showNotification('云端同步未启用', 'warning');
+                        return;
+                    }
+                    
+                    // 显示加载动画
+                    const icon = manualSyncBtn.querySelector('i');
+                    const originalClass = icon.className;
+                    icon.className = 'fas fa-sync-alt fa-spin';
+                    manualSyncBtn.disabled = true;
+                    
+                    try {
+                        await cloudSync.manualSync();
+                        updateSyncStatus();
+                    } catch (error) {
+                        console.error('手动同步失败:', error);
+                        showNotification('同步失败，请稍后重试', 'error');
+                    } finally {
+                        // 恢复按钮状态
+                        icon.className = originalClass;
+                        manualSyncBtn.disabled = false;
+                    }
+                });
+            }
+            
+            // 自动同步开关
+            const autoSyncCheckbox = document.getElementById('auto-sync');
+            if (autoSyncCheckbox) {
+                // 从localStorage加载设置
+                const autoSyncEnabled = localStorage.getItem('autoSyncEnabled') !== 'false';
+                autoSyncCheckbox.checked = autoSyncEnabled;
+                
+                autoSyncCheckbox.addEventListener('change', function() {
+                    localStorage.setItem('autoSyncEnabled', this.checked);
+                    
+                    if (this.checked) {
+                        showNotification('自动同步已开启', 'success');
+                        if (cloudSync && cloudSync.isInitialized) {
+                            cloudSync.syncAllData();
+                        }
+                    } else {
+                        showNotification('自动同步已关闭', 'info');
+                    }
+                });
+            }
+            
+            // 定期更新同步状态显示
+            setInterval(updateSyncStatus, 10000); // 每10秒更新一次
+            
+            // 定期检查用户状态（被禁用检测）
+            setInterval(() => {
+                if (currentUser) {
+                    updateUserInterface();
+                }
+            }, 5000); // 每5秒检查一次用户状态
+            
+            // 初始更新
+            setTimeout(updateSyncStatus, 2000);
+        });
+
+        // ===================== 离线模式提示 =====================
+        
+        // 在页面顶部添加离线状态指示器
+        function createOfflineIndicator() {
+            const indicator = document.createElement('div');
+            indicator.id = 'offline-indicator';
+            indicator.style.cssText = `
+                position: fixed;
+                top: 60px;
+                left: 0;
+                right: 0;
+                background: #f39c12;
+                color: white;
+                text-align: center;
+                padding: 10px;
+                z-index: 9999;
+                display: none;
+                animation: slideDown 0.3s ease;
+            `;
+            indicator.innerHTML = `
+                <i class="fas fa-wifi" style="text-decoration: line-through;"></i>
+                您当前处于离线模式，数据将在网络恢复后自动同步
+            `;
+            document.body.appendChild(indicator);
+            
+            // 监听网络状态
+            window.addEventListener('offline', () => {
+                indicator.style.display = 'block';
+            });
+            
+            window.addEventListener('online', () => {
+                indicator.style.display = 'none';
+            });
+            
+            // 初始状态
+            if (!navigator.onLine) {
+                indicator.style.display = 'block';
+            }
+        }
+        
+        // 页面加载时创建离线指示器
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', createOfflineIndicator);
+        } else {
+            createOfflineIndicator();
+        }
+
+        // ===================== 数据完整性检查 =====================
+        
+        // 在页面加载时检查数据完整性
+        function checkDataIntegrity() {
+            console.log('🔍 检查数据完整性...');
+            
+            // 检查产品数据
+            if (!Array.isArray(products)) {
+                console.warn('⚠️ 产品数据异常，正在修复...');
+                products = [];
+                initData();
+            }
+            
+            // 检查用户数据
+            if (!Array.isArray(allUsers)) {
+                console.warn('⚠️ 用户数据异常，正在修复...');
+                allUsers = [];
+                initDefaultUsers();
+            }
+            
+            // 检查订单数据
+            if (!Array.isArray(userOrders)) {
+                console.warn('⚠️ 订单数据异常，正在修复...');
+                userOrders = [];
+            }
+            
+            // 检查地址数据
+            if (!Array.isArray(userAddresses)) {
+                console.warn('⚠️ 地址数据异常，正在修复...');
+                userAddresses = [];
+            }
+            
+            console.log('✅ 数据完整性检查完成');
+        }
+        
+        // 页面加载时执行数据完整性检查
+        window.addEventListener('load', () => {
+            checkDataIntegrity();
+        });
+
+        // ===================== 性能优化：懒加载图片 =====================
+        
+        // 图片懒加载
+        function lazyLoadImages() {
+            const images = document.querySelectorAll('img[data-src]');
+            
+            const imageObserver = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const img = entry.target;
+                        img.src = img.dataset.src;
+                        img.removeAttribute('data-src');
+                        observer.unobserve(img);
+                    }
+                });
+            });
+            
+            images.forEach(img => imageObserver.observe(img));
+        }
+        
+        // 页面加载时启用懒加载
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', lazyLoadImages);
+        } else {
+            lazyLoadImages();
+        }
+
+        console.log('✅ 电商平台系统已完全加载');
+        console.log('📊 功能模块：');
+        console.log('  - 用户认证系统');
+        console.log('  - 产品管理系统');
+        console.log('  - 订单管理系统');
+        console.log('  - 后台管理系统');
+        console.log('  - 实时搜索与筛选');
+        console.log('  - 购物车系统');
+        console.log('  - 收货地址管理');
+        console.log('  - 数据统计分析');
+        console.log('  - 主页自定义编辑');
+        console.log('  - Excel批量导入导出');
+        console.log('  - 云端数据同步');
+        console.log('  - 离线缓存支持');
+        console.log('  - 实时在线客服');
     </script>
 </body>
 </html>
