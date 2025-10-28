@@ -2548,13 +2548,23 @@
             
             // 初始化 Firebase
             async init() {
+                console.log('🔧 CloudSyncManager.init() 开始执行...');
+                
                 try {
                     // 检查Firebase SDK是否加载
                     if (typeof firebase === 'undefined') {
                         console.warn('⚠️ Firebase SDK 未加载，云端同步功能不可用');
                         console.log('💡 应用将以本地模式运行，数据仅保存在当前设备');
+                        console.log('📌 可能原因：');
+                        console.log('   1. 网络连接问题，无法加载 Firebase CDN');
+                        console.log('   2. 浏览器扩展阻止了脚本加载');
+                        console.log('   3. 防火墙或代理设置');
+                        this.updateSyncStatusUI(false);
                         return;
                     }
+                    
+                    console.log('✅ Firebase SDK 已检测到');
+                    console.log('📦 Firebase 版本:', firebase.SDK_VERSION || 'unknown');
                     
                     // 检测是否使用了默认配置（未设置）
                     const isDefaultConfig = this.firebaseConfig.apiKey === 'YOUR_API_KEY_HERE' || 
@@ -2567,24 +2577,34 @@
                         console.log('   2. 创建新项目并启用 Realtime Database');
                         console.log('   3. 复制配置并替换代码中的 firebaseConfig');
                         console.log('💡 应用将以本地模式运行');
+                        this.updateSyncStatusUI(false);
                         return;
                     }
                     
                     console.log('🔧 正在初始化 Firebase...');
+                    console.log('📝 项目 ID:', this.firebaseConfig.projectId);
+                    console.log('📝 数据库 URL:', this.firebaseConfig.databaseURL);
                     
                     // 初始化 Firebase
                     if (!firebase.apps.length) {
+                        console.log('🔄 执行 firebase.initializeApp()...');
                         firebase.initializeApp(this.firebaseConfig);
+                        console.log('✅ Firebase App 初始化成功');
+                    } else {
+                        console.log('ℹ️ Firebase App 已存在，跳过初始化');
                     }
                     
+                    console.log('🔄 获取 Database 实例...');
                     this.db = firebase.database();
+                    console.log('✅ Database 实例获取成功');
                     
                     // 测试数据库连接
                     console.log('🔄 正在测试数据库连接...');
                     await this.testConnection();
+                    console.log('✅ 数据库连接测试成功');
                     
                     this.isInitialized = true;
-                    console.log('✅ Firebase 云端同步已启用');
+                    console.log('✅✅✅ Firebase 云端同步已完全启用！');
                     
                     // 首先从云端加载数据
                     console.log('📥 正在从云端加载数据...');
@@ -2592,9 +2612,11 @@
                     await this.loadAllUsers();
                     
                     // 设置实时监听
+                    console.log('🔄 设置实时监听器...');
                     this.setupRealtimeListeners();
                     
                     // 首次同步本地数据到云端
+                    console.log('🔄 首次同步数据到云端...');
                     await this.syncAllData();
                     
                     // 定期同步（每30秒检查一次，实现近实时同步）
@@ -2605,10 +2627,12 @@
                     // 更新UI状态指示器
                     this.updateSyncStatusUI(true);
                     
+                    console.log('🎉🎉🎉 云端同步系统完全就绪！');
                     showNotification('✅ 跨设备云端同步已启用！', 'success');
                     
                 } catch (error) {
-                    console.error('❌ Firebase 初始化失败:', error);
+                    console.error('❌❌❌ Firebase 初始化失败:', error);
+                    console.error('错误堆栈:', error.stack);
                     this.isInitialized = false;
                     
                     // 根据错误类型给出不同的提示
@@ -2619,6 +2643,8 @@
                         errorMessage = '数据库权限错误，请在Firebase控制台设置为"测试模式"';
                     } else if (error.code === 'app/invalid-credential') {
                         errorMessage = 'Firebase配置信息无效';
+                    } else if (error.message && error.message.includes('network')) {
+                        errorMessage = '网络连接错误';
                     } else {
                         errorMessage = error.message || '未知错误';
                     }
@@ -2629,9 +2655,11 @@
                     console.log('1. 访问 Firebase 控制台：');
                     console.log('   https://console.firebase.google.com/');
                     console.log('');
-                    console.log('2. 创建项目并启用 Realtime Database');
+                    console.log('2. 选择项目: my-ecommerce-app-2e824');
                     console.log('');
-                    console.log('3. 在 Database 规则中设置为测试模式：');
+                    console.log('3. 检查 Realtime Database 是否已创建');
+                    console.log('');
+                    console.log('4. 在 Database 规则中设置为测试模式：');
                     console.log('   {');
                     console.log('     "rules": {');
                     console.log('       ".read": true,');
@@ -2639,7 +2667,8 @@
                     console.log('     }');
                     console.log('   }');
                     console.log('');
-                    console.log('4. 复制 Web 应用配置并替换代码中的 firebaseConfig');
+                    console.log('5. 确保数据库 URL 正确：');
+                    console.log('   ' + this.firebaseConfig.databaseURL);
                     console.log('───────────────────────────────────');
                     console.log('');
                     console.log(`⚠️ 错误详情: ${errorMessage}`);
@@ -2647,6 +2676,9 @@
                     
                     // 更新UI状态指示器为错误状态
                     this.updateSyncStatusUI(false);
+                    
+                    // 显示用户友好的错误提示
+                    showNotification('⚠️ Firebase 初始化失败，使用本地模式', 'error');
                 }
             }
             
@@ -2671,16 +2703,54 @@
             // 测试Firebase连接
             async testConnection() {
                 try {
+                    console.log('🔍 测试连接方式 1: 检查 .info/connected...');
                     const testRef = this.db.ref('.info/connected');
                     const snapshot = await testRef.once('value');
-                    if (snapshot.val() === true) {
-                        console.log('✅ Firebase连接测试成功');
+                    const isConnected = snapshot.val();
+                    
+                    console.log('📊 连接状态:', isConnected);
+                    
+                    if (isConnected === true) {
+                        console.log('✅ Firebase 实时连接已建立');
                         return true;
                     } else {
-                        throw new Error('Firebase未连接');
+                        console.warn('⚠️ Firebase 显示未连接，尝试备用测试...');
+                        
+                        // 备用测试：尝试写入测试数据
+                        console.log('🔍 测试连接方式 2: 尝试写入测试数据...');
+                        const testDataRef = this.db.ref('_connection_test');
+                        await testDataRef.set({
+                            timestamp: Date.now(),
+                            status: 'testing'
+                        });
+                        
+                        console.log('✅ 写入测试成功，连接正常');
+                        
+                        // 清理测试数据
+                        await testDataRef.remove();
+                        console.log('🧹 测试数据已清理');
+                        
+                        return true;
                     }
                 } catch (error) {
-                    console.error('Firebase连接测试失败:', error);
+                    console.error('❌ Firebase 连接测试失败:', error);
+                    console.error('错误代码:', error.code);
+                    console.error('错误信息:', error.message);
+                    
+                    if (error.message && error.message.includes('Permission denied')) {
+                        console.error('🚫 权限被拒绝！请检查 Firebase 数据库规则');
+                        console.log('');
+                        console.log('📋 正确的数据库规则应该是：');
+                        console.log('{');
+                        console.log('  "rules": {');
+                        console.log('    ".read": true,');
+                        console.log('    ".write": true');
+                        console.log('  }');
+                        console.log('}');
+                        console.log('');
+                        console.log('🔗 前往设置: https://console.firebase.google.com/project/my-ecommerce-app-2e824/database/rules');
+                    }
+                    
                     throw error;
                 }
             }
@@ -3003,8 +3073,21 @@
         
         // 页面加载时初始化云端同步
         window.addEventListener('load', () => {
+            console.log('🚀 页面已加载，准备初始化云同步...');
+            
+            // 检查 Firebase 是否加载
+            if (typeof firebase === 'undefined') {
+                console.error('❌ Firebase SDK 未加载！请检查网络连接');
+                console.log('💡 应用将以本地模式运行');
+                showNotification('⚠️ Firebase 未加载，仅使用本地存储', 'warning');
+                return;
+            } else {
+                console.log('✅ Firebase SDK 已加载');
+            }
+            
             // 延迟初始化，确保所有依赖都加载完成
             setTimeout(() => {
+                console.log('⏰ 开始初始化云同步管理器...');
                 initCloudSync();
             }, 1000);
         });
@@ -6687,6 +6770,105 @@
             createOfflineIndicator();
         }
 
+        // ===================== Firebase 诊断工具 =====================
+        
+        // 检查 Firebase 状态
+        window.checkFirebaseStatus = function() {
+            console.log('');
+            console.log('═══════════════════════════════════════════════════════');
+            console.log('📊 Firebase 状态诊断报告');
+            console.log('═══════════════════════════════════════════════════════');
+            console.log('');
+            
+            // 1. 检查 SDK 加载
+            console.log('1️⃣ Firebase SDK 加载状态:');
+            if (typeof firebase === 'undefined') {
+                console.log('   ❌ Firebase SDK 未加载');
+                console.log('   💡 可能原因: CDN 被阻止或网络问题');
+            } else {
+                console.log('   ✅ Firebase SDK 已加载');
+                console.log('   📦 版本:', firebase.SDK_VERSION || 'unknown');
+            }
+            console.log('');
+            
+            // 2. 检查 CloudSync 实例
+            console.log('2️⃣ CloudSync 管理器状态:');
+            if (typeof cloudSync === 'undefined' || cloudSync === null) {
+                console.log('   ❌ CloudSync 管理器未创建');
+            } else {
+                console.log('   ✅ CloudSync 管理器已创建');
+                console.log('   📊 初始化状态:', cloudSync.isInitialized ? '✅ 已初始化' : '❌ 未初始化');
+                console.log('   📊 同步进行中:', cloudSync.syncInProgress ? '是' : '否');
+                console.log('   📊 最后同步时间:', cloudSync.lastSyncTime || '从未同步');
+            }
+            console.log('');
+            
+            // 3. 检查数据库连接
+            console.log('3️⃣ 数据库连接状态:');
+            if (cloudSync && cloudSync.isInitialized && cloudSync.db) {
+                console.log('   ✅ 数据库实例已创建');
+                console.log('   🔗 数据库 URL:', cloudSync.firebaseConfig.databaseURL);
+                
+                // 尝试检查连接状态
+                cloudSync.db.ref('.info/connected').once('value')
+                    .then(snapshot => {
+                        if (snapshot.val() === true) {
+                            console.log('   ✅ 实时连接已建立');
+                        } else {
+                            console.log('   ⚠️ 连接状态未知');
+                        }
+                    })
+                    .catch(error => {
+                        console.log('   ❌ 连接检查失败:', error.message);
+                    });
+            } else {
+                console.log('   ❌ 数据库未初始化');
+            }
+            console.log('');
+            
+            // 4. 网络状态
+            console.log('4️⃣ 网络状态:');
+            console.log('   📶 在线状态:', navigator.onLine ? '✅ 在线' : '❌ 离线');
+            console.log('');
+            
+            // 5. 本地存储数据
+            console.log('5️⃣ 本地存储数据:');
+            console.log('   📦 产品数量:', products.length);
+            console.log('   👥 用户数量:', allUsers.length);
+            console.log('   📝 订单数量:', userOrders.length);
+            console.log('   📍 地址数量:', userAddresses.length);
+            console.log('');
+            
+            // 6. 当前用户
+            console.log('6️⃣ 当前用户:');
+            if (currentUser) {
+                console.log('   ✅ 已登录');
+                console.log('   👤 用户名:', currentUser.username);
+                console.log('   📧 邮箱:', currentUser.email);
+            } else {
+                console.log('   ℹ️ 未登录（游客模式）');
+            }
+            console.log('');
+            
+            console.log('═══════════════════════════════════════════════════════');
+            console.log('💡 提示: 如需重新初始化，请刷新页面');
+            console.log('═══════════════════════════════════════════════════════');
+            console.log('');
+            
+            return {
+                sdkLoaded: typeof firebase !== 'undefined',
+                cloudSyncCreated: cloudSync !== null,
+                cloudSyncInitialized: cloudSync?.isInitialized || false,
+                online: navigator.onLine,
+                currentUser: currentUser?.username || 'guest'
+            };
+        };
+        
+        // 在控制台显示提示
+        console.log('');
+        console.log('💡 使用 checkFirebaseStatus() 查看完整的 Firebase 状态');
+        console.log('');
+        
         // ===================== 数据完整性检查 =====================
         
         // 在页面加载时检查数据完整性
