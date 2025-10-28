@@ -4919,12 +4919,12 @@
         }
         
         // 打开控制台并显示提示
-        function openConsoleAndCheckErrors() {
+        async function openConsoleAndCheckErrors() {
             closeSyncDialog();
             
             console.log('');
             console.log('═══════════════════════════════════════════════════════════');
-            console.log('📊 云端同步诊断信息');
+            console.log('📊 云端同步网络诊断');
             console.log('═══════════════════════════════════════════════════════════');
             console.log('');
             
@@ -4977,31 +4977,310 @@
             }
             console.log('');
             
-            // 常见问题排查
-            console.log('5️⃣ 常见问题排查:');
+            // 开始网络连接测试
+            console.log('5️⃣ 网络连接测试:');
+            console.log('   🔄 正在测试 Firebase 服务连接...');
             console.log('');
-            console.log('   ❓ 如果看到 ERR_CONNECTION_CLOSED 错误:');
-            console.log('      → Firebase CDN 可能被阻止');
-            console.log('      → 检查防火墙和代理设置');
-            console.log('      → 尝试使用VPN或更换网络');
-            console.log('');
-            console.log('   ❓ 如果 Firebase SDK 未加载:');
-            console.log('      → 检查网络连接');
-            console.log('      → 禁用广告拦截器');
-            console.log('      → 刷新页面重试');
-            console.log('');
-            console.log('   ❓ 如果初始化失败:');
-            console.log('      → 检查 Firebase 配置是否正确');
-            console.log('      → 访问 https://console.firebase.google.com/');
-            console.log('      → 确认 Realtime Database 已创建');
-            console.log('      → 检查数据库规则是否允许读写');
+            
+            await runNetworkDiagnostics();
+            
             console.log('');
             console.log('═══════════════════════════════════════════════════════════');
             console.log('💡 提示：即使云端同步不可用，应用仍可正常使用本地存储');
             console.log('═══════════════════════════════════════════════════════════');
             console.log('');
             
-            showNotification('诊断信息已输出到控制台，请按 F12 查看', 'info');
+            showNotification('网络诊断已完成，请查看控制台详细信息', 'info');
+        }
+        
+        // 网络诊断函数
+        async function runNetworkDiagnostics() {
+            const endpoints = [
+                {
+                    name: 'Firebase CDN (SDK)',
+                    url: 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js',
+                    type: 'script',
+                    description: 'Firebase 核心 SDK 文件'
+                },
+                {
+                    name: 'Firebase Database CDN',
+                    url: 'https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js',
+                    type: 'script',
+                    description: 'Firebase 数据库 SDK 文件'
+                },
+                {
+                    name: 'Google APIs (通用)',
+                    url: 'https://www.googleapis.com/robot.txt',
+                    type: 'api',
+                    description: 'Google API 服务'
+                },
+                {
+                    name: 'Firebase 主站',
+                    url: 'https://firebase.google.com/robots.txt',
+                    type: 'api',
+                    description: 'Firebase 官方网站'
+                },
+                {
+                    name: '您的 Firebase 数据库',
+                    url: 'https://grok-f3406-default-rtdb.firebaseio.com/.json?shallow=true',
+                    type: 'database',
+                    description: '实时数据库连接'
+                }
+            ];
+            
+            const results = [];
+            
+            // 显示诊断面板
+            showDiagnosticPanel(endpoints);
+            
+            for (let i = 0; i < endpoints.length; i++) {
+                const endpoint = endpoints[i];
+                updateDiagnosticItem(i, 'testing');
+                
+                const result = await testEndpoint(endpoint);
+                results.push(result);
+                
+                updateDiagnosticItem(i, result.success ? 'success' : 'failed', result);
+                
+                const status = result.success ? '✅' : '❌';
+                const timing = result.time ? ` (${result.time}ms)` : '';
+                console.log(`   ${status} ${endpoint.name}${timing}`);
+                
+                if (!result.success) {
+                    console.log(`      错误: ${result.error}`);
+                    if (result.suggestion) {
+                        console.log(`      建议: ${result.suggestion}`);
+                    }
+                }
+            }
+            
+            console.log('');
+            console.log('📈 诊断总结:');
+            const successCount = results.filter(r => r.success).length;
+            const totalCount = results.length;
+            console.log(`   成功: ${successCount}/${totalCount}`);
+            
+            // 更新诊断面板总结
+            updateDiagnosticSummary(successCount, totalCount);
+            
+            if (successCount === 0) {
+                console.log('');
+                console.log('⚠️ 所有连接都失败了！可能的原因：');
+                console.log('   1. 您的网络环境无法访问 Google 服务');
+                console.log('   2. 防火墙或代理阻止了连接');
+                console.log('   3. DNS 解析问题');
+                console.log('');
+                console.log('💡 建议的解决方案：');
+                console.log('   → 使用 VPN 连接');
+                console.log('   → 更换网络环境（如使用手机热点）');
+                console.log('   → 检查防火墙设置');
+                console.log('   → 或者继续使用本地存储模式');
+            } else if (successCount < totalCount) {
+                console.log('');
+                console.log('⚠️ 部分连接失败');
+                console.log('   Firebase 服务可能不稳定或部分功能受限');
+            } else {
+                console.log('');
+                console.log('✅ 所有连接正常！');
+                console.log('   如果仍然无法初始化，请检查 Firebase 配置');
+            }
+        }
+        
+        // 显示诊断面板
+        function showDiagnosticPanel(endpoints) {
+            const existingPanel = document.getElementById('diagnostic-panel');
+            if (existingPanel) {
+                existingPanel.remove();
+            }
+            
+            let panelHTML = `
+                <div id="diagnostic-panel" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+                     background: white; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); 
+                     z-index: 10001; max-width: 700px; width: 90%; max-height: 80vh; overflow: auto;">
+                    <div style="padding: 25px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                            <h2 style="margin: 0; color: #333; font-size: 22px;">
+                                <i class="fas fa-network-wired"></i> 网络连接诊断
+                            </h2>
+                            <button onclick="closeDiagnosticPanel()" style="background: none; border: none; font-size: 24px; 
+                                    cursor: pointer; color: #999; padding: 0; width: 30px; height: 30px;">×</button>
+                        </div>
+                        
+                        <div id="diagnostic-items" style="margin-bottom: 20px;">
+            `;
+            
+            endpoints.forEach((endpoint, index) => {
+                panelHTML += `
+                    <div id="diagnostic-item-${index}" style="padding: 15px; margin-bottom: 10px; background: #f8f9fa; 
+                         border-radius: 8px; border-left: 4px solid #ccc;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div style="flex: 1;">
+                                <div style="font-weight: bold; color: #333; margin-bottom: 5px;">
+                                    <i class="fas fa-circle" id="status-icon-${index}" style="font-size: 8px; color: #ccc;"></i>
+                                    ${endpoint.name}
+                                </div>
+                                <div style="font-size: 12px; color: #666;">${endpoint.description}</div>
+                                <div id="result-${index}" style="font-size: 12px; color: #999; margin-top: 5px;">
+                                    等待测试...
+                                </div>
+                            </div>
+                            <div id="spinner-${index}" style="display: none;">
+                                <i class="fas fa-spinner fa-spin" style="color: #2196F3; font-size: 20px;"></i>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            panelHTML += `
+                        </div>
+                        
+                        <div id="diagnostic-summary" style="padding: 15px; background: #f0f0f0; border-radius: 8px; margin-bottom: 15px;">
+                            <div style="font-weight: bold; margin-bottom: 5px;">📊 诊断进度</div>
+                            <div style="font-size: 14px; color: #666;">正在准备测试...</div>
+                        </div>
+                        
+                        <div style="text-align: right;">
+                            <button onclick="closeDiagnosticPanel()" style="padding: 10px 20px; background: #6c757d; 
+                                    color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 14px;">
+                                关闭
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.insertAdjacentHTML('beforeend', panelHTML);
+        }
+        
+        // 更新诊断项状态
+        function updateDiagnosticItem(index, status, result = null) {
+            const item = document.getElementById(`diagnostic-item-${index}`);
+            const statusIcon = document.getElementById(`status-icon-${index}`);
+            const resultDiv = document.getElementById(`result-${index}`);
+            const spinner = document.getElementById(`spinner-${index}`);
+            
+            if (!item) return;
+            
+            if (status === 'testing') {
+                item.style.borderLeftColor = '#2196F3';
+                statusIcon.style.color = '#2196F3';
+                statusIcon.className = 'fas fa-spinner fa-spin';
+                resultDiv.textContent = '正在测试...';
+                resultDiv.style.color = '#2196F3';
+                spinner.style.display = 'block';
+            } else if (status === 'success') {
+                item.style.borderLeftColor = '#28a745';
+                statusIcon.style.color = '#28a745';
+                statusIcon.className = 'fas fa-check-circle';
+                resultDiv.innerHTML = `<i class="fas fa-check"></i> 连接成功 (${result.time}ms)`;
+                resultDiv.style.color = '#28a745';
+                spinner.style.display = 'none';
+            } else if (status === 'failed') {
+                item.style.borderLeftColor = '#dc3545';
+                statusIcon.style.color = '#dc3545';
+                statusIcon.className = 'fas fa-times-circle';
+                resultDiv.innerHTML = `<i class="fas fa-times"></i> ${result.error}`;
+                if (result.suggestion) {
+                    resultDiv.innerHTML += `<br><small style="color: #ff9800;">💡 ${result.suggestion}</small>`;
+                }
+                resultDiv.style.color = '#dc3545';
+                spinner.style.display = 'none';
+            }
+        }
+        
+        // 更新诊断总结
+        function updateDiagnosticSummary(successCount, totalCount) {
+            const summaryDiv = document.getElementById('diagnostic-summary');
+            if (!summaryDiv) return;
+            
+            const percentage = Math.round((successCount / totalCount) * 100);
+            let statusColor = '#28a745';
+            let statusIcon = 'fa-check-circle';
+            let statusText = '所有连接正常！';
+            let recommendation = 'Firebase 云端同步已就绪，可以正常使用。';
+            
+            if (successCount === 0) {
+                statusColor = '#dc3545';
+                statusIcon = 'fa-times-circle';
+                statusText = '所有连接失败';
+                recommendation = '您的网络无法访问 Firebase 服务。建议使用 VPN 或更换网络环境，或继续使用本地存储模式。';
+            } else if (successCount < totalCount) {
+                statusColor = '#ff9800';
+                statusIcon = 'fa-exclamation-triangle';
+                statusText = '部分连接失败';
+                recommendation = 'Firebase 服务可能不稳定。某些功能可能受限，建议检查网络连接。';
+            }
+            
+            summaryDiv.innerHTML = `
+                <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                    <i class="fas ${statusIcon}" style="color: ${statusColor}; font-size: 24px; margin-right: 10px;"></i>
+                    <div style="flex: 1;">
+                        <div style="font-weight: bold; font-size: 16px; color: ${statusColor};">${statusText}</div>
+                        <div style="font-size: 14px; color: #666; margin-top: 5px;">成功: ${successCount}/${totalCount} (${percentage}%)</div>
+                    </div>
+                </div>
+                <div style="font-size: 13px; color: #555; padding: 10px; background: white; border-radius: 5px;">
+                    ${recommendation}
+                </div>
+            `;
+        }
+        
+        // 关闭诊断面板
+        function closeDiagnosticPanel() {
+            const panel = document.getElementById('diagnostic-panel');
+            if (panel) {
+                panel.remove();
+            }
+        }
+        
+        // 测试单个端点
+        async function testEndpoint(endpoint) {
+            const startTime = Date.now();
+            
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 10000); // 10秒超时
+                
+                const response = await fetch(endpoint.url, {
+                    method: 'HEAD',
+                    mode: 'no-cors', // 避免 CORS 问题
+                    cache: 'no-cache',
+                    signal: controller.signal
+                });
+                
+                clearTimeout(timeoutId);
+                const endTime = Date.now();
+                
+                return {
+                    success: true,
+                    time: endTime - startTime,
+                    endpoint: endpoint.name
+                };
+            } catch (error) {
+                const endTime = Date.now();
+                let errorMsg = error.message;
+                let suggestion = '';
+                
+                if (error.name === 'AbortError') {
+                    errorMsg = '连接超时（>10秒）';
+                    suggestion = '网络速度过慢或服务器无响应';
+                } else if (errorMsg.includes('Failed to fetch')) {
+                    errorMsg = '无法连接到服务器';
+                    suggestion = '可能被防火墙阻止或 DNS 解析失败';
+                } else if (errorMsg.includes('NetworkError')) {
+                    errorMsg = '网络错误';
+                    suggestion = '检查网络连接或代理设置';
+                }
+                
+                return {
+                    success: false,
+                    time: endTime - startTime,
+                    endpoint: endpoint.name,
+                    error: errorMsg,
+                    suggestion: suggestion
+                };
+            }
         }
 
         // 更新用户界面状态
