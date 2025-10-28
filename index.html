@@ -4730,7 +4730,7 @@
             
             let dialogHTML = `
                 <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 10000; display: flex; align-items: center; justify-content: center;" id="sync-dialog">
-                    <div style="background: white; border-radius: 12px; padding: 30px; max-width: 500px; width: 90%; box-shadow: 0 10px 40px rgba(0,0,0,0.3);">
+                    <div style="background: white; border-radius: 12px; padding: 30px; max-width: 600px; width: 90%; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 40px rgba(0,0,0,0.3);">
                         <h3 style="margin: 0 0 20px 0; color: #333; font-size: 22px;">
                             <i class="fas fa-cloud"></i> 云端同步状态
                         </h3>
@@ -4820,7 +4820,14 @@
             }
             
             dialogHTML += `
-                        <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                        <div style="display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap;">
+            `;
+            
+            // 始终提供打开控制台按钮
+            dialogHTML += `
+                            <button onclick="openConsoleAndCheckErrors()" style="padding: 10px 20px; background: #17a2b8; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 14px;">
+                                <i class="fas fa-terminal"></i> 查看控制台
+                            </button>
             `;
             
             // 如果SDK已加载但未初始化，提供重试按钮
@@ -4909,6 +4916,92 @@
                 console.error('同步失败:', error);
                 showNotification('❌ 同步失败，请稍后重试', 'error');
             }
+        }
+        
+        // 打开控制台并显示提示
+        function openConsoleAndCheckErrors() {
+            closeSyncDialog();
+            
+            console.log('');
+            console.log('═══════════════════════════════════════════════════════════');
+            console.log('📊 云端同步诊断信息');
+            console.log('═══════════════════════════════════════════════════════════');
+            console.log('');
+            
+            // Firebase SDK 状态
+            console.log('1️⃣ Firebase SDK 状态:');
+            if (typeof firebase !== 'undefined') {
+                console.log('   ✅ Firebase SDK 已加载');
+                console.log('   📦 版本:', firebase.SDK_VERSION || '未知');
+            } else {
+                console.log('   ❌ Firebase SDK 未加载');
+                console.log('   💡 可能原因：CDN 无法访问');
+            }
+            console.log('');
+            
+            // CloudSync 状态
+            console.log('2️⃣ CloudSync 状态:');
+            if (cloudSync) {
+                console.log('   ✅ CloudSync 实例已创建');
+                console.log('   初始化状态:', cloudSync.isInitialized ? '✅ 已初始化' : '❌ 未初始化');
+                if (cloudSync.isInitialized) {
+                    console.log('   数据库 URL:', cloudSync.firebaseConfig.databaseURL);
+                }
+            } else {
+                console.log('   ❌ CloudSync 实例未创建');
+            }
+            console.log('');
+            
+            // 网络状态
+            console.log('3️⃣ 网络状态:');
+            console.log('   在线状态:', navigator.onLine ? '✅ 在线' : '❌ 离线');
+            console.log('');
+            
+            // 本地存储状态
+            console.log('4️⃣ 本地存储状态:');
+            try {
+                const testKey = '__storage_test__';
+                localStorage.setItem(testKey, 'test');
+                localStorage.removeItem(testKey);
+                console.log('   ✅ LocalStorage 可用');
+                
+                const products = JSON.parse(localStorage.getItem('products') || '[]');
+                const users = JSON.parse(localStorage.getItem('allUsers') || '[]');
+                const orders = JSON.parse(localStorage.getItem('userOrders') || '[]');
+                
+                console.log('   📦 产品数量:', products.length);
+                console.log('   👥 用户数量:', users.length);
+                console.log('   📋 订单数量:', orders.length);
+            } catch (error) {
+                console.log('   ❌ LocalStorage 不可用:', error.message);
+            }
+            console.log('');
+            
+            // 常见问题排查
+            console.log('5️⃣ 常见问题排查:');
+            console.log('');
+            console.log('   ❓ 如果看到 ERR_CONNECTION_CLOSED 错误:');
+            console.log('      → Firebase CDN 可能被阻止');
+            console.log('      → 检查防火墙和代理设置');
+            console.log('      → 尝试使用VPN或更换网络');
+            console.log('');
+            console.log('   ❓ 如果 Firebase SDK 未加载:');
+            console.log('      → 检查网络连接');
+            console.log('      → 禁用广告拦截器');
+            console.log('      → 刷新页面重试');
+            console.log('');
+            console.log('   ❓ 如果初始化失败:');
+            console.log('      → 检查 Firebase 配置是否正确');
+            console.log('      → 访问 https://console.firebase.google.com/');
+            console.log('      → 确认 Realtime Database 已创建');
+            console.log('      → 检查数据库规则是否允许读写');
+            console.log('');
+            console.log('═══════════════════════════════════════════════════════════');
+            console.log('💡 提示：即使云端同步不可用，应用仍可正常使用本地存储');
+            console.log('═══════════════════════════════════════════════════════════');
+            console.log('');
+            
+            showNotification('诊断信息已输出到控制台，请按 F12 查看', 'info');
         }
 
         // 更新用户界面状态
