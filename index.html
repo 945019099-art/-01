@@ -1578,6 +1578,12 @@
             </div>
             
             <div class="user-actions">
+                <!-- 云端同步状态指示器 -->
+                <div id="sync-status" style="display:flex; align-items:center; margin-right:15px; font-size:13px; color:#666; cursor:pointer;" 
+                     title="点击查看同步状态详情">
+                    <i class="fas fa-circle" id="sync-icon" style="font-size:8px; margin-right:5px; color:#ccc;"></i>
+                    <span id="sync-text">本地模式</span>
+                </div>
                 <a href="#" id="login-link"><i class="fas fa-user"></i> 登录</a>
                 <a href="#" id="register-link"><i class="fas fa-user-plus"></i> 注册</a>
                 <a href="#" id="logout-link" style="display:none"><i class="fas fa-sign-out-alt"></i> 退出</a>
@@ -2489,16 +2495,53 @@
                 this.syncInterval = null;
                 this.listeners = [];
                 
-                // Firebase 配置 (使用演示配置，您可以替换为自己的)
+                // ========== Firebase 配置 ==========
+                // 
+                // ⚠️ 重要提示：跨设备同步功能需要Firebase配置
+                // 
+                // 🔧 快速设置步骤（约3分钟）：
+                // 
+                // 1️⃣ 访问 Firebase 控制台
+                //    https://console.firebase.google.com/
+                // 
+                // 2️⃣ 创建新项目
+                //    - 点击"添加项目"
+                //    - 输入项目名称（如：my-ecommerce）
+                //    - 禁用Google Analytics（可选）
+                //    - 点击"创建项目"
+                // 
+                // 3️⃣ 注册Web应用
+                //    - 在项目概览页，点击 Web 图标 (</>)
+                //    - 输入应用昵称
+                //    - 点击"注册应用"
+                //    - 复制显示的 firebaseConfig 对象
+                // 
+                // 4️⃣ 启用 Realtime Database
+                //    - 左侧菜单 -> 构建 -> Realtime Database
+                //    - 点击"创建数据库"
+                //    - 选择位置（建议：asia-southeast1）
+                //    - ⚠️ 重要：选择"测试模式"（允许读写）
+                //    - 点击"启用"
+                // 
+                // 5️⃣ 替换配置
+                //    - 将第3步复制的 firebaseConfig 替换下面的内容
+                // 
+                // 📝 示例配置（请替换为您自己的）：
                 this.firebaseConfig = {
-                    apiKey: "AIzaSyDemoKey123456789",
-                    authDomain: "ecommerce-demo.firebaseapp.com",
-                    databaseURL: "https://ecommerce-demo-default-rtdb.firebaseio.com",
-                    projectId: "ecommerce-demo",
-                    storageBucket: "ecommerce-demo.appspot.com",
-                    messagingSenderId: "123456789",
-                    appId: "1:123456789:web:abcdef123456"
+                  apiKey: "AIzaSyAKHHBPa0LmDjAdFj6vngjH0DuBbTzr7Cg",
+                  authDomain: "my-ecommerce-app-2e824.firebaseapp.com",
+                  databaseURL: "https://my-ecommerce-app-2e824-default-rtdb.asia-southeast1.firebasedatabase.app",  // ⚠️ 移除了末尾的斜杠
+                  projectId: "my-ecommerce-app-2e824",
+                  storageBucket: "my-ecommerce-app-2e824.firebasestorage.app",
+                  messagingSenderId: "334875308809",
+                  appId: "1:334875308809:web:b48e4dac8e6ca2470219d8",
+                  measurementId: "G-6454KB4569"
                 };
+                
+                // 💡 提示：
+                // - 如果不配置Firebase，应用仍可正常使用，只是数据仅保存在本地
+                // - 配置后，数据将自动在所有设备间实时同步
+                // - 测试模式的数据库规则会在30天后过期，届时需要更新规则
                 
                 this.init();
             }
@@ -2506,10 +2549,28 @@
             // 初始化 Firebase
             async init() {
                 try {
+                    // 检查Firebase SDK是否加载
                     if (typeof firebase === 'undefined') {
-                        console.warn('Firebase SDK 未加载，云端同步功能不可用');
+                        console.warn('⚠️ Firebase SDK 未加载，云端同步功能不可用');
+                        console.log('💡 应用将以本地模式运行，数据仅保存在当前设备');
                         return;
                     }
+                    
+                    // 检测是否使用了默认配置（未设置）
+                    const isDefaultConfig = this.firebaseConfig.apiKey === 'YOUR_API_KEY_HERE' || 
+                                          this.firebaseConfig.projectId === 'your-project';
+                    
+                    if (isDefaultConfig) {
+                        console.warn('⚠️ 未配置 Firebase，云端同步功能不可用');
+                        console.log('📌 提示：');
+                        console.log('   1. 访问 https://console.firebase.google.com/');
+                        console.log('   2. 创建新项目并启用 Realtime Database');
+                        console.log('   3. 复制配置并替换代码中的 firebaseConfig');
+                        console.log('💡 应用将以本地模式运行');
+                        return;
+                    }
+                    
+                    console.log('🔧 正在初始化 Firebase...');
                     
                     // 初始化 Firebase
                     if (!firebase.apps.length) {
@@ -2517,11 +2578,16 @@
                     }
                     
                     this.db = firebase.database();
-                    this.isInitialized = true;
                     
-                    console.log('✅ Firebase 云端同步已初始化');
+                    // 测试数据库连接
+                    console.log('🔄 正在测试数据库连接...');
+                    await this.testConnection();
+                    
+                    this.isInitialized = true;
+                    console.log('✅ Firebase 云端同步已启用');
                     
                     // 首先从云端加载数据
+                    console.log('📥 正在从云端加载数据...');
                     await this.loadProducts();
                     await this.loadAllUsers();
                     
@@ -2531,16 +2597,91 @@
                     // 首次同步本地数据到云端
                     await this.syncAllData();
                     
-                    // 定期同步（每5分钟）
+                    // 定期同步（每30秒检查一次，实现近实时同步）
                     this.syncInterval = setInterval(() => {
                         this.syncAllData();
-                    }, 5 * 60 * 1000);
+                    }, 30 * 1000);
                     
-                    showNotification('云端同步已启用', 'success');
+                    // 更新UI状态指示器
+                    this.updateSyncStatusUI(true);
+                    
+                    showNotification('✅ 跨设备云端同步已启用！', 'success');
                     
                 } catch (error) {
-                    console.error('Firebase 初始化失败:', error);
+                    console.error('❌ Firebase 初始化失败:', error);
                     this.isInitialized = false;
+                    
+                    // 根据错误类型给出不同的提示
+                    let errorMessage = '';
+                    if (error.code === 'auth/invalid-api-key') {
+                        errorMessage = 'API Key 无效';
+                    } else if (error.message && error.message.includes('Permission denied')) {
+                        errorMessage = '数据库权限错误，请在Firebase控制台设置为"测试模式"';
+                    } else if (error.code === 'app/invalid-credential') {
+                        errorMessage = 'Firebase配置信息无效';
+                    } else {
+                        errorMessage = error.message || '未知错误';
+                    }
+                    
+                    console.log('');
+                    console.log('💡 解决方法：');
+                    console.log('───────────────────────────────────');
+                    console.log('1. 访问 Firebase 控制台：');
+                    console.log('   https://console.firebase.google.com/');
+                    console.log('');
+                    console.log('2. 创建项目并启用 Realtime Database');
+                    console.log('');
+                    console.log('3. 在 Database 规则中设置为测试模式：');
+                    console.log('   {');
+                    console.log('     "rules": {');
+                    console.log('       ".read": true,');
+                    console.log('       ".write": true');
+                    console.log('     }');
+                    console.log('   }');
+                    console.log('');
+                    console.log('4. 复制 Web 应用配置并替换代码中的 firebaseConfig');
+                    console.log('───────────────────────────────────');
+                    console.log('');
+                    console.log(`⚠️ 错误详情: ${errorMessage}`);
+                    console.log('💡 应用将以本地模式继续运行');
+                    
+                    // 更新UI状态指示器为错误状态
+                    this.updateSyncStatusUI(false);
+                }
+            }
+            
+            // 更新同步状态UI指示器
+            updateSyncStatusUI(isEnabled) {
+                const syncIcon = document.getElementById('sync-icon');
+                const syncText = document.getElementById('sync-text');
+                
+                if (syncIcon && syncText) {
+                    if (isEnabled) {
+                        syncIcon.style.color = '#28a745'; // 绿色
+                        syncText.textContent = '云端已同步';
+                        syncText.style.color = '#28a745';
+                    } else {
+                        syncIcon.style.color = '#6c757d'; // 灰色
+                        syncText.textContent = '本地模式';
+                        syncText.style.color = '#6c757d';
+                    }
+                }
+            }
+            
+            // 测试Firebase连接
+            async testConnection() {
+                try {
+                    const testRef = this.db.ref('.info/connected');
+                    const snapshot = await testRef.once('value');
+                    if (snapshot.val() === true) {
+                        console.log('✅ Firebase连接测试成功');
+                        return true;
+                    } else {
+                        throw new Error('Firebase未连接');
+                    }
+                } catch (error) {
+                    console.error('Firebase连接测试失败:', error);
+                    throw error;
                 }
             }
             
@@ -3444,8 +3585,9 @@
         // 通过URL参数同步数据（简单方案）
         function syncViaURL(dataType, data) {
             try {
-                // 将数据编码到URL中（仅用于演示，实际项目中应使用服务器）
-                const encodedData = btoa(JSON.stringify({ type: dataType, data: data }));
+                // 使用 encodeURIComponent 替代 btoa，支持中文字符
+                const jsonData = JSON.stringify({ type: dataType, data: data });
+                const encodedData = encodeURIComponent(jsonData);
                 const syncURL = `${window.location.origin}${window.location.pathname}?sync=${encodedData}`;
                 
                 // 在控制台显示同步链接，用户可以复制到其他设备
@@ -3467,7 +3609,7 @@
                 const syncData = urlParams.get('sync');
                 
                 if (syncData) {
-                    const decoded = JSON.parse(atob(syncData));
+                    const decoded = JSON.parse(decodeURIComponent(syncData));
                     console.log('📥 从URL接收到同步数据:', decoded);
                     
                     // 根据数据类型更新本地数据
@@ -6384,6 +6526,44 @@
         
         // 手动同步按钮点击事件
         document.addEventListener('DOMContentLoaded', function() {
+            // 同步状态指示器点击事件
+            const syncStatus = document.getElementById('sync-status');
+            if (syncStatus) {
+                syncStatus.addEventListener('click', function() {
+                    if (cloudSync && cloudSync.isInitialized) {
+                        const lastSyncInfo = cloudSync.lastSyncTime 
+                            ? `上次同步：${getTimeAgo(cloudSync.lastSyncTime)}` 
+                            : '等待首次同步';
+                        
+                        showNotification(
+                            `✅ 云端同步已启用\n\n` +
+                            `${lastSyncInfo}\n` +
+                            `数据正在所有设备间实时同步\n\n` +
+                            `同步内容：\n` +
+                            `• 产品数据\n` +
+                            `• 用户账户\n` +
+                            `• 订单记录\n` +
+                            `• 收货地址`, 
+                            'info'
+                        );
+                    } else {
+                        showNotification(
+                            `💡 云端同步未启用\n\n` +
+                            `当前使用本地模式，数据仅保存在当前设备\n\n` +
+                            `如需启用跨设备同步，请：\n` +
+                            `1. 查看控制台的配置说明\n` +
+                            `2. 阅读 FIREBASE_SETUP.md 文件\n` +
+                            `3. 配置仅需约5分钟\n\n` +
+                            `启用后可实现：\n` +
+                            `✅ 多设备数据同步\n` +
+                            `✅ 团队协作\n` +
+                            `✅ 数据云端备份`, 
+                            'info'
+                        );
+                    }
+                });
+            }
+            
             const manualSyncBtn = document.getElementById('manual-sync-btn');
             if (manualSyncBtn) {
                 manualSyncBtn.addEventListener('click', async function() {
