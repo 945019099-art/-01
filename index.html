@@ -1838,6 +1838,9 @@
             <div class="admin-actions">
                 <button class="btn btn-primary" id="add-product-btn">添加产品</button>
                 <button class="btn btn-secondary" id="excel-upload-btn">Excel批量上传</button>
+                <button class="btn btn-success" id="load-demo-btn" onclick="loadDemoProducts()" style="background: #28a745;">
+                    <i class="fas fa-database"></i> 加载演示数据
+                </button>
                 <div style="flex: 1;"></div>
                 <label style="margin-right: 15px; display: flex; align-items: center; gap: 5px;">
                     <input type="checkbox" id="select-all-products" style="width: 18px; height: 18px; cursor: pointer;">
@@ -3265,12 +3268,19 @@
             }, 3000);
         }
 
-        // 初始化数据
+        // 初始化数据（已禁用自动加载演示产品）
         function initData() {
-            if (products.length === 0) {
-                products = [
+            // 不再自动初始化演示产品
+            // 如需添加演示产品，请使用管理员后台的"导入演示数据"功能
+            updateUserInterface();
+        }
+        
+        // 加载演示产品数据（仅在管理员手动触发时使用）
+        function loadDemoProducts() {
+            if (confirm('确定要加载演示产品数据吗？这将添加6个演示产品。')) {
+                const demoProducts = [
                     {
-                        id: 1,
+                        id: Date.now() + 1,
                         name: '无线蓝牙耳机',
                         price: 299,
                         image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
@@ -3279,7 +3289,7 @@
                         stock: 50
                     },
                     {
-                        id: 2,
+                        id: Date.now() + 2,
                         name: '智能手表',
                         price: 899,
                         image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
@@ -3288,7 +3298,7 @@
                         stock: 30
                     },
                     {
-                        id: 3,
+                        id: Date.now() + 3,
                         name: '便携式音箱',
                         price: 459,
                         image: 'https://images.unsplash.com/photo-1546868871-7041f2a55e12?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
@@ -3297,7 +3307,7 @@
                         stock: 25
                     },
                     {
-                        id: 4,
+                        id: Date.now() + 4,
                         name: '运动跑鞋',
                         price: 599,
                         image: 'https://images.unsplash.com/photo-1491553895911-0055eca6402d?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
@@ -3306,7 +3316,7 @@
                         stock: 40
                     },
                     {
-                        id: 5,
+                        id: Date.now() + 5,
                         name: '男士香水',
                         price: 429,
                         image: 'https://images.unsplash.com/photo-1585386959984-a4155224a1ad?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
@@ -3315,7 +3325,7 @@
                         stock: 60
                     },
                     {
-                        id: 6,
+                        id: Date.now() + 6,
                         name: '智能台灯',
                         price: 199,
                         image: 'https://images.unsplash.com/photo-1507473885765-e6ed057f782c?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
@@ -3324,9 +3334,12 @@
                         stock: 35
                     }
                 ];
+                
+                products.push(...demoProducts);
                 saveProducts();
+                renderAdminProducts();
+                showNotification('演示产品已加载', 'success');
             }
-            updateUserInterface();
         }
 		
 
@@ -4016,7 +4029,71 @@
             
             // 添加产品按钮
             document.getElementById('add-product-btn').addEventListener('click', () => {
-                alert('添加产品功能开发中...');
+                console.log('🔷 点击添加产品按钮，当前产品数量:', products.length);
+                
+                const name = prompt('产品名称：');
+                if (!name || name.trim() === '') {
+                    alert('产品名称不能为空');
+                    return;
+                }
+                
+                const priceInput = prompt('产品价格：');
+                const price = parseFloat(priceInput);
+                if (!priceInput || isNaN(price) || price <= 0) {
+                    alert('请输入有效的产品价格（必须大于0）');
+                    return;
+                }
+                
+                const stockInput = prompt('产品库存：') || '0';
+                const stock = parseInt(stockInput);
+                
+                const category = prompt('产品分类（electronics/home/clothing/beauty/sports/other）：') || 'other';
+                
+                const image = prompt('产品图片URL：');
+                if (!image || image.trim() === '') {
+                    alert('产品图片URL不能为空');
+                    return;
+                }
+                
+                const description = prompt('产品描述：') || '';
+                
+                // 生成唯一ID - 确保即使数组为空也能正常工作
+                let newId = 1;
+                if (products.length > 0) {
+                    const existingIds = products.map(p => parseInt(p.id) || 0);
+                    const maxId = Math.max(...existingIds);
+                    newId = maxId + 1;
+                }
+                
+                const product = {
+                    id: newId,
+                    name: name.trim(),
+                    price: price,
+                    stock: isNaN(stock) || stock < 0 ? 0 : stock,
+                    category: category,
+                    image: image.trim(),
+                    description: description
+                };
+                
+                console.log('🔷 准备添加产品:', product);
+                
+                // 添加产品
+                products.push(product);
+                console.log('🔷 产品已添加到数组，当前产品数量:', products.length);
+                
+                const saveResult = saveProducts();
+                console.log('🔷 保存结果:', saveResult);
+                
+                if (saveResult) {
+                    // 确保渲染两个地方的产品列表
+                    renderAdminProducts();
+                    renderProducts(products);
+                    showNotification('产品添加成功！ID: ' + product.id, 'success');
+                    console.log('✅ 产品添加成功，已渲染');
+                } else {
+                    alert('产品添加失败，请重试');
+                    console.error('❌ 产品保存失败');
+                }
             });
 
             // 批量操作按钮
@@ -6023,15 +6100,39 @@
         // 更新批量操作按钮显示状态
         function updateBatchButtons() {
             const selectedCheckboxes = document.querySelectorAll('.product-checkbox:checked');
+            const allCheckboxes = document.querySelectorAll('.product-checkbox');
             const batchEditBtn = document.getElementById('batch-edit-btn');
             const batchDeleteBtn = document.getElementById('batch-delete-btn');
+            const selectAllCheckbox = document.getElementById('select-all-products');
             
+            // 更新批量操作按钮显示
             if (selectedCheckboxes.length > 0) {
                 batchEditBtn.style.display = 'inline-block';
                 batchDeleteBtn.style.display = 'inline-block';
+                batchEditBtn.textContent = `批量编辑 (${selectedCheckboxes.length})`;
+                batchDeleteBtn.textContent = `批量删除 (${selectedCheckboxes.length})`;
             } else {
                 batchEditBtn.style.display = 'none';
                 batchDeleteBtn.style.display = 'none';
+                batchEditBtn.textContent = '批量编辑';
+                batchDeleteBtn.textContent = '批量删除';
+            }
+            
+            // 更新全选框状态
+            if (allCheckboxes.length > 0) {
+                if (selectedCheckboxes.length === allCheckboxes.length) {
+                    // 全部选中
+                    selectAllCheckbox.checked = true;
+                    selectAllCheckbox.indeterminate = false;
+                } else if (selectedCheckboxes.length > 0) {
+                    // 部分选中
+                    selectAllCheckbox.checked = false;
+                    selectAllCheckbox.indeterminate = true;
+                } else {
+                    // 全部未选中
+                    selectAllCheckbox.checked = false;
+                    selectAllCheckbox.indeterminate = false;
+                }
             }
         }
 
@@ -6403,7 +6504,8 @@
             if (!Array.isArray(products)) {
                 console.warn('⚠️ 产品数据异常，正在修复...');
                 products = [];
-                initData();
+                // 不自动初始化演示数据，保持空数组
+                localStorage.setItem('products', JSON.stringify(products));
             }
             
             // 检查用户数据
