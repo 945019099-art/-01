@@ -2543,7 +2543,8 @@
                 // - 配置后，数据将自动在所有设备间实时同步
                 // - 测试模式的数据库规则会在30天后过期，届时需要更新规则
                 
-                this.init();
+                // 不在构造函数中调用 init()，而是返回后立即调用
+                // this.init(); // 移除这一行
             }
             
             // 初始化 Firebase
@@ -3062,12 +3063,19 @@
         // 创建云端同步管理器实例
         let cloudSync = null;
         
-        // 初始化云端同步
-        function initCloudSync() {
+        // 初始化云端同步（异步）
+        async function initCloudSync() {
             try {
+                console.log('🔄 创建 CloudSyncManager 实例...');
                 cloudSync = new CloudSyncManager();
+                
+                console.log('🔄 调用 init() 方法...');
+                await cloudSync.init();
+                
+                console.log('✅ CloudSync 完全初始化成功');
             } catch (error) {
-                console.error('云端同步初始化失败:', error);
+                console.error('❌ 云端同步初始化失败:', error);
+                console.error('错误堆栈:', error.stack);
             }
         }
         
@@ -3086,9 +3094,9 @@
             }
             
             // 延迟初始化，确保所有依赖都加载完成
-            setTimeout(() => {
+            setTimeout(async () => {
                 console.log('⏰ 开始初始化云同步管理器...');
-                initCloudSync();
+                await initCloudSync();
             }, 1000);
         });
 
