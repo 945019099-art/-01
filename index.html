@@ -3486,14 +3486,18 @@
 
         function saveProducts() {
             try {
+                console.log('💾 开始保存产品数据...');
                 localStorage.setItem('products', JSON.stringify(products));
                 console.log('💾 保存成功，产品数量:', products.length);
+                console.log('💾 CLOUD_STORAGE.enabled =', CLOUD_STORAGE.enabled);
                 if (CLOUD_STORAGE.enabled) {
+                    console.log('🌐 准备调用 syncToCloud...');
                     syncToCloud('products', products);
                 }
                 return true;
             } catch (error) {
                 console.error('💾 保存失败:', error);
+                console.error('错误堆栈:', error.stack);
                 return false;
             }
         }
@@ -3526,7 +3530,13 @@
 
         // 简化的数据同步功能 - 使用 localStorage 跨设备同步
         function syncToCloud(dataType, data) {
-            if (!CROSS_DEVICE_SYNC.enabled) return;
+            console.log(`🔄 开始同步 ${dataType} 数据...`);
+            console.log(`📊 CROSS_DEVICE_SYNC.enabled = ${CROSS_DEVICE_SYNC.enabled}`);
+            
+            if (!CROSS_DEVICE_SYNC.enabled) {
+                console.warn(`⚠️ ${dataType} 同步已禁用`);
+                return;
+            }
             
             try {
                 // 创建同步数据包
@@ -3536,6 +3546,8 @@
                     timestamp: Date.now(),
                     deviceId: getDeviceId()
                 };
+                
+                console.log(`📦 同步数据包:`, syncData);
                 
                 // 保存到 localStorage
                 const existingSync = JSON.parse(localStorage.getItem(CROSS_DEVICE_SYNC.syncKey) || '{}');
@@ -3550,6 +3562,7 @@
                 
             } catch (error) {
                 console.error(`❌ ${dataType} 同步错误:`, error);
+                console.error('错误堆栈:', error.stack);
             }
         }
 
