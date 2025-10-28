@@ -7,9 +7,114 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <!-- Firebase SDK - 多重加载策略 -->
+    <script>
+    // Firebase SDK 加载管理器
+    (function() {
+        let loadAttempt = 0;
+        const maxAttempts = 4;
+        
+        // 定义多个 CDN 源
+        const cdnSources = [
+            {
+                name: 'Google Official CDN',
+                app: 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js',
+                database: 'https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js'
+            },
+            {
+                name: 'jsDelivr CDN',
+                app: 'https://cdn.jsdelivr.net/npm/firebase@9.23.0/firebase-app-compat.js',
+                database: 'https://cdn.jsdelivr.net/npm/firebase@9.23.0/firebase-database-compat.js'
+            },
+            {
+                name: 'unpkg CDN',
+                app: 'https://unpkg.com/firebase@9.23.0/firebase-app-compat.js',
+                database: 'https://unpkg.com/firebase@9.23.0/firebase-database-compat.js'
+            },
+            {
+                name: 'CloudFlare CDN',
+                app: 'https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-app-compat.min.js',
+                database: 'https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-database-compat.min.js'
+            }
+        ];
+        
+        function loadFirebaseSDK(sourceIndex = 0) {
+            if (sourceIndex >= cdnSources.length) {
+                console.error('❌ 所有 Firebase CDN 源均加载失败');
+                console.log('💡 应用将以本地模式运行');
+                window.firebaseLoadFailed = true;
+                return;
+            }
+            
+            const source = cdnSources[sourceIndex];
+            console.log(`🔄 [${sourceIndex + 1}/${cdnSources.length}] 尝试从 ${source.name} 加载 Firebase SDK...`);
+            
+            // 创建 app script
+            const appScript = document.createElement('script');
+            appScript.src = source.app;
+            appScript.crossOrigin = 'anonymous';
+            
+            // 创建 database script
+            const dbScript = document.createElement('script');
+            dbScript.src = source.database;
+            dbScript.crossOrigin = 'anonymous';
+            
+            let appLoaded = false;
+            let dbLoaded = false;
+            
+            // 超时处理
+            const timeout = setTimeout(() => {
+                if (!appLoaded || !dbLoaded) {
+                    console.warn(`⏱️ ${source.name} 加载超时，尝试下一个源...`);
+                    loadFirebaseSDK(sourceIndex + 1);
+                }
+            }, 10000); // 10秒超时
+            
+            appScript.onload = function() {
+                appLoaded = true;
+                console.log(`✅ Firebase App 已从 ${source.name} 加载`);
+                
+                // 加载 database script
+                dbScript.onload = function() {
+                    dbLoaded = true;
+                    console.log(`✅ Firebase Database 已从 ${source.name} 加载`);
+                    clearTimeout(timeout);
+                    
+                    // 验证 Firebase 对象
+                    setTimeout(() => {
+                        if (typeof firebase !== 'undefined') {
+                            console.log('✅✅ Firebase SDK 完全加载成功！');
+                            console.log('📦 Firebase 版本:', firebase.SDK_VERSION || 'unknown');
+                            window.firebaseLoadSuccess = true;
+                        } else {
+                            console.error('❌ Firebase 对象未定义，尝试下一个源...');
+                            loadFirebaseSDK(sourceIndex + 1);
+                        }
+                    }, 500);
+                };
+                
+                dbScript.onerror = function() {
+                    console.error(`❌ Firebase Database 从 ${source.name} 加载失败`);
+                    clearTimeout(timeout);
+                    loadFirebaseSDK(sourceIndex + 1);
+                };
+                
+                document.head.appendChild(dbScript);
+            };
+            
+            appScript.onerror = function() {
+                console.error(`❌ Firebase App 从 ${source.name} 加载失败`);
+                clearTimeout(timeout);
+                loadFirebaseSDK(sourceIndex + 1);
+            };
+            
+            document.head.appendChild(appScript);
+        }
+        
+        // 开始加载
+        loadFirebaseSDK(0);
+    })();
+    </script>
     
     <style>
         :root {
@@ -2547,24 +2652,65 @@
                 // this.init(); // 移除这一行
             }
             
+            // 等待 Firebase SDK 加载完成
+            async waitForFirebaseSDK(timeout = 45000) {
+                console.log('⏳ 等待 Firebase SDK 加载...');
+                
+                const startTime = Date.now();
+                const checkInterval = 500; // 每500ms检查一次
+                
+                return new Promise((resolve) => {
+                    const check = () => {
+                        // 检查是否已加载成功
+                        if (typeof firebase !== 'undefined') {
+                            console.log('✅ Firebase SDK 检测成功');
+                            resolve(true);
+                            return;
+                        }
+                        
+                        // 检查是否所有源都失败了
+                        if (window.firebaseLoadFailed) {
+                            console.log('❌ Firebase SDK 加载已确认失败');
+                            resolve(false);
+                            return;
+                        }
+                        
+                        // 检查是否超时
+                        if (Date.now() - startTime > timeout) {
+                            console.log('⏱️ Firebase SDK 加载等待超时');
+                            resolve(false);
+                            return;
+                        }
+                        
+                        // 继续等待
+                        setTimeout(check, checkInterval);
+                    };
+                    
+                    check();
+                });
+            }
+            
             // 初始化 Firebase
             async init() {
                 console.log('🔧 CloudSyncManager.init() 开始执行...');
                 
                 try {
-                    // 检查Firebase SDK是否加载
-                    if (typeof firebase === 'undefined') {
-                        console.warn('⚠️ Firebase SDK 未加载，云端同步功能不可用');
+                    // 等待 Firebase SDK 加载（最多等待45秒）
+                    const sdkLoaded = await this.waitForFirebaseSDK(45000);
+                    
+                    if (!sdkLoaded) {
+                        console.warn('⚠️ Firebase SDK 加载超时或失败，云端同步功能不可用');
                         console.log('💡 应用将以本地模式运行，数据仅保存在当前设备');
                         console.log('📌 可能原因：');
                         console.log('   1. 网络连接问题，无法加载 Firebase CDN');
                         console.log('   2. 浏览器扩展阻止了脚本加载');
                         console.log('   3. 防火墙或代理设置');
+                        console.log('   4. 所有 CDN 源均不可用');
                         this.updateSyncStatusUI(false);
                         return;
                     }
                     
-                    console.log('✅ Firebase SDK 已检测到');
+                    console.log('✅ Firebase SDK 已成功加载');
                     console.log('📦 Firebase 版本:', firebase.SDK_VERSION || 'unknown');
                     
                     // 检测是否使用了默认配置（未设置）
@@ -4097,6 +4243,14 @@
                 updateUserInterface();
                 showHomePage();
             });
+            
+            // 同步状态点击事件 - 显示同步详情对话框
+            const syncStatus = document.getElementById('sync-status');
+            if (syncStatus) {
+                syncStatus.addEventListener('click', () => {
+                    showSyncStatusDialog();
+                });
+            }
 
             // 客服系统
             const chatButton = document.getElementById('chat-button');
@@ -4567,6 +4721,195 @@
                 });
             }
         });
+
+        // 显示同步状态对话框
+        function showSyncStatusDialog() {
+            // 检查 Firebase SDK 和 CloudSync 状态
+            const sdkLoaded = typeof firebase !== 'undefined';
+            const syncInitialized = cloudSync && cloudSync.isInitialized;
+            
+            let dialogHTML = `
+                <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 10000; display: flex; align-items: center; justify-content: center;" id="sync-dialog">
+                    <div style="background: white; border-radius: 12px; padding: 30px; max-width: 500px; width: 90%; box-shadow: 0 10px 40px rgba(0,0,0,0.3);">
+                        <h3 style="margin: 0 0 20px 0; color: #333; font-size: 22px;">
+                            <i class="fas fa-cloud"></i> 云端同步状态
+                        </h3>
+            `;
+            
+            if (!sdkLoaded) {
+                dialogHTML += `
+                    <div style="padding: 20px; background: #fff3cd; border-left: 4px solid #ffc107; border-radius: 4px; margin-bottom: 20px;">
+                        <h4 style="margin: 0 0 10px 0; color: #856404;">
+                            <i class="fas fa-exclamation-triangle"></i> Firebase SDK 未加载
+                        </h4>
+                        <p style="margin: 0; color: #856404; line-height: 1.6;">
+                            Firebase SDK 无法从CDN加载。这可能是由于网络问题或防火墙限制。
+                            <br><br>
+                            <strong>当前模式：</strong> 本地存储模式<br>
+                            <strong>影响：</strong> 数据仅保存在当前设备，无法跨设备同步
+                        </p>
+                    </div>
+                    <div style="padding: 15px; background: #e7f3ff; border-left: 4px solid #2196F3; border-radius: 4px; margin-bottom: 20px;">
+                        <h4 style="margin: 0 0 10px 0; color: #0d47a1;">
+                            <i class="fas fa-lightbulb"></i> 解决方法
+                        </h4>
+                        <ol style="margin: 0; padding-left: 20px; color: #0d47a1; line-height: 1.8;">
+                            <li>检查网络连接是否正常</li>
+                            <li>尝试关闭广告拦截器或防火墙</li>
+                            <li>运行诊断工具：<code>firebase-diagnostic.html</code></li>
+                            <li>刷新页面重试</li>
+                        </ol>
+                    </div>
+                `;
+            } else if (!syncInitialized) {
+                dialogHTML += `
+                    <div style="padding: 20px; background: #fff3cd; border-left: 4px solid #ffc107; border-radius: 4px; margin-bottom: 20px;">
+                        <h4 style="margin: 0 0 10px 0; color: #856404;">
+                            <i class="fas fa-exclamation-triangle"></i> 云端同步未初始化
+                        </h4>
+                        <p style="margin: 0; color: #856404; line-height: 1.6;">
+                            Firebase SDK 已加载，但云端同步服务初始化失败。
+                            <br><br>
+                            <strong>可能原因：</strong><br>
+                            • Firebase 配置不正确<br>
+                            • Firebase 数据库未创建<br>
+                            • 数据库权限设置有误<br>
+                            <br>
+                            <strong>当前模式：</strong> 本地存储模式
+                        </p>
+                    </div>
+                    <div style="padding: 15px; background: #e7f3ff; border-left: 4px solid #2196F3; border-radius: 4px; margin-bottom: 20px;">
+                        <h4 style="margin: 0 0 10px 0; color: #0d47a1;">
+                            <i class="fas fa-cog"></i> 配置步骤
+                        </h4>
+                        <p style="margin: 0; color: #0d47a1; line-height: 1.8;">
+                            1. 访问 <a href="https://console.firebase.google.com/" target="_blank" style="color: #2196F3;">Firebase 控制台</a><br>
+                            2. 创建项目并启用 Realtime Database<br>
+                            3. 设置数据库规则为测试模式（允许读写）<br>
+                            4. 更新 main.html 中的 Firebase 配置<br>
+                            <br>
+                            详细说明请查看 <code>FIREBASE_SETUP.md</code>
+                        </p>
+                    </div>
+                `;
+            } else {
+                dialogHTML += `
+                    <div style="padding: 20px; background: #d4edda; border-left: 4px solid #28a745; border-radius: 4px; margin-bottom: 20px;">
+                        <h4 style="margin: 0 0 10px 0; color: #155724;">
+                            <i class="fas fa-check-circle"></i> 云端同步已启用
+                        </h4>
+                        <p style="margin: 0; color: #155724; line-height: 1.6;">
+                            <strong>状态：</strong> 正常运行<br>
+                            <strong>Firebase 版本：</strong> ${firebase.SDK_VERSION || '未知'}<br>
+                            <strong>上次同步：</strong> ${cloudSync.lastSyncTime || '从未同步'}<br>
+                            <strong>数据库：</strong> ${cloudSync.firebaseConfig.databaseURL}
+                        </p>
+                    </div>
+                    <div style="padding: 15px; background: #e7f3ff; border-left: 4px solid #2196F3; border-radius: 4px; margin-bottom: 20px;">
+                        <h4 style="margin: 0 0 10px 0; color: #0d47a1;">
+                            <i class="fas fa-info-circle"></i> 功能说明
+                        </h4>
+                        <p style="margin: 0; color: #0d47a1; line-height: 1.8;">
+                            ✅ 数据自动保存到云端<br>
+                            ✅ 支持多设备实时同步<br>
+                            ✅ 离线数据自动缓存<br>
+                            ✅ 网络恢复后自动同步
+                        </p>
+                    </div>
+                `;
+            }
+            
+            dialogHTML += `
+                        <div style="display: flex; gap: 10px; justify-content: flex-end;">
+            `;
+            
+            // 如果SDK已加载但未初始化，提供重试按钮
+            if (sdkLoaded && !syncInitialized) {
+                dialogHTML += `
+                            <button onclick="retryCloudSyncInit()" style="padding: 10px 20px; background: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 14px;">
+                                <i class="fas fa-sync-alt"></i> 重试初始化
+                            </button>
+                `;
+            }
+            
+            // 如果已初始化，提供手动同步按钮
+            if (syncInitialized) {
+                dialogHTML += `
+                            <button onclick="manualSyncNow()" style="padding: 10px 20px; background: #2196F3; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 14px;">
+                                <i class="fas fa-cloud-upload-alt"></i> 立即同步
+                            </button>
+                `;
+            }
+            
+            dialogHTML += `
+                            <button onclick="closeSyncDialog()" style="padding: 10px 20px; background: #6c757d; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 14px;">
+                                关闭
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // 移除旧对话框（如果存在）
+            const oldDialog = document.getElementById('sync-dialog');
+            if (oldDialog) {
+                oldDialog.remove();
+            }
+            
+            // 添加新对话框
+            document.body.insertAdjacentHTML('beforeend', dialogHTML);
+            
+            // 点击背景关闭
+            document.getElementById('sync-dialog').addEventListener('click', (e) => {
+                if (e.target.id === 'sync-dialog') {
+                    closeSyncDialog();
+                }
+            });
+        }
+        
+        // 关闭同步状态对话框
+        function closeSyncDialog() {
+            const dialog = document.getElementById('sync-dialog');
+            if (dialog) {
+                dialog.remove();
+            }
+        }
+        
+        // 重试云端同步初始化
+        async function retryCloudSyncInit() {
+            closeSyncDialog();
+            showNotification('正在重试初始化云端同步...', 'info');
+            
+            try {
+                if (!cloudSync) {
+                    cloudSync = new CloudSyncManager();
+                }
+                await cloudSync.init();
+                showNotification('✅ 云端同步初始化成功！', 'success');
+            } catch (error) {
+                console.error('重试初始化失败:', error);
+                showNotification('❌ 初始化失败，请检查配置', 'error');
+            }
+        }
+        
+        // 手动执行立即同步
+        async function manualSyncNow() {
+            if (!cloudSync || !cloudSync.isInitialized) {
+                showNotification('云端同步未启用', 'warning');
+                return;
+            }
+            
+            closeSyncDialog();
+            showNotification('正在同步数据到云端...', 'info');
+            
+            try {
+                await cloudSync.syncAllData();
+                showNotification('✅ 数据同步成功！', 'success');
+            } catch (error) {
+                console.error('同步失败:', error);
+                showNotification('❌ 同步失败，请稍后重试', 'error');
+            }
+        }
 
         // 更新用户界面状态
         function updateUserInterface() {
