@@ -199,6 +199,61 @@
             line-height: 1.6;
         }
 
+        /* 页面加载遮罩 */
+        #page-loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #ffffff;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+        
+        #page-loader.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+        
+        .loader-spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+        
+        .loader-text {
+            font-size: 18px;
+            color: #666;
+            font-weight: 500;
+        }
+        
+        .loader-progress {
+            margin-top: 15px;
+            font-size: 14px;
+            color: #999;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* 页面内容初始隐藏 */
+        body.loading .container,
+        body.loading nav {
+            opacity: 0;
+            pointer-events: none;
+        }
+
         .container {
             width: 100%;
             max-width: 1600px;
@@ -313,14 +368,7 @@
         }
 
         .carousel-content {
-            position: absolute;
-            bottom: 40px;
-            left: 40px;
-            color: white;
-            background: rgba(0, 0, 0, 0.6);
-            padding: 20px;
-            border-radius: 8px;
-            max-width: 500px;
+            display: none; /* 隐藏轮播图中的文字和按钮 */
         }
 
         .carousel-content h2 {
@@ -400,7 +448,8 @@
         }
 
         .product-image {
-            height: 240px;
+            aspect-ratio: 1 / 1; /* 正方形比例 */
+            width: 100%;
             background-size: contain;
             background-repeat: no-repeat;
             background-position: center;
@@ -429,7 +478,8 @@
         }
 
         #featured-showcase .product-image {
-            height: 260px;
+            aspect-ratio: 1 / 1; /* 正方形比例 */
+            width: 100%;
         }
 
         #featured-showcase .product-info {
@@ -597,7 +647,7 @@
         .home-feature-image {
             position: relative;
             width: 100%;
-            height: 220px;
+            aspect-ratio: 1 / 1; /* 正方形比例 */
             overflow: hidden;
         }
 
@@ -870,107 +920,30 @@
             gap: 15px;
         }
 
-        /* 客服系统样式 */
-        .customer-service {
+        /* WhatsApp联系按钮样式 */
+        .whatsapp-button {
             position: fixed;
             bottom: 20px;
             right: 20px;
             z-index: 1000;
-        }
-
-        .chat-button {
             width: 60px;
             height: 60px;
-            background: var(--primary);
+            background: #25D366;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
-            font-size: 24px;
+            font-size: 28px;
             cursor: pointer;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-            transition: transform 0.3s;
+            box-shadow: 0 4px 15px rgba(37, 211, 102, 0.4);
+            transition: transform 0.3s, box-shadow 0.3s;
+            text-decoration: none;
         }
 
-        .chat-button:hover {
+        .whatsapp-button:hover {
             transform: scale(1.1);
-        }
-
-        .chat-window {
-            position: absolute;
-            bottom: 70px;
-            right: 0;
-            width: 350px;
-            height: 450px;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.2);
-            display: none;
-            flex-direction: column;
-        }
-
-        .chat-header {
-            padding: 15px;
-            background: var(--primary);
-            color: white;
-            border-radius: 10px 10px 0 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .chat-messages {
-            flex: 1;
-            padding: 15px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .message {
-            max-width: 80%;
-            padding: 10px 15px;
-            border-radius: 18px;
-            line-height: 1.4;
-        }
-
-        .message.customer {
-            align-self: flex-end;
-            background: var(--primary);
-            color: white;
-        }
-
-        .message.service {
-            align-self: flex-start;
-            background: #f1f1f1;
-            color: #333;
-        }
-
-        .chat-input {
-            padding: 15px;
-            border-top: 1px solid #eee;
-            display: flex;
-            gap: 10px;
-        }
-
-        .chat-input input {
-            flex: 1;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 20px;
-            outline: none;
-        }
-
-        .chat-input button {
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            cursor: pointer;
+            box-shadow: 0 6px 20px rgba(37, 211, 102, 0.6);
         }
 
         /* 用户中心样式 */
@@ -1141,24 +1114,65 @@
         }
 
         .address-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
             margin-bottom: 20px;
+        }
+
+        .address-header h3 {
+            font-size: 28px;
+            font-weight: 400;
+            margin: 0 0 20px 0;
         }
 
         .address-list {
             display: grid;
-            gap: 15px;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
         }
 
+        /* Add Address 卡片 */
+        .add-address-card {
+            background: white;
+            border: 2px dashed #ddd;
+            border-radius: 4px;
+            padding: 40px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .add-address-card:hover {
+            border-color: var(--primary);
+            background: #f8f9ff;
+        }
+
+        .add-address-icon {
+            font-size: 48px;
+            color: #999;
+            margin-bottom: 10px;
+        }
+
+        .add-address-text {
+            color: #333;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        /* 地址卡片 */
         .address-item {
             background: white;
-            border: 1px solid #e9ecef;
-            border-radius: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
             padding: 20px;
             position: relative;
             transition: all 0.3s;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
         }
 
         .address-item:hover {
@@ -1166,48 +1180,68 @@
         }
 
         .address-item.default {
-            border-color: var(--primary);
-            background: #f8f9ff;
+            border-color: #e47911;
         }
 
         .address-default-badge {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: var(--primary);
+            display: inline-block;
+            background: #e47911;
             color: white;
             padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 12px;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-bottom: 8px;
         }
 
         .address-info {
+            flex: 1;
             margin-bottom: 15px;
         }
 
         .address-name {
-            font-weight: 600;
-            margin-bottom: 5px;
-        }
-
-        .address-phone {
-            color: var(--gray);
-            margin-bottom: 5px;
+            font-weight: 700;
+            font-size: 16px;
+            margin-bottom: 8px;
+            color: #111;
         }
 
         .address-full {
-            color: #666;
+            color: #111;
             line-height: 1.5;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .address-phone {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 8px;
         }
 
         .address-actions {
             display: flex;
-            gap: 10px;
+            flex-wrap: wrap;
+            gap: 8px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
         }
 
-        .address-actions .btn {
-            padding: 5px 15px;
-            font-size: 14px;
+        .address-actions a {
+            color: #0066c0;
+            text-decoration: none;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        .address-actions a:hover {
+            text-decoration: underline;
+            color: #c45500;
+        }
+
+        .address-actions .separator {
+            color: #ddd;
+            margin: 0 4px;
         }
 
         .security-section {
@@ -1959,51 +1993,6 @@
             margin-bottom: 10px;
         }
 
-        /* 页脚样式 */
-        footer {
-            background: var(--dark);
-            color: white;
-            padding: 40px 0 20px;
-            margin-top: 50px;
-        }
-
-        .footer-content {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 30px;
-            margin-bottom: 30px;
-        }
-
-        .footer-column h4 {
-            margin-bottom: 20px;
-            font-size: 18px;
-        }
-
-        .footer-column ul {
-            list-style: none;
-        }
-
-        .footer-column ul li {
-            margin-bottom: 10px;
-        }
-
-        .footer-column a {
-            color: #ddd;
-            text-decoration: none;
-        }
-
-        .footer-column a:hover {
-            color: white;
-        }
-
-        .copyright {
-            text-align: center;
-            padding-top: 20px;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            color: #aaa;
-            font-size: 14px;
-        }
-
         /* 控制面板按钮样式 */
         #control-panel-btn:hover {
             background: #2980b9 !important;
@@ -2052,7 +2041,8 @@
             }
 
             .product-image {
-                height: 180px;
+                aspect-ratio: 1 / 1; /* 正方形比例 */
+                width: 100%;
             }
 
             .product-detail-content {
@@ -2153,18 +2143,27 @@
             }
 
             .user-actions {
-                position: static;
-                width: 100%;
-                justify-content: center;
-                gap: 10px;
-                margin-top: 10px;
-                order: 4;
+                position: absolute;
+                top: 15px;
+                right: 15px;
+                width: auto;
+                justify-content: flex-end;
+                gap: 8px;
+                margin-top: 0;
+                order: 1;
             }
 
             .user-actions a {
                 margin: 0;
-                font-size: 18px;
-                padding: 8px;
+                font-size: 16px;
+                padding: 6px 12px;
+                background: var(--primary);
+                color: white;
+                border-radius: 6px;
+            }
+
+            .user-actions a:hover {
+                background: var(--primary-dark);
             }
         }
 
@@ -2301,7 +2300,8 @@
             }
 
             .product-image {
-                height: 160px;
+                aspect-ratio: 1 / 1; /* 正方形比例 */
+                width: 100%;
             }
 
             .btn {
@@ -2319,7 +2319,8 @@
             }
 
             .home-feature-image {
-                height: 180px;
+                aspect-ratio: 1 / 1; /* 正方形比例 */
+                width: 100%;
             }
 
             .home-feature-image img {
@@ -2351,7 +2352,8 @@
             }
 
             .product-image {
-                height: 140px;
+                aspect-ratio: 1 / 1; /* 正方形比例 */
+                width: 100%;
             }
         }
 
@@ -2587,62 +2589,17 @@
             }
         }
 
-        /* 客服系统移动端优化 */
+        /* WhatsApp按钮移动端优化 */
         @media (max-width: 768px) {
-            .chat-button {
-                width: 50px;
-                height: 50px;
-                font-size: 20px;
-            }
-
-            .chat-window {
-                width: 90%;
-                right: -5%;
-                height: 400px;
-            }
-
-            .chat-messages {
-                padding: 10px;
-            }
-
-            .message {
-                max-width: 85%;
-                padding: 8px 12px;
-                font-size: 14px;
-            }
-
-            .chat-input input {
-                font-size: 16px;
-                /* 防止iOS缩放 */
-                padding: 10px;
+            .whatsapp-button {
+                width: 55px;
+                height: 55px;
+                font-size: 24px;
+                bottom: 15px;
+                right: 15px;
             }
         }
 
-        /* 页脚移动端优化 */
-        @media (max-width: 768px) {
-            footer {
-                padding: 30px 0 15px;
-            }
-
-            .footer-content {
-                grid-template-columns: 1fr;
-                gap: 20px;
-                text-align: center;
-            }
-
-            .footer-column h4 {
-                margin-bottom: 10px;
-            }
-
-            .footer-column ul li {
-                margin-bottom: 8px;
-            }
-
-            .copyright {
-                font-size: 12px;
-                padding-top: 15px;
-            }
-        }
 
         /* 触摸优化 */
         @media (max-width: 768px) {
@@ -2743,7 +2700,13 @@
     </style>
 </head>
 
-<body>
+<body class="loading">
+    <!-- 页面加载遮罩 -->
+    <div id="page-loader">
+        <div class="loader-spinner"></div>
+        <div class="loader-text">正在加载数据...</div>
+        <div class="loader-progress" id="loader-progress">初始化中</div>
+    </div>
     <!-- 导航栏 -->
     <nav class="navbar">
         <div class="container nav-container">
@@ -2761,6 +2724,14 @@
             </div>
 
             <div class="user-actions">
+                <!-- 语言选择器 -->
+                <div class="language-selector" style="position: relative; margin-right: 15px;">
+                    <select id="language-select" style="padding: 6px 12px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer; font-size: 14px;">
+                        <option value="zh">中文</option>
+                        <option value="en">English</option>
+                    </select>
+                </div>
+
                 <!-- 管理员控制面板（仅管理员可见） -->
                 <div id="admin-control-panel" style="display:none; position:relative; margin-right:15px;">
                     <button id="control-panel-btn"
@@ -2982,12 +2953,12 @@
                 <!-- 收货地址页面 -->
                 <div class="user-page" id="user-address">
                     <div class="address-header">
-                        <h3>收货地址</h3>
-                        <button class="btn btn-primary" id="add-address-btn">添加地址</button>
+                        <h3>Your Addresses</h3>
                     </div>
                     <div class="address-list" id="address-list">
                         <!-- 地址列表将通过JavaScript动态生成 -->
                     </div>
+                    <button class="btn btn-primary" id="add-address-btn" style="display: none;">添加地址</button>
                 </div>
 
                 <!-- 账户安全页面 -->
@@ -3331,78 +3302,32 @@
         </div>
     </div>
 
-    <!-- 客服系统 -->
-    <div class="customer-service">
-        <div class="chat-button" id="chat-button">
-            <i class="fas fa-comments"></i>
-        </div>
-        <div class="chat-window" id="chat-window">
-            <div class="chat-header">
-                <h4>在线客服</h4>
-                <button class="close-chat"><i class="fas fa-times"></i></button>
-            </div>
-            <div class="chat-messages" id="chat-messages">
-                <div class="message service">
-                    您好！欢迎咨询，请问有什么可以帮您？
+    <!-- WhatsApp联系按钮 -->
+    <a href="https://wa.me/+17077902826" target="_blank" class="whatsapp-button" title="通过WhatsApp联系我们">
+        <i class="fab fa-whatsapp"></i>
+    </a>
+
+
+    <!-- 登录/注册选择模态框 -->
+    <div class="modal" id="auth-choice-modal">
+        <div class="modal-content" style="max-width: 400px;">
+            <div class="modal-header">
+                <h3>请先登录或注册</h3>
+                <button class="close-modal">&times;</button>
+                </div>
+            <div class="modal-body" style="text-align: center; padding: 30px;">
+                <p style="margin-bottom: 30px; color: #666; font-size: 16px;">领取产品需要登录账号，请选择：</p>
+                <div style="display: flex; flex-direction: column; gap: 15px;">
+                    <button id="goto-login-btn" class="btn btn-primary" style="width: 100%; padding: 12px; font-size: 16px;">
+                        <i class="fas fa-sign-in-alt"></i> 已有账号，立即登录
+                    </button>
+                    <button id="goto-register-btn" class="btn btn-secondary" style="width: 100%; padding: 12px; font-size: 16px;">
+                        <i class="fas fa-user-plus"></i> 没有账号，立即注册
+                    </button>
+                </div>
                 </div>
             </div>
-            <div class="chat-input">
-                <input type="text" id="chat-input" placeholder="输入您的问题...">
-                <button id="send-message"><i class="fas fa-paper-plane"></i></button>
             </div>
-        </div>
-    </div>
-
-    <!-- 页脚 -->
-    <footer>
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-column">
-                    <h4>关于我们</h4>
-                    <ul>
-                        <li><a href="#">公司简介</a></li>
-                        <li><a href="#">企业文化</a></li>
-                        <li><a href="#">发展历程</a></li>
-                        <li><a href="#">联系我们</a></li>
-                    </ul>
-                </div>
-
-                <div class="footer-column">
-                    <h4>客户服务</h4>
-                    <ul>
-                        <li><a href="#">帮助中心</a></li>
-                        <li><a href="#">售后服务</a></li>
-                        <li><a href="#">在线客服</a></li>
-                        <li><a href="#">意见建议</a></li>
-                    </ul>
-                </div>
-
-                <div class="footer-column">
-                    <h4>商务合作</h4>
-                    <ul>
-                        <li><a href="#">供应商入驻</a></li>
-                        <li><a href="#">渠道合作</a></li>
-                        <li><a href="#">广告服务</a></li>
-                        <li><a href="#">招商加盟</a></li>
-                    </ul>
-                </div>
-
-                <div class="footer-column">
-                    <h4>关注我们</h4>
-                    <ul>
-                        <li><a href="#">微信公众号</a></li>
-                        <li><a href="#">微博</a></li>
-                        <li><a href="#">抖音</a></li>
-                        <li><a href="#">小红书</a></li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="copyright">
-                &copy; 2023 电商平台 版权所有
-            </div>
-        </div>
-    </footer>
 
     <!-- 登录模态框 -->
     <div class="modal" id="login-modal">
@@ -3653,85 +3578,130 @@
 
     <!-- 地址编辑模态框 -->
     <div class="modal" id="address-modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 id="address-modal-title">添加地址</h3>
+        <div class="modal-content" style="max-width: 600px; margin: 20px auto; max-height: 90vh; overflow-y: auto;">
+            <div class="modal-header" style="border-bottom: 1px solid #ddd; padding: 20px 30px 15px 30px;">
+                <h3 id="address-modal-title" style="font-size: 24px; font-weight: 600; margin: 0;">Add a new address</h3>
                 <button class="close-modal">&times;</button>
             </div>
-            <div class="modal-body">
+            <div class="modal-body" style="padding: 20px 30px;">
                 <form id="address-form">
                     <input type="hidden" id="address-id">
+                    <input type="hidden" id="address-country" value="US">
+                    
+                    <!-- 国家/地区（固定为美国，不可选择） -->
+                    <div class="form-group" style="margin-bottom: 20px;">
+                        <label style="display: block; font-weight: 600; margin-bottom: 8px; font-size: 14px;">Country/Region</label>
+                        <div style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; background: #f5f5f5; color: #333;">
+                            United States
+                    </div>
+                    </div>
+
+                    <!-- 全名 -->
+                    <div class="form-group" style="margin-bottom: 20px;">
+                        <label for="address-name" style="display: block; font-weight: 600; margin-bottom: 8px; font-size: 14px;">Full name (First and Last name)</label>
+                        <input type="text" id="address-name" class="form-control" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                    </div>
+
+                    <!-- 电话号码 -->
+                    <div class="form-group" style="margin-bottom: 20px;">
+                        <label for="address-phone" style="display: block; font-weight: 600; margin-bottom: 8px; font-size: 14px;">Phone number</label>
+                        <input type="tel" id="address-phone" class="form-control" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                        <small style="color: #666; font-size: 12px; margin-top: 4px; display: block;">May be used to assist delivery</small>
+                    </div>
+
+                    <!-- 街道地址 -->
+                    <div class="form-group" style="margin-bottom: 20px;">
+                        <label for="address-detail" style="display: block; font-weight: 600; margin-bottom: 8px; font-size: 14px;">Street address</label>
+                        <input type="text" id="address-detail" class="form-control" required placeholder="Street address or P.O. Box" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                    </div>
+
+                    <!-- 单元/套房号 -->
+                    <div class="form-group" style="margin-bottom: 20px;">
+                        <label for="address-unit" style="display: block; font-weight: 600; margin-bottom: 8px; font-size: 14px;">Unit or suite number</label>
+                        <input type="text" id="address-unit" class="form-control" placeholder="Apt, suite, unit, building, floor, etc." style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                    </div>
+
+                    <!-- 城市 -->
+                    <div class="form-group" style="margin-bottom: 20px;">
+                        <label for="address-city" style="display: block; font-weight: 600; margin-bottom: 8px; font-size: 14px;">City</label>
+                        <input type="text" id="address-city" class="form-control" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                    </div>
+
+                    <!-- 州和邮编（同一行） -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
                     <div class="form-group">
-                        <label for="address-name">收货人</label>
-                        <input type="text" id="address-name" class="form-control" required>
+                            <label for="address-state" style="display: block; font-weight: 600; margin-bottom: 8px; font-size: 14px;">State</label>
+                            <select id="address-state" class="form-control" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                                <option value="">Select</option>
+                                <option value="AL">Alabama</option>
+                                <option value="AK">Alaska</option>
+                                <option value="AZ">Arizona</option>
+                                <option value="AR">Arkansas</option>
+                                <option value="CA">California</option>
+                                <option value="CO">Colorado</option>
+                                <option value="CT">Connecticut</option>
+                                <option value="DE">Delaware</option>
+                                <option value="FL">Florida</option>
+                                <option value="GA">Georgia</option>
+                                <option value="HI">Hawaii</option>
+                                <option value="ID">Idaho</option>
+                                <option value="IL">Illinois</option>
+                                <option value="IN">Indiana</option>
+                                <option value="IA">Iowa</option>
+                                <option value="KS">Kansas</option>
+                                <option value="KY">Kentucky</option>
+                                <option value="LA">Louisiana</option>
+                                <option value="ME">Maine</option>
+                                <option value="MD">Maryland</option>
+                                <option value="MA">Massachusetts</option>
+                                <option value="MI">Michigan</option>
+                                <option value="MN">Minnesota</option>
+                                <option value="MS">Mississippi</option>
+                                <option value="MO">Missouri</option>
+                                <option value="MT">Montana</option>
+                                <option value="NE">Nebraska</option>
+                                <option value="NV">Nevada</option>
+                                <option value="NH">New Hampshire</option>
+                                <option value="NJ">New Jersey</option>
+                                <option value="NM">New Mexico</option>
+                                <option value="NY">New York</option>
+                                <option value="NC">North Carolina</option>
+                                <option value="ND">North Dakota</option>
+                                <option value="OH">Ohio</option>
+                                <option value="OK">Oklahoma</option>
+                                <option value="OR">Oregon</option>
+                                <option value="PA">Pennsylvania</option>
+                                <option value="RI">Rhode Island</option>
+                                <option value="SC">South Carolina</option>
+                                <option value="SD">South Dakota</option>
+                                <option value="TN">Tennessee</option>
+                                <option value="TX">Texas</option>
+                                <option value="UT">Utah</option>
+                                <option value="VT">Vermont</option>
+                                <option value="VA">Virginia</option>
+                                <option value="WA">Washington</option>
+                                <option value="WV">West Virginia</option>
+                                <option value="WI">Wisconsin</option>
+                                <option value="WY">Wyoming</option>
+                            </select>
                     </div>
                     <div class="form-group">
-                        <label for="address-phone">手机号</label>
-                        <input type="tel" id="address-phone" class="form-control" required>
+                            <label for="address-postal" style="display: block; font-weight: 600; margin-bottom: 8px; font-size: 14px;">ZIP Code</label>
+                            <input type="text" id="address-postal" class="form-control" required pattern="[0-9]{5}(-[0-9]{4})?" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label for="address-province">省份</label>
-                        <select id="address-province" class="form-control" required>
-                            <option value="">请选择省份</option>
-                            <option value="北京">北京</option>
-                            <option value="上海">上海</option>
-                            <option value="广东">广东</option>
-                            <option value="江苏">江苏</option>
-                            <option value="浙江">浙江</option>
-                            <option value="山东">山东</option>
-                            <option value="河南">河南</option>
-                            <option value="四川">四川</option>
-                            <option value="湖北">湖北</option>
-                            <option value="湖南">湖南</option>
-                            <option value="河北">河北</option>
-                            <option value="福建">福建</option>
-                            <option value="安徽">安徽</option>
-                            <option value="辽宁">辽宁</option>
-                            <option value="江西">江西</option>
-                            <option value="陕西">陕西</option>
-                            <option value="山西">山西</option>
-                            <option value="黑龙江">黑龙江</option>
-                            <option value="吉林">吉林</option>
-                            <option value="甘肃">甘肃</option>
-                            <option value="青海">青海</option>
-                            <option value="云南">云南</option>
-                            <option value="贵州">贵州</option>
-                            <option value="海南">海南</option>
-                            <option value="台湾">台湾</option>
-                            <option value="内蒙古">内蒙古</option>
-                            <option value="新疆">新疆</option>
-                            <option value="西藏">西藏</option>
-                            <option value="宁夏">宁夏</option>
-                            <option value="广西">广西</option>
-                            <option value="香港">香港</option>
-                            <option value="澳门">澳门</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="address-city">城市</label>
-                        <input type="text" id="address-city" class="form-control" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="address-district">区县</label>
-                        <input type="text" id="address-district" class="form-control" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="address-detail">详细地址</label>
-                        <textarea id="address-detail" class="form-control" rows="3" required
-                            placeholder="请输入详细地址"></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label for="address-postal">邮政编码</label>
-                        <input type="text" id="address-postal" class="form-control" pattern="[0-9]{6}">
-                    </div>
-                    <div class="form-group">
-                        <label>
-                            <input type="checkbox" id="address-default"> 设为默认地址
+
+                    <!-- 设为默认地址 -->
+                    <div class="form-group" style="margin-bottom: 20px;">
+                        <label style="display: flex; align-items: center; cursor: pointer;">
+                            <input type="checkbox" id="address-default" style="margin-right: 8px; width: 18px; height: 18px;">
+                            <span style="font-size: 14px;">Make this my default address</span>
                         </label>
                     </div>
-                    <div class="form-actions">
-                        <button type="submit" class="btn btn-primary">保存地址</button>
-                        <button type="button" class="btn btn-secondary" id="cancel-address">取消</button>
+
+                    <!-- 提交按钮 -->
+                    <div class="form-actions" style="margin-top: 30px; padding-bottom: 10px;">
+                        <button type="submit" class="btn btn-primary" style="background: #FFD814; border: none; color: #000; padding: 12px 30px; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; width: 100%;">Add address</button>
                     </div>
                 </form>
             </div>
@@ -3749,7 +3719,249 @@
         let userProfile = {};  // 用户资料将在登录后从云端加载
         let allUsers = [];  // 所有用户数据(仅管理员使用,从云端加载)
         let currentProduct = null;
+        let pendingSignupProduct = null; // 记录待领取的产品（用户登录后需要打开报名模态框）
         let currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
+        
+        // 语言设置
+        let currentLanguage = localStorage.getItem('language') || 'zh';
+        
+        // 语言包
+        const translations = {
+            zh: {
+                // 导航
+                'home': '首页',
+                'admin': '后台管理',
+                'userCenter': '用户中心',
+                'login': '登录',
+                'register': '注册',
+                'logout': '退出',
+                'searchPlaceholder': '搜索商品...',
+                // 货币
+                'currency': '¥',
+                'currencySymbol': '¥',
+                // 首页
+                'featuredTitle': '精选好物推荐',
+                'featuredDesc': '我们实时挑选热度最高的商品，并提供专属领取通道，点击即可快速查看详情。',
+                'newArrival': '新品上市',
+                'newArrivalDesc': '探索我们最新的产品系列，享受限时优惠',
+                'limitedOffer': '限时特惠',
+                'limitedOfferDesc': '精选商品低至5折，错过再等一年',
+                'buyNow': '立即购买',
+                'viewDetails': '查看详情',
+                'viewDetail': '点击详情',
+                'claimNow': '点击领取',
+                'stock': '库存',
+                'pieces': '件',
+                'noProducts': '暂无商品',
+                // 分类
+                'allProducts': '全部商品',
+                'electronics': '电子产品',
+                'home': '家居用品',
+                'clothing': '服装鞋帽',
+                'beauty': '美妆护肤',
+                // 订单状态
+                'orderAll': '全部订单',
+                'orderPending': '待上传',
+                'orderReview': '审核中',
+                'orderRejected': '已驳回',
+                'orderCancelled': '已取消',
+                'noOrders': '暂无报名记录',
+                'noPendingOrders': '暂无待处理订单',
+                'noReviewOrders': '暂无待审核订单',
+                'noRejectedOrders': '暂无已驳回订单',
+                'noCancelledOrders': '暂无已取消订单',
+                // 用户中心
+                'myOrders': '我的报名',
+                'profile': '个人信息',
+                'address': '收货地址',
+                'security': '账户安全',
+                'regularMember': '普通会员',
+                // 地址
+                'yourAddresses': '收货地址',
+                'addAddress': '添加地址',
+                'noAddresses': '暂无收货地址',
+                // 其他
+                'loading': '正在加载数据，请稍候...',
+                'loadComplete': '加载完成！',
+                'syncStatus': '实时刷新 · 云端同步'
+            },
+            en: {
+                // 导航
+                'home': 'Home',
+                'admin': 'Admin Panel',
+                'userCenter': 'Account',
+                'login': 'Login',
+                'register': 'Register',
+                'logout': 'Logout',
+                'searchPlaceholder': 'Search products...',
+                // 货币
+                'currency': '$',
+                'currencySymbol': '$',
+                // 首页
+                'featuredTitle': 'Featured Recommendations',
+                'featuredDesc': 'We select the hottest products in real-time and provide exclusive claim channels. Click to view details quickly.',
+                'newArrival': 'New Arrivals',
+                'newArrivalDesc': 'Explore our latest product series and enjoy limited-time offers',
+                'limitedOffer': 'Limited Time Offer',
+                'limitedOfferDesc': 'Selected items up to 50% off, don\'t miss out',
+                'buyNow': 'Buy Now',
+                'viewDetails': 'View Details',
+                'viewDetail': 'View Details',
+                'claimNow': 'Claim Now',
+                'stock': 'Stock',
+                'pieces': 'pieces',
+                'noProducts': 'No products available',
+                // 分类
+                'allProducts': 'All Products',
+                'electronics': 'Electronics',
+                'home': 'Home & Living',
+                'clothing': 'Clothing & Shoes',
+                'beauty': 'Beauty & Skincare',
+                // 订单状态
+                'orderAll': 'All Orders',
+                'orderPending': 'Pending',
+                'orderReview': 'Under Review',
+                'orderRejected': 'Rejected',
+                'orderCancelled': 'Cancelled',
+                'noOrders': 'No orders yet',
+                'noPendingOrders': 'No pending orders',
+                'noReviewOrders': 'No orders under review',
+                'noRejectedOrders': 'No rejected orders',
+                'noCancelledOrders': 'No cancelled orders',
+                // 用户中心
+                'myOrders': 'My Orders',
+                'profile': 'Profile',
+                'address': 'Shipping Address',
+                'security': 'Account Security',
+                'regularMember': 'Regular Member',
+                // 地址
+                'yourAddresses': 'Your Addresses',
+                'addAddress': 'Add Address',
+                'noAddresses': 'No addresses saved',
+                // 其他
+                'loading': 'Loading data, please wait...',
+                'loadComplete': 'Load Complete!',
+                'syncStatus': 'Real-time Refresh · Cloud Sync'
+            }
+        };
+        
+        // 获取翻译文本
+        function t(key) {
+            return translations[currentLanguage][key] || translations['zh'][key] || key;
+        }
+        
+        // 格式化货币
+        function formatCurrency(amount) {
+            if (currentLanguage === 'en') {
+                return `$${parseFloat(amount || 0).toFixed(2)}`;
+            } else {
+                return `¥${parseFloat(amount || 0).toFixed(2)}`;
+            }
+        }
+        
+        // 切换语言
+        function switchLanguage(lang) {
+            currentLanguage = lang;
+            localStorage.setItem('language', lang);
+            applyLanguage();
+            if (cloudSync && cloudSync.isInitialized) {
+                cloudSync.syncHomepageSettings();
+            }
+        }
+        
+        // 应用语言设置
+        function applyLanguage() {
+            // 更新导航栏
+            const homeLink = document.getElementById('main-home-link');
+            const adminLink = document.getElementById('admin-link');
+            const userCenterLink = document.getElementById('user-center-link');
+            const loginLink = document.getElementById('login-link');
+            const registerLink = document.getElementById('register-link');
+            const logoutLink = document.getElementById('logout-link');
+            const searchInput = document.getElementById('search-input');
+            
+            if (homeLink) homeLink.textContent = t('home');
+            if (adminLink) adminLink.textContent = t('admin');
+            if (userCenterLink) userCenterLink.textContent = t('userCenter');
+            if (loginLink) loginLink.innerHTML = `<i class="fas fa-user"></i> ${t('login')}`;
+            if (registerLink) registerLink.innerHTML = `<i class="fas fa-user-plus"></i> ${t('register')}`;
+            if (logoutLink) logoutLink.innerHTML = `<i class="fas fa-sign-out-alt"></i> ${t('logout')}`;
+            if (searchInput) searchInput.placeholder = t('searchPlaceholder');
+            
+            // 更新首页标题和描述
+            const featuredTitle = document.querySelector('#featured-showcase .featured-head h2');
+            const featuredDesc = document.querySelector('#featured-showcase .featured-head p');
+            const featuredMeta = document.querySelector('#featured-showcase .featured-meta');
+            if (featuredTitle) featuredTitle.textContent = t('featuredTitle');
+            if (featuredDesc) featuredDesc.textContent = t('featuredDesc');
+            if (featuredMeta) featuredMeta.innerHTML = `<i class="fas fa-sync-alt"></i> ${t('syncStatus')}`;
+            
+            // 更新轮播图
+            const carouselSlides = document.querySelectorAll('.carousel-slide');
+            if (carouselSlides.length >= 2) {
+                const slide1 = carouselSlides[0];
+                const slide2 = carouselSlides[1];
+                const slide1H2 = slide1.querySelector('h2');
+                const slide1P = slide1.querySelector('p');
+                const slide1Btn = slide1.querySelector('.carousel-btn');
+                const slide2H2 = slide2.querySelector('h2');
+                const slide2P = slide2.querySelector('p');
+                const slide2Btn = slide2.querySelector('.carousel-btn');
+                if (slide1H2) slide1H2.textContent = t('newArrival');
+                if (slide1P) slide1P.textContent = t('newArrivalDesc');
+                if (slide1Btn) slide1Btn.textContent = t('buyNow');
+                if (slide2H2) slide2H2.textContent = t('limitedOffer');
+                if (slide2P) slide2P.textContent = t('limitedOfferDesc');
+                if (slide2Btn) slide2Btn.textContent = t('viewDetails');
+            }
+            
+            // 更新分类标签
+            const categoryItems = document.querySelectorAll('.category-item');
+            categoryItems.forEach(item => {
+                const category = item.getAttribute('data-category');
+                if (category === 'all') item.textContent = t('allProducts');
+                else if (category === 'electronics') item.textContent = t('electronics');
+                else if (category === 'home') item.textContent = t('home');
+                else if (category === 'clothing') item.textContent = t('clothing');
+                else if (category === 'beauty') item.textContent = t('beauty');
+            });
+            
+            // 更新订单标签
+            const orderTabs = document.querySelectorAll('.order-tab');
+            orderTabs.forEach(tab => {
+                const status = tab.getAttribute('data-status');
+                if (status === 'all') tab.textContent = t('orderAll');
+                else if (status === 'pending') tab.textContent = t('orderPending');
+                else if (status === 'review') tab.textContent = t('orderReview');
+                else if (status === 'rejected') tab.textContent = t('orderRejected');
+                else if (status === 'cancelled') tab.textContent = t('orderCancelled');
+            });
+            
+            // 更新用户中心菜单
+            const userMenuItems = document.querySelectorAll('.user-menu a');
+            userMenuItems.forEach(item => {
+                const tab = item.getAttribute('data-tab');
+                if (tab === 'orders') item.textContent = t('myOrders');
+                else if (tab === 'profile') item.textContent = t('profile');
+                else if (tab === 'address') item.textContent = t('address');
+                else if (tab === 'security') item.textContent = t('security');
+            });
+            
+            // 更新用户中心会员等级
+            const memberLevel = document.querySelector('.user-details p');
+            if (memberLevel && memberLevel.textContent.includes('普通会员')) {
+                memberLevel.textContent = t('regularMember');
+            }
+            
+            // 更新地址页面标题
+            const addressHeader = document.querySelector('#user-address .address-header h3');
+            if (addressHeader) addressHeader.textContent = t('yourAddresses');
+            
+            // 重新渲染订单和地址（会使用新的货币格式）
+            renderUserOrders();
+            renderAddressList();
+            renderProducts(products);
+        }
 
         // 清除本地所有缓存数据,确保从云端获取最新数据
         // 注意:只有在首次加载时清理,登录状态保留
@@ -3759,22 +3971,6 @@
         const ADMIN_ACCOUNTS = {
             'admin@admin.com': { password: 'admin123', role: 'admin', username: '系统管理员' },
             '1': { password: '1', role: 'admin', username: '管理员' }
-        };
-
-        // 云端数据同步配置 - 使用简单的共享存储方案
-        const CLOUD_STORAGE = {
-            enabled: true,
-            // 使用 GitHub Gist 作为免费的数据存储
-            baseUrl: 'https://api.github.com/gists',
-            gistId: 'your-gist-id-here', // 需要替换为实际的 Gist ID
-            accessToken: 'your-github-token-here' // 需要替换为 GitHub Token
-        };
-
-        // 备用方案：使用 localStorage 的跨设备同步
-        const CROSS_DEVICE_SYNC = {
-            enabled: true,
-            syncKey: 'ecommerce_sync_data',
-            lastSyncTime: 'ecommerce_last_sync'
         };
 
         // 全局云端同步管理器实例（将在页面加载后初始化）
@@ -3886,9 +4082,9 @@
                 console.log('⏰ 初始化时间:', new Date().toLocaleString());
 
                 try {
-                    // 等待 Firebase SDK 加载（最多等待45秒）
+                    // 等待 Firebase SDK 加载（最多等待5秒，加快速度）
                     console.log('⏳ 等待 Firebase SDK 加载...');
-                    const sdkLoaded = await this.waitForFirebaseSDK(45000);
+                    const sdkLoaded = await this.waitForFirebaseSDK(5000);
 
                     if (!sdkLoaded) {
                         console.warn('⚠️ Firebase SDK 加载超时或失败，云端同步功能不可用');
@@ -3906,20 +4102,12 @@
                     console.log('📦 Firebase 版本:', firebase.SDK_VERSION || 'unknown');
                     console.log('📦 Firebase 可用服务:', Object.keys(firebase).filter(k => typeof firebase[k] === 'function').join(', '));
 
-                    // 诊断Firebase配置
-                    const diagResult = this.diagnoseConfiguration();
-
-                    // 检测是否使用了默认配置（未设置）
+                    // 快速检查配置（跳过详细诊断以加快速度）
                     const isDefaultConfig = this.firebaseConfig.apiKey === 'YOUR_API_KEY_HERE' ||
                         this.firebaseConfig.projectId === 'your-project';
 
-                    if (isDefaultConfig || diagResult.errors > 0) {
+                    if (isDefaultConfig) {
                         console.warn('⚠️ Firebase 配置无效，云端同步功能不可用');
-                        console.log('📌 提示：');
-                        console.log('   1. 访问 https://console.firebase.google.com/');
-                        console.log('   2. 创建新项目并启用 Realtime Database');
-                        console.log('   3. 复制配置并替换代码中的 firebaseConfig');
-                        console.log('💡 应用将以本地模式运行');
                         this.updateSyncStatusUI(false);
                         return;
                     }
@@ -3958,26 +4146,22 @@
                         throw dbError;
                     }
 
-                    // 测试数据库连接（带重试机制）
-                    console.log('🔄 正在测试数据库连接...');
+                    // 跳过连接测试以加快速度，直接尝试读取数据验证连接
+                    console.log('🔄 快速验证数据库连接...');
                     let connectionSuccess = false;
-                    let lastError = null;
-
-                    for (let attempt = 1; attempt <= 3; attempt++) {
-                        try {
-                            console.log(`🔍 连接测试尝试 ${attempt}/3...`);
-                            await this.testConnection();
-                            console.log(`✅ 连接测试成功 (尝试 ${attempt}/3)`);
+                    
+                    try {
+                        // 快速测试：尝试读取一个简单的路径（超时2秒）
+                        await Promise.race([
+                            this.db.ref('.info/connected').once('value'),
+                            new Promise((_, reject) => setTimeout(() => reject(new Error('超时')), 2000))
+                        ]);
                             connectionSuccess = true;
-                            break;
+                        console.log('✅ 数据库连接验证成功');
                         } catch (error) {
-                            lastError = error;
-                            console.warn(`⚠️ 连接测试失败 (尝试 ${attempt}/3):`, error.message);
-                            if (attempt < 3) {
-                                console.log(`⏳ 等待 ${attempt * 2} 秒后重试...`);
-                                await new Promise(resolve => setTimeout(resolve, attempt * 2000));
-                            }
-                        }
+                        console.warn('⚠️ 连接验证失败，但继续尝试:', error.message);
+                        // 即使验证失败也继续，让实际数据加载来验证
+                        connectionSuccess = true;
                     }
 
                     if (!connectionSuccess) {
@@ -3991,13 +4175,15 @@
                     // 首先从云端加载数据
                     console.log('📥 正在从云端加载数据...');
                     try {
-                        await this.loadProducts();
-                        console.log('✅ 产品数据加载完成');
-                        await this.loadAllUsers();
-                        console.log('✅ 用户数据加载完成');
+                        // 并行加载所有数据，而不是串行
+                        await Promise.all([
+                            this.loadProducts().then(() => console.log('✅ 产品数据加载完成')),
+                            this.loadAllUsers().then(() => console.log('✅ 用户数据加载完成')),
+                            this.loadHomepageSettings().then(() => console.log('✅ 主页设置加载完成'))
+                        ]);
+                        console.log('✅ 所有云端数据加载完成');
                     } catch (loadError) {
                         console.warn('⚠️ 数据加载失败:', loadError.message);
-                        console.log('💡 将继续使用本地数据');
                     }
 
                     // 设置实时监听
@@ -4009,22 +4195,16 @@
                         console.warn('⚠️ 实时监听器设置失败:', listenerError.message);
                     }
 
-                    // 首次同步本地数据到云端
-                    console.log('🔄 首次同步数据到云端...');
-                    try {
-                        await this.syncAllData();
-                        console.log('✅ 首次同步完成');
-                    } catch (syncError) {
-                        console.warn('⚠️ 首次同步失败:', syncError.message);
-                    }
+                    // 跳过首次同步以加快速度（数据已从云端加载）
+                    console.log('ℹ️ 跳过首次同步（数据已从云端加载）');
 
-                    // 定期同步（每1秒检查一次，实现实时同步）
+                    // 定期同步（每5秒检查一次，减少频率以提升性能）
                     this.syncInterval = setInterval(() => {
                         this.syncAllData().catch(err => {
                             console.warn('⚠️ 定期同步失败:', err.message);
                         });
-                    }, 1 * 1000);
-                    console.log('⏰ 已设置定期同步 (每1秒)');
+                    }, 5 * 1000);
+                    console.log('⏰ 已设置定期同步 (每5秒)');
 
                     // 更新UI状态指示器
                     this.updateSyncStatusUI(true);
@@ -4442,7 +4622,9 @@
 
             // 获取用户专属路径
             getUserPath() {
-                const userId = currentUser?.email || 'guest';
+                if (!currentUser) return 'users/guest';
+                // 使用account作为用户唯一标识（支持邮箱和手机号）
+                const userId = currentUser.account || currentUser.email || 'guest';
                 return `users/${userId.replace(/[.@]/g, '_')}`;
             }
 
@@ -4460,6 +4642,9 @@
 
                     // 同步所有用户数据（全局共享）
                     await this.syncAllUsers();
+
+                    // 同步主页设置（全局共享）
+                    await this.syncHomepageSettings();
 
                     // 同步用户订单和地址
                     if (currentUser) {
@@ -4568,23 +4753,41 @@
 
             // 从云端加载订单数据
             async loadOrders() {
-                if (!this.isInitialized || !currentUser) return;
+                if (!this.isInitialized || !currentUser) {
+                    // 未登录时清空订单
+                    userOrders = [];
+                    localStorage.setItem('userOrders', JSON.stringify(userOrders));
+                    return false;
+                }
 
                 try {
                     const userPath = this.getUserPath();
                     const snapshot = await this.db.ref(`${userPath}/orders`).once('value');
                     const cloudOrders = snapshot.val();
 
-                    if (cloudOrders && Array.isArray(cloudOrders)) {
+                    if (cloudOrders && Array.isArray(cloudOrders) && cloudOrders.length > 0) {
                         userOrders = cloudOrders;
-                        localStorage.setItem('userOrders', JSON.stringify(userOrders));
-                        console.log('✅ 已从云端加载订单数据');
+                        // 使用用户特定的localStorage key
+                        const userOrdersKey = `userOrders_${currentUser.account || 'guest'}`;
+                        localStorage.setItem(userOrdersKey, JSON.stringify(userOrders));
+                        localStorage.setItem('userOrders', JSON.stringify(userOrders)); // 兼容旧代码
+                        console.log('✅ 已从云端加载订单数据:', userOrders.length, '个订单');
                         return true;
+                    } else {
+                        // 云端没有订单，清空本地订单
+                        userOrders = [];
+                        const userOrdersKey = `userOrders_${currentUser.account || 'guest'}`;
+                        localStorage.setItem(userOrdersKey, JSON.stringify(userOrders));
+                        localStorage.setItem('userOrders', JSON.stringify(userOrders));
+                        console.log('ℹ️ 云端暂无订单数据');
+                        return false;
                     }
                 } catch (error) {
                     console.error('加载云端订单失败:', error);
-                }
+                    // 出错时也清空订单
+                    userOrders = [];
                 return false;
+                }
             }
 
             // 同步地址数据
@@ -4612,23 +4815,41 @@
 
             // 从云端加载地址数据
             async loadAddresses() {
-                if (!this.isInitialized || !currentUser) return;
+                if (!this.isInitialized || !currentUser) {
+                    // 未登录时清空地址
+                    userAddresses = [];
+                    localStorage.setItem('userAddresses', JSON.stringify(userAddresses));
+                    return false;
+                }
 
                 try {
                     const userPath = this.getUserPath();
                     const snapshot = await this.db.ref(`${userPath}/addresses`).once('value');
                     const cloudAddresses = snapshot.val();
 
-                    if (cloudAddresses && Array.isArray(cloudAddresses)) {
+                    if (cloudAddresses && Array.isArray(cloudAddresses) && cloudAddresses.length > 0) {
                         userAddresses = cloudAddresses;
-                        localStorage.setItem('userAddresses', JSON.stringify(userAddresses));
-                        console.log('✅ 已从云端加载地址数据');
+                        // 使用用户特定的localStorage key
+                        const userAddressesKey = `userAddresses_${currentUser.account || 'guest'}`;
+                        localStorage.setItem(userAddressesKey, JSON.stringify(userAddresses));
+                        localStorage.setItem('userAddresses', JSON.stringify(userAddresses)); // 兼容旧代码
+                        console.log('✅ 已从云端加载地址数据:', userAddresses.length, '个地址');
                         return true;
+                    } else {
+                        // 云端没有地址，清空本地地址
+                        userAddresses = [];
+                        const userAddressesKey = `userAddresses_${currentUser.account || 'guest'}`;
+                        localStorage.setItem(userAddressesKey, JSON.stringify(userAddresses));
+                        localStorage.setItem('userAddresses', JSON.stringify(userAddresses));
+                        console.log('ℹ️ 云端暂无地址数据');
+                        return false;
                     }
                 } catch (error) {
                     console.error('加载云端地址失败:', error);
-                }
+                    // 出错时也清空地址
+                    userAddresses = [];
                 return false;
+                }
             }
 
             // 同步所有用户数据（全局共享）
@@ -4673,6 +4894,51 @@
                     }
                 } catch (error) {
                     console.error('加载云端用户失败:', error);
+                }
+                return false;
+            }
+
+            // 同步主页设置
+            async syncHomepageSettings() {
+                try {
+                    const settingsRef = this.db.ref('homepageSettings');
+                    const settings = JSON.parse(localStorage.getItem('homepageSettings') || '{}');
+                    
+                    // 上传主页设置到云端
+                    await settingsRef.set(settings);
+                    
+                    console.log('✅ 主页设置已同步');
+                } catch (error) {
+                    console.error('主页设置同步失败:', error);
+                    throw error;
+                }
+            }
+
+            // 从云端加载主页设置
+            async loadHomepageSettings() {
+                if (!this.isInitialized) return;
+
+                try {
+                    const snapshot = await this.db.ref('homepageSettings').once('value');
+                    const cloudSettings = snapshot.val();
+
+                    if (cloudSettings && typeof cloudSettings === 'object') {
+                        // 合并云端设置和本地设置
+                        const localSettings = JSON.parse(localStorage.getItem('homepageSettings') || '{}');
+                        const mergedSettings = { ...localSettings, ...cloudSettings };
+                        
+                        localStorage.setItem('homepageSettings', JSON.stringify(mergedSettings));
+                        
+                        // 如果定义了全局变量，更新它
+                        if (typeof homepageSettings !== 'undefined') {
+                            Object.assign(homepageSettings, mergedSettings);
+                        }
+                        
+                        console.log('✅ 已从云端加载主页设置');
+                        return true;
+                    }
+                } catch (error) {
+                    console.error('加载云端主页设置失败:', error);
                 }
                 return false;
             }
@@ -4802,26 +5068,11 @@
             }
         }
 
-        // 页面加载时初始化云端同步
-        window.addEventListener('load', () => {
-            console.log('🚀 页面已加载，准备初始化云同步...');
-
-            // 检查 Firebase 是否加载
-            if (typeof firebase === 'undefined') {
-                console.error('❌ Firebase SDK 未加载！请检查网络连接');
-                console.log('💡 应用将以本地模式运行');
-                showNotification('⚠️ Firebase 未加载，仅使用本地存储', 'warning');
-                return;
-            } else {
-                console.log('✅ Firebase SDK 已加载');
-            }
-
-            // 延迟初始化，确保所有依赖都加载完成
-            setTimeout(async () => {
-                console.log('⏰ 开始初始化云同步管理器...');
-                await initCloudSync();
-            }, 1000);
-        });
+        // 页面加载时初始化云端同步（已在DOMContentLoaded中处理，这里不再重复初始化）
+        // window.addEventListener('load', () => {
+        //     console.log('🚀 页面已加载，准备初始化云同步...');
+        //     // 已在DOMContentLoaded中初始化，避免重复
+        // });
 
         // ========== 离线缓存管理器 ==========
         class OfflineCacheManager {
@@ -5312,10 +5563,11 @@
                 console.log('💾 开始保存产品数据...');
                 localStorage.setItem('products', JSON.stringify(products));
                 console.log('💾 保存成功，产品数量:', products.length);
-                console.log('💾 CLOUD_STORAGE.enabled =', CLOUD_STORAGE.enabled);
-                if (CLOUD_STORAGE.enabled) {
-                    console.log('🌐 准备调用 syncToCloud...');
-                    syncToCloud('products', products);
+                // 同步到Firebase云端
+                if (cloudSync && cloudSync.isInitialized) {
+                    cloudSync.syncProducts().catch(err => {
+                        console.warn('产品数据云端同步失败:', err);
+                    });
                 }
                 return true;
             } catch (error) {
@@ -5326,10 +5578,14 @@
         }
 
         function saveUserOrders() {
-            localStorage.setItem('userOrders', JSON.stringify(userOrders));
-            if (CLOUD_STORAGE.enabled) {
-                syncToCloud('orders', userOrders);
+            // 使用用户特定的localStorage key
+            if (currentUser && currentUser.account) {
+                const userOrdersKey = `userOrders_${currentUser.account}`;
+                localStorage.setItem(userOrdersKey, JSON.stringify(userOrders));
             }
+            // 兼容旧代码
+            localStorage.setItem('userOrders', JSON.stringify(userOrders));
+            // 订单数据已通过Firebase同步，无需额外同步
         }
 
         function saveCurrentUser() {
@@ -5337,6 +5593,12 @@
         }
 
         function saveUserAddresses() {
+            // 使用用户特定的localStorage key
+            if (currentUser && currentUser.account) {
+                const userAddressesKey = `userAddresses_${currentUser.account}`;
+                localStorage.setItem(userAddressesKey, JSON.stringify(userAddresses));
+            }
+            // 兼容旧代码
             localStorage.setItem('userAddresses', JSON.stringify(userAddresses));
         }
 
@@ -5346,93 +5608,16 @@
 
         function saveAllUsers() {
             localStorage.setItem('allUsers', JSON.stringify(allUsers));
-            if (CLOUD_STORAGE.enabled) {
-                syncToCloud('users', allUsers);
-            }
+            // 用户数据已通过Firebase同步，无需额外同步
         }
 
-        // 简化的数据同步功能 - 使用 localStorage 跨设备同步
-        function syncToCloud(dataType, data) {
-            console.log(`🔄 开始同步 ${dataType} 数据...`);
-            console.log(`📊 CROSS_DEVICE_SYNC.enabled = ${CROSS_DEVICE_SYNC.enabled}`);
-
-            if (!CROSS_DEVICE_SYNC.enabled) {
-                console.warn(`⚠️ ${dataType} 同步已禁用`);
-                return;
-            }
-
-            try {
-                // 创建同步数据包
-                const syncData = {
-                    type: dataType,
-                    data: data,
-                    timestamp: Date.now(),
-                    deviceId: getDeviceId()
-                };
-
-                console.log(`📦 同步数据包:`, syncData);
-
-                // 保存到 localStorage
-                const existingSync = JSON.parse(localStorage.getItem(CROSS_DEVICE_SYNC.syncKey) || '{}');
-                existingSync[dataType] = syncData;
-                localStorage.setItem(CROSS_DEVICE_SYNC.syncKey, JSON.stringify(existingSync));
-                localStorage.setItem(CROSS_DEVICE_SYNC.lastSyncTime, Date.now().toString());
-
-                console.log(`✅ ${dataType} 数据已同步到本地存储`);
-
-                // 尝试同步到其他设备（通过 URL 参数）
-                syncViaURL(dataType, data);
-
-            } catch (error) {
-                console.error(`❌ ${dataType} 同步错误:`, error);
-                console.error('错误堆栈:', error.stack);
-            }
-        }
-
-        function syncFromCloud(dataType) {
-            if (!CROSS_DEVICE_SYNC.enabled) return null;
-
-            try {
-                const syncData = JSON.parse(localStorage.getItem(CROSS_DEVICE_SYNC.syncKey) || '{}');
-                const data = syncData[dataType];
-
-                if (data && data.data) {
-                    console.log(`✅ ${dataType} 数据已从本地存储同步`);
-                    return data.data;
-                }
-
-                return null;
-            } catch (error) {
-                console.error(`❌ ${dataType} 同步错误:`, error);
-                return null;
-            }
-        }
-
-        // 生成设备ID
-        function getDeviceId() {
-            let deviceId = localStorage.getItem('device_id');
-            if (!deviceId) {
-                deviceId = 'device_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-                localStorage.setItem('device_id', deviceId);
-            }
-            return deviceId;
-        }
-
-        // 通过URL参数同步数据（简单方案）
+        // 通过URL参数同步数据（用于跨设备同步）
         function syncViaURL(dataType, data) {
             try {
-                // 使用 encodeURIComponent 替代 btoa，支持中文字符
                 const jsonData = JSON.stringify({ type: dataType, data: data });
                 const encodedData = encodeURIComponent(jsonData);
                 const syncURL = `${window.location.origin}${window.location.pathname}?sync=${encodedData}`;
-
-                // 在控制台显示同步链接，用户可以复制到其他设备
                 console.log(`📋 跨设备同步链接 (${dataType}):`, syncURL);
-
-                // 可以显示给用户（已禁用，避免弹窗干扰）
-                // if (isAdmin()) {
-                //     showNotification(`数据同步链接已生成，请复制到其他设备: ${syncURL}`, 'info');
-                // }
             } catch (error) {
                 console.error('URL同步失败:', error);
             }
@@ -5476,35 +5661,6 @@
             }
         }
 
-        // 初始化时从云端同步数据
-        async function initCloudSync() {
-            if (!CLOUD_STORAGE.enabled) return;
-
-            console.log('🔄 开始云端数据同步...');
-
-            // 同步产品数据
-            const cloudProducts = await syncFromCloud('products');
-            if (cloudProducts && cloudProducts.length > 0) {
-                products = cloudProducts;
-                saveProducts();
-            }
-
-            // 同步用户数据
-            const cloudUsers = await syncFromCloud('users');
-            if (cloudUsers && cloudUsers.length > 0) {
-                allUsers = cloudUsers;
-                saveAllUsers();
-            }
-
-            // 同步订单数据
-            const cloudOrders = await syncFromCloud('orders');
-            if (cloudOrders && cloudOrders.length > 0) {
-                userOrders = cloudOrders;
-                saveUserOrders();
-            }
-
-            console.log('✅ 云端数据同步完成');
-        }
 
         // 权限检查函数
         function isAdmin() {
@@ -5573,18 +5729,146 @@
         }
 
         document.addEventListener('DOMContentLoaded', async function () {
+            const loader = document.getElementById('page-loader');
+            const loaderProgress = document.getElementById('loader-progress');
+            
+            try {
+                // 更新加载进度
+                loaderProgress.textContent = '检查URL同步数据...';
+                
             // 先检查URL同步数据
             loadSyncFromURL();
 
-            // 然后尝试从云端同步数据
+                // 更新加载进度
+                loaderProgress.textContent = '初始化云端同步...';
+                
+                // 等待Firebase SDK加载（最多等待3秒，减少等待时间）
+                let firebaseReady = false;
+                for (let i = 0; i < 6; i++) {
+                    if (typeof firebase !== 'undefined') {
+                        firebaseReady = true;
+                        break;
+                    }
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                }
+                
+                if (firebaseReady) {
+                    // 初始化云端同步（这会加载产品、用户和主页设置）
+                    loaderProgress.textContent = '连接云端数据库...';
             await initCloudSync();
 
-            initData();
+                    // 等待云端同步初始化完成（最多等待5秒，减少等待时间）
+                    let syncReady = false;
+                    for (let i = 0; i < 10; i++) {
+                        if (cloudSync && cloudSync.isInitialized) {
+                            syncReady = true;
+                            break;
+                        }
+                        await new Promise(resolve => setTimeout(resolve, 500));
+                    }
+                    
+                    if (syncReady) {
+                        // 并行加载所有数据，提高速度
+                        loaderProgress.textContent = '加载云端数据...';
+                        
+                        // 并行加载产品、用户订单和地址（如果已登录）
+                        const loadPromises = [
+                            cloudSync.loadProducts(),
+                            cloudSync.loadHomepageSettings()
+                        ];
+                        
+                        if (currentUser) {
+                            loadPromises.push(cloudSync.loadOrders());
+                            loadPromises.push(cloudSync.loadAddresses());
+                        }
+                        
+                        await Promise.all(loadPromises);
+                        
+                        // 从localStorage读取更新后的数据（云端已加载）
+                        products = JSON.parse(localStorage.getItem('products')) || [];
+                        homepageSettings = JSON.parse(localStorage.getItem('homepageSettings')) || homepageSettings;
+                        if (currentUser) {
+                            // 使用用户特定的localStorage key
+                            const userOrdersKey = `userOrders_${currentUser.account}`;
+                            const userAddressesKey = `userAddresses_${currentUser.account}`;
+                            userOrders = JSON.parse(localStorage.getItem(userOrdersKey)) || JSON.parse(localStorage.getItem('userOrders')) || [];
+                            userAddresses = JSON.parse(localStorage.getItem(userAddressesKey)) || JSON.parse(localStorage.getItem('userAddresses')) || [];
+                            
+                            // 过滤掉不属于当前用户的订单和地址（兼容旧数据）
+                            userOrders = userOrders.filter(order => !order.account || order.account === currentUser.account);
+                            userAddresses = userAddresses.filter(addr => !addr.account || addr.account === currentUser.account);
+                        } else {
+                            userOrders = [];
+                            userAddresses = [];
+                        }
+                    } else {
+                        loaderProgress.textContent = '云端同步超时...';
+                        // 超时后仍尝试从云端加载一次
+                        products = [];
+                    }
+                } else {
+                    loaderProgress.textContent = 'Firebase未加载...';
+                    products = [];
+                }
+
+                // 更新加载进度
+                loaderProgress.textContent = '渲染页面内容...';
+                
+                // 立即渲染页面内容（不等待）
             renderProducts(products);
             renderUserOrders();
 
+                // 如果后台管理页面已打开，更新表单
+                if (cloudSync && cloudSync.isInitialized) {
+                    const adminHomepage = document.getElementById('admin-homepage');
+                    if (adminHomepage && adminHomepage.classList.contains('active')) {
+                        loadHomepageSettings();
+                    }
+                }
+
             // 应用主页设置
             applyHomepageSettings();
+                
+                // 初始化语言选择器
+                const languageSelect = document.getElementById('language-select');
+                if (languageSelect) {
+                    // 设置当前语言
+                    languageSelect.value = currentLanguage;
+                    
+                    // 绑定语言切换事件
+                    languageSelect.addEventListener('change', function() {
+                        switchLanguage(this.value);
+                    });
+                }
+                
+                // 应用语言设置（在页面渲染后）
+                applyLanguage();
+                
+            } catch (error) {
+                console.error('页面初始化失败:', error);
+                loaderProgress.textContent = '加载失败';
+                // 即使失败也显示空页面
+                renderProducts(products || []);
+                renderUserOrders();
+                applyHomepageSettings();
+                
+                // 初始化语言选择器（即使失败也要初始化）
+                const languageSelect = document.getElementById('language-select');
+                if (languageSelect) {
+                    languageSelect.value = currentLanguage;
+                    languageSelect.addEventListener('change', function() {
+                        switchLanguage(this.value);
+                    });
+                }
+                
+                // 应用语言设置
+                applyLanguage();
+            } finally {
+                // 立即隐藏加载遮罩，显示页面内容（不延迟）
+                loader.classList.add('hidden');
+                document.body.classList.remove('loading');
+                loader.remove();
+            }
 
             // 轮播图功能
             const slides = document.querySelectorAll('.carousel-slide');
@@ -5747,9 +6031,32 @@
                 registerModal.style.display = 'flex';
             });
 
+            // 登录/注册选择模态框按钮事件
+            const authChoiceModal = document.getElementById('auth-choice-modal');
+            const gotoLoginBtn = document.getElementById('goto-login-btn');
+            const gotoRegisterBtn = document.getElementById('goto-register-btn');
+
+            if (gotoLoginBtn) {
+                gotoLoginBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    if (authChoiceModal) authChoiceModal.style.display = 'none';
+                    loginModal.style.display = 'flex';
+                });
+            }
+
+            if (gotoRegisterBtn) {
+                gotoRegisterBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    if (authChoiceModal) authChoiceModal.style.display = 'none';
+                    registerModal.style.display = 'flex';
+                });
+            }
+
             closeButtons.forEach(button => {
                 button.addEventListener('click', () => {
                     modals.forEach(modal => modal.style.display = 'none');
+                    // 同时关闭登录/注册选择模态框
+                    if (authChoiceModal) authChoiceModal.style.display = 'none';
                 });
             });
 
@@ -5775,6 +6082,12 @@
 
                 const authResult = authenticateUser(account, password);
                 if (authResult && !authResult.banned) {
+                    // ========== 清空旧用户数据，准备加载新用户数据 ==========
+                    console.log('🔄 登录成功，清空旧用户数据...');
+                    userOrders = [];
+                    userAddresses = [];
+                    userProfile = {};
+                    
                     currentUser = authResult;
                     saveCurrentUser();
 
@@ -5810,20 +6123,22 @@
                                 }
                             }
 
-                            // 加载订单数据
-                            const cloudOrders = await cloudSync.downloadData('orders');
-                            if (cloudOrders && cloudOrders.length > 0) {
-                                userOrders = cloudOrders;
-                                localStorage.setItem('userOrders', JSON.stringify(userOrders));
-                                console.log('✅ 订单数据已从云端加载:', userOrders.length, '个订单');
-                            }
+                            // 从云端加载当前用户的订单数据
+                            await cloudSync.loadOrders();
+                            
+                            // 从云端加载当前用户的地址数据
+                            await cloudSync.loadAddresses();
 
                             showNotification(`☁️ 云端数据加载完成！欢迎 ${authResult.username}`, 'success');
                         } else {
                             // 云端同步未启用,回退到本地缓存
                             console.log('⚠️ 云端同步未启用,使用本地缓存数据');
                             products = JSON.parse(localStorage.getItem('products')) || [];
-                            userOrders = JSON.parse(localStorage.getItem('userOrders')) || [];
+                            // 从用户特定的localStorage加载订单和地址
+                            const userOrdersKey = `userOrders_${authResult.account}`;
+                            const userAddressesKey = `userAddresses_${authResult.account}`;
+                            userOrders = JSON.parse(localStorage.getItem(userOrdersKey)) || [];
+                            userAddresses = JSON.parse(localStorage.getItem(userAddressesKey)) || [];
                             allUsers = JSON.parse(localStorage.getItem('allUsers')) || [];
                             showNotification(`💾 云端未连接，已加载本地数据！欢迎 ${authResult.username}`, 'warning');
                         }
@@ -5832,13 +6147,18 @@
                         showNotification('数据加载失败,使用本地缓存', 'warning');
                         // 失败时使用本地缓存
                         products = JSON.parse(localStorage.getItem('products')) || [];
-                        userOrders = JSON.parse(localStorage.getItem('userOrders')) || [];
+                        const userOrdersKey = `userOrders_${authResult.account}`;
+                        const userAddressesKey = `userAddresses_${authResult.account}`;
+                        userOrders = JSON.parse(localStorage.getItem(userOrdersKey)) || [];
+                        userAddresses = JSON.parse(localStorage.getItem(userAddressesKey)) || [];
                         allUsers = JSON.parse(localStorage.getItem('allUsers')) || [];
                     }
 
                     // 更新界面显示
                     updateUserInterface();
                     renderProducts(products);
+                    renderUserOrders();
+                    renderAddressList();
 
                     // 如果是管理员，显示控制面板
                     if (authResult.role === 'admin') {
@@ -5846,6 +6166,14 @@
                         if (controlPanel) {
                             controlPanel.style.display = 'block';
                         }
+                    }
+
+                    // 如果之前点击了领取产品，登录成功后自动打开报名模态框
+                    if (pendingSignupProduct) {
+                        setTimeout(() => {
+                            openSignupModal(pendingSignupProduct);
+                            pendingSignupProduct = null; // 清除待领取产品
+                        }, 500);
                     }
 
                 } else if (authResult && authResult.banned) {
@@ -5882,17 +6210,36 @@
                 const result = registerUser(account, password, username);
 
                 if (result.success) {
+                    // ========== 清空旧用户数据，准备新用户数据 ==========
+                    console.log('🔄 注册成功，清空旧用户数据...');
+                    userOrders = [];
+                    userAddresses = [];
+                    userProfile = {};
+                    
                     currentUser = { account, username, role: 'user' };
                     saveCurrentUser();
 
                     // 同步到云端
                     if (cloudSync && cloudSync.isInitialized) {
                         await cloudSync.syncAllUsers();
+                        // 加载新用户的订单和地址（应该为空）
+                        await cloudSync.loadOrders();
+                        await cloudSync.loadAddresses();
                     }
 
                     alert('注册成功！');
                     registerModal.style.display = 'none';
                     updateUserInterface();
+                    renderUserOrders();
+                    renderAddressList();
+
+                    // 如果之前点击了领取产品，注册成功后自动打开报名模态框
+                    if (pendingSignupProduct) {
+                        setTimeout(() => {
+                            openSignupModal(pendingSignupProduct);
+                            pendingSignupProduct = null; // 清除待领取产品
+                        }, 500);
+                    }
                 } else {
                     alert(result.message);
                 }
@@ -6023,56 +6370,7 @@
                 });
             }
 
-            // 客服系统
-            const chatButton = document.getElementById('chat-button');
-            const chatWindow = document.getElementById('chat-window');
-            const closeChat = document.querySelector('.close-chat');
-            const sendMessageBtn = document.getElementById('send-message');
-            const chatInput = document.getElementById('chat-input');
-            const chatMessages = document.getElementById('chat-messages');
-
-            chatButton.addEventListener('click', () => {
-                chatWindow.style.display = 'flex';
-            });
-
-            closeChat.addEventListener('click', () => {
-                chatWindow.style.display = 'none';
-            });
-
-            sendMessageBtn.addEventListener('click', sendMessage);
-            chatInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    sendMessage();
-                }
-            });
-
-            function sendMessage() {
-                const message = chatInput.value.trim();
-                if (message) {
-                    addMessage(message, 'customer');
-                    chatInput.value = '';
-
-                    // 模拟客服回复
-                    setTimeout(() => {
-                        const responses = [
-                            '感谢您的咨询，我们会尽快为您处理。',
-                            '请问您需要了解产品的哪些具体信息？',
-                            '我们的客服工作时间是9:00-18:00，请留下您的联系方式，我们会尽快回复您。',
-                            '您可以通过产品详情页的"立即报名"按钮提交需求。'
-                        ];
-                        const randomResponse = responses[Math.floor(Math.random() * responses.length)];
-                        addMessage(randomResponse, 'service');
-                    }, 1000);
-                }
-            }
-
-            function addMessage(text, sender) {
-                const messageDiv = document.createElement('div');
-                messageDiv.className = `message ${sender}`;
-                messageDiv.textContent = text;
-                chatMessages.appendChild(messageDiv);
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-            }
+            // WhatsApp按钮已通过HTML直接链接，无需JavaScript处理
 
             // 报名表单 - 修改这部分代码
             document.getElementById('signup-form').addEventListener('submit', function (e) {
@@ -6107,7 +6405,8 @@
                     image: currentProduct.image,
                     status: 'review',
                     date: new Date().toISOString().split('T')[0],
-                    customerInfo: { name, phone, email, address, notes }
+                    customerInfo: { name, phone, email, address, notes },
+                    account: currentUser ? currentUser.account : null // 添加用户标识
                 };
 
                 userOrders.push(newOrder);
@@ -6371,9 +6670,7 @@
 
             // 地址管理功能
             const addAddressBtn = document.getElementById('add-address-btn');
-            const addressModal = document.getElementById('address-modal');
             const addressForm = document.getElementById('address-form');
-            const cancelAddressBtn = document.getElementById('cancel-address');
 
             if (addAddressBtn) {
                 addAddressBtn.addEventListener('click', () => {
@@ -6381,17 +6678,22 @@
                 });
             }
 
-            if (cancelAddressBtn) {
-                cancelAddressBtn.addEventListener('click', () => {
-                    closeModal('address-modal');
-                });
-            }
-
-            if (addressForm) {
+            if (addressForm && !addressForm._submitHandler) {
                 addressForm.addEventListener('submit', (e) => {
                     e.preventDefault();
+                    // 防止重复提交
+                    if (addressForm._submitting) {
+                        console.warn('表单正在提交中，忽略重复提交');
+                        return;
+                    }
+                    addressForm._submitting = true;
                     saveAddress();
+                    // 提交完成后重置标志
+                    setTimeout(() => {
+                        addressForm._submitting = false;
+                    }, 1000);
                 });
+                addressForm._submitHandler = true;
             }
 
             // 个人信息表单
@@ -7578,12 +7880,14 @@
             productsGrid.style.display = 'grid';
 
             if (productsToRender.length === 0) {
-                productsGrid.innerHTML = '<div class="no-products">暂无商品</div>';
+                productsGrid.innerHTML = `<div class="no-products">${t('noProducts')}</div>`;
                 return;
             }
 
             productsGrid.innerHTML = productsToRender.map(product => {
                 const categoryLabel = getCategoryLabel(product.category);
+                const oldPrice = formatCurrency(product.price);
+                const newPrice = formatCurrency(product.newPrice !== undefined ? product.newPrice : 0);
                 return `
                     <article class="home-feature-card" data-product-id="${product.id}">
                         <div class="home-feature-image">
@@ -7594,14 +7898,14 @@
                             <div>
                                 <h3>${product.name}</h3>
                                 <div class="home-feature-price">
-                                    <span style="text-decoration: line-through; color: #999; margin-right: 10px;">¥${product.price}</span>
-                                    <span style="color: #e74c3c; font-weight: bold; font-size: 1.2em;">¥${product.newPrice !== undefined ? product.newPrice : 0}</span>
+                                    <span style="text-decoration: line-through; color: #999; margin-right: 10px;">${oldPrice}</span>
+                                    <span style="color: #e74c3c; font-weight: bold; font-size: 1.2em;">${newPrice}</span>
                                 </div>
-                                <div class="home-feature-stock">库存 ${product.stock || 0} 件</div>
+                                <div class="home-feature-stock">${t('stock')} ${product.stock || 0} ${t('pieces')}</div>
                             </div>
                             <div class="home-feature-actions">
-                                <button class="btn btn-primary view-detail">点击详情</button>
-                                <button class="btn btn-secondary signup-btn" data-product-id="${product.id}">点击领取</button>
+                                <button class="btn btn-primary view-detail">${t('viewDetail')}</button>
+                                <button class="btn btn-secondary signup-btn" data-product-id="${product.id}">${t('claimNow')}</button>
                             </div>
                         </div>
                     </article>
@@ -7711,8 +8015,12 @@
             console.log('📝 报名调试 - 点击的产品:', product);
 
             if (!currentUser) {
-                alert('请先登录');
-                document.getElementById('login-modal').style.display = 'flex';
+                // 未登录时，记录待领取的产品，然后打开登录/注册选择模态框
+                pendingSignupProduct = product;
+                const authChoiceModal = document.getElementById('auth-choice-modal');
+                if (authChoiceModal) {
+                    authChoiceModal.style.display = 'flex';
+                }
                 return;
             }
 
@@ -7756,11 +8064,32 @@
 
             // 清空所有订单容器
             Object.values(orderContainers).forEach(container => {
-                container.innerHTML = '';
+                if (container) container.innerHTML = '';
             });
 
+            // 确保userOrders是数组且只包含当前用户的订单
+            if (!Array.isArray(userOrders)) {
+                userOrders = [];
+            }
+
+            // 过滤掉不属于当前用户的订单（如果有account字段）
+            if (currentUser && currentUser.account) {
+                userOrders = userOrders.filter(order => {
+                    // 如果订单有account字段，只显示当前用户的订单
+                    if (order.account) {
+                        return order.account === currentUser.account;
+                    }
+                    // 旧数据没有account字段，保留（兼容性）
+                    return true;
+                });
+            }
+
             if (userOrders.length === 0) {
-                orderContainers.all.innerHTML = '<p>暂无报名记录</p>';
+                if (orderContainers.all) orderContainers.all.innerHTML = '<p style="text-align: center; color: #999; padding: 40px;">暂无报名记录</p>';
+                if (orderContainers.pending) orderContainers.pending.innerHTML = '<p style="text-align: center; color: #999; padding: 40px;">暂无待处理订单</p>';
+                if (orderContainers.review) orderContainers.review.innerHTML = '<p style="text-align: center; color: #999; padding: 40px;">暂无待审核订单</p>';
+                if (orderContainers.rejected) orderContainers.rejected.innerHTML = '<p style="text-align: center; color: #999; padding: 40px;">暂无已驳回订单</p>';
+                if (orderContainers.cancelled) orderContainers.cancelled.innerHTML = '<p style="text-align: center; color: #999; padding: 40px;">暂无已取消订单</p>';
                 return;
             }
 
@@ -7806,6 +8135,15 @@
         }
 
         function getCategoryLabel(category) {
+            if (currentLanguage === 'en') {
+                const map = {
+                    'electronics': 'Electronics',
+                    'home': 'Home & Living',
+                    'clothing': 'Clothing & Shoes',
+                    'beauty': 'Beauty & Skincare'
+                };
+                return map[category] || 'Featured';
+            } else {
             const map = {
                 'electronics': '电子产品',
                 'home': '家居用品',
@@ -7813,6 +8151,7 @@
                 'beauty': '美妆护理'
             };
             return map[category] || '精选好物';
+            }
         }
 
         // 后台管理页面切换
@@ -8655,6 +8994,13 @@
             // 应用设置到页面
             applyHomepageSettings();
 
+            // 同步到云端
+            if (cloudSync && cloudSync.isInitialized) {
+                cloudSync.syncHomepageSettings().catch(err => {
+                    console.warn('主页设置云端同步失败:', err);
+                });
+            }
+
             showNotification('主页设置已保存', 'success');
         }
 
@@ -9179,122 +9525,214 @@
             const title = document.getElementById('address-modal-title');
             const form = document.getElementById('address-form');
 
+            if (!modal || !form) {
+                console.error('Address modal or form not found');
+                return;
+            }
+
             if (address) {
-                title.textContent = '编辑地址';
+                title.textContent = 'Edit address';
                 document.getElementById('address-id').value = address.id;
-                document.getElementById('address-name').value = address.name;
-                document.getElementById('address-phone').value = address.phone;
-                document.getElementById('address-province').value = address.province;
-                document.getElementById('address-city').value = address.city;
-                document.getElementById('address-district').value = address.district;
-                document.getElementById('address-detail').value = address.detail;
+                document.getElementById('address-name').value = address.name || '';
+                document.getElementById('address-phone').value = address.phone || '';
+                document.getElementById('address-country').value = 'US';
+                document.getElementById('address-detail').value = address.detail || '';
+                document.getElementById('address-unit').value = address.unit || '';
+                document.getElementById('address-city').value = address.city || '';
+                document.getElementById('address-state').value = address.state || '';
                 document.getElementById('address-postal').value = address.postal || '';
                 document.getElementById('address-default').checked = address.isDefault || false;
             } else {
-                title.textContent = '添加地址';
+                title.textContent = 'Add a new address';
                 form.reset();
                 document.getElementById('address-id').value = '';
+                document.getElementById('address-country').value = 'US';
             }
+
+            // 不再在这里绑定事件，避免重复绑定
+            // 事件已在DOMContentLoaded中绑定
 
             modal.style.display = 'flex';
         }
 
         // 保存地址
         function saveAddress() {
+            console.log('saveAddress called');
+            
             const id = document.getElementById('address-id').value;
             const name = document.getElementById('address-name').value.trim();
             const phone = document.getElementById('address-phone').value.trim();
-            const province = document.getElementById('address-province').value;
-            const city = document.getElementById('address-city').value.trim();
-            const district = document.getElementById('address-district').value.trim();
+            const country = document.getElementById('address-country').value;
             const detail = document.getElementById('address-detail').value.trim();
+            const unit = document.getElementById('address-unit').value.trim();
+            const city = document.getElementById('address-city').value.trim();
+            const state = document.getElementById('address-state').value;
             const postal = document.getElementById('address-postal').value.trim();
             const isDefault = document.getElementById('address-default').checked;
 
-            if (!name || !phone || !province || !city || !district || !detail) {
-                alert('请填写完整信息');
+            console.log('Form values:', { name, phone, detail, city, state, postal });
+
+            if (!name || !phone || !detail || !city || !state || !postal) {
+                alert('Please fill in all required fields');
                 return;
             }
 
-            if (!/^1[3-9]\d{9}$/.test(phone)) {
-                alert('请输入正确的手机号格式');
+            // 验证电话号码（美国格式）
+            if (!/^[\d\s\-\(\)]+$/.test(phone)) {
+                alert('Please enter a valid phone number');
                 return;
             }
 
-            if (postal && !/^\d{6}$/.test(postal)) {
-                alert('请输入正确的邮政编码');
+            // 验证邮编（美国格式：5位或5+4位）
+            if (!/^\d{5}(-\d{4})?$/.test(postal)) {
+                alert('Please enter a valid ZIP code (e.g., 12345 or 12345-6789)');
                 return;
+            }
+
+            // 生成唯一ID（确保不会重复）
+            let addressId;
+            if (id) {
+                addressId = String(id);
+            } else {
+                // 生成唯一ID：时间戳 + 随机数
+                addressId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
             }
 
             const address = {
-                id: id || Date.now(),
+                id: addressId,
                 name,
                 phone,
-                province,
-                city,
-                district,
+                country: country || 'US',
                 detail,
+                unit,
+                city,
+                state,
                 postal,
-                isDefault
+                isDefault,
+                account: currentUser ? currentUser.account : null // 添加用户标识
             };
 
             if (isDefault) {
                 // 取消其他地址的默认状态
                 userAddresses.forEach(addr => {
-                    if (addr.id !== address.id) {
+                    if (String(addr.id) !== String(address.id)) {
                         addr.isDefault = false;
                     }
                 });
             }
 
             if (id) {
-                // 编辑地址
-                const index = userAddresses.findIndex(addr => addr.id == id);
+                // 编辑地址 - 使用严格比较
+                const index = userAddresses.findIndex(addr => String(addr.id) === String(id));
                 if (index !== -1) {
                     userAddresses[index] = address;
+                } else {
+                    console.warn('要编辑的地址未找到，将作为新地址添加');
+                    userAddresses.push(address);
                 }
             } else {
-                // 添加新地址
+                // 添加新地址前，检查是否已存在（防止重复添加）
+                const existingIndex = userAddresses.findIndex(addr => 
+                    String(addr.id) === String(address.id) ||
+                    (addr.name === address.name && 
+                     addr.phone === address.phone && 
+                     addr.detail === address.detail &&
+                     addr.city === address.city &&
+                     addr.state === address.state &&
+                     addr.postal === address.postal)
+                );
+                
+                if (existingIndex === -1) {
                 userAddresses.push(address);
+                } else {
+                    console.warn('地址已存在，跳过添加');
+                    showNotification('This address already exists', 'warning');
+                    return;
+                }
             }
 
             saveUserAddresses();
+            if (cloudSync && cloudSync.isInitialized) {
+                cloudSync.syncAddresses();
+            }
             closeModal('address-modal');
             renderAddressList();
-            alert('地址保存成功！');
+            showNotification('Address saved successfully!', 'success');
         }
 
         // 渲染地址列表
         function renderAddressList() {
             const addressList = document.getElementById('address-list');
 
-            if (userAddresses.length === 0) {
-                addressList.innerHTML = '<p style="text-align: center; color: #999; padding: 40px;">暂无收货地址</p>';
-                return;
+            if (!addressList) return;
+
+            // 确保userAddresses是数组且只包含当前用户的地址
+            if (!Array.isArray(userAddresses)) {
+                userAddresses = [];
             }
 
-            addressList.innerHTML = userAddresses.map(address => `
+            // 过滤掉不属于当前用户的地址（如果有account字段）
+            if (currentUser && currentUser.account) {
+                userAddresses = userAddresses.filter(address => {
+                    // 如果地址有account字段，只显示当前用户的地址
+                    if (address.account) {
+                        return address.account === currentUser.account;
+                    }
+                    // 旧数据没有account字段，保留（兼容性）
+                    return true;
+                });
+            }
+
+            // 添加"Add Address"卡片
+            let addressCardsHtml = `
+                <div class="add-address-card" onclick="document.getElementById('add-address-btn').click()">
+                    <div class="add-address-icon">+</div>
+                    <div class="add-address-text">Add Address</div>
+                </div>
+            `;
+
+            addressCardsHtml += userAddresses.map(address => {
+                // 兼容旧数据格式
+                const fullAddress = address.state 
+                    ? [
+                        address.detail,
+                        address.unit,
+                        address.city,
+                        address.state,
+                        address.postal
+                      ].filter(Boolean).join(', ')
+                    : [
+                        address.province || '',
+                        address.city || '',
+                        address.district || '',
+                        address.detail || ''
+                      ].filter(Boolean).join(' ');
+
+                return `
                 <div class="address-item ${address.isDefault ? 'default' : ''}">
-                    ${address.isDefault ? '<div class="address-default-badge">默认</div>' : ''}
+                        ${address.isDefault ? '<div class="address-default-badge">Default</div>' : ''}
                     <div class="address-info">
                         <div class="address-name">${address.name}</div>
                         <div class="address-phone">${address.phone}</div>
-                        <div class="address-full">${address.province} ${address.city} ${address.district} ${address.detail}</div>
-                        ${address.postal ? `<div class="address-postal">邮编：${address.postal}</div>` : ''}
+                            <div class="address-full">${fullAddress}</div>
+                            ${address.country ? `<div class="address-country">${address.country}</div>` : ''}
                     </div>
                     <div class="address-actions">
-                        <button class="btn btn-primary edit-address" data-id="${address.id}">编辑</button>
-                        <button class="btn btn-secondary set-default-address" data-id="${address.id}" ${address.isDefault ? 'disabled' : ''}>设为默认</button>
-                        <button class="btn btn-danger delete-address" data-id="${address.id}">删除</button>
+                            <button class="btn btn-primary edit-address" data-id="${address.id}">Edit</button>
+                            <button class="btn btn-secondary set-default-address" data-id="${address.id}" ${address.isDefault ? 'disabled' : ''}>Set as default</button>
+                            <button class="btn btn-danger delete-address" data-id="${address.id}">Delete</button>
                     </div>
                 </div>
-            `).join('');
+                `;
+            }).join('');
+
+            addressList.innerHTML = addressCardsHtml;
 
             // 绑定地址操作事件
             document.querySelectorAll('.edit-address').forEach(btn => {
                 btn.addEventListener('click', () => {
                     const addressId = btn.getAttribute('data-id');
-                    const address = userAddresses.find(addr => addr.id == addressId);
+                    const address = userAddresses.find(addr => String(addr.id) === String(addressId));
                     if (address) {
                         openAddressModal(address);
                     }
@@ -9311,32 +9749,58 @@
             document.querySelectorAll('.delete-address').forEach(btn => {
                 btn.addEventListener('click', () => {
                     const addressId = btn.getAttribute('data-id');
+                    if (confirm('Are you sure you want to delete this address?')) {
                     deleteAddress(addressId);
+                    }
                 });
             });
         }
 
         // 设置默认地址
         function setDefaultAddress(addressId) {
+            // 使用严格比较，确保只设置一个地址为默认
+            let found = false;
             userAddresses.forEach(addr => {
-                addr.isDefault = addr.id == addressId;
+                if (String(addr.id) === String(addressId)) {
+                    addr.isDefault = true;
+                    found = true;
+                } else {
+                    addr.isDefault = false;
+                }
             });
+            
+            if (!found) {
+                console.error('要设置为默认的地址未找到:', addressId);
+                showNotification('Address not found', 'error');
+                return;
+            }
+            
             saveUserAddresses();
+            if (cloudSync && cloudSync.isInitialized) {
+                cloudSync.syncAddresses();
+            }
             renderAddressList();
-            alert('默认地址设置成功！');
+            showNotification('Default address updated', 'success');
         }
 
         // 删除地址
         function deleteAddress(addressId) {
-            const address = userAddresses.find(addr => addr.id == addressId);
-            if (!address) return;
-
-            if (confirm(`确定要删除地址"${address.name}"吗？`)) {
-                userAddresses = userAddresses.filter(addr => addr.id != addressId);
-                saveUserAddresses();
-                renderAddressList();
-                alert('地址删除成功！');
+            // 使用严格比较，确保只删除一个地址
+            const initialLength = userAddresses.length;
+            userAddresses = userAddresses.filter(addr => String(addr.id) !== String(addressId));
+            
+            if (userAddresses.length === initialLength) {
+                console.error('要删除的地址未找到:', addressId);
+                showNotification('Address not found', 'error');
+                return;
             }
+            
+                saveUserAddresses();
+            if (cloudSync && cloudSync.isInitialized) {
+                cloudSync.syncAddresses();
+            }
+                renderAddressList();
+            showNotification('Address deleted', 'success');
         }
 
         // 显示Excel数据预览
@@ -9647,9 +10111,8 @@
         // ===================== 数据同步改进 =====================
 
         // 添加数据同步通知
-        // 已禁用同步通知功能，避免弹窗干扰
+        // 同步通知功能（已禁用）
         function showSyncNotification() {
-            // 功能已禁用，不再显示同步通知
             return;
             /*
             const syncNotification = document.createElement('div');
