@@ -2207,12 +2207,11 @@
             }
 
             .carousel-indicators {
-                bottom: 10px;
+                display: none; /* 移动端隐藏轮播点 */
             }
 
             .indicator {
-                width: 10px;
-                height: 10px;
+                display: none; /* 移动端隐藏轮播点 */
             }
         }
 
@@ -2223,15 +2222,15 @@
             }
 
             .section-title {
-                font-size: 20px;
-                margin: 20px 0 15px;
-                padding-left: 8px;
+                font-size: 18px;
+                margin: 15px 0 12px;
+                padding-left: 5px;
             }
 
             /* 首页精选展示优化 */
             #featured-showcase {
-                padding: 20px 15px;
-                margin-top: 20px;
+                padding: 15px 10px;
+                margin-top: 15px;
             }
 
             #featured-showcase .featured-head {
@@ -2309,18 +2308,26 @@
                 font-size: 13px;
             }
 
-            /* 首页精选卡片优化 */
+            /* 首页精选卡片优化 - 移动端2列布局 */
             #products-grid {
-                grid-template-columns: 1fr !important;
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: 10px !important;
+                padding: 0 5px;
             }
 
             .home-feature-card {
                 max-width: 100% !important;
+                margin: 0 !important;
+                border-radius: 8px;
+                overflow: hidden;
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
             }
 
             .home-feature-image {
-                aspect-ratio: 1 / 1; /* 正方形比例 */
+                aspect-ratio: 1 / 1;
                 width: 100%;
+                position: relative;
+                background: #f7f8fa;
             }
 
             .home-feature-image img {
@@ -2329,31 +2336,97 @@
                 object-fit: cover;
             }
 
+            .home-feature-tag {
+                top: 8px;
+                left: 8px;
+                padding: 3px 8px;
+                font-size: 10px;
+            }
+
+            .home-feature-body {
+                padding: 10px 8px 12px !important;
+                gap: 6px;
+            }
+
             .home-feature-body h3 {
-                font-size: 16px;
+                font-size: 12px;
+                line-height: 1.4;
+                margin: 0 0 6px 0;
+                display: -webkit-box;
+                -webkit-line-clamp: 2;
+                -webkit-box-orient: vertical;
+                overflow: hidden;
+                height: 32px;
+                color: #333;
+                font-weight: 500;
             }
 
             .home-feature-price {
-                font-size: 20px;
+                font-size: 14px !important;
+                margin: 4px 0;
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                flex-wrap: wrap;
+            }
+
+            .home-feature-price span:first-child {
+                font-size: 11px;
+                color: #999;
+            }
+
+            .home-feature-price span:last-child {
+                font-size: 16px;
+                font-weight: bold;
+                color: #e74c3c;
+            }
+
+            .home-feature-stock {
+                font-size: 10px;
+                color: #666;
+                margin-top: 4px;
             }
 
             .home-feature-actions {
                 grid-template-columns: 1fr;
-                /* 改为单列 */
-                gap: 8px;
+                gap: 6px;
+                margin-top: 8px;
+            }
+
+            .home-feature-actions .btn {
+                padding: 6px 8px;
+                font-size: 11px;
+                border-radius: 4px;
             }
         }
 
         @media (max-width: 480px) {
-            .products-grid {
-                grid-template-columns: repeat(2, 1fr) !important;
-                /* 小屏幕强制两列 */
-                gap: 10px;
+            /* 小屏幕进一步优化 */
+            #products-grid {
+                gap: 8px !important;
+                padding: 0 3px;
             }
 
-            .product-image {
-                aspect-ratio: 1 / 1; /* 正方形比例 */
-                width: 100%;
+            .home-feature-body {
+                padding: 8px 6px 10px !important;
+            }
+
+            .home-feature-body h3 {
+                font-size: 11px;
+                height: 28px;
+            }
+
+            .home-feature-price {
+                font-size: 12px !important;
+            }
+
+            .home-feature-price span:last-child {
+                font-size: 14px;
+            }
+
+            .home-feature-actions .btn {
+                padding: 5px 6px;
+                font-size: 10px;
             }
         }
 
@@ -2710,7 +2783,7 @@
     <!-- 导航栏 -->
     <nav class="navbar">
         <div class="container nav-container">
-            <div class="logo" id="home-link">电商平台</div>
+            <div class="logo" id="home-link">首页</div>
 
             <ul class="nav-links">
                 <li><a href="#" class="active" id="main-home-link">首页</a></li>
@@ -2727,7 +2800,7 @@
                 <!-- 语言选择器 -->
                 <div class="language-selector" style="position: relative; margin-right: 15px;">
                     <select id="language-select" style="padding: 6px 12px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer; font-size: 14px;">
-                        <option value="zh">中文</option>
+                        <option value="zh">Chinese</option>
                         <option value="en">English</option>
                     </select>
                 </div>
@@ -3729,7 +3802,7 @@
         const translations = {
             zh: {
                 // 导航
-                'home': '首页',
+                'navHome': '首页',
                 'admin': '后台管理',
                 'userCenter': '用户中心',
                 'login': '登录',
@@ -3787,7 +3860,7 @@
             },
             en: {
                 // 导航
-                'home': 'Home',
+                'navHome': 'Home',
                 'admin': 'Admin Panel',
                 'userCenter': 'Account',
                 'login': 'Login',
@@ -3880,7 +3953,7 @@
             const logoutLink = document.getElementById('logout-link');
             const searchInput = document.getElementById('search-input');
             
-            if (homeLink) homeLink.textContent = t('home');
+            if (homeLink) homeLink.textContent = t('navHome');
             if (adminLink) adminLink.textContent = t('admin');
             if (userCenterLink) userCenterLink.textContent = t('userCenter');
             if (loginLink) loginLink.innerHTML = `<i class="fas fa-user"></i> ${t('login')}`;
@@ -3971,6 +4044,22 @@
         const ADMIN_ACCOUNTS = {
             'admin@admin.com': { password: 'admin123', role: 'admin', username: '系统管理员' },
             '1': { password: '1', role: 'admin', username: '管理员' }
+        };
+
+        // 云端数据同步配置 - 使用简单的共享存储方案
+        const CLOUD_STORAGE = {
+            enabled: true,
+            // 使用 GitHub Gist 作为免费的数据存储
+            baseUrl: 'https://api.github.com/gists',
+            gistId: 'your-gist-id-here', // 需要替换为实际的 Gist ID
+            accessToken: 'your-github-token-here' // 需要替换为 GitHub Token
+        };
+
+        // 备用方案：使用 localStorage 的跨设备同步
+        const CROSS_DEVICE_SYNC = {
+            enabled: true,
+            syncKey: 'ecommerce_sync_data',
+            lastSyncTime: 'ecommerce_last_sync'
         };
 
         // 全局云端同步管理器实例（将在页面加载后初始化）
@@ -5563,7 +5652,12 @@
                 console.log('💾 开始保存产品数据...');
                 localStorage.setItem('products', JSON.stringify(products));
                 console.log('💾 保存成功，产品数量:', products.length);
-                // 同步到Firebase云端
+                console.log('💾 CLOUD_STORAGE.enabled =', CLOUD_STORAGE.enabled);
+                if (CLOUD_STORAGE.enabled) {
+                    console.log('🌐 准备调用 syncToCloud...');
+                    syncToCloud('products', products);
+                }
+                // 同时同步到Firebase云端
                 if (cloudSync && cloudSync.isInitialized) {
                     cloudSync.syncProducts().catch(err => {
                         console.warn('产品数据云端同步失败:', err);
@@ -5585,7 +5679,9 @@
             }
             // 兼容旧代码
             localStorage.setItem('userOrders', JSON.stringify(userOrders));
-            // 订单数据已通过Firebase同步，无需额外同步
+            if (CLOUD_STORAGE.enabled) {
+                syncToCloud('orders', userOrders);
+            }
         }
 
         function saveCurrentUser() {
@@ -5608,16 +5704,93 @@
 
         function saveAllUsers() {
             localStorage.setItem('allUsers', JSON.stringify(allUsers));
-            // 用户数据已通过Firebase同步，无需额外同步
+            if (CLOUD_STORAGE.enabled) {
+                syncToCloud('users', allUsers);
+            }
         }
 
-        // 通过URL参数同步数据（用于跨设备同步）
+        // 简化的数据同步功能 - 使用 localStorage 跨设备同步
+        function syncToCloud(dataType, data) {
+            console.log(`🔄 开始同步 ${dataType} 数据...`);
+            console.log(`📊 CROSS_DEVICE_SYNC.enabled = ${CROSS_DEVICE_SYNC.enabled}`);
+
+            if (!CROSS_DEVICE_SYNC.enabled) {
+                console.warn(`⚠️ ${dataType} 同步已禁用`);
+                return;
+            }
+
+            try {
+                // 创建同步数据包
+                const syncData = {
+                    type: dataType,
+                    data: data,
+                    timestamp: Date.now(),
+                    deviceId: getDeviceId()
+                };
+
+                console.log(`📦 同步数据包:`, syncData);
+
+                // 保存到 localStorage
+                const existingSync = JSON.parse(localStorage.getItem(CROSS_DEVICE_SYNC.syncKey) || '{}');
+                existingSync[dataType] = syncData;
+                localStorage.setItem(CROSS_DEVICE_SYNC.syncKey, JSON.stringify(existingSync));
+                localStorage.setItem(CROSS_DEVICE_SYNC.lastSyncTime, Date.now().toString());
+
+                console.log(`✅ ${dataType} 数据已同步到本地存储`);
+
+                // 尝试同步到其他设备（通过 URL 参数）
+                syncViaURL(dataType, data);
+
+            } catch (error) {
+                console.error(`❌ ${dataType} 同步错误:`, error);
+                console.error('错误堆栈:', error.stack);
+            }
+        }
+
+        function syncFromCloud(dataType) {
+            if (!CROSS_DEVICE_SYNC.enabled) return null;
+
+            try {
+                const syncData = JSON.parse(localStorage.getItem(CROSS_DEVICE_SYNC.syncKey) || '{}');
+                const data = syncData[dataType];
+
+                if (data && data.data) {
+                    console.log(`✅ ${dataType} 数据已从本地存储同步`);
+                    return data.data;
+                }
+
+                return null;
+            } catch (error) {
+                console.error(`❌ ${dataType} 同步错误:`, error);
+                return null;
+            }
+        }
+
+        // 生成设备ID
+        function getDeviceId() {
+            let deviceId = localStorage.getItem('device_id');
+            if (!deviceId) {
+                deviceId = 'device_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                localStorage.setItem('device_id', deviceId);
+            }
+            return deviceId;
+        }
+
+        // 通过URL参数同步数据（简单方案）
         function syncViaURL(dataType, data) {
             try {
+                // 使用 encodeURIComponent 替代 btoa，支持中文字符
                 const jsonData = JSON.stringify({ type: dataType, data: data });
                 const encodedData = encodeURIComponent(jsonData);
                 const syncURL = `${window.location.origin}${window.location.pathname}?sync=${encodedData}`;
+
+                // 在控制台显示同步链接，用户可以复制到其他设备
                 console.log(`📋 跨设备同步链接 (${dataType}):`, syncURL);
+
+                // 可以显示给用户（已禁用，避免弹窗干扰）
+                // if (isAdmin()) {
+                //     showNotification(`数据同步链接已生成，请复制到其他设备: ${syncURL}`, 'info');
+                // }
             } catch (error) {
                 console.error('URL同步失败:', error);
             }
@@ -5661,6 +5834,10 @@
             }
         }
 
+        // 初始化时从云端同步数据
+        // 旧的initCloudSync函数（已废弃，使用Firebase CloudSyncManager版本）
+        // 此函数已被上方的Firebase版本替代，保留仅为兼容性
+        // async function initCloudSync() { ... }
 
         // 权限检查函数
         function isAdmin() {
@@ -6670,11 +6847,19 @@
 
             // 地址管理功能
             const addAddressBtn = document.getElementById('add-address-btn');
+            const addressModal = document.getElementById('address-modal');
             const addressForm = document.getElementById('address-form');
+            const cancelAddressBtn = document.getElementById('cancel-address');
 
             if (addAddressBtn) {
                 addAddressBtn.addEventListener('click', () => {
                     openAddressModal();
+                });
+            }
+
+            if (cancelAddressBtn) {
+                cancelAddressBtn.addEventListener('click', () => {
+                    closeModal('address-modal');
                 });
             }
 
@@ -10111,8 +10296,9 @@
         // ===================== 数据同步改进 =====================
 
         // 添加数据同步通知
-        // 同步通知功能（已禁用）
+        // 已禁用同步通知功能，避免弹窗干扰
         function showSyncNotification() {
+            // 功能已禁用，不再显示同步通知
             return;
             /*
             const syncNotification = document.createElement('div');
