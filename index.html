@@ -964,6 +964,16 @@
             display: none;
             margin: 30px 0;
         }
+        
+        .user-center.show {
+            display: grid !important;
+            grid-template-columns: 250px 1fr;
+            gap: 20px;
+        }
+        
+        .user-center.show.sidebar-hidden {
+            grid-template-columns: 1fr;
+        }
 
         .user-sidebar {
             background: white;
@@ -2093,25 +2103,46 @@
         /* 导航栏移动端优化 */
         @media (max-width: 768px) {
             .nav-container {
-                flex-wrap: wrap;
-                padding: 10px 0;
+                display: flex;
+                flex-wrap: nowrap;
+                align-items: center;
+                padding: 10px 15px;
+                gap: 10px;
             }
 
             .logo {
-                font-size: 20px;
-                margin-bottom: 10px;
-                min-height: 50px;
-                margin-left: 15px;
+                font-size: 18px;
+                min-height: 45px;
+                margin: 0;
+                flex-shrink: 0;
+                order: 1;
             }
             
             .logo img {
-                height: 50px;
-                max-width: 220px;
+                height: 45px;
+                max-width: 180px;
+            }
+
+            /* 汉堡菜单按钮 */
+            .menu-toggle {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background: none;
+                border: none;
+                font-size: 24px;
+                color: var(--dark);
+                cursor: pointer;
+                padding: 8px 10px;
+                margin: 0;
+                flex-shrink: 0;
+                order: 2;
+                min-width: 44px;
+                min-height: 44px;
             }
 
             .nav-links {
                 display: none;
-                /* 初始隐藏，通过汉堡菜单控制 */
                 position: absolute;
                 top: 100%;
                 left: 0;
@@ -2122,6 +2153,8 @@
                 padding: 10px 0;
                 box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
                 z-index: 1000;
+                max-height: 80vh;
+                overflow-y: auto;
             }
 
             .nav-links.show {
@@ -2131,64 +2164,160 @@
             .nav-links li {
                 margin: 0;
                 padding: 0;
+                width: 100%;
             }
 
             .nav-links a {
                 display: block;
                 padding: 12px 20px;
                 border-bottom: 1px solid #eee;
+                width: 100%;
+                box-sizing: border-box;
             }
 
             .nav-links li:last-child a {
                 border-bottom: none;
             }
 
-            /* 汉堡菜单按钮 */
-            .menu-toggle {
-                display: block;
-                background: none;
-                border: none;
-                font-size: 24px;
-                color: var(--dark);
-                cursor: pointer;
-                padding: 8px;
-                margin-left: auto;
-            }
-
             .search-bar {
-                width: 100%;
+                flex: 1;
+                min-width: 0;
                 order: 3;
-                margin: 10px 0 0 0;
+                margin: 0;
+                display: flex;
             }
 
             .search-bar input {
                 font-size: 16px;
-                /* 防止iOS缩放 */
-                padding: 12px 15px;
+                padding: 10px 12px;
+                flex: 1;
+                min-width: 0;
+            }
+
+            .search-bar button {
+                padding: 0 15px;
+                flex-shrink: 0;
             }
 
             .user-actions {
-                position: absolute;
-                top: 15px;
-                right: 15px;
-                width: auto;
-                justify-content: flex-end;
-                gap: 8px;
-                margin-top: 0;
-                order: 1;
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                margin: 0;
+                flex-shrink: 0;
+                order: 4;
+                flex-wrap: nowrap;
+            }
+
+            .user-actions > * {
+                flex-shrink: 0;
+            }
+
+            .language-selector {
+                margin: 0 !important;
+            }
+
+            .language-selector select {
+                padding: 6px 8px !important;
+                font-size: 12px !important;
+                min-width: 80px;
+            }
+
+            #admin-control-panel {
+                margin: 0 !important;
+            }
+
+            #control-panel-btn {
+                padding: 6px 10px !important;
+                font-size: 12px !important;
+            }
+
+            #control-panel-btn span {
+                display: none;
             }
 
             .user-actions a {
                 margin: 0;
-                font-size: 16px;
-                padding: 6px 12px;
+                font-size: 12px;
+                padding: 6px 10px;
                 background: var(--primary);
                 color: white;
                 border-radius: 6px;
+                white-space: nowrap;
             }
 
             .user-actions a:hover {
                 background: var(--primary-dark);
+            }
+
+            /* 退出按钮优化 */
+            #logout-link {
+                padding: 6px 10px !important;
+                font-size: 12px !important;
+            }
+        }
+
+        /* 更小屏幕优化 */
+        @media (max-width: 480px) {
+            .nav-container {
+                padding: 8px 10px;
+                gap: 6px;
+            }
+
+            .logo {
+                font-size: 16px;
+                min-height: 40px;
+            }
+            
+            .logo img {
+                height: 40px;
+                max-width: 150px;
+            }
+
+            .menu-toggle {
+                font-size: 20px;
+                padding: 6px 8px;
+                min-width: 40px;
+                min-height: 40px;
+            }
+
+            .search-bar input {
+                font-size: 14px;
+                padding: 8px 10px;
+            }
+
+            .search-bar button {
+                padding: 0 12px;
+            }
+
+            .user-actions {
+                gap: 4px;
+            }
+
+            .language-selector select {
+                padding: 5px 6px !important;
+                font-size: 11px !important;
+                min-width: 70px;
+            }
+
+            #control-panel-btn {
+                padding: 5px 8px !important;
+                font-size: 11px !important;
+            }
+
+            .user-actions a {
+                font-size: 11px;
+                padding: 5px 8px;
+            }
+
+            /* 确保导航链接在小屏幕上也能正常显示 */
+            .nav-links {
+                max-height: 70vh;
+            }
+
+            .nav-links a {
+                padding: 10px 15px;
+                font-size: 14px;
             }
         }
 
@@ -2490,6 +2619,11 @@
 
         /* 用户中心移动端优化 */
         @media (max-width: 768px) {
+            .user-center.show {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            
             .user-center {
                 margin: 15px 0;
             }
@@ -2685,13 +2819,25 @@
 
             .admin-table {
                 font-size: 13px;
-                min-width: 600px;
+                min-width: 800px;
+                display: table;
+                table-layout: auto;
                 /* 防止表格太挤 */
+            }
+
+            .admin-table thead {
+                display: table-header-group;
+            }
+
+            .admin-table tbody {
+                display: table-row-group;
             }
 
             .admin-table th,
             .admin-table td {
+                display: table-cell;
                 padding: 8px 10px;
+                vertical-align: middle;
             }
 
             /* 统计卡片优化 */
@@ -2961,8 +3107,8 @@
                         <h2 data-i18n="featuredTitle">Featured Recommendations</h2>
                         <p data-i18n="featuredDesc">We select the hottest products in real-time and provide exclusive claim channels. Click to view details quickly.</p>
                     </div>
-                    <div class="featured-meta">
-                        <i class="fas fa-sync-alt"></i> <span data-i18n="syncStatus">Real-time Refresh · Cloud Sync</span>
+                    <div class="featured-meta" style="display: none;">
+                        <!-- 已隐藏：实时刷新·云端同步按钮 -->
                     </div>
                 </div>
 
@@ -2992,14 +3138,14 @@
                         <i class="fas fa-user"></i>
                     </div>
                     <div class="user-details">
-                        <h3 id="username-display">用户名</h3>
-                        <p>普通会员</p>
+                        <h3 id="username-display">${t('username') || '用户名'}</h3>
+                        <p id="user-member-type">${t('regularMember') || '普通会员'}</p>
                     </div>
                 </div>
                 <ul class="user-menu">
-                    <li><a href="#" data-tab="profile">个人信息</a></li>
-                    <li><a href="#" data-tab="address">收货地址</a></li>
-                    <li><a href="#" data-tab="security">账户安全</a></li>
+                    <li><a href="#" data-tab="profile" data-i18n="profile">${t('profile') || '个人信息'}</a></li>
+                    <li><a href="#" data-tab="address" data-i18n="address">${t('address') || '收货地址'}</a></li>
+                    <li><a href="#" data-tab="security" data-i18n="security">${t('security') || '账户安全'}</a></li>
                 </ul>
             </div>
 
@@ -3042,43 +3188,43 @@
 
                 <!-- 个人信息页面 -->
                 <div class="user-page" id="user-profile">
-                    <h3>个人信息</h3>
+                    <h3 data-i18n="profile">${t('profile') || '个人信息'}</h3>
                     <form id="profile-form">
                         <div class="form-group">
-                            <label for="profile-username">用户名</label>
+                            <label for="profile-username" data-i18n="username">${t('username') || '用户名'}</label>
                             <input type="text" id="profile-username" class="form-control" readonly>
                         </div>
                         <div class="form-group">
-                            <label for="profile-account">账号</label>
+                            <label for="profile-account" data-i18n="account">${t('account') || '账号'}</label>
                             <input type="text" id="profile-account" class="form-control" readonly>
                         </div>
                         <div class="form-group">
-                            <label for="profile-nickname">昵称</label>
-                            <input type="text" id="profile-nickname" class="form-control" placeholder="请输入昵称">
+                            <label for="profile-nickname" data-i18n="nickname">${t('nickname') || '昵称'}</label>
+                            <input type="text" id="profile-nickname" class="form-control" data-i18n-placeholder="enterNickname" placeholder="${t('enterNickname') || '请输入昵称'}">
                         </div>
                         <div class="form-group">
-                            <label for="profile-phone">手机号</label>
-                            <input type="tel" id="profile-phone" class="form-control" placeholder="请输入手机号">
+                            <label for="profile-phone" data-i18n="phone">${t('phone') || '手机号'}</label>
+                            <input type="tel" id="profile-phone" class="form-control" data-i18n-placeholder="enterPhone" placeholder="${t('enterPhone') || '请输入手机号'}">
                         </div>
                         <div class="form-group">
-                            <label for="profile-email">邮箱</label>
-                            <input type="email" id="profile-email" class="form-control" placeholder="请输入邮箱">
+                            <label for="profile-email" data-i18n="email">${t('email') || '邮箱'}</label>
+                            <input type="email" id="profile-email" class="form-control" data-i18n-placeholder="enterEmail" placeholder="${t('enterEmail') || '请输入邮箱'}">
                         </div>
                         <div class="form-group">
-                            <label for="profile-birthday">生日</label>
+                            <label for="profile-birthday" data-i18n="birthday">${t('birthday') || '生日'}</label>
                             <input type="date" id="profile-birthday" class="form-control">
                         </div>
                         <div class="form-group">
-                            <label for="profile-gender">性别</label>
+                            <label for="profile-gender" data-i18n="gender">${t('gender') || '性别'}</label>
                             <select id="profile-gender" class="form-control">
-                                <option value="">请选择</option>
-                                <option value="male">男</option>
-                                <option value="female">女</option>
-                                <option value="other">其他</option>
+                                <option value="" data-i18n="pleaseSelect">${t('pleaseSelect') || '请选择'}</option>
+                                <option value="male" data-i18n="male">${t('male') || '男'}</option>
+                                <option value="female" data-i18n="female">${t('female') || '女'}</option>
+                                <option value="other" data-i18n="other">${t('other') || '其他'}</option>
                             </select>
                         </div>
                         <div class="form-actions">
-                            <button type="submit" class="btn btn-primary">保存修改</button>
+                            <button type="submit" class="btn btn-primary" data-i18n="saveChanges">${t('saveChanges') || '保存修改'}</button>
                         </div>
                     </form>
                 </div>
@@ -3091,58 +3237,36 @@
                     <div class="address-list" id="address-list">
                         <!-- 地址列表将通过JavaScript动态生成 -->
                     </div>
-                    <button class="btn btn-primary" id="add-address-btn" style="display: none;">添加地址</button>
+                    <button class="btn btn-primary" id="add-address-btn" style="display: none;" data-i18n="addAddress">${t('addAddress') || '添加地址'}</button>
                 </div>
 
                 <!-- 账户安全页面 -->
                 <div class="user-page" id="user-security">
-                    <h3>账户安全</h3>
+                    <h3 data-i18n="security">${t('security') || '账户安全'}</h3>
 
                     <div class="security-section">
-                        <h4>修改密码</h4>
+                        <h4 data-i18n="changePassword">${t('changePassword') || '修改密码'}</h4>
                         <form id="change-password-form">
                             <div class="form-group">
-                                <label for="current-password">当前密码</label>
-                                <input type="password" id="current-password" class="form-control" placeholder="请输入当前密码">
+                                <label for="current-password" data-i18n="currentPassword">${t('currentPassword') || '当前密码'}</label>
+                                <input type="password" id="current-password" class="form-control" data-i18n-placeholder="enterCurrentPassword" placeholder="${t('enterCurrentPassword') || '请输入当前密码'}">
                             </div>
                             <div class="form-group">
-                                <label for="new-password">新密码</label>
-                                <input type="password" id="new-password" class="form-control" placeholder="请输入新密码">
+                                <label for="new-password" data-i18n="newPassword">${t('newPassword') || '新密码'}</label>
+                                <input type="password" id="new-password" class="form-control" data-i18n-placeholder="enterNewPassword" placeholder="${t('enterNewPassword') || '请输入新密码'}">
                             </div>
                             <div class="form-group">
-                                <label for="confirm-password">确认新密码</label>
+                                <label for="confirm-password" data-i18n="confirmNewPassword">${t('confirmNewPassword') || '确认新密码'}</label>
                                 <input type="password" id="confirm-password" class="form-control"
-                                    placeholder="请再次输入新密码">
+                                    data-i18n-placeholder="enterNewPasswordAgain" placeholder="${t('enterNewPasswordAgain') || '请再次输入新密码'}">
                             </div>
                             <div class="form-actions">
-                                <button type="submit" class="btn btn-primary">修改密码</button>
+                                <button type="submit" class="btn btn-primary" data-i18n="changePassword">${t('changePassword') || '修改密码'}</button>
                             </div>
                         </form>
                     </div>
 
-                    <div class="security-section">
-                        <h4>安全设置</h4>
-                        <div class="security-item">
-                            <div class="security-info">
-                                <h5>登录保护</h5>
-                                <p>开启后，登录时需要验证手机号</p>
-                            </div>
-                            <label class="switch">
-                                <input type="checkbox" id="login-protection">
-                                <span class="slider"></span>
-                            </label>
-                        </div>
-                        <div class="security-item">
-                            <div class="security-info">
-                                <h5>异常登录提醒</h5>
-                                <p>当检测到异常登录时发送提醒</p>
-                            </div>
-                            <label class="switch">
-                                <input type="checkbox" id="login-alert" checked>
-                                <span class="slider"></span>
-                            </label>
-                        </div>
-                    </div>
+                    <!-- 安全设置部分已移除 -->
 
                     <!-- 云端同步设置 - 已隐藏,用户无需关心技术细节 -->
                     <div class="security-section" style="display:none;">
@@ -3919,17 +4043,25 @@
                 'noCompletedOrders': '暂无已完成订单',
                 'noRejectedOrders': '暂无已驳回订单',
                 'noCancelledOrders': '暂无已取消订单',
+                'cancelOrder': '取消订单',
+                'confirmCancelOrder': '确定要取消这个订单吗？',
+                'orderCancelled': '订单已取消',
                 // 订单详情
                 'orderDetails': '订单详情',
                 'orderId': '订单ID',
                 'orderStatus': '订单状态',
+                'allStatus': '全部状态',
                 'orderTime': '下单时间',
                 'trackingNumber': '快递单号',
                 'trackingNumberPlaceholder': '请输入快递单号',
                 'trackingNumberInfo': '您可以通过快递单号在快递公司官网查询物流信息',
+                'trackPackage': 'Track package',
                 'notFilled': '未填写',
                 'save': '保存',
                 'edit': '编辑',
+                'copy': '复制',
+                'copyOrderId': '复制订单号',
+                'orderIdCopied': '订单号已复制到剪贴板',
                 'customerInfo': '客户信息',
                 'expressInfo': '快递信息',
                 'trackingNumberSaved': '快递单号已保存',
@@ -3950,6 +4082,30 @@
                 'address': '收货地址',
                 'security': '账户安全',
                 'regularMember': '普通会员',
+                'username': '用户名',
+                'account': '账号',
+                'nickname': '昵称',
+                'enterNickname': '请输入昵称',
+                'enterPhone': '请输入手机号',
+                'email': '邮箱',
+                'enterEmail': '请输入邮箱',
+                'birthday': '生日',
+                'gender': '性别',
+                'pleaseSelect': '请选择',
+                'male': '男',
+                'female': '女',
+                'other': '其他',
+                'saveChanges': '保存修改',
+                'changePassword': '修改密码',
+                'currentPassword': '当前密码',
+                'enterCurrentPassword': '请输入当前密码',
+                'newPassword': '新密码',
+                'enterNewPassword': '请输入新密码',
+                'confirmNewPassword': '确认新密码',
+                'enterNewPasswordAgain': '请再次输入新密码',
+                'securitySettings': '安全设置',
+                'loginProtection': '登录保护',
+                'loginProtectionDesc': '开启后，登录时需要验证手机号',
                 // 地址
                 'yourAddresses': '收货地址',
                 'addAddress': '添加地址',
@@ -3972,6 +4128,25 @@
                 'cancel': '取消',
                 // 提示信息
                 'pleaseLogin': '请先登录',
+                'passwordChangedSuccess': '密码修改成功！请牢记新密码',
+                'currentPasswordIncorrect': '当前密码错误',
+                'passwordMismatch': '两次输入的新密码不一致',
+                'passwordTooShort': '新密码长度不能少于6位',
+                'pleaseFillAllFields': '请填写完整信息',
+                'adminPasswordCannotChange': '管理员密码不允许修改，请联系系统管理员',
+                'userNotFound': '未找到用户信息',
+                'userLogin': '用户登录',
+                'userRegister': '用户注册',
+                'phoneOrEmail': '手机号或邮箱',
+                'enterPhoneOrEmail': '请输入手机号或邮箱',
+                'password': '密码',
+                'enterPassword': '请输入密码',
+                'confirmPassword': '确认密码',
+                'enterPasswordAgain': '请再次输入密码',
+                'pleaseLoginOrRegister': '请先登录或注册',
+                'loginRequired': '领取产品需要登录账号，请选择：',
+                'haveAccount': '已有账号，立即登录',
+                'noAccount': '没有账号，立即注册',
                 'insufficientPermissions': '权限不足，只有管理员才能访问后台管理',
                 'pleaseFillCompleteInfo': '请填写完整信息',
                 'passwordMismatch': '两次输入的密码不一致！',
@@ -4054,17 +4229,25 @@
                 'noCompletedOrders': 'No completed orders',
                 'noRejectedOrders': 'No rejected orders',
                 'noCancelledOrders': 'No cancelled orders',
+                'cancelOrder': 'Cancel Order',
+                'confirmCancelOrder': 'Are you sure you want to cancel this order?',
+                'orderCancelled': 'Order cancelled',
                 // 订单详情
                 'orderDetails': 'Order Details',
                 'orderId': 'Order ID',
                 'orderStatus': 'Order Status',
+                'allStatus': 'All Status',
                 'orderTime': 'Order Time',
                 'trackingNumber': 'Tracking Number',
                 'trackingNumberPlaceholder': 'Please enter tracking number',
                 'trackingNumberInfo': 'You can query logistics information on the express company\'s official website using the tracking number',
+                'trackPackage': 'Track package',
                 'notFilled': 'Not filled',
                 'save': 'Save',
                 'edit': 'Edit',
+                'copy': 'Copy',
+                'copyOrderId': 'Copy Order ID',
+                'orderIdCopied': 'Order ID copied to clipboard',
                 'customerInfo': 'Customer Information',
                 'expressInfo': 'Express Information',
                 'trackingNumberSaved': 'Tracking number saved',
@@ -4085,6 +4268,30 @@
                 'address': 'Shipping Address',
                 'security': 'Account Security',
                 'regularMember': 'Regular Member',
+                'username': 'Username',
+                'account': 'Account',
+                'nickname': 'Nickname',
+                'enterNickname': 'Please enter nickname',
+                'enterPhone': 'Please enter phone number',
+                'email': 'Email',
+                'enterEmail': 'Please enter email',
+                'birthday': 'Birthday',
+                'gender': 'Gender',
+                'pleaseSelect': 'Please select',
+                'male': 'Male',
+                'female': 'Female',
+                'other': 'Other',
+                'saveChanges': 'Save Changes',
+                'changePassword': 'Change Password',
+                'currentPassword': 'Current Password',
+                'enterCurrentPassword': 'Please enter current password',
+                'newPassword': 'New Password',
+                'enterNewPassword': 'Please enter new password',
+                'confirmNewPassword': 'Confirm New Password',
+                'enterNewPasswordAgain': 'Please enter new password again',
+                'securitySettings': 'Security Settings',
+                'loginProtection': 'Login Protection',
+                'loginProtectionDesc': 'When enabled, phone verification is required for login',
                 // 地址
                 'yourAddresses': 'Your Addresses',
                 'addAddress': 'Add Address',
@@ -4107,6 +4314,25 @@
                 'cancel': 'Cancel',
                 // 提示信息
                 'pleaseLogin': 'Please login first',
+                'passwordChangedSuccess': 'Password changed successfully! Please remember your new password',
+                'currentPasswordIncorrect': 'Current password is incorrect',
+                'passwordMismatch': 'The two new passwords do not match',
+                'passwordTooShort': 'New password must be at least 6 characters',
+                'pleaseFillAllFields': 'Please fill in all fields',
+                'adminPasswordCannotChange': 'Admin password cannot be changed. Please contact system administrator',
+                'userNotFound': 'User information not found',
+                'userLogin': 'User Login',
+                'userRegister': 'User Registration',
+                'phoneOrEmail': 'Phone number or email',
+                'enterPhoneOrEmail': 'Please enter phone number or email',
+                'password': 'Password',
+                'enterPassword': 'Please enter password',
+                'confirmPassword': 'Confirm Password',
+                'enterPasswordAgain': 'Please enter password again',
+                'pleaseLoginOrRegister': 'Please login or register first',
+                'loginRequired': 'You need to login to claim products. Please choose:',
+                'haveAccount': 'I have an account, login now',
+                'noAccount': 'I don\'t have an account, register now',
                 'insufficientPermissions': 'Insufficient permissions. Only administrators can access the admin panel.',
                 'pleaseFillCompleteInfo': 'Please fill in complete information',
                 'passwordMismatch': 'The two passwords do not match!',
@@ -4199,7 +4425,8 @@
             const featuredMeta = document.querySelector('#featured-showcase .featured-meta');
             if (featuredTitle) featuredTitle.textContent = t('featuredTitle');
             if (featuredDesc) featuredDesc.textContent = t('featuredDesc');
-            if (featuredMeta) featuredMeta.innerHTML = `<i class="fas fa-sync-alt"></i> ${t('syncStatus')}`;
+            // 已隐藏：实时刷新·云端同步按钮
+            // if (featuredMeta) featuredMeta.innerHTML = `<i class="fas fa-sync-alt"></i> ${t('syncStatus')}`;
             
             // 更新轮播图
             const carouselSlides = document.querySelectorAll('.carousel-slide');
@@ -4238,9 +4465,39 @@
                 if (status === 'all') tab.textContent = t('orderAll');
                 else if (status === 'review') tab.textContent = t('orderReview');
                 else if (status === 'shipping') tab.textContent = t('orderShipping');
+                else if (status === 'completed') tab.textContent = t('orderCompleted');
                 else if (status === 'rejected') tab.textContent = t('orderRejected');
                 else if (status === 'cancelled') tab.textContent = t('orderCancelled');
             });
+            
+            // 更新订单状态筛选下拉框
+            const statusFilter = document.getElementById('order-status-filter');
+            if (statusFilter) {
+                const selectedValue = statusFilter.value; // 保存当前选中的值
+                statusFilter.innerHTML = '';
+                const allStatusOption = document.createElement('option');
+                allStatusOption.value = '';
+                allStatusOption.textContent = t('allStatus') || '全部状态';
+                statusFilter.appendChild(allStatusOption);
+                
+                const statusOptions = [
+                    { value: 'pending', key: 'orderReview' },
+                    { value: 'review', key: 'orderReview' },
+                    { value: 'shipping', key: 'orderShipping' },
+                    { value: 'rejected', key: 'orderRejected' },
+                    { value: 'cancelled', key: 'orderCancelled' },
+                    { value: 'completed', key: 'orderCompleted' }
+                ];
+                
+                statusOptions.forEach(opt => {
+                    const option = document.createElement('option');
+                    option.value = opt.value;
+                    option.textContent = t(opt.key);
+                    statusFilter.appendChild(option);
+                });
+                
+                statusFilter.value = selectedValue; // 恢复选中的值
+            }
             
             // 更新用户中心菜单
             const userMenuItems = document.querySelectorAll('.user-menu a');
@@ -4252,15 +4509,145 @@
                 else if (tab === 'security') item.textContent = t('security');
             });
             
-            // 更新用户中心会员等级
-            const memberLevel = document.querySelector('.user-details p');
-            if (memberLevel && memberLevel.textContent.includes('普通会员')) {
-                memberLevel.textContent = t('regularMember');
+            // 更新用户中心会员等级和用户名
+            const usernameDisplay = document.getElementById('username-display');
+            const userMemberType = document.getElementById('user-member-type');
+            if (usernameDisplay) usernameDisplay.textContent = t('username') || '用户名';
+            if (userMemberType) userMemberType.textContent = t('regularMember') || '普通会员';
+            
+            // 更新个人信息页面
+            const profilePage = document.getElementById('user-profile');
+            if (profilePage) {
+                const profileH3 = profilePage.querySelector('h3');
+                if (profileH3) profileH3.textContent = t('profile');
+                
+                const profileLabels = profilePage.querySelectorAll('label');
+                profileLabels.forEach(label => {
+                    const forAttr = label.getAttribute('for');
+                    if (forAttr === 'profile-username') label.textContent = t('username');
+                    else if (forAttr === 'profile-account') label.textContent = t('account');
+                    else if (forAttr === 'profile-nickname') label.textContent = t('nickname');
+                    else if (forAttr === 'profile-phone') label.textContent = t('phone');
+                    else if (forAttr === 'profile-email') label.textContent = t('email');
+                    else if (forAttr === 'profile-birthday') label.textContent = t('birthday');
+                    else if (forAttr === 'profile-gender') label.textContent = t('gender');
+                });
+
+                const profileInputs = profilePage.querySelectorAll('input[data-i18n-placeholder]');
+                profileInputs.forEach(input => {
+                    const key = input.getAttribute('data-i18n-placeholder');
+                    if (key) input.placeholder = t(key);
+                });
+
+                const profileSelect = profilePage.querySelector('#profile-gender');
+                if (profileSelect) {
+                    const options = profileSelect.querySelectorAll('option');
+                    options.forEach(option => {
+                        const key = option.getAttribute('data-i18n');
+                        if (key) option.textContent = t(key);
+                    });
+                }
+
+                const saveBtn = profilePage.querySelector('button[type="submit"]');
+                if (saveBtn) saveBtn.textContent = t('saveChanges');
             }
             
             // 更新地址页面标题
             const addressHeader = document.querySelector('#user-address .address-header h3');
             if (addressHeader) addressHeader.textContent = t('yourAddresses');
+            
+            const addAddressBtn = document.getElementById('add-address-btn');
+            if (addAddressBtn) addAddressBtn.textContent = t('addAddress');
+            
+            // 更新账户安全页面
+            const securityPage = document.getElementById('user-security');
+            if (securityPage) {
+                const securityH3 = securityPage.querySelector('h3');
+                if (securityH3) securityH3.textContent = t('security');
+
+                const changePasswordH4 = securityPage.querySelector('.security-section h4');
+                if (changePasswordH4) changePasswordH4.textContent = t('changePassword');
+
+                const securityLabels = securityPage.querySelectorAll('label');
+                securityLabels.forEach(label => {
+                    const forAttr = label.getAttribute('for');
+                    if (forAttr === 'current-password') label.textContent = t('currentPassword');
+                    else if (forAttr === 'new-password') label.textContent = t('newPassword');
+                    else if (forAttr === 'confirm-password') label.textContent = t('confirmNewPassword');
+                });
+
+                const securityInputs = securityPage.querySelectorAll('input[data-i18n-placeholder]');
+                securityInputs.forEach(input => {
+                    const key = input.getAttribute('data-i18n-placeholder');
+                    if (key) input.placeholder = t(key);
+                });
+
+                const changePasswordBtn = securityPage.querySelector('#change-password-form button[type="submit"]');
+                if (changePasswordBtn) changePasswordBtn.textContent = t('changePassword');
+
+                const securitySettingsH4 = securityPage.querySelectorAll('.security-section h4');
+                if (securitySettingsH4.length > 1) securitySettingsH4[1].textContent = t('securitySettings');
+
+                // 登录保护功能已删除
+            }
+            
+            // 更新登录/注册选择模态框
+            const authChoiceModal = document.getElementById('auth-choice-modal');
+            if (authChoiceModal) {
+                const authChoiceTitle = authChoiceModal.querySelector('.modal-header h3');
+                const authChoiceDesc = authChoiceModal.querySelector('.modal-body p');
+                const gotoLoginBtn = document.getElementById('goto-login-btn');
+                const gotoRegisterBtn = document.getElementById('goto-register-btn');
+                
+                if (authChoiceTitle) authChoiceTitle.textContent = t('pleaseLoginOrRegister');
+                if (authChoiceDesc) authChoiceDesc.textContent = t('loginRequired');
+                if (gotoLoginBtn) {
+                    gotoLoginBtn.innerHTML = `<i class="fas fa-sign-in-alt"></i> ${t('haveAccount')}`;
+                }
+                if (gotoRegisterBtn) {
+                    gotoRegisterBtn.innerHTML = `<i class="fas fa-user-plus"></i> ${t('noAccount')}`;
+                }
+            }
+            
+            // 更新登录模态框
+            const loginModal = document.getElementById('login-modal');
+            if (loginModal) {
+                const loginTitle = loginModal.querySelector('.modal-header h3');
+                const loginAccountLabel = loginModal.querySelector('label[for="login-account"]');
+                const loginAccountInput = document.getElementById('login-account');
+                const loginPasswordLabel = loginModal.querySelector('label[for="login-password"]');
+                const loginPasswordInput = document.getElementById('login-password');
+                const loginSubmitBtn = loginModal.querySelector('button[type="submit"]');
+                
+                if (loginTitle) loginTitle.textContent = t('userLogin');
+                if (loginAccountLabel) loginAccountLabel.textContent = t('phoneOrEmail');
+                if (loginAccountInput) loginAccountInput.placeholder = t('enterPhoneOrEmail');
+                if (loginPasswordLabel) loginPasswordLabel.textContent = t('password');
+                if (loginPasswordInput) loginPasswordInput.placeholder = t('enterPassword');
+                if (loginSubmitBtn) loginSubmitBtn.textContent = t('login');
+            }
+            
+            // 更新注册模态框
+            const registerModal = document.getElementById('register-modal');
+            if (registerModal) {
+                const registerTitle = registerModal.querySelector('.modal-header h3');
+                const registerAccountLabel = registerModal.querySelector('label[for="register-account"]');
+                const registerAccountInput = document.getElementById('register-account');
+                const registerPasswordLabel = registerModal.querySelector('label[for="register-password"]');
+                const registerPasswordInput = document.getElementById('register-password');
+                const registerConfirmLabel = registerModal.querySelector('label[for="register-confirm"]');
+                const registerConfirmInput = document.getElementById('register-confirm');
+                const registerSubmitBtn = registerModal.querySelector('button[type="submit"]');
+                
+                if (registerTitle) registerTitle.textContent = t('userRegister');
+                if (registerAccountLabel) registerAccountLabel.textContent = t('phoneOrEmail');
+                if (registerAccountInput) registerAccountInput.placeholder = t('enterPhoneOrEmail');
+                if (registerPasswordLabel) registerPasswordLabel.textContent = t('password');
+                if (registerPasswordInput) registerPasswordInput.placeholder = t('enterPassword');
+                if (registerConfirmLabel) registerConfirmLabel.textContent = t('confirmPassword');
+                if (registerConfirmInput) registerConfirmInput.placeholder = t('enterPasswordAgain');
+                if (registerSubmitBtn) registerSubmitBtn.textContent = t('register');
+            }
             
             // 更新产品报名模态框
             const signupModalTitle = document.getElementById('signup-modal-title');
@@ -4543,19 +4930,23 @@
                     console.log('ℹ️ 跳过首次同步（数据已从云端加载）');
 
                     // 定期同步（每5秒检查一次，减少频率以提升性能）
+                    // 定期同步（每30秒检查一次，减少频率以提升性能，避免影响用户体验）
                     this.syncInterval = setInterval(() => {
-                        this.syncAllData().catch(err => {
-                            console.warn('⚠️ 定期同步失败:', err.message);
-                        });
-                    }, 5 * 1000);
-                    console.log('⏰ 已设置定期同步 (每5秒)');
+                        // 只在用户不在操作时同步
+                        if (!this.syncInProgress && document.visibilityState === 'visible') {
+                            this.syncAllData().catch(err => {
+                                console.warn('⚠️ 定期同步失败:', err.message);
+                            });
+                        }
+                    }, 1000); 
+                    console.log('⏰ 已设置定期同步 (每30秒)');
 
                     // 更新UI状态指示器
                     this.updateSyncStatusUI(true);
 
                     console.log('🎉🎉🎉 云端同步系统完全就绪！');
                     console.log('⏰ 完成时间:', new Date().toLocaleString());
-                    showNotification('✅ 跨设备云端同步已启用！', 'success');
+                    // 移除启动提示，避免干扰用户
 
                 } catch (error) {
                     console.error('❌❌❌ Firebase 初始化失败:', error);
@@ -5435,16 +5826,23 @@
                                 updateTimer = setTimeout(() => {
                                     if (pendingUpdate) {
                                         console.log('🔄 延迟处理云端订单更新');
+                                        const beforeStatus = userOrders.find(o => pendingUpdate.some(co => co.id === o.id))?.status;
                                         mergeOrdersData(pendingUpdate, currentUser.account);
+                                        
+                                        // 检查是否有订单状态变化
+                                        const afterStatus = userOrders.find(o => pendingUpdate.some(co => co.id === o.id))?.status;
+                                        if (beforeStatus !== afterStatus) {
+                                            console.log('🔄 检测到订单状态变化，立即刷新显示');
+                                        }
                                         
                                         // 刷新订单显示（无论在哪里都刷新）
                                         renderUserOrders();
                                         
                                         // 如果订单详情模态框打开，也刷新它
-                                        const orderDetailModal = document.querySelector('.modal .order-details');
+                                        const orderDetailModal = document.getElementById('order-details-modal');
                                         if (orderDetailModal) {
                                             // 查找当前打开的订单详情，重新渲染
-                                            const orderIdAttr = orderDetailModal.closest('.modal')?.querySelector('[data-order-id]');
+                                            const orderIdAttr = orderDetailModal.querySelector('[data-order-id]');
                                             if (orderIdAttr) {
                                                 const orderId = parseInt(orderIdAttr.getAttribute('data-order-id'));
                                                 const updatedOrder = userOrders.find(o => o.id === orderId);
@@ -5463,16 +5861,37 @@
                                 }, 1500);
                             } else {
                                 // 没有同步进行，立即处理
+                                const beforeStatus = userOrders.find(o => cloudOrders.some(co => co.id === o.id))?.status;
                                 mergeOrdersData(cloudOrders, currentUser.account);
                                 
-                                // 刷新订单显示
-                                const userCenter = document.getElementById('user-center');
-                                if (userCenter && userCenter.style.display !== 'none') {
-                                    renderUserOrders();
+                                // 检查是否有订单状态变化
+                                const afterStatus = userOrders.find(o => cloudOrders.some(co => co.id === o.id))?.status;
+                                if (beforeStatus !== afterStatus) {
+                                    console.log('🔄 检测到订单状态变化，立即刷新显示');
                                 }
                                 
-                                // 无论是否在用户中心，都刷新订单列表（可能在查看订单详情）
-                                renderUserOrders();
+                                // 使用防抖，避免频繁刷新影响性能（300ms延迟）
+                                clearTimeout(window.orderUpdateTimer);
+                                window.orderUpdateTimer = setTimeout(() => {
+                                    // 无论是否在用户中心，都刷新订单列表（可能在查看订单详情）
+                                    renderUserOrders();
+                                    
+                                    // 如果订单详情模态框打开，也刷新它
+                                    const orderDetailModal = document.getElementById('order-details-modal');
+                                    if (orderDetailModal) {
+                                        const orderIdAttr = orderDetailModal.querySelector('[data-order-id]');
+                                        if (orderIdAttr) {
+                                            const orderId = parseInt(orderIdAttr.getAttribute('data-order-id'));
+                                            const updatedOrder = userOrders.find(o => o.id === orderId);
+                                            if (updatedOrder) {
+                                                // 重新显示订单详情
+                                                setTimeout(() => {
+                                                    showOrderDetailsModal(orderId);
+                                                }, 100);
+                                            }
+                                        }
+                                    }
+                                }, 300);
 
                                 console.log('🔄 订单数据已从云端更新（智能合并）');
                             }
@@ -6138,149 +6557,211 @@
             }
         }
 
-        // 智能合并订单数据（避免数据丢失）
+        // 智能合并订单数据（避免数据丢失）- 优化版本，提升准确度
         function mergeOrdersData(cloudOrders, userAccount) {
             if (!cloudOrders || !Array.isArray(cloudOrders)) {
                 console.warn('⚠️ 云端订单数据无效，保留本地数据');
                 return;
             }
             
-            // 创建订单ID映射，用于快速查找
+            // 性能优化：使用Map进行O(1)查找
             const cloudOrdersMap = new Map();
+            const validCloudOrders = [];
+            
+            // 预处理：过滤无效订单并建立映射，确保数据完整性
             cloudOrders.forEach(order => {
                 if (order && order.id) {
+                    // 确保订单有必要的字段
+                    if (!order.updatedAt && order.date) {
+                        order.updatedAt = typeof order.date === 'number' ? order.date : Date.now();
+                    }
+                    if (!order.date && order.updatedAt) {
+                        order.date = order.updatedAt;
+                    }
+                    // 确保account字段存在
+                    if (!order.account && userAccount) {
+                        order.account = userAccount;
+                    }
                     cloudOrdersMap.set(order.id, order);
+                    validCloudOrders.push(order);
                 }
             });
             
             // 合并策略：保留本地未同步的修改，使用云端最新数据
             const mergedOrders = [];
             const processedIds = new Set();
-            let localOnlyCount = 0;
-            let cloudOnlyCount = 0;
-            let mergedCount = 0;
+            const localOrdersMap = new Map();
             
-            // 首先处理本地订单，保留本地有但云端没有的订单
-            userOrders.forEach(localOrder => {
-                if (!localOrder || !localOrder.id) {
-                    console.warn('⚠️ 发现无效的本地订单，跳过:', localOrder);
-                    return;
-                }
-                
-                if (localOrder.account === userAccount || !localOrder.account) {
-                    const cloudOrder = cloudOrdersMap.get(localOrder.id);
-                    if (cloudOrder) {
-                        // 如果云端也有，比较时间戳，保留最新的
-                        // 优先使用 updatedAt，如果没有则使用 date
-                        const localTime = localOrder.updatedAt || localOrder.date || 0;
-                        const cloudTime = cloudOrder.updatedAt || cloudOrder.date || 0;
-                        
-                        // 确保保留订单的原始创建时间（date字段）
-                        const mergedOrder = cloudTime >= localTime ? { ...cloudOrder } : { ...localOrder };
-                        
-                        // 如果合并时丢失了date字段，从原始订单恢复
-                        if (!mergedOrder.date && localOrder.date) {
-                            mergedOrder.date = localOrder.date;
-                        }
-                        if (!mergedOrder.date && cloudOrder.date) {
-                            mergedOrder.date = cloudOrder.date;
-                        }
-                        
-                        // 确保 mergedOrder 有 updatedAt 字段
-                        if (!mergedOrder.updatedAt) {
-                            mergedOrder.updatedAt = mergedOrder.date || Date.now();
-                        }
-                        
-                        mergedOrders.push(mergedOrder);
-                        mergedCount++;
-                        
-                        // 如果云端数据更新，记录日志
-                        if (cloudTime > localTime) {
-                            console.log(`🔄 订单 ${localOrder.id} 状态已从云端更新: ${localOrder.status} -> ${cloudOrder.status}`);
-                        }
-                    } else {
-                        // 本地有但云端没有，保留本地（可能是新创建的）
-                        mergedOrders.push(localOrder);
-                        localOnlyCount++;
-                        console.log(`📦 保留本地订单（云端不存在）: ${localOrder.id}`);
+            // 预处理本地订单
+            userOrders.forEach(order => {
+                if (order && order.id) {
+                    // 确保本地订单也有必要字段
+                    if (!order.updatedAt && order.date) {
+                        order.updatedAt = typeof order.date === 'number' ? order.date : Date.now();
                     }
-                    processedIds.add(localOrder.id);
+                    if (!order.account && userAccount) {
+                        order.account = userAccount;
+                    }
+                    localOrdersMap.set(order.id, order);
                 }
             });
             
-            // 添加云端有但本地没有的订单
-            cloudOrders.forEach(cloudOrder => {
-                if (!cloudOrder || !cloudOrder.id) {
-                    console.warn('⚠️ 发现无效的云端订单，跳过:', cloudOrder);
-                    return;
-                }
-                
-                if (!processedIds.has(cloudOrder.id)) {
+            // 合并：优先使用云端数据（更准确），但保留本地未同步的修改
+            validCloudOrders.forEach(cloudOrder => {
+                const localOrder = localOrdersMap.get(cloudOrder.id);
+                if (localOrder) {
+                    // 比较时间戳，保留最新的
+                    const localTime = localOrder.updatedAt || localOrder.date || 0;
+                    const cloudTime = cloudOrder.updatedAt || cloudOrder.date || 0;
+                    
+                    // 确保关键字段不丢失
+                    const mergedOrder = cloudTime >= localTime ? { ...cloudOrder } : { ...localOrder };
+                    
+                    // 确保date字段存在（订单创建时间，不能丢失）
+                    if (!mergedOrder.date) {
+                        mergedOrder.date = localOrder.date || cloudOrder.date || Date.now();
+                    }
+                    
+                    // 确保updatedAt字段存在
+                    if (!mergedOrder.updatedAt) {
+                        mergedOrder.updatedAt = mergedOrder.date || Date.now();
+                    }
+                    
+                    // 确保account字段存在
+                    if (!mergedOrder.account) {
+                        mergedOrder.account = localOrder.account || cloudOrder.account || userAccount;
+                    }
+                    
+                    // 确保customerInfo字段完整
+                    if (!mergedOrder.customerInfo) {
+                        mergedOrder.customerInfo = localOrder.customerInfo || cloudOrder.customerInfo || {};
+                    }
+                    
+                    // 确保productName字段存在
+                    if (!mergedOrder.productName) {
+                        mergedOrder.productName = localOrder.productName || cloudOrder.productName || '';
+                    }
+                    
+                    mergedOrders.push(mergedOrder);
+                    processedIds.add(cloudOrder.id);
+                } else {
+                    // 云端有但本地没有，直接添加
                     mergedOrders.push(cloudOrder);
-                    cloudOnlyCount++;
-                    console.log(`☁️ 添加云端订单（本地不存在）: ${cloudOrder.id}`);
+                    processedIds.add(cloudOrder.id);
                 }
+            });
+            
+            // 添加本地有但云端没有的订单（可能是新创建的，还未同步）
+            localOrdersMap.forEach((localOrder, id) => {
+                if (!processedIds.has(id)) {
+                    // 只保留属于当前用户的订单
+                    if (localOrder.account === userAccount || !localOrder.account) {
+                        mergedOrders.push(localOrder);
+                    }
+                }
+            });
+            
+            // 按更新时间排序（最新的在前）
+            mergedOrders.sort((a, b) => {
+                const timeA = a.updatedAt || a.date || 0;
+                const timeB = b.updatedAt || b.date || 0;
+                return timeB - timeA;
             });
             
             // 更新本地数据
             const beforeCount = userOrders.length;
             userOrders = mergedOrders;
             
-            // 保存到localStorage（多重备份）
+            // 保存到localStorage（只保存一次，避免过多备份影响性能）
             if (currentUser && currentUser.account) {
                 const userOrdersKey = `userOrders_${currentUser.account}`;
                 localStorage.setItem(userOrdersKey, JSON.stringify(userOrders));
-                // 额外备份
-                localStorage.setItem(`${userOrdersKey}_backup_${Date.now()}`, JSON.stringify(userOrders));
             }
             localStorage.setItem('userOrders', JSON.stringify(userOrders));
-            // 全局备份
-            localStorage.setItem(`userOrders_backup_${Date.now()}`, JSON.stringify(userOrders));
-            
-            console.log(`✅ 订单数据已智能合并:`);
-            console.log(`   - 合并前: ${beforeCount} 个订单`);
-            console.log(`   - 合并后: ${mergedOrders.length} 个订单`);
-            console.log(`   - 本地独有: ${localOnlyCount} 个`);
-            console.log(`   - 云端独有: ${cloudOnlyCount} 个`);
-            console.log(`   - 已合并: ${mergedCount} 个`);
         }
         
-        // 合并所有订单数据（用于后台管理）
+        // 合并所有订单数据（用于后台管理）- 优化版本
         function mergeAllOrdersData(cloudOrders) {
             if (!cloudOrders || !Array.isArray(cloudOrders)) return;
             
-            // 创建订单ID映射
+            // 性能优化：使用Map进行O(1)查找
             const cloudOrdersMap = new Map();
+            const validCloudOrders = [];
+            
+            // 预处理：过滤无效订单并建立映射
             cloudOrders.forEach(order => {
-                if (order.id) {
+                if (order && order.id) {
+                    // 确保订单有必要的字段
+                    if (!order.updatedAt && order.date) {
+                        order.updatedAt = typeof order.date === 'number' ? order.date : Date.now();
+                    }
                     cloudOrdersMap.set(order.id, order);
+                    validCloudOrders.push(order);
                 }
             });
             
-            // 合并策略：保留本地未同步的修改
+            // 合并策略：保留本地未同步的修改，使用云端最新数据
             const mergedOrders = [];
             const processedIds = new Set();
+            const localOrdersMap = new Map();
             
-            // 处理本地所有订单
-            allOrders.forEach(localOrder => {
-                const cloudOrder = cloudOrdersMap.get(localOrder.id);
-                if (cloudOrder) {
+            // 预处理本地订单
+            allOrders.forEach(order => {
+                if (order && order.id) {
+                    localOrdersMap.set(order.id, order);
+                }
+            });
+            
+            // 合并：优先使用云端数据（更准确），但保留本地未同步的修改
+            validCloudOrders.forEach(cloudOrder => {
+                const localOrder = localOrdersMap.get(cloudOrder.id);
+                if (localOrder) {
                     // 比较时间戳，保留最新的
                     const localTime = localOrder.updatedAt || localOrder.date || 0;
                     const cloudTime = cloudOrder.updatedAt || cloudOrder.date || 0;
-                    mergedOrders.push(cloudTime >= localTime ? cloudOrder : localOrder);
+                    
+                    // 确保关键字段不丢失
+                    const mergedOrder = cloudTime >= localTime ? { ...cloudOrder } : { ...localOrder };
+                    
+                    // 确保date字段存在（订单创建时间）
+                    if (!mergedOrder.date) {
+                        mergedOrder.date = localOrder.date || cloudOrder.date || Date.now();
+                    }
+                    
+                    // 确保updatedAt字段存在
+                    if (!mergedOrder.updatedAt) {
+                        mergedOrder.updatedAt = mergedOrder.date || Date.now();
+                    }
+                    
+                    // 确保account字段存在
+                    if (!mergedOrder.account && localOrder.account) {
+                        mergedOrder.account = localOrder.account;
+                    }
+                    if (!mergedOrder.account && cloudOrder.account) {
+                        mergedOrder.account = cloudOrder.account;
+                    }
+                    
+                    mergedOrders.push(mergedOrder);
+                    processedIds.add(cloudOrder.id);
                 } else {
-                    // 本地有但云端没有，保留本地
-                    mergedOrders.push(localOrder);
+                    // 云端有但本地没有，直接添加
+                    mergedOrders.push(cloudOrder);
+                    processedIds.add(cloudOrder.id);
                 }
-                processedIds.add(localOrder.id);
             });
             
-            // 添加云端有但本地没有的订单
-            cloudOrders.forEach(cloudOrder => {
-                if (!processedIds.has(cloudOrder.id)) {
-                    mergedOrders.push(cloudOrder);
+            // 添加本地有但云端没有的订单（可能是新创建的）
+            localOrdersMap.forEach((localOrder, id) => {
+                if (!processedIds.has(id)) {
+                    mergedOrders.push(localOrder);
                 }
+            });
+            
+            // 按更新时间排序（最新的在前）
+            mergedOrders.sort((a, b) => {
+                const timeA = a.updatedAt || a.date || 0;
+                const timeB = b.updatedAt || b.date || 0;
+                return timeB - timeA;
             });
             
             // 更新全局订单数据
@@ -6862,6 +7343,7 @@
 
             function showHomePage() {
                 homePage.style.display = 'block';
+                userCenter.classList.remove('show');
                 userCenter.style.display = 'none';
                 adminPanel.style.display = 'none';
                 renderProducts(products);
@@ -6877,13 +7359,26 @@
                 }
 
                 homePage.style.display = 'none';
-                userCenter.style.display = 'block';
                 adminPanel.style.display = 'none';
-                renderUserOrders();
+                
+                // 显示用户中心
+                userCenter.classList.add('show');
+                userCenter.style.display = '';
+                
+                // 显示侧边栏（如果被隐藏）
+                const userSidebar = document.querySelector('.user-sidebar');
+                if (userSidebar) {
+                    userSidebar.style.display = 'block';
+                }
+                userCenter.classList.remove('sidebar-hidden');
+                
+                // 默认显示个人信息页面，不显示订单
+                showUserPage('profile');
             }
 
             function showAdminPanel() {
                 homePage.style.display = 'none';
+                userCenter.classList.remove('show');
                 userCenter.style.display = 'none';
                 adminPanel.style.display = 'block';
                 renderAdminProducts();
@@ -6931,11 +7426,22 @@
                 myOrdersLink.addEventListener('click', (e) => {
                     e.preventDefault();
                     if (currentUser) {
-                        showUserCenter();
-                        // 设置用户菜单的active状态
-                        const userMenuItems = document.querySelectorAll('.user-menu a');
-                        userMenuItems.forEach(item => item.classList.remove('active'));
-                        // 由于"我的报名"已从菜单中移除，直接显示订单页面
+                        homePage.style.display = 'none';
+                        adminPanel.style.display = 'none';
+                        
+                        const userCenter = document.getElementById('user-center');
+                        // 显示用户中心
+                        userCenter.classList.add('show');
+                        userCenter.style.display = '';
+                        
+                        // 隐藏侧边栏，只显示订单
+                        const userSidebar = document.querySelector('.user-sidebar');
+                        if (userSidebar) {
+                            userSidebar.style.display = 'none';
+                        }
+                        userCenter.classList.add('sidebar-hidden');
+                        
+                        // 直接显示订单页面
                         showUserPage('orders');
                     } else {
                         alert(t('pleaseLogin'));
@@ -7477,6 +7983,16 @@
             userMenuItems.forEach(item => {
                 item.addEventListener('click', (e) => {
                     e.preventDefault();
+                    
+                    // 确保侧边栏显示（从"我的报名"返回时）
+                    const userSidebar = document.querySelector('.user-sidebar');
+                    const userCenter = document.getElementById('user-center');
+                    if (userSidebar) {
+                        userSidebar.style.display = 'block';
+                    }
+                    if (userCenter) {
+                        userCenter.classList.remove('sidebar-hidden');
+                    }
 
                     // 更新菜单状态
                     userMenuItems.forEach(menu => menu.classList.remove('active'));
@@ -9363,21 +9879,63 @@
                 if (orderContainers.all) orderContainers.all.innerHTML = `<p style="text-align: center; color: #999; padding: 40px;">${t('noOrders')}</p>`;
                 if (orderContainers.review) orderContainers.review.innerHTML = `<p style="text-align: center; color: #999; padding: 40px;">${t('noReviewOrders')}</p>`;
                 if (orderContainers.shipping) orderContainers.shipping.innerHTML = `<p style="text-align: center; color: #999; padding: 40px;">${t('noShippingOrders')}</p>`;
-                if (orderContainers.completed) orderContainers.completed.innerHTML = `<p style="text-align: center; color: #999; padding: 40px;">${t('noCompletedOrders') || '暂无已完成订单'}</p>`;
+                if (orderContainers.completed) orderContainers.completed.innerHTML = `<p style="text-align: center; color: #999; padding: 40px;">${t('noCompletedOrders')}</p>`;
                 if (orderContainers.rejected) orderContainers.rejected.innerHTML = `<p style="text-align: center; color: #999; padding: 40px;">${t('noRejectedOrders')}</p>`;
                 if (orderContainers.cancelled) orderContainers.cancelled.innerHTML = `<p style="text-align: center; color: #999; padding: 40px;">${t('noCancelledOrders')}</p>`;
                 return;
             }
 
             userOrders.forEach(order => {
+                // 判断是否显示取消订单按钮（运输中之前的状态：pending或review）
+                // 不区分管理员，所有用户都可以取消订单
+                const isPendingOrReview = order.status === 'pending' || order.status === 'review';
+                const canCancel = isPendingOrReview && currentUser;
+                
+                // 判断是否显示评价按钮（已完成且未评价）
+                // 不区分管理员，所有用户都可以评价
+                const isCompleted = order.status === 'completed';
+                const hasNotReviewed = !order.hasReview || order.hasReview === false || order.hasReview === 'false';
+                const showReviewBtn = isCompleted && currentUser && hasNotReviewed;
+                
                 const orderHtml = `
-                    <div class="order-item" data-order-id="${order.id}" style="cursor: pointer;">
+                    <div class="order-item" data-order-id="${order.id}" style="cursor: pointer; position: relative;">
                         <div class="order-image" style="background-image: url('${order.image}')"></div>
-                        <div class="order-details">
+                        <div class="order-details" style="flex: 1;">
                             <div class="order-title">${order.productName}</div>
                             <div class="order-price">¥${order.price}</div>
                             <div class="order-date">${order.date}</div>
-                            <div class="order-status status-${order.status}">${getStatusText(order.status)}</div>
+                            <div style="display: flex; align-items: center; gap: 8px; margin: 8px 0;">
+                                <span style="font-weight: 500; color: #666;">${t('orderId')}:</span>
+                                <span style="font-family: monospace; color: var(--primary); font-weight: 500;">${order.id}</span>
+                                <button class="btn btn-sm" onclick="event.stopPropagation(); copyOrderId('${order.id}');" 
+                                        style="padding: 4px 8px; font-size: 12px; background: #f8f9fa; border: 1px solid #dee2e6; color: #6c757d; border-radius: 4px; cursor: pointer; transition: all 0.2s; width: auto; min-width: auto; display: inline-flex; align-items: center; justify-content: center;"
+                                        onmouseover="this.style.background='#e9ecef'; this.style.borderColor='#adb5bd'; this.style.color='#495057';"
+                                        onmouseout="this.style.background='#f8f9fa'; this.style.borderColor='#dee2e6'; this.style.color='#6c757d';"
+                                        title="${t('copyOrderId') || '复制订单号'}">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </div>
+                            <div class="order-status status-${order.status}" style="margin: 8px 0;">${getStatusText(order.status)}</div>
+                            ${(canCancel || showReviewBtn) ? `
+                            <div style="display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap;">
+                                ${canCancel ? `
+                                    <button class="btn btn-danger btn-sm" onclick="event.stopPropagation(); cancelOrder(${order.id});" 
+                                            style="padding: 8px 16px; font-size: 13px; border-radius: 6px; font-weight: 500; box-shadow: 0 2px 4px rgba(231,76,60,0.2); transition: all 0.3s;"
+                                            onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 8px rgba(231,76,60,0.3)';"
+                                            onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(231,76,60,0.2)';">
+                                        <i class="fas fa-times-circle" style="margin-right: 6px;"></i>${t('cancelOrder')}
+                                    </button>
+                                ` : ''}
+                                ${showReviewBtn ? `
+                                    <button class="btn btn-primary btn-sm" onclick="event.stopPropagation(); openReviewModal(${order.id});" 
+                                            style="padding: 8px 16px; font-size: 13px; border-radius: 6px; font-weight: 500; box-shadow: 0 2px 4px rgba(52,152,219,0.2); transition: all 0.3s;"
+                                            onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 8px rgba(52,152,219,0.3)';"
+                                            onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(52,152,219,0.2)';">
+                                        <i class="fas fa-star" style="margin-right: 6px;"></i>${t('writeReview')}
+                                    </button>
+                                ` : ''}
+                            </div>
+                            ` : ''}
                         </div>
                     </div>
                 `;
@@ -9410,7 +9968,7 @@
                     let emptyText = '';
                     if (status === 'review') emptyText = t('noReviewOrders');
                     else if (status === 'shipping') emptyText = t('noShippingOrders');
-                    else if (status === 'completed') emptyText = t('noCompletedOrders') || '暂无已完成订单';
+                    else if (status === 'completed') emptyText = t('noCompletedOrders');
                     else if (status === 'rejected') emptyText = t('noRejectedOrders');
                     else if (status === 'cancelled') emptyText = t('noCancelledOrders');
                     else emptyText = t('noOrders');
@@ -9426,7 +9984,7 @@
                 'shipping': t('orderShipping'),
                 'rejected': t('orderRejected'),
                 'cancelled': t('orderCancelled'),
-                'completed': t('orderCompleted') || '已完成'
+                'completed': t('orderCompleted')
             };
             return statusMap[status] || status;
         }
@@ -9605,11 +10163,14 @@
 
             // 搜索筛选
             if (searchTerm) {
-                filteredOrders = filteredOrders.filter(order =>
-                    order.productName.toLowerCase().includes(searchTerm) ||
-                    order.customerInfo.name.toLowerCase().includes(searchTerm) ||
-                    order.customerInfo.phone.includes(searchTerm)
-                );
+                filteredOrders = filteredOrders.filter(order => {
+                    const productName = (order.productName || '').toLowerCase();
+                    const customerName = (order.customerInfo?.name || '').toLowerCase();
+                    const customerPhone = order.customerInfo?.phone || '';
+                    return productName.includes(searchTerm) ||
+                           customerName.includes(searchTerm) ||
+                           customerPhone.includes(searchTerm);
+                });
             }
 
             if (filteredOrders.length === 0) {
@@ -9617,24 +10178,32 @@
                 return;
             }
 
-            tbody.innerHTML = filteredOrders.map(order => `
+            tbody.innerHTML = filteredOrders.map(order => {
+                const customerInfo = order.customerInfo || {};
+                const customerName = customerInfo.name || '';
+                const customerPhone = customerInfo.phone || '';
+                const customerEmail = customerInfo.email || '';
+                const productName = order.productName || '';
+                
+                return `
                 <tr>
                     <td>${order.id}</td>
-                    <td>${order.productName}</td>
-                    <td><a href="#" class="customer-name-link" data-customer-name="${order.customerInfo.name}" data-customer-phone="${order.customerInfo.phone}" data-customer-email="${order.customerInfo.email}" style="color: var(--primary); text-decoration: underline; cursor: pointer;">${order.customerInfo.name}</a></td>
-                    <td>${order.customerInfo.phone}</td>
-                    <td><span class="status-badge status-${order.status}">${getStatusText(order.status)}</span></td>
+                    <td>${productName}</td>
+                    <td><a href="#" class="customer-name-link" data-customer-name="${customerName}" data-customer-phone="${customerPhone}" data-customer-email="${customerEmail}" style="color: var(--primary); text-decoration: underline; cursor: pointer;">${customerName || '-'}</a></td>
+                    <td>${customerPhone || '-'}</td>
+                    <td><span class="status-badge status-${order.status || 'pending'}">${getStatusText(order.status || 'pending')}</span></td>
                     <td>
                         <span class="tracking-number-display" data-order-id="${order.id}">${order.trackingNumber || t('notFilled')}</span>
                         <button class="btn btn-sm btn-primary" onclick="editTrackingNumber(${order.id})" style="margin-left: 5px;">${t('edit')}</button>
                     </td>
-                    <td>${formatDate(order.date)}</td>
+                    <td>${formatDate(order.date || order.updatedAt || Date.now())}</td>
                     <td>
                         <button class="btn btn-sm btn-primary" onclick="viewOrderDetails(${order.id})">查看</button>
                         <button class="btn btn-sm btn-secondary" onclick="openOrderStatusModal(${order.id})">更新状态</button>
                     </td>
                 </tr>
-            `).join('');
+            `;
+            }).join('');
 
             // 为客户姓名链接添加点击事件
             document.querySelectorAll('.customer-name-link').forEach(link => {
@@ -10075,6 +10644,14 @@
                                         </button>
                                     </div>
                                     ${order.trackingNumber ? `
+                                        <a href="https://tools.usps.com/go/TrackConfirmAction?qtc_tLabels1=${order.trackingNumber}" 
+                                           target="_blank" 
+                                           rel="noopener noreferrer"
+                                           style="display: inline-block; background: #ffc107; color: #8b4513; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 15px; transition: all 0.3s; box-shadow: 0 2px 6px rgba(255,193,7,0.3); border: none; cursor: pointer; margin-top: 10px;"
+                                           onmouseover="this.style.background='#ffb300'; this.style.boxShadow='0 4px 8px rgba(255,193,7,0.4)'; this.style.transform='translateY(-2px)';"
+                                           onmouseout="this.style.background='#ffc107'; this.style.boxShadow='0 2px 6px rgba(255,193,7,0.3)'; this.style.transform='translateY(0)';">
+                                            <i class="fas fa-truck" style="margin-right: 6px;"></i>${t('trackPackage')}
+                                        </a>
                                         <p style="margin-top: 10px; color: #666; font-size: 12px;">
                                             <i class="fas fa-info-circle"></i> ${t('trackingNumberInfo')}
                                         </p>
@@ -10085,9 +10662,17 @@
                                 <div style="margin-bottom: 10px;">
                                     <label style="display: block; margin-bottom: 5px; font-weight: 500;">${t('trackingNumber')}：</label>
                                     ${order.trackingNumber ? `
-                                        <div style="padding: 10px; background: white; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                                        <div style="padding: 10px; background: white; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; margin-bottom: 10px;">
                                             <span style="font-weight: 500; color: var(--primary);">${order.trackingNumber}</span>
                                         </div>
+                                        <a href="https://tools.usps.com/go/TrackConfirmAction?qtc_tLabels1=${order.trackingNumber}" 
+                                           target="_blank" 
+                                           rel="noopener noreferrer"
+                                           style="display: inline-block; background: #ffc107; color: #8b4513; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 15px; transition: all 0.3s; box-shadow: 0 2px 6px rgba(255,193,7,0.3); border: none; cursor: pointer;"
+                                           onmouseover="this.style.background='#ffb300'; this.style.boxShadow='0 4px 8px rgba(255,193,7,0.4)'; this.style.transform='translateY(-2px)';"
+                                           onmouseout="this.style.background='#ffc107'; this.style.boxShadow='0 2px 6px rgba(255,193,7,0.3)'; this.style.transform='translateY(0)';">
+                                            <i class="fas fa-truck" style="margin-right: 6px;"></i>${t('trackPackage')}
+                                        </a>
                                         <p style="margin-top: 10px; color: #666; font-size: 12px;">
                                             <i class="fas fa-info-circle"></i> ${t('trackingNumberInfo')}
                                         </p>
@@ -10315,23 +10900,23 @@
                         <div class="status-buttons" style="display: grid; gap: 10px;">
                             <button class="status-select-btn" data-status="review" style="padding: 15px; border: 2px solid #3498db; background: white; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: 500; color: #3498db; transition: all 0.3s; display: flex; align-items: center; gap: 10px;">
                                 <i class="fas fa-hourglass-half" style="font-size: 20px;"></i>
-                                <span>待上传</span>
+                                <span>${t('orderReview')}</span>
                             </button>
                             <button class="status-select-btn" data-status="shipping" style="padding: 15px; border: 2px solid #9b59b6; background: white; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: 500; color: #9b59b6; transition: all 0.3s; display: flex; align-items: center; gap: 10px;">
                                 <i class="fas fa-truck" style="font-size: 20px;"></i>
-                                <span>运输中</span>
+                                <span>${t('orderShipping')}</span>
                             </button>
                             <button class="status-select-btn" data-status="rejected" style="padding: 15px; border: 2px solid #e74c3c; background: white; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: 500; color: #e74c3c; transition: all 0.3s; display: flex; align-items: center; gap: 10px;">
                                 <i class="fas fa-times-circle" style="font-size: 20px;"></i>
-                                <span>已驳回</span>
+                                <span>${t('orderRejected')}</span>
                             </button>
                             <button class="status-select-btn" data-status="cancelled" style="padding: 15px; border: 2px solid #95a5a6; background: white; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: 500; color: #95a5a6; transition: all 0.3s; display: flex; align-items: center; gap: 10px;">
                                 <i class="fas fa-ban" style="font-size: 20px;"></i>
-                                <span>已取消</span>
+                                <span>${t('orderCancelled')}</span>
                             </button>
                             <button class="status-select-btn" data-status="completed" style="padding: 15px; border: 2px solid #2ecc71; background: white; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: 500; color: #2ecc71; transition: all 0.3s; display: flex; align-items: center; gap: 10px;">
                                 <i class="fas fa-check-circle" style="font-size: 20px;"></i>
-                                <span>已完成</span>
+                                <span>${t('orderCompleted')}</span>
                             </button>
                         </div>
                     </div>
@@ -10350,7 +10935,7 @@
                     else if (status === 'shipping') span.textContent = t('orderShipping');
                     else if (status === 'rejected') span.textContent = t('orderRejected');
                     else if (status === 'cancelled') span.textContent = t('orderCancelled');
-                    else if (status === 'completed') span.textContent = t('orderCompleted') || '已完成';
+                    else if (status === 'completed') span.textContent = t('orderCompleted');
                 }
                 
                 // 高亮当前状态
@@ -11354,6 +11939,98 @@
             ];
         }
 
+        // 复制订单号
+        function copyOrderId(orderId) {
+            // 使用现代 Clipboard API
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(orderId).then(() => {
+                    showNotification(t('orderIdCopied') || '订单号已复制到剪贴板', 'success');
+                }).catch(err => {
+                    console.error('复制失败:', err);
+                    // 降级方案：使用传统方法
+                    fallbackCopyOrderId(orderId);
+                });
+            } else {
+                // 降级方案：使用传统方法
+                fallbackCopyOrderId(orderId);
+            }
+        }
+
+        // 降级复制方法（兼容旧浏览器）
+        function fallbackCopyOrderId(orderId) {
+            const textArea = document.createElement('textarea');
+            textArea.value = orderId;
+            textArea.style.position = 'fixed';
+            textArea.style.opacity = '0';
+            document.body.appendChild(textArea);
+            textArea.select();
+            try {
+                const successful = document.execCommand('copy');
+                if (successful) {
+                    showNotification(t('orderIdCopied') || '订单号已复制到剪贴板', 'success');
+                } else {
+                    showNotification('复制失败，请手动复制', 'error');
+                }
+            } catch (err) {
+                console.error('复制失败:', err);
+                showNotification('复制失败，请手动复制', 'error');
+            }
+            document.body.removeChild(textArea);
+        }
+
+        // 取消订单
+        async function cancelOrder(orderId) {
+            const order = userOrders.find(o => o.id === orderId);
+            if (!order) {
+                showNotification(t('orderNotFound') || '未找到订单信息', 'error');
+                return;
+            }
+
+            // 确认取消
+            if (!confirm(t('confirmCancelOrder') || '确定要取消这个订单吗？')) {
+                return;
+            }
+
+            try {
+                // 更新订单状态为已取消
+                order.status = 'cancelled';
+                order.updatedAt = Date.now();
+
+                // 更新本地存储
+                if (currentUser && currentUser.account) {
+                    const userOrdersKey = `userOrders_${currentUser.account}`;
+                    localStorage.setItem(userOrdersKey, JSON.stringify(userOrders));
+                }
+                localStorage.setItem('userOrders', JSON.stringify(userOrders));
+
+                // 同步到云端
+                if (cloudSync && cloudSync.isInitialized) {
+                    try {
+                        await cloudSync.syncOrders();
+                        console.log('✅ 订单取消状态已同步到云端');
+                    } catch (err) {
+                        console.error('云端同步失败:', err);
+                    }
+                }
+
+                // 如果订单在allOrders中，也需要更新
+                const allOrder = allOrders.find(o => o.id === orderId);
+                if (allOrder) {
+                    allOrder.status = 'cancelled';
+                    allOrder.updatedAt = Date.now();
+                    localStorage.setItem('allOrders', JSON.stringify(allOrders));
+                }
+
+                showNotification(t('orderCancelled') || '订单已取消', 'success');
+                
+                // 刷新订单列表
+                renderUserOrders();
+            } catch (error) {
+                console.error('取消订单失败:', error);
+                showNotification('取消订单失败，请重试', 'error');
+            }
+        }
+
         // 用户页面切换
         function showUserPage(tab) {
             const pages = document.querySelectorAll('.user-page');
@@ -11376,6 +12053,19 @@
                     document.getElementById('user-security').classList.add('active');
                     loadSecuritySettings();
                     break;
+            }
+            
+            // 如果显示订单页面且侧边栏被隐藏，调整布局
+            const userSidebar = document.querySelector('.user-sidebar');
+            const userCenter = document.getElementById('user-center');
+            if (tab === 'orders' && userSidebar && userSidebar.style.display === 'none') {
+                if (userCenter) {
+                    userCenter.classList.add('sidebar-hidden');
+                }
+            } else {
+                if (userCenter) {
+                    userCenter.classList.remove('sidebar-hidden');
+                }
             }
         }
 
@@ -11430,9 +12120,7 @@
         function loadSecuritySettings() {
             if (!currentUser) return;
 
-            const settings = userProfile[currentUser.account]?.security || {};
-            document.getElementById('login-protection').checked = settings.loginProtection || false;
-            document.getElementById('login-alert').checked = settings.loginAlert !== false;
+            // 登录保护功能已删除，此函数保留用于未来扩展
         }
 
         // 修改密码
@@ -11444,17 +12132,17 @@
             const confirmPassword = document.getElementById('confirm-password').value;
 
             if (!currentPassword || !newPassword || !confirmPassword) {
-                alert('请填写完整信息');
+                showNotification(t('pleaseFillAllFields') || '请填写完整信息', 'warning');
                 return;
             }
 
             if (newPassword !== confirmPassword) {
-                alert('两次输入的新密码不一致');
+                showNotification(t('passwordMismatch') || '两次输入的新密码不一致', 'error');
                 return;
             }
 
             if (newPassword.length < 6) {
-                alert('新密码长度不能少于6位');
+                showNotification(t('passwordTooShort') || '新密码长度不能少于6位', 'warning');
                 return;
             }
 
@@ -11473,14 +12161,14 @@
             }
 
             if (currentPassword !== actualPassword) {
-                alert('当前密码错误');
+                showNotification(t('currentPasswordIncorrect') || '当前密码错误', 'error');
                 return;
             }
 
             // 更新密码
             if (ADMIN_ACCOUNTS[currentUser.account]) {
                 // 管理员密码不允许通过前端修改
-                alert('管理员密码不允许修改，请联系系统管理员');
+                showNotification(t('adminPasswordCannotChange') || '管理员密码不允许修改，请联系系统管理员', 'warning');
                 return;
             } else {
                 // 更新普通用户密码
@@ -11488,8 +12176,20 @@
                 if (user) {
                     user.password = newPassword;
                     saveAllUsers();
-                    alert('密码修改成功！请牢记新密码');
+                    
+                    // 同步到云端
+                    if (cloudSync && cloudSync.isInitialized) {
+                        cloudSync.syncAllUsers().then(() => {
+                            console.log('✅ 密码已同步到云端');
+                        }).catch(err => {
+                            console.error('密码云端同步失败:', err);
+                        });
+                    }
+                    
+                    showNotification(t('passwordChangedSuccess') || '密码修改成功！请牢记新密码', 'success');
                     document.getElementById('change-password-form').reset();
+                } else {
+                    showNotification(t('userNotFound') || '未找到用户信息', 'error');
                 }
             }
         }
