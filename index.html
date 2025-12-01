@@ -4727,6 +4727,10 @@
                 this.lastSyncTime = null;
                 this.syncInterval = null;
                 this.listeners = [];
+                this.userOrdersRef = null;
+                this.pendingOrderUpdate = null;
+                this.orderUpdateTimer = null;
+                this.allOrdersRef = null;
 
                 // ========== Firebase 配置 ==========
                 // 
@@ -5813,102 +5817,8 @@
                     }
                 });
 
-                // 监听用户订单变化（智能合并，避免数据丢失）
-                if (currentUser) {
-                    const userPath = this.getUserPath();
-                    const ordersRef = this.db.ref(`${userPath}/orders`);
-                    
-                    // 用于延迟处理更新，避免与同步冲突
-                    let pendingUpdate = null;
-                    let updateTimer = null;
-
-                    ordersRef.on('value', (snapshot) => {
-                        const cloudOrders = snapshot.val();
-                        if (cloudOrders && Array.isArray(cloudOrders)) {
-                            // 如果正在同步，延迟处理更新
-                            if (this.syncInProgress) {
-                                console.log('⏳ 检测到同步进行中，延迟处理云端更新...');
-                                pendingUpdate = cloudOrders;
-                                
-                                // 清除之前的定时器
-                                if (updateTimer) clearTimeout(updateTimer);
-                                
-                                // 延迟1.5秒后处理（给同步足够的时间完成，但不要太长）
-                                updateTimer = setTimeout(() => {
-                                    if (pendingUpdate) {
-                                        console.log('🔄 延迟处理云端订单更新');
-                                        const beforeStatus = userOrders.find(o => pendingUpdate.some(co => co.id === o.id))?.status;
-                                        mergeOrdersData(pendingUpdate, currentUser.account);
-                                        
-                                        // 检查是否有订单状态变化
-                                        const afterStatus = userOrders.find(o => pendingUpdate.some(co => co.id === o.id))?.status;
-                                        if (beforeStatus !== afterStatus) {
-                                            console.log('🔄 检测到订单状态变化，立即刷新显示');
-                                        }
-                                        
-                                        // 刷新订单显示（无论在哪里都刷新）
-                                        renderUserOrders();
-                                        
-                                        // 如果订单详情模态框打开，也刷新它
-                                        const orderDetailModal = document.getElementById('order-details-modal');
-                                        if (orderDetailModal) {
-                                            // 查找当前打开的订单详情，重新渲染
-                                            const orderIdAttr = orderDetailModal.querySelector('[data-order-id]');
-                                            if (orderIdAttr) {
-                                                const orderId = parseInt(orderIdAttr.getAttribute('data-order-id'));
-                                                const updatedOrder = userOrders.find(o => o.id === orderId);
-                                                if (updatedOrder) {
-                                                    // 重新显示订单详情
-                                                    setTimeout(() => {
-                                                        showOrderDetailsModal(orderId);
-                                                    }, 100);
-                                                }
-                                            }
-                                        }
-                                        
-                                        pendingUpdate = null;
-                                        console.log('✅ 延迟更新完成');
-                                    }
-                                }, 1500);
-                            } else {
-                                // 没有同步进行，立即处理
-                                const beforeStatus = userOrders.find(o => cloudOrders.some(co => co.id === o.id))?.status;
-                                mergeOrdersData(cloudOrders, currentUser.account);
-                                
-                                // 检查是否有订单状态变化
-                                const afterStatus = userOrders.find(o => cloudOrders.some(co => co.id === o.id))?.status;
-                                if (beforeStatus !== afterStatus) {
-                                    console.log('🔄 检测到订单状态变化，立即刷新显示');
-                                }
-                                
-                                // 使用防抖，避免频繁刷新影响性能（300ms延迟）
-                                clearTimeout(window.orderUpdateTimer);
-                                window.orderUpdateTimer = setTimeout(() => {
-                                    // 无论是否在用户中心，都刷新订单列表（可能在查看订单详情）
-                                    renderUserOrders();
-                                    
-                                    // 如果订单详情模态框打开，也刷新它
-                                    const orderDetailModal = document.getElementById('order-details-modal');
-                                    if (orderDetailModal) {
-                                        const orderIdAttr = orderDetailModal.querySelector('[data-order-id]');
-                                        if (orderIdAttr) {
-                                            const orderId = parseInt(orderIdAttr.getAttribute('data-order-id'));
-                                            const updatedOrder = userOrders.find(o => o.id === orderId);
-                                            if (updatedOrder) {
-                                                // 重新显示订单详情
-                                                setTimeout(() => {
-                                                    showOrderDetailsModal(orderId);
-                                                }, 100);
-                                            }
-                                        }
-                                    }
-                                }, 300);
-
-                                console.log('🔄 订单数据已从云端更新（智能合并）');
-                            }
-                        }
-                    });
-                }
+                // 监听当前用户订单变化（若当前已登录）
+                this.attachUserOrdersListener();
                 
                 // 监听所有用户订单变化（用于后台管理）
                 if (currentUser && currentUser.role === 'admin') {
@@ -5929,14 +5839,146 @@
                 console.log('✅ 实时监听已设置');
             }
 
+            // 刷新订单详情模态框内容（如果已打开）
+            refreshOrderDetailModal() {
+                const orderDetailModal = document.getElementById('order-details-modal');
+                if (orderDetailModal) {
+                    const orderIdAttr = orderDetailModal.querySelector('[data-order-id]');
+                    if (orderIdAttr) {
+                        const orderId = parseInt(orderIdAttr.getAttribute('data-order-id'));
+                        const updatedOrder = userOrders.find(o => o.id === orderId);
+                        if (updatedOrder) {
+                            setTimeout(() => {
+                                showOrderDetailsModal(orderId);
+                            }, 100);
+                        }
+                    }
+                }
+            }
+
+            // 根据实时数据刷新用户订单UI
+            refreshOrderUI(immediate = false) {
+                if (immediate) {
+                    renderUserOrders();
+                    this.refreshOrderDetailModal();
+                } else {
+                    clearTimeout(window.orderUpdateTimer);
+                    window.orderUpdateTimer = setTimeout(() => {
+                        renderUserOrders();
+                        this.refreshOrderDetailModal();
+                    }, 300);
+                }
+            }
+
+            // 处理云端订单更新
+            processUserOrderUpdate(cloudOrders, immediate = false) {
+                if (!currentUser || !Array.isArray(cloudOrders)) return;
+
+                const beforeStatus = userOrders.find(o => cloudOrders.some(co => co.id === o.id))?.status;
+                mergeOrdersData(cloudOrders, currentUser.account);
+                const afterStatus = userOrders.find(o => cloudOrders.some(co => co.id === o.id))?.status;
+
+                if (beforeStatus !== afterStatus) {
+                    console.log('🔄 检测到订单状态变化，刷新显示');
+                }
+
+                this.refreshOrderUI(immediate);
+            }
+
+            // 移除用户订单监听器
+            detachUserOrdersListener() {
+                if (this.userOrdersRef) {
+                    this.userOrdersRef.off();
+                    this.userOrdersRef = null;
+                }
+                if (this.orderUpdateTimer) {
+                    clearTimeout(this.orderUpdateTimer);
+                    this.orderUpdateTimer = null;
+                }
+                this.pendingOrderUpdate = null;
+            }
+
+            // 监听用户订单变化
+            attachUserOrdersListener() {
+                if (!this.isInitialized || !currentUser) return;
+
+                this.detachUserOrdersListener();
+
+                const userPath = this.getUserPath();
+                const ordersRef = this.db.ref(`${userPath}/orders`);
+                this.userOrdersRef = ordersRef;
+
+                ordersRef.on('value', (snapshot) => {
+                    const cloudOrders = snapshot.val();
+                    if (cloudOrders && Array.isArray(cloudOrders)) {
+                        if (this.syncInProgress) {
+                            console.log('⏳ 同步进行中，延迟处理云端订单更新...');
+                            this.pendingOrderUpdate = cloudOrders;
+                            if (this.orderUpdateTimer) clearTimeout(this.orderUpdateTimer);
+                            this.orderUpdateTimer = setTimeout(() => {
+                                if (this.pendingOrderUpdate) {
+                                    console.log('🔄 延迟处理云端订单更新');
+                                    this.processUserOrderUpdate(this.pendingOrderUpdate, true);
+                                    this.pendingOrderUpdate = null;
+                                }
+                            }, 1500);
+                        } else {
+                            this.processUserOrderUpdate(cloudOrders, false);
+                        }
+                    }
+                });
+            }
+
+            // 移除管理员订单监听器
+            detachAllOrdersListener() {
+                if (this.allOrdersRef) {
+                    this.allOrdersRef.off();
+                    this.allOrdersRef = null;
+                }
+            }
+
+            // 处理用户登录/退出后的数据和监听器
+            async handleUserSessionChange() {
+                if (!this.isInitialized) return;
+
+                // 清理旧监听器
+                this.detachUserOrdersListener();
+                this.detachAllOrdersListener();
+
+                if (!currentUser) {
+                    userOrders = [];
+                    userAddresses = [];
+                    localStorage.removeItem('userOrders');
+                    localStorage.removeItem('userAddresses');
+                    return;
+                }
+
+                // 先加载该用户的数据
+                await Promise.all([
+                    this.loadOrders(),
+                    this.loadAddresses()
+                ]);
+
+                // 重新监听该用户的订单
+                this.attachUserOrdersListener();
+
+                // 管理员需要同步所有订单
+                if (currentUser.role === 'admin') {
+                    await this.loadAllOrders();
+                    this.setupAllOrdersListener();
+                }
+            }
+
             // 设置所有订单监听器（管理员专用）
             setupAllOrdersListener() {
                 if (!this.isInitialized || !currentUser || currentUser.role !== 'admin') return;
+
+                this.detachAllOrdersListener();
                 
                 try {
                     // 监听所有用户的订单
-                    const allUsersRef = this.db.ref('users');
-                    allUsersRef.on('value', async (snapshot) => {
+                    this.allOrdersRef = this.db.ref('users');
+                    this.allOrdersRef.on('value', async (snapshot) => {
                         if (this.syncInProgress) return;
                         
                         const usersData = snapshot.val();
@@ -7575,11 +7617,8 @@
                                 }
                             }
 
-                            // 从云端加载当前用户的订单数据
-                            await cloudSync.loadOrders();
-                            
-                            // 从云端加载当前用户的地址数据
-                            await cloudSync.loadAddresses();
+                            // 同步当前用户相关数据并建立监听
+                            await cloudSync.handleUserSessionChange();
 
                             showNotification(`☁️ 云端数据加载完成！欢迎 ${authResult.username}`, 'success');
                         } else {
@@ -7674,9 +7713,7 @@
                     // 同步到云端
                     if (cloudSync && cloudSync.isInitialized) {
                         await cloudSync.syncAllUsers();
-                        // 加载新用户的订单和地址（应该为空）
-                        await cloudSync.loadOrders();
-                        await cloudSync.loadAddresses();
+                        await cloudSync.handleUserSessionChange();
                     }
 
                     alert(t('registrationSuccess'));
@@ -7698,10 +7735,16 @@
             });
 
             // 退出登录
-            logoutLink.addEventListener('click', (e) => {
+            logoutLink.addEventListener('click', async (e) => {
                 e.preventDefault();
                 currentUser = null;
                 localStorage.removeItem('currentUser');
+                if (cloudSync && cloudSync.isInitialized) {
+                    await cloudSync.handleUserSessionChange();
+                } else {
+                    userOrders = [];
+                    userAddresses = [];
+                }
                 updateUserInterface();
                 showHomePage();
             });
