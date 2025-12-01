@@ -2243,6 +2243,11 @@
                 z-index: 1100;
             }
 
+            /* 预留空间避免底部内容被导航栏遮挡 */
+            body {
+                padding-bottom: 64px;
+            }
+
             .carousel {
                 height: 300px;
             }
@@ -7706,6 +7711,7 @@
             const mainHomeLink = document.getElementById('main-home-link');
             const adminLink = document.getElementById('admin-link');
             const userCenterLink = document.getElementById('user-center-link');
+            const searchBar = document.querySelector('.search-bar');
             const homePage = document.getElementById('home-page');
             const userCenter = document.getElementById('user-center');
             const adminPanel = document.getElementById('admin-panel');
@@ -7715,6 +7721,8 @@
                 userCenter.classList.remove('show');
                 userCenter.style.display = 'none';
                 adminPanel.style.display = 'none';
+                // 只在首页显示搜索栏
+                if (searchBar) searchBar.style.display = 'flex';
                 renderProducts(products);
             }
 
@@ -7729,6 +7737,9 @@
 
                 homePage.style.display = 'none';
                 adminPanel.style.display = 'none';
+                
+                // 非首页隐藏搜索栏
+                if (searchBar) searchBar.style.display = 'none';
                 
                 // 显示用户中心
                 userCenter.classList.add('show');
@@ -7750,6 +7761,8 @@
                 userCenter.classList.remove('show');
                 userCenter.style.display = 'none';
                 adminPanel.style.display = 'block';
+                // 非首页隐藏搜索栏
+                if (searchBar) searchBar.style.display = 'none';
                 renderAdminProducts();
             }
 
@@ -11613,11 +11626,13 @@
                     </div>
                     <div class="modal-body" style="padding: 20px;">
                         <div style="display: flex; gap: 20px; margin-bottom: 20px;">
-                            <div style="flex: 0 0 200px;">
-                                <div class="order-image" style="background-image: url('${order.image || ''}'); width: 200px; height: 200px; background-size: cover; background-position: center; border-radius: 8px; border: 1px solid #ddd;"></div>
+                            <div style="flex: 0 0 160px;">
+                                <div class="order-image" style="background-image: url('${order.image || ''}'); width: 160px; height: 160px; background-size: cover; background-position: center; border-radius: 8px; border: 1px solid #ddd;"></div>
                             </div>
-                            <div style="flex: 1;">
-                                <h3 style="margin-top: 0; color: var(--primary);">${order.productName}</h3>
+                            <div style="flex: 1; min-width: 0;">
+                                <h3 style="margin-top: 0; color: var(--primary); font-size: 18px; line-height: 1.4; max-height: 3.2em; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; word-break: break-word;">
+                                    ${order.productName}
+                                </h3>
                                 <div style="margin: 15px 0;">
                                     <p style="margin: 8px 0;"><strong>${t('orderId')}：</strong>${order.id}</p>
                                     <p style="margin: 8px 0;">
@@ -12839,6 +12854,25 @@
 
         // 应用主页设置到页面
         function applyHomepageSettings() {
+            // 确保主页设置结构完整（兼容旧版本数据），避免轮播图首次进入不显示
+            try {
+                homepageSettings = normalizeHomepageSettings(homepageSettings || {});
+            } catch (e) {
+                console.warn('规范化主页设置失败，恢复为默认配置:', e);
+                homepageSettings = normalizeHomepageSettings({
+                    siteTitle: '电商平台',
+                    siteSlogan: '优质商品，值得信赖',
+                    siteLogo: 'https://d92ap0lo8fr10.cloudfront.net/A14TLSYJXI3UM6_acd40833aec9706776e6e1e4432f7198_ProductImage_PT02',
+                    primaryColor: '#3498db',
+                    secondaryColor: '#2ecc71',
+                    fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+                    productsPerRow: 4,
+                    showCategories: true,
+                    showSearch: true,
+                    desktopCarousel: [],
+                    mobileCarousel: []
+                });
+            }
             // 更新网站Logo
             const logoImg = document.getElementById('site-logo-img');
             if (logoImg) {
