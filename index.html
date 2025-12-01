@@ -216,6 +216,28 @@
             z-index: 1000;
         }
 
+        /* 底部导航（移动端） */
+        .bottom-nav {
+            display: none;
+        }
+
+        .bottom-nav-item {
+            flex: 1;
+            height: 100%;
+            border: none;
+            background: none;
+            font-size: 13px;
+            color: #4b5563;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .bottom-nav-item span {
+            pointer-events: none;
+        }
+
         .nav-container {
             display: flex;
             justify-content: space-between;
@@ -1375,53 +1397,91 @@
         /* 用户表格列宽优化 */
         #users-table th:nth-child(1),
         #users-table td:nth-child(1) {
-            width: 60px;
-            min-width: 60px;
+            width: 50px;
+            min-width: 50px;
+            text-align: center;
+        }
+        .user-select-checkbox {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
         }
 
         #users-table th:nth-child(2),
         #users-table td:nth-child(2) {
-            width: 120px;
-            min-width: 120px;
+            width: 80px;
+            min-width: 80px;
         }
 
         #users-table th:nth-child(3),
         #users-table td:nth-child(3) {
-            width: 180px;
-            min-width: 180px;
+            width: 140px;
+            min-width: 140px;
         }
 
         #users-table th:nth-child(4),
         #users-table td:nth-child(4) {
-            width: 100px;
-            min-width: 100px;
+            width: 160px;
+            min-width: 160px;
         }
 
         #users-table th:nth-child(5),
         #users-table td:nth-child(5) {
-            width: 100px;
-            min-width: 100px;
-            text-align: center;
+            width: 110px;
+            min-width: 110px;
         }
 
         #users-table th:nth-child(6),
         #users-table td:nth-child(6) {
-            width: 180px;
-            min-width: 180px;
+            width: 110px;
+            min-width: 110px;
+            text-align: center;
         }
 
         #users-table th:nth-child(7),
         #users-table td:nth-child(7) {
-            width: 100px;
-            min-width: 100px;
-            text-align: center;
+            width: 180px;
+            min-width: 180px;
         }
 
         #users-table th:nth-child(8),
         #users-table td:nth-child(8) {
-            width: 150px;
-            min-width: 150px;
+            width: 110px;
+            min-width: 110px;
             text-align: center;
+        }
+
+        #users-table th:nth-child(9),
+        #users-table td:nth-child(9) {
+            width: 160px;
+            min-width: 160px;
+            text-align: center;
+        }
+
+        #orders-table th:nth-child(1),
+        #orders-table td:nth-child(1) {
+            width: 50px;
+            min-width: 50px;
+            text-align: center;
+        }
+
+        .danger-zone {
+            margin-top: 30px;
+            padding: 20px;
+            border: 1px solid #fed3d3;
+            border-radius: 10px;
+            background: #fff6f6;
+        }
+
+        .danger-zone h4 {
+            margin-bottom: 10px;
+            color: #c0392b;
+        }
+
+        .danger-zone p {
+            margin-bottom: 15px;
+            color: #8f231b;
+            font-size: 14px;
         }
 
         .order-filters {
@@ -1981,18 +2041,44 @@
         /* 响应式设计 */
         @media (max-width: 768px) {
             .nav-container {
-                flex-direction: column;
-                align-items: flex-start;
+                flex-direction: row;
+                align-items: center;
+                gap: 10px;
+            }
+
+            .logo {
+                margin-left: 0;
+                min-width: auto;
             }
 
             .search-bar {
-                width: 100%;
-                margin: 15px 0;
+                flex: 1;
+                width: auto;
+                margin: 0;
+            }
+
+            .nav-links {
+                display: none;
             }
 
             .user-actions {
-                width: 100%;
-                justify-content: space-between;
+                margin-top: 8px;
+                width: auto;
+                justify-content: flex-end;
+            }
+
+            /* 底部固定导航栏 */
+            .bottom-nav {
+                position: fixed;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                height: 54px;
+                background: #ffffff;
+                border-top: 1px solid #e5e7eb;
+                box-shadow: 0 -2px 6px rgba(15, 23, 42, 0.08);
+                display: flex;
+                z-index: 1100;
             }
 
             .carousel {
@@ -2455,6 +2541,7 @@
                 margin-bottom: 8px;
                 height: auto;
                 -webkit-line-clamp: 3;
+                line-clamp: 3;
                 /* 显示更多文字 */
             }
 
@@ -2519,6 +2606,7 @@
                 margin: 0 0 6px 0;
                 display: -webkit-box;
                 -webkit-line-clamp: 2;
+                line-clamp: 2;
                 -webkit-box-orient: vertical;
                 overflow: hidden;
                 height: 32px;
@@ -2595,8 +2683,9 @@
             }
         }
 
-        /* 产品详情页移动端优化 */
+        /* 移动端整体优化 */
         @media (max-width: 768px) {
+            /* 产品详情页移动端优化 */
             .product-detail {
                 padding: 20px 15px;
                 margin: 15px 0;
@@ -2626,10 +2715,8 @@
                 flex-direction: column;
                 gap: 10px;
             }
-        }
 
-        /* 用户中心移动端优化 */
-        @media (max-width: 768px) {
+            /* 用户中心移动端优化 */
             .user-center.show {
                 grid-template-columns: 1fr;
                 gap: 15px;
@@ -2674,10 +2761,8 @@
             .order-details {
                 padding-left: 0;
             }
-        }
 
-        /* 地址管理移动端优化 */
-        @media (max-width: 768px) {
+            /* 地址管理移动端优化 */
             .address-item {
                 padding: 15px;
             }
@@ -2693,10 +2778,8 @@
                 padding: 6px 12px;
                 font-size: 13px;
             }
-        }
 
-        /* 模态框移动端优化 */
-        @media (max-width: 768px) {
+            /* 模态框移动端优化 */
             .modal-content {
                 width: 95%;
                 max-width: 95%;
@@ -2772,10 +2855,8 @@
             .form-row .form-group {
                 width: 100%;
             }
-        }
 
-        /* 后台管理移动端优化 */
-        @media (max-width: 768px) {
+            /* 后台管理移动端优化 */
             .admin-nav {
                 flex-wrap: wrap;
                 gap: 5px;
@@ -2816,11 +2897,8 @@
             .excel-upload i {
                 font-size: 36px;
             }
-        }
 
-        /* 表格移动端优化 */
-        @media (max-width: 768px) {
-
+            /* 表格移动端优化 */
             .users-table-container,
             .orders-table-container {
                 overflow-x: auto;
@@ -2870,10 +2948,8 @@
             .stat-info h3 {
                 font-size: 24px;
             }
-        }
 
-        /* WhatsApp按钮移动端优化 */
-        @media (max-width: 768px) {
+            /* WhatsApp按钮移动端优化 */
             .whatsapp-button {
                 width: 55px;
                 height: 55px;
@@ -2881,13 +2957,8 @@
                 bottom: 15px;
                 right: 15px;
             }
-        }
 
-
-        /* 触摸优化 */
-        @media (max-width: 768px) {
-
-            /* 增大可点击区域 */
+            /* 触摸优化 */
             .btn,
             .btn-primary,
             .btn-secondary,
@@ -2918,10 +2989,8 @@
             .btn:active {
                 transform: scale(0.98);
             }
-        }
 
-        /* 管理员控制面板移动端优化 */
-        @media (max-width: 768px) {
+            /* 管理员控制面板移动端优化 */
             #admin-control-panel {
                 margin-right: 10px;
             }
@@ -2997,17 +3066,17 @@
                 <img id="site-logo-img" src="https://d92ap0lo8fr10.cloudfront.net/A14TLSYJXI3UM6_acd40833aec9706776e6e1e4432f7198_ProductImage_PT02" alt="Bee freebies" style="height: 60px; max-width: 300px; width: auto; object-fit: contain; display: block;" onerror="this.style.display='none'; console.error('Logo图片加载失败');">
             </div>
 
+            <div class="search-bar">
+                <input type="text" id="search-input" placeholder="Search products...">
+                <button id="search-btn"><i class="fas fa-search"></i></button>
+            </div>
+
             <ul class="nav-links">
                 <li><a href="#" class="active" id="main-home-link">Home</a></li>
                 <li><a href="#" id="admin-link">Admin Panel</a></li>
                 <li><a href="#" id="user-center-link" style="display:none">Account</a></li>
                 <li><a href="#" id="my-orders-link" style="display:none" data-tab="orders">My Orders</a></li>
             </ul>
-
-            <div class="search-bar">
-                <input type="text" id="search-input" placeholder="Search products...">
-                <button id="search-btn"><i class="fas fa-search"></i></button>
-            </div>
 
             <div class="user-actions">
                 <!-- 语言选择器 -->
@@ -3083,6 +3152,22 @@
             </div>
         </div>
     </nav>
+
+    <!-- 底部导航（移动端） -->
+    <div class="bottom-nav">
+        <button type="button" class="bottom-nav-item" onclick="document.getElementById('main-home-link').click()">
+            <span>Home</span>
+        </button>
+        <button type="button" class="bottom-nav-item" onclick="document.getElementById('admin-link').click()">
+            <span>Admin Panel</span>
+        </button>
+        <button type="button" class="bottom-nav-item" onclick="document.getElementById('user-center-link').click()">
+            <span>Account</span>
+        </button>
+        <button type="button" class="bottom-nav-item" onclick="document.getElementById('my-orders-link').click()">
+            <span>My Orders</span>
+        </button>
+    </div>
 
     <!-- 主要内容区域 -->
     <div class="container">
@@ -3238,6 +3323,12 @@
                             <button type="submit" class="btn btn-primary" data-i18n="saveChanges">${t('saveChanges') || '保存修改'}</button>
                         </div>
                     </form>
+
+                    <div class="danger-zone" id="account-danger-zone">
+                        <h4>注销账号 / Delete Account</h4>
+                        <p>注销后将立即删除该账号的所有个人资料、订单与地址信息，且无法恢复。</p>
+                        <button class="btn btn-danger" id="delete-account-btn">立即注销账号</button>
+                    </div>
                 </div>
 
                 <!-- 收货地址页面 -->
@@ -3322,6 +3413,7 @@
                 <button class="admin-nav-btn active" data-tab="products">产品管理</button>
                 <button class="admin-nav-btn" data-tab="users">用户管理</button>
                 <button class="admin-nav-btn" data-tab="orders">订单管理</button>
+                <button class="admin-nav-btn" data-tab="reviews">评价管理</button>
                 <button class="admin-nav-btn" data-tab="homepage">主页管理</button>
                 <button class="admin-nav-btn" data-tab="statistics">数据统计</button>
             </div>
@@ -3366,6 +3458,7 @@
                 <div class="admin-actions">
                     <button class="btn btn-primary" id="refresh-users-btn">刷新用户列表</button>
                     <button class="btn btn-secondary" id="export-users-btn">导出用户数据</button>
+                    <button class="btn btn-danger" id="delete-selected-users-btn" style="display: none;">批量删除账号</button>
                 </div>
 
                 <div class="admin-content">
@@ -3373,6 +3466,7 @@
                         <table class="admin-table" id="users-table">
                             <thead>
                                 <tr>
+                                    <th><input type="checkbox" id="select-all-users"></th>
                                     <th>ID</th>
                                     <th>用户名</th>
                                     <th>账号</th>
@@ -3396,6 +3490,7 @@
                 <div class="admin-actions">
                     <button class="btn btn-primary" id="refresh-orders-btn">刷新订单列表</button>
                     <button class="btn btn-secondary" id="export-orders-btn">导出订单数据</button>
+                    <button class="btn btn-danger" id="delete-selected-orders-btn" style="display:none;">批量删除订单</button>
                 </div>
 
                 <div class="admin-content">
@@ -3409,6 +3504,13 @@
                             <option value="cancelled">已取消</option>
                             <option value="completed">已完成</option>
                         </select>
+                        <select id="order-search-field" class="form-control">
+                            <option value="all">全部字段</option>
+                            <option value="id">订单ID</option>
+                            <option value="productName">产品名称</option>
+                            <option value="customerName">客户姓名</option>
+                            <option value="customerPhone">客户电话</option>
+                        </select>
                         <input type="text" id="order-search" class="form-control" placeholder="搜索订单...">
                     </div>
 
@@ -3416,6 +3518,7 @@
                         <table class="admin-table" id="orders-table">
                             <thead>
                                 <tr>
+                                    <th style="width:50px; text-align:center;"><input type="checkbox" id="select-all-orders"></th>
                                     <th>订单ID</th>
                                     <th>产品名称</th>
                                     <th>客户姓名</th>
@@ -3428,6 +3531,34 @@
                             </thead>
                             <tbody id="orders-table-body">
                                 <!-- 订单数据将通过JavaScript动态生成 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 评价管理页面 -->
+            <div class="admin-page" id="admin-reviews">
+                <div class="admin-actions">
+                    <button class="btn btn-primary" id="refresh-reviews-btn">刷新评价列表</button>
+                </div>
+                <div class="admin-content">
+                    <div class="reviews-table-container">
+                        <table class="admin-table" id="reviews-table">
+                            <thead>
+                                <tr>
+                                    <th>评价ID</th>
+                                    <th>产品</th>
+                                    <th>用户</th>
+                                    <th>评分</th>
+                                    <th>评价内容</th>
+                                    <th>管理员回复</th>
+                                    <th>时间</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="reviews-table-body">
+                                <tr><td colspan="8" style="text-align:center; padding:40px;">暂无评价数据</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -4001,6 +4132,8 @@
         let currentProduct = null;
         let pendingSignupProduct = null; // 记录待领取的产品（用户登录后需要打开报名模态框）
         let currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
+        const selectedUserAccounts = new Set(); // 后台用户批量操作选择集合
+        const selectedOrderIds = new Set(); // 后台订单批量操作选择集合
         
         // 语言设置
         let currentLanguage = localStorage.getItem('language') || 'en';
@@ -4187,6 +4320,9 @@
                 'reviewSubmitted': '评价已提交，感谢您的反馈！',
                 'reviewExists': '您已经评价过此订单了',
                 'reviewTime': '评价时间',
+                'adminReply': '管理员回复',
+                'replyReview': '回复评价',
+                'deleteReview': '删除评价',
                 'purchasedProduct': '购买商品',
                 'customerName': '客户',
                 'stars': '星',
@@ -4373,6 +4509,9 @@
                 'reviewSubmitted': 'Review submitted, thank you for your feedback!',
                 'reviewExists': 'You have already reviewed this order',
                 'reviewTime': 'Review Time',
+                'adminReply': 'Admin Reply',
+                'replyReview': 'Reply',
+                'deleteReview': 'Delete Review',
                 'purchasedProduct': 'Purchased Product',
                 'customerName': 'Customer',
                 'stars': 'stars',
@@ -5371,11 +5510,23 @@
             }
 
             // 获取用户专属路径
-            getUserPath() {
-                if (!currentUser) return 'users/guest';
-                // 使用account作为用户唯一标识（支持邮箱和手机号）
-                const userId = currentUser.account || currentUser.email || 'guest';
+            getUserPath(targetAccount) {
+                const accountValue = targetAccount || (currentUser ? (currentUser.account || currentUser.email) : null);
+                if (!accountValue) return 'users/guest';
+                const userId = accountValue;
                 return `users/${userId.replace(/[.@]/g, '_')}`;
+            }
+
+            async deleteUserAccount(account) {
+                if (!this.isInitialized || !account) return;
+                const userPath = this.getUserPath(account);
+                try {
+                    await this.db.ref(userPath).remove();
+                    console.log(`✅ 已从云端删除账号 ${account}`);
+                } catch (error) {
+                    console.error(`云端删除账号 ${account} 失败:`, error);
+                    throw error;
+                }
             }
 
             // 同步所有数据
@@ -7749,6 +7900,11 @@
                 showHomePage();
             });
 
+            const deleteAccountBtn = document.getElementById('delete-account-btn');
+            if (deleteAccountBtn) {
+                deleteAccountBtn.addEventListener('click', handleSelfAccountDeletion);
+            }
+
             // 同步状态点击事件 - 显示同步详情对话框
             const syncStatus = document.getElementById('sync-status');
             if (syncStatus) {
@@ -8243,6 +8399,28 @@
                 });
             });
 
+            const deleteSelectedUsersBtn = document.getElementById('delete-selected-users-btn');
+            if (deleteSelectedUsersBtn) {
+                deleteSelectedUsersBtn.addEventListener('click', deleteSelectedUsers);
+            }
+
+            const selectAllUsersCheckbox = document.getElementById('select-all-users');
+            if (selectAllUsersCheckbox) {
+                selectAllUsersCheckbox.addEventListener('change', () => {
+                    const shouldCheck = selectAllUsersCheckbox.checked;
+                    document.querySelectorAll('.user-select-checkbox').forEach(cb => {
+                        cb.checked = shouldCheck;
+                        const account = cb.getAttribute('data-account');
+                        if (shouldCheck) {
+                            selectedUserAccounts.add(account);
+                        } else {
+                            selectedUserAccounts.delete(account);
+                        }
+                    });
+                    refreshUserSelectionUI();
+                });
+            }
+
             document.getElementById('refresh-orders-btn').addEventListener('click', () => {
                 showButtonFeedback('refresh-orders-btn', () => {
                     renderOrdersTable();
@@ -8254,6 +8432,28 @@
                     exportOrdersData();
                 });
             });
+
+            const deleteSelectedOrdersBtn = document.getElementById('delete-selected-orders-btn');
+            if (deleteSelectedOrdersBtn) {
+                deleteSelectedOrdersBtn.addEventListener('click', deleteSelectedOrders);
+            }
+
+            const selectAllOrdersCheckbox = document.getElementById('select-all-orders');
+            if (selectAllOrdersCheckbox) {
+                selectAllOrdersCheckbox.addEventListener('change', () => {
+                    const shouldCheck = selectAllOrdersCheckbox.checked;
+                    document.querySelectorAll('.order-select-checkbox').forEach(cb => {
+                        cb.checked = shouldCheck;
+                        const id = parseInt(cb.getAttribute('data-order-id'));
+                        if (shouldCheck) {
+                            selectedOrderIds.add(id);
+                        } else {
+                            selectedOrderIds.delete(id);
+                        }
+                    });
+                    refreshOrderSelectionUI();
+                });
+            }
 
             // 主页管理按钮事件
             document.getElementById('preview-homepage-btn').addEventListener('click', () => {
@@ -8281,6 +8481,13 @@
             document.getElementById('order-search').addEventListener('input', debounce(() => {
                 renderOrdersTable();
             }, 300));
+
+            const orderSearchField = document.getElementById('order-search-field');
+            if (orderSearchField) {
+                orderSearchField.addEventListener('change', () => {
+                    renderOrdersTable();
+                });
+            }
 
             // 地址管理功能
             const addAddressBtn = document.getElementById('add-address-btn');
@@ -9662,6 +9869,12 @@
                                     </div>
                                     <div class="review-comment" style="color: #333; line-height: 1.6; font-size: 15px; padding-top: 15px; border-top: 1px solid #e0e0e0;">
                                         ${review.comment}
+                                        ${review.adminReply ? `
+                                            <div class="admin-reply" style="margin-top: 15px; padding: 12px 15px; border-radius: 6px; background: #fff; border-left: 3px solid #3498db; font-size: 14px; color: #34495e;">
+                                                <strong style="color:#3498db; margin-right:6px;">${t('adminReply') || '管理员回复'}：</strong>
+                                                <span>${review.adminReply}</span>
+                                            </div>
+                                        ` : ''}
                                     </div>
                                 </div>
                             `).join('')}
@@ -10096,6 +10309,10 @@
                         renderOrdersTable();
                     }
                     break;
+                case 'reviews':
+                    document.getElementById('admin-reviews').classList.add('active');
+                    renderReviewsTable();
+                    break;
                 case 'homepage':
                     document.getElementById('admin-homepage').classList.add('active');
                     loadHomepageSettings();
@@ -10129,6 +10346,13 @@
                 return;
             }
 
+            // 移除已不存在的选中账号
+            selectedUserAccounts.forEach(account => {
+                if (!allUsersList.some(u => u.account === account && u.role !== 'admin')) {
+                    selectedUserAccounts.delete(account);
+                }
+            });
+
             tbody.innerHTML = allUsersList.map(user => {
                 // 获取用户密码
                 let userPassword = '******';
@@ -10145,8 +10369,14 @@
                     ? '<span class="status-badge status-banned">已禁用</span>'
                     : '<span class="status-badge status-active">正常</span>';
 
+                const selectable = user.role !== 'admin';
+                const isChecked = selectable && selectedUserAccounts.has(user.account);
+
                 return `
                     <tr ${userStatus === 'banned' ? 'style="opacity: 0.6; background-color: #fff3f3;"' : ''}>
+                        <td class="select-col">
+                            ${selectable ? `<input type="checkbox" class="user-select-checkbox" data-account="${user.account}" ${isChecked ? 'checked' : ''}>` : ''}
+                        </td>
                         <td>${user.id}</td>
                         <td>${user.username}</td>
                         <td>${user.account}</td>
@@ -10166,6 +10396,48 @@
                     </tr>
                 `;
             }).join('');
+
+            // 绑定多选事件
+            const userCheckboxes = tbody.querySelectorAll('.user-select-checkbox');
+            userCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', () => {
+                    const account = checkbox.getAttribute('data-account');
+                    if (checkbox.checked) {
+                        selectedUserAccounts.add(account);
+                    } else {
+                        selectedUserAccounts.delete(account);
+                    }
+                    refreshUserSelectionUI();
+                });
+            });
+
+            refreshUserSelectionUI();
+        }
+
+        function refreshUserSelectionUI() {
+            const batchDeleteBtn = document.getElementById('delete-selected-users-btn');
+            const selectAllCheckbox = document.getElementById('select-all-users');
+            const checkboxes = document.querySelectorAll('.user-select-checkbox');
+            const selectedCount = selectedUserAccounts.size;
+
+            if (batchDeleteBtn) {
+                batchDeleteBtn.style.display = selectedCount > 0 ? 'inline-flex' : 'none';
+                batchDeleteBtn.textContent = selectedCount > 0
+                    ? `批量删除账号 (${selectedCount})`
+                    : '批量删除账号';
+            }
+
+            if (selectAllCheckbox) {
+                const total = checkboxes.length;
+                const checked = Array.from(checkboxes).filter(cb => cb.checked).length;
+                if (total === 0) {
+                    selectAllCheckbox.checked = false;
+                    selectAllCheckbox.indeterminate = false;
+                } else {
+                    selectAllCheckbox.checked = checked === total;
+                    selectAllCheckbox.indeterminate = checked > 0 && checked < total;
+                }
+            }
         }
 
         // 渲染订单表格
@@ -10173,6 +10445,8 @@
             const tbody = document.getElementById('orders-table-body');
             const statusFilter = document.getElementById('order-status-filter').value;
             const searchTerm = document.getElementById('order-search').value.toLowerCase();
+            const searchFieldSelect = document.getElementById('order-search-field');
+            const searchField = searchFieldSelect ? searchFieldSelect.value : 'all';
 
             // 后台管理显示所有用户的订单，普通用户只显示自己的订单
             let ordersToDisplay = [];
@@ -10218,17 +10492,42 @@
             // 搜索筛选
             if (searchTerm) {
                 filteredOrders = filteredOrders.filter(order => {
+                    const idStr = String(order.id || '').toLowerCase();
                     const productName = (order.productName || '').toLowerCase();
                     const customerName = (order.customerInfo?.name || '').toLowerCase();
-                    const customerPhone = order.customerInfo?.phone || '';
-                    return productName.includes(searchTerm) ||
-                           customerName.includes(searchTerm) ||
-                           customerPhone.includes(searchTerm);
+                    const customerPhone = (order.customerInfo?.phone || '').toLowerCase();
+
+                    switch (searchField) {
+                        case 'id':
+                            return idStr.includes(searchTerm);
+                        case 'productName':
+                            return productName.includes(searchTerm);
+                        case 'customerName':
+                            return customerName.includes(searchTerm);
+                        case 'customerPhone':
+                            return customerPhone.includes(searchTerm);
+                        case 'all':
+                        default:
+                            return (
+                                idStr.includes(searchTerm) ||
+                                productName.includes(searchTerm) ||
+                                customerName.includes(searchTerm) ||
+                                customerPhone.includes(searchTerm)
+                            );
+                    }
                 });
             }
 
+            // 清理不存在的选中订单
+            selectedOrderIds.forEach(id => {
+                if (!filteredOrders.some(o => o.id === id)) {
+                    selectedOrderIds.delete(id);
+                }
+            });
+
             if (filteredOrders.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 40px;">暂无订单数据</td></tr>';
+                refreshOrderSelectionUI();
                 return;
             }
 
@@ -10239,8 +10538,15 @@
                 const customerEmail = customerInfo.email || '';
                 const productName = order.productName || '';
                 
+                const isChecked = currentUser && currentUser.role === 'admin' && selectedOrderIds.has(order.id);
+
                 return `
                 <tr>
+                    <td>
+                        ${currentUser && currentUser.role === 'admin'
+                            ? `<input type="checkbox" class="order-select-checkbox" data-order-id="${order.id}" ${isChecked ? 'checked' : ''}>`
+                            : ''}
+                    </td>
                     <td>${order.id}</td>
                     <td>${productName}</td>
                     <td><a href="#" class="customer-name-link" data-customer-name="${customerName}" data-customer-phone="${customerPhone}" data-customer-email="${customerEmail}" style="color: var(--primary); text-decoration: underline; cursor: pointer;">${customerName || '-'}</a></td>
@@ -10269,6 +10575,99 @@
                     showCustomerHistory(customerName, customerPhone, customerEmail);
                 });
             });
+
+            // 绑定订单选择复选框事件
+            if (currentUser && currentUser.role === 'admin') {
+                tbody.querySelectorAll('.order-select-checkbox').forEach(checkbox => {
+                    checkbox.addEventListener('change', () => {
+                        const id = parseInt(checkbox.getAttribute('data-order-id'));
+                        if (checkbox.checked) {
+                            selectedOrderIds.add(id);
+                        } else {
+                            selectedOrderIds.delete(id);
+                        }
+                        refreshOrderSelectionUI();
+                    });
+                });
+            }
+        }
+
+        function collectAllReviews() {
+            const reviews = [];
+            products.forEach(product => {
+                if (product && Array.isArray(product.reviews)) {
+                    product.reviews.forEach(review => {
+                        reviews.push({
+                            ...review,
+                            productId: product.id,
+                            productName: product.name || review.productName || t('product') || '产品',
+                        });
+                    });
+                }
+            });
+            return reviews.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+        }
+
+        function refreshOrderSelectionUI() {
+            const batchDeleteBtn = document.getElementById('delete-selected-orders-btn');
+            const selectAllCheckbox = document.getElementById('select-all-orders');
+            const checkboxes = document.querySelectorAll('.order-select-checkbox');
+            const selectedCount = selectedOrderIds.size;
+
+            if (batchDeleteBtn) {
+                const hasAdmin = currentUser && currentUser.role === 'admin';
+                batchDeleteBtn.style.display = hasAdmin && selectedCount > 0 ? 'inline-flex' : 'none';
+                batchDeleteBtn.textContent = selectedCount > 0
+                    ? `批量删除订单 (${selectedCount})`
+                    : '批量删除订单';
+            }
+
+            if (selectAllCheckbox) {
+                const total = checkboxes.length;
+                const checked = Array.from(checkboxes).filter(cb => cb.checked).length;
+                if (total === 0) {
+                    selectAllCheckbox.checked = false;
+                    selectAllCheckbox.indeterminate = false;
+                } else {
+                    selectAllCheckbox.checked = checked === total;
+                    selectAllCheckbox.indeterminate = checked > 0 && checked < total;
+                }
+            }
+        }
+
+        function renderReviewsTable() {
+            const tbody = document.getElementById('reviews-table-body');
+            if (!tbody) return;
+
+            const reviews = collectAllReviews();
+            if (reviews.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:40px;">暂无评价数据</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = reviews.map(review => {
+                const createdAt = review.createdAt ? formatDate(review.createdAt) : '-';
+                const ratingStars = Array.from({ length: 5 }, (_, i) =>
+                    `<i class="fas fa-star" style="color:${i < (review.rating || 0) ? '#ffc107' : '#ddd'};"></i>`
+                ).join('');
+                const hasOrderLink = !!review.orderId;
+
+                return `
+                    <tr>
+                        <td>${review.reviewId || '-'}</td>
+                        <td>${review.productName}</td>
+                        <td>${review.userName || '-'}</td>
+                        <td>${ratingStars}</td>
+                        <td style="max-width: 280px;">${review.comment || '-'}</td>
+                        <td>${review.adminReply ? `<span style="color:#2c3e50;">${review.adminReply}</span>` : '<span style="color:#bbb;">未回复</span>'}</td>
+                        <td>${createdAt}</td>
+                        <td>
+                            <button class="btn btn-sm btn-secondary" ${hasOrderLink ? `onclick="replyToReview(${review.orderId})"` : 'disabled'}>${t('replyReview') || '回复评价'}</button>
+                            <button class="btn btn-sm btn-danger" ${hasOrderLink ? `onclick="deleteReview(${review.orderId})"` : 'disabled'} style="margin-left:6px;">${t('deleteReview') || '删除评价'}</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
         }
 
         // 渲染统计数据
@@ -10456,6 +10855,90 @@
             }
         }
 
+        function safeParseArray(raw) {
+            if (!raw) return [];
+            try {
+                const parsed = JSON.parse(raw);
+                return Array.isArray(parsed) ? parsed : [];
+            } catch (error) {
+                console.warn('解析本地数据失败:', error);
+                return [];
+            }
+        }
+
+        // 删除本地和云端中的指定账号及其关联数据
+        async function removeAccountData(account) {
+            if (!account) throw new Error('账号无效');
+
+            const isCurrent = currentUser && currentUser.account === account;
+            const result = { orders: 0, addresses: 0 };
+
+            // 移除用户列表
+            const userIndex = allUsers.findIndex(u => u.account === account);
+            if (userIndex !== -1) {
+                allUsers.splice(userIndex, 1);
+            }
+
+            // 移除用户资料
+            let profileChanged = false;
+            if (userProfile[account]) {
+                delete userProfile[account];
+                profileChanged = true;
+            }
+
+            // 清除本地订单缓存
+            const ordersKey = `userOrders_${account}`;
+            const storedOrders = safeParseArray(localStorage.getItem(ordersKey));
+            result.orders = storedOrders.length;
+            localStorage.removeItem(ordersKey);
+
+            // 清除全局订单数组中的记录
+            if (allOrders.length > 0) {
+                const before = allOrders.length;
+                allOrders = allOrders.filter(order => order.account !== account);
+                if (before !== allOrders.length) {
+                    localStorage.setItem('allOrders', JSON.stringify(allOrders));
+                }
+            }
+
+            // 清除当前用户订单/地址
+            if (isCurrent) {
+                userOrders = [];
+                saveUserOrders();
+                userAddresses = [];
+                saveUserAddresses();
+            } else {
+                userOrders = userOrders.filter(order => order.account !== account);
+                localStorage.setItem('userOrders', JSON.stringify(userOrders));
+            }
+
+            // 清除地址缓存
+            const addressesKey = `userAddresses_${account}`;
+            const storedAddresses = safeParseArray(localStorage.getItem(addressesKey));
+            result.addresses = storedAddresses.length;
+            localStorage.removeItem(addressesKey);
+
+            // 更新本地存储
+            saveAllUsers();
+            if (profileChanged) {
+                saveUserProfile();
+            }
+
+            // 更新多选状态
+            selectedUserAccounts.delete(account);
+
+            // 云端删除
+            if (cloudSync && cloudSync.isInitialized) {
+                try {
+                    await cloudSync.deleteUserAccount(account);
+                } catch (error) {
+                    console.error('删除云端用户数据失败:', error);
+                }
+            }
+
+            return result;
+        }
+
         // ========== 删除用户账号功能 ==========
         // 彻底删除用户账号及其所有相关数据
         async function deleteUserAccount(account) {
@@ -10499,59 +10982,18 @@
             try {
                 console.log('🗑️ 开始删除用户账号:', account);
 
-                // 1. 删除用户账号
-                const userIndex = allUsers.findIndex(u => u.account === account);
-                if (userIndex !== -1) {
-                    allUsers.splice(userIndex, 1);
-                    console.log('✅ 用户账号已删除');
-                }
+                const { orders, addresses } = await removeAccountData(account);
 
-                // 2. 删除用户的所有订单
-                const ordersBefore = userOrders.length;
-                userOrders = userOrders.filter(order =>
-                    order.customerInfo.email !== account &&
-                    order.customerInfo.phone !== account
-                );
-                const deletedOrders = ordersBefore - userOrders.length;
-                console.log('✅ 已删除', deletedOrders, '个订单');
-
-                // 3. 删除用户的收货地址
-                const addressesBefore = userAddresses.length;
-                userAddresses = userAddresses.filter(addr => addr.account !== account);
-                const deletedAddresses = addressesBefore - userAddresses.length;
-                console.log('✅ 已删除', deletedAddresses, '个收货地址');
-
-                // 4. 删除用户的个人资料
-                if (userProfile[account]) {
-                    delete userProfile[account];
-                    console.log('✅ 个人资料已删除');
-                }
-
-                // 5. 保存所有更改到本地和云端
-                saveAllUsers();
-                saveUserOrders();
-                saveUserAddresses();
-                saveUserProfile();
-
-                // 6. 同步到云端
-                if (cloudSync && cloudSync.isInitialized) {
-                    console.log('☁️ 同步删除操作到云端...');
-                    await cloudSync.syncAllUsers();
-                    await cloudSync.syncOrders();
-                    console.log('✅ 已同步到云端');
-                }
-
-                // 7. 更新界面
+                // 更新界面
                 renderUsersTable();
 
-                // 8. 关闭用户详情模态框
+                // 关闭用户详情模态框
                 const modals = document.querySelectorAll('.modal');
                 modals.forEach(modal => modal.remove());
 
-                // 9. 显示成功消息
                 showNotification(
                     `✅ 用户账号 "${account}" 及所有相关数据已彻底删除\n` +
-                    `删除了 ${deletedOrders} 个订单和 ${deletedAddresses} 个地址`,
+                    `删除了 ${orders} 个订单和 ${addresses} 个地址`,
                     'success'
                 );
 
@@ -10561,6 +11003,9 @@
                 if (currentUser && currentUser.account === account) {
                     currentUser = null;
                     localStorage.removeItem('currentUser');
+                    if (cloudSync && cloudSync.isInitialized) {
+                        await cloudSync.handleUserSessionChange();
+                    }
                     updateUserInterface();
                     showNotification('您的账号已被管理员删除', 'error');
                     // 跳转到首页
@@ -10572,6 +11017,135 @@
             } catch (error) {
                 console.error('❌ 删除用户失败:', error);
                 showNotification('删除用户失败: ' + error.message, 'error');
+            }
+        }
+
+        async function deleteSelectedUsers() {
+            if (selectedUserAccounts.size === 0) {
+                showNotification('请先勾选要删除的账号', 'warning');
+                return;
+            }
+
+            const accounts = Array.from(selectedUserAccounts);
+            if (!confirm(`确定要删除选中的 ${accounts.length} 个账号吗？此操作不可撤销。`)) {
+                return;
+            }
+
+            showNotification('正在批量删除账号，请稍候...', 'info');
+
+            for (const account of accounts) {
+                try {
+                    await removeAccountData(account);
+                } catch (error) {
+                    console.error(`删除账号 ${account} 失败:`, error);
+                    showNotification(`删除账号 ${account} 失败: ${error.message}`, 'error');
+                }
+            }
+
+            renderUsersTable();
+            showNotification('批量删除完成', 'success');
+        }
+
+        async function handleSelfAccountDeletion() {
+            if (!currentUser) {
+                showNotification('请先登录后再进行账号注销', 'warning');
+                return;
+            }
+
+            const account = currentUser.account;
+            const firstConfirm = confirm('确定要注销当前账号吗？该操作会删除所有订单、地址与个人资料，且无法恢复。');
+            if (!firstConfirm) {
+                return;
+            }
+
+            const finalInput = prompt(`请输入账号 "${account}" 以确认注销`, '');
+            if (finalInput !== account) {
+                showNotification('账号输入不匹配，操作已取消', 'warning');
+                return;
+            }
+
+            try {
+                await removeAccountData(account);
+                currentUser = null;
+                localStorage.removeItem('currentUser');
+
+                if (cloudSync && cloudSync.isInitialized) {
+                    await cloudSync.handleUserSessionChange();
+                }
+
+                updateUserInterface();
+                showHomePage();
+                showNotification('账号已成功注销', 'success');
+            } catch (error) {
+                console.error('注销账号失败:', error);
+                showNotification('注销失败：' + error.message, 'error');
+            }
+        }
+
+        async function deleteSelectedOrders() {
+            if (!currentUser || currentUser.role !== 'admin') {
+                showNotification('只有管理员可以删除订单', 'warning');
+                return;
+            }
+
+            if (selectedOrderIds.size === 0) {
+                showNotification('请先勾选要删除的订单', 'warning');
+                return;
+            }
+
+            const ids = Array.from(selectedOrderIds);
+            if (!confirm(`确定要删除选中的 ${ids.length} 个订单吗？此操作不可恢复。`)) {
+                return;
+            }
+
+            try {
+                // 从全局订单数组移除
+                if (allOrders && allOrders.length > 0) {
+                    allOrders = allOrders.filter(order => !selectedOrderIds.has(order.id));
+                    localStorage.setItem('allOrders', JSON.stringify(allOrders));
+                }
+
+                // 处理当前用户订单
+                if (userOrders && userOrders.length > 0) {
+                    userOrders = userOrders.filter(order => !selectedOrderIds.has(order.id));
+                    saveUserOrders();
+                }
+
+                // 如果开启云端同步，为每个订单所属用户同步删除
+                if (cloudSync && cloudSync.isInitialized) {
+                    const userOrderMap = new Map();
+                    ids.forEach(id => {
+                        const order =
+                            allOrders.find(o => o.id === id) ||
+                            userOrders.find(o => o.id === id);
+                        if (order && order.account) {
+                            if (!userOrderMap.has(order.account)) {
+                                userOrderMap.set(order.account, []);
+                            }
+                            userOrderMap.get(order.account).push(id);
+                        }
+                    });
+
+                    for (const [account, orderIds] of userOrderMap.entries()) {
+                        try {
+                            const userPath = cloudSync.getUserPath(account);
+                            const ref = cloudSync.db.ref(`${userPath}/orders`);
+                            const snapshot = await ref.once('value');
+                            const cloudUserOrders = snapshot.val() || [];
+                            const filtered = cloudUserOrders.filter(o => !orderIds.includes(o.id));
+                            await ref.set(filtered);
+                        } catch (error) {
+                            console.error(`同步删除用户 ${account} 订单失败:`, error);
+                        }
+                    }
+                }
+
+                selectedOrderIds.clear();
+                renderOrdersTable();
+                showNotification('批量删除订单完成', 'success');
+            } catch (error) {
+                console.error('批量删除订单失败:', error);
+                showNotification('批量删除订单失败：' + error.message, 'error');
             }
         }
 
@@ -10759,6 +11333,13 @@
                                 <button class="btn btn-primary" onclick="openReviewModal(${order.id})" style="padding: 12px 30px; font-size: 16px;">
                                     <i class="fas fa-star" style="margin-right: 8px;"></i>${t('writeReview')}
                                 </button>
+                            </div>
+                        ` : ''}
+
+                        ${(currentUser && currentUser.role === 'admin' && order.hasReview) ? `
+                            <div style="margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
+                                <button class="btn btn-secondary" onclick="replyToReview(${order.id})">${t('replyReview') || '回复评价'}</button>
+                                <button class="btn btn-danger" onclick="deleteReview(${order.id})">${t('deleteReview') || '删除评价'}</button>
                             </div>
                         ` : ''}
                     </div>
@@ -11362,6 +11943,124 @@
         // 保持原有的updateOrderStatus函数作为备用（已弃用）
         function updateOrderStatus(orderId) {
             openOrderStatusModal(orderId);
+        }
+
+        function findReviewByOrder(order) {
+            if (!order || !order.productId || !order.reviewId) return null;
+            const product = products.find(p => p.id === order.productId);
+            if (!product || !Array.isArray(product.reviews)) return null;
+            return {
+                product,
+                index: product.reviews.findIndex(r => r.reviewId === order.reviewId),
+            };
+        }
+
+        async function replyToReview(orderId) {
+            if (!currentUser || currentUser.role !== 'admin') {
+                showNotification('只有管理员可以回复评价', 'warning');
+                return;
+            }
+
+            let order = userOrders.find(o => o.id === orderId);
+            if (!order && currentUser && currentUser.role === 'admin' && allOrders.length > 0) {
+                order = allOrders.find(o => o.id === orderId);
+            }
+            if (!order) {
+                showNotification(t('orderNotFound') || '未找到订单', 'error');
+                return;
+            }
+
+            const found = findReviewByOrder(order);
+            if (!found || found.index === -1) {
+                showNotification('未找到该订单对应的评价', 'error');
+                return;
+            }
+
+            const { product, index } = found;
+            const currentReply = product.reviews[index].adminReply || '';
+            const reply = prompt(t('adminReply') || '管理员回复', currentReply);
+            if (reply === null) return;
+
+            product.reviews[index].adminReply = reply.trim();
+            localStorage.setItem('products', JSON.stringify(products));
+
+            if (cloudSync && cloudSync.isInitialized) {
+                try {
+                    await cloudSync.syncProducts();
+                } catch (error) {
+                    console.error('同步管理员回复失败:', error);
+                }
+            }
+
+            const productDetail = document.getElementById('product-detail');
+            if (productDetail && productDetail.style.display !== 'none' && currentProduct && currentProduct.id === product.id) {
+                showProductDetail(product.id);
+            }
+            const detailsModal = document.getElementById('order-details-modal');
+            if (detailsModal) {
+                detailsModal.remove();
+                showOrderDetailsModal(orderId);
+            }
+
+            showNotification('回复已保存', 'success');
+        }
+
+        async function deleteReview(orderId) {
+            if (!currentUser || currentUser.role !== 'admin') {
+                showNotification('只有管理员可以删除评价', 'warning');
+                return;
+            }
+
+            let order = userOrders.find(o => o.id === orderId);
+            if (!order && currentUser && currentUser.role === 'admin' && allOrders.length > 0) {
+                order = allOrders.find(o => o.id === orderId);
+            }
+            if (!order) {
+                showNotification(t('orderNotFound') || '未找到订单', 'error');
+                return;
+            }
+
+            if (!order.hasReview) {
+                showNotification('该订单暂无评价', 'info');
+                return;
+            }
+
+            if (!confirm('确定要删除该条评价吗？此操作不可恢复。')) {
+                return;
+            }
+
+            const found = findReviewByOrder(order);
+            if (found && found.index > -1) {
+                const { product, index } = found;
+                product.reviews.splice(index, 1);
+                localStorage.setItem('products', JSON.stringify(products));
+            }
+
+            order.hasReview = false;
+            delete order.reviewId;
+            saveUserOrders();
+
+            if (cloudSync && cloudSync.isInitialized) {
+                try {
+                    await cloudSync.syncProducts();
+                    await cloudSync.syncOrders();
+                } catch (error) {
+                    console.error('删除评价后同步失败:', error);
+                }
+            }
+
+            const productDetail = document.getElementById('product-detail');
+            if (productDetail && productDetail.style.display !== 'none' && currentProduct && currentProduct.id === order.productId) {
+                showProductDetail(order.productId);
+            }
+
+            const detailsModal = document.getElementById('order-details-modal');
+            if (detailsModal) {
+                detailsModal.remove();
+                showOrderDetailsModal(orderId);
+            }
+
+            showNotification('评价已删除', 'success');
         }
 
         // 导出用户数据
