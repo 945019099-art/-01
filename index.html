@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BeeFreebies01</title>
+    <title>BeeFreebies</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
@@ -2057,7 +2057,20 @@
                 margin: 0;
             }
 
-            .nav-links {
+            .nav-links,
+            .nav-links li,
+            .nav-links a {
+                display: none !important;
+                visibility: hidden;
+                pointer-events: none;
+                margin: 0;
+                padding: 0;
+            }
+
+            #main-home-link,
+            #admin-link,
+            #user-center-link,
+            #my-orders-link {
                 display: none !important;
             }
 
@@ -2309,27 +2322,10 @@
             }
 
             .nav-links {
-                display: flex !important;
-                position: static;
+                display: none !important;
                 width: 100%;
-                flex-wrap: wrap;
-                gap: 8px;
-                box-shadow: none;
-                border-top: none;
-                background: transparent;
                 padding: 0;
-            }
-
-            .nav-links li {
-                width: auto;
-                flex: 1 1 calc(50% - 8px);
-            }
-
-            .nav-links a {
-                border: 1px solid #e5e9f2;
-                border-radius: 8px;
-                background: #f5f7fa;
-                font-weight: 600;
+                margin: 0;
             }
 
             .search-bar {
