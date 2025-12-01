@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BeeFreebies</title>
+    <title>电商平台系统</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
@@ -152,8 +152,26 @@
         }
 
         // 页面加载时创建汉堡菜单
-        if (window.innerWidth <= 768) {
-            createMobileMenu();
+        function initMobileMenu() {
+            if (window.innerWidth <= 768) {
+                const existingToggle = document.querySelector('.menu-toggle');
+                if (!existingToggle) {
+                    createMobileMenu();
+                }
+                // 确保移动端导航链接初始隐藏
+                const navLinks = document.querySelector('.nav-links');
+                if (navLinks) {
+                    navLinks.style.display = 'none';
+                    navLinks.classList.remove('show');
+                }
+            }
+        }
+
+        // 初始化移动菜单
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initMobileMenu);
+        } else {
+            initMobileMenu();
         }
 
         // 窗口大小改变时处理
@@ -165,12 +183,20 @@
                 if (!menuToggle) {
                     createMobileMenu();
                 }
+                // 确保移动端导航链接隐藏
+                if (navLinks) {
+                    navLinks.style.display = 'none';
+                    navLinks.classList.remove('show');
+                }
             } else {
                 // 桌面端：移除汉堡菜单，显示完整导航
                 if (menuToggle) {
                     menuToggle.remove();
                 }
-                navLinks.classList.remove('show');
+                if (navLinks) {
+                    navLinks.style.display = '';
+                    navLinks.classList.remove('show');
+                }
             }
         });
     </script>
@@ -2142,9 +2168,9 @@
             }
 
             .nav-links {
-                display: none;
-                position: absolute;
-                top: 100%;
+                display: none !important;
+                position: fixed;
+                top: 60px;
                 left: 0;
                 right: 0;
                 background: white;
@@ -2153,12 +2179,13 @@
                 padding: 10px 0;
                 box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
                 z-index: 1000;
-                max-height: 80vh;
+                max-height: calc(100vh - 60px);
                 overflow-y: auto;
+                border-top: 1px solid #eee;
             }
 
             .nav-links.show {
-                display: flex;
+                display: flex !important;
             }
 
             .nav-links li {
@@ -3003,7 +3030,7 @@
                 <div class="language-selector" style="position: relative; margin-right: 15px;">
                     <select id="language-select" style="padding: 6px 12px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer; font-size: 14px;">
                         <option value="zh">Chinese</option>
-                        <option value="en">English</option>
+                        <option value="en" selected>English</option>
                     </select>
                 </div>
 
@@ -3719,7 +3746,7 @@
                     <div class="arrow-container">
                         <div class="arrow">→</div>
                     </div>
-                    <a href="https://wa.me/?text=FREE" target="_blank" class="whatsapp-icon-link" id="whatsapp-link">
+                    <a href="#" class="whatsapp-icon-link" id="whatsapp-link" onclick="openWhatsAppWithOrder(); return false;">
                         <i class="fab fa-whatsapp whatsapp-icon"></i>
                     </a>
                 </div>
@@ -3992,7 +4019,7 @@
         let currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
         
         // 语言设置
-        let currentLanguage = localStorage.getItem('language') || 'zh';
+        let currentLanguage = localStorage.getItem('language') || 'en';
         
         // 语言包
         const translations = {
@@ -5041,8 +5068,8 @@
                     // 更新UI状态指示器为错误状态
                     this.updateSyncStatusUI(false);
 
-                    // 显示用户友好的错误提示
-                    showNotification(`⚠️ 云端同步初始化失败: ${errorMessage}`, 'error');
+                    // 显示用户友好的错误提示（已注释，不显示错误消息）
+                    // showNotification(`⚠️ 云端同步初始化失败: ${errorMessage}`, 'error');
                 }
             }
 
@@ -7958,9 +7985,9 @@
                         document.getElementById('signup-form').reset();
                         closeModal('signup-modal');
                         
-                        // 显示WhatsApp提示模态框
+                        // 显示WhatsApp提示模态框，传递订单号
                         if (typeof showWhatsAppModal === 'function') {
-                            showWhatsAppModal();
+                            showWhatsAppModal(newOrder.id);
                         } else {
                             console.warn('⚠️ showWhatsAppModal函数不存在');
                         }
@@ -11788,11 +11815,36 @@
         }
         
         // 显示WhatsApp提示模态框
-        function showWhatsAppModal() {
+        // 存储当前订单号（用于WhatsApp消息）
+        let currentOrderIdForWhatsApp = null;
+
+        function showWhatsAppModal(orderId = null) {
             const whatsappModal = document.getElementById('whatsapp-modal');
             if (whatsappModal) {
+                // 保存订单号
+                currentOrderIdForWhatsApp = orderId;
                 whatsappModal.style.display = 'flex';
             }
+        }
+
+        // 打开WhatsApp并自动填充订单确认消息
+        function openWhatsAppWithOrder() {
+            const phoneNumber = '+17077902826'; // WhatsApp号码
+            let message = 'FREE';
+            
+            // 如果有订单号，使用订单确认消息
+            if (currentOrderIdForWhatsApp) {
+                message = `Please confirm my Beefreebies order #${currentOrderIdForWhatsApp}`;
+            }
+            
+            // 构建WhatsApp链接
+            const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+            
+            // 打开WhatsApp
+            window.open(whatsappUrl, '_blank');
+            
+            // 关闭模态框
+            closeModal('whatsapp-modal');
         }
 
         // 关闭所有模态框
