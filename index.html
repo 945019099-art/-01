@@ -845,7 +845,27 @@
         .form-actions {
             display: flex;
             justify-content: flex-end;
+            gap: 12px;
             margin-top: 20px;
+        }
+
+        #signup-cancel-btn {
+            background: #f3f4f6;
+            color: #374151;
+            border: 1px solid #e5e7eb;
+        }
+
+        #signup-cancel-btn:hover {
+            background: #e5e7eb;
+        }
+
+        #signup-submit-btn {
+            background: #22c55e;
+            border-color: #1faa52;
+        }
+
+        #signup-submit-btn:hover {
+            background: #1faa52;
         }
 
         /* 商品详情页样式 */
@@ -1057,9 +1077,27 @@
         }
 
         .order-price {
-            color: var(--primary);
-            font-weight: bold;
+            display: flex;
+            align-items: baseline;
+            gap: 10px;
             margin-bottom: 5px;
+        }
+
+        .order-date {
+            color: #666;
+            font-size: 12px;
+        }
+
+        .order-price-old {
+            text-decoration: line-through;
+            color: #999;
+            font-size: 0.95em;
+        }
+
+        .order-price-new {
+            color: #e74c3c;
+            font-weight: bold;
+            font-size: 1.1em;
         }
 
         .order-status {
@@ -1068,6 +1106,51 @@
             border-radius: 4px;
             font-size: 12px;
             font-weight: 500;
+        }
+
+        /* 评价完成后的感谢提示 */
+        .review-thankyou-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 16px;
+            border-radius: 999px;
+            font-size: 13px;
+            font-weight: 500;
+            background: linear-gradient(135deg, #4ade80, #22c55e);
+            color: #ffffff;
+            box-shadow: 0 4px 10px rgba(34, 197, 94, 0.25);
+            border: none;
+            cursor: default;
+            white-space: nowrap;
+        }
+
+        .review-thankyou-badge i {
+            margin-right: 8px;
+        }
+
+        .order-copy-btn {
+            flex: 0;
+            padding: 4px 10px;
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            color: #6c757d;
+            border-radius: 4px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            width: auto;
+            min-width: auto;
+            font-size: 12px;
+            gap: 4px;
+        }
+
+        .order-copy-btn:hover {
+            background: #e9ecef;
+            border-color: #adb5bd;
+            color: #495057;
         }
 
         .status-pending {
@@ -1587,6 +1670,43 @@
             display: flex;
             flex-direction: column;
             gap: 15px;
+        }
+
+        .carousel-tabs {
+            display: inline-flex;
+            gap: 10px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 4px;
+            background: #f9fafb;
+            width: fit-content;
+        }
+
+        .carousel-tab {
+            border: none;
+            background: transparent;
+            padding: 8px 18px;
+            border-radius: 6px;
+            font-weight: 600;
+            color: #6b7280;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .carousel-tab.active {
+            background: white;
+            color: var(--primary);
+            box-shadow: 0 2px 6px rgba(59, 130, 246, 0.2);
+        }
+
+        .carousel-panel {
+            display: none;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .carousel-panel.active {
+            display: flex;
         }
 
         .carousel-list {
@@ -2261,6 +2381,7 @@
 
             .language-selector {
                 margin: 0 !important;
+                margin-left: auto !important;
             }
 
             .language-selector select {
@@ -2346,7 +2467,9 @@
             }
 
             .language-selector {
-                width: 100%;
+                width: auto;
+                margin-left: auto !important;
+                order: 10;
             }
         }
 
@@ -3069,7 +3192,7 @@
 
             <ul class="nav-links">
                 <li><a href="#" class="active" id="main-home-link">Home</a></li>
-                <li><a href="#" id="admin-link">Admin Panel</a></li>
+                <li><a href="#" id="admin-link" style="display:none">Admin Panel</a></li>
                 <li><a href="#" id="user-center-link" style="display:none">Account</a></li>
                 <li><a href="#" id="my-orders-link" style="display:none" data-tab="orders">My Orders</a></li>
             </ul>
@@ -3154,7 +3277,7 @@
         <button type="button" class="bottom-nav-item" onclick="document.getElementById('main-home-link').click()">
             <span>Home</span>
         </button>
-        <button type="button" class="bottom-nav-item" onclick="document.getElementById('admin-link').click()">
+        <button type="button" class="bottom-nav-item" id="bottom-admin-btn" style="display:none" onclick="document.getElementById('admin-link').click()">
             <span>Admin Panel</span>
         </button>
         <button type="button" class="bottom-nav-item" onclick="document.getElementById('user-center-link').click()">
@@ -3320,11 +3443,6 @@
                         </div>
                     </form>
 
-                    <div class="danger-zone" id="account-danger-zone">
-                        <h4>注销账号 / Delete Account</h4>
-                        <p>注销后将立即删除该账号的所有个人资料、订单与地址信息，且无法恢复。</p>
-                        <button class="btn btn-danger" id="delete-account-btn">立即注销账号</button>
-                    </div>
                 </div>
 
                 <!-- 收货地址页面 -->
@@ -3575,10 +3693,22 @@
                         <div class="editor-section">
                             <h3>轮播图管理</h3>
                             <div class="carousel-manager">
-                                <div class="carousel-list" id="carousel-list">
-                                    <!-- 轮播图列表 -->
+                                <div class="carousel-tabs">
+                                    <button type="button" class="carousel-tab active" data-carousel-tab="desktop">PC端轮播</button>
+                                    <button type="button" class="carousel-tab" data-carousel-tab="mobile">移动端轮播</button>
                                 </div>
-                                <button class="btn btn-primary" id="add-carousel-btn">添加轮播图</button>
+                                <div class="carousel-panel active" data-carousel-panel="desktop">
+                                    <div class="carousel-list" id="carousel-list-desktop">
+                                        <!-- PC轮播图列表 -->
+                                    </div>
+                                    <button class="btn btn-primary" id="add-carousel-btn-desktop">添加PC轮播图</button>
+                                </div>
+                                <div class="carousel-panel" data-carousel-panel="mobile">
+                                    <div class="carousel-list" id="carousel-list-mobile">
+                                        <!-- 移动端轮播图列表 -->
+                                    </div>
+                                    <button class="btn btn-primary" id="add-carousel-btn-mobile">添加移动端轮播图</button>
+                                </div>
                             </div>
                         </div>
 
@@ -3833,8 +3963,8 @@
                             placeholder="请输入您的特殊需求或备注"></textarea>
                     </div>
                     <div class="form-actions">
-                        <button type="submit" class="btn btn-primary" id="signup-submit-btn">提交报名</button>
                         <button type="button" class="btn btn-secondary" id="signup-cancel-btn" onclick="closeModal('signup-modal')">取消</button>
+                        <button type="submit" class="btn btn-primary" id="signup-submit-btn">提交报名</button>
                     </div>
                 </form>
             </div>
@@ -4127,6 +4257,8 @@
         let allUsers = [];  // 所有用户数据(仅管理员使用,从云端加载)
         let currentProduct = null;
         let pendingSignupProduct = null; // 记录待领取的产品（用户登录后需要打开报名模态框）
+        let pendingSignupFormData = null; // 记录用户已填写的报名表单数据
+        let shouldReturnToSignup = false; // 添加地址后是否需要返回报名表单
         let currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
         const selectedUserAccounts = new Set(); // 后台用户批量操作选择集合
         const selectedOrderIds = new Set(); // 后台订单批量操作选择集合
@@ -4146,8 +4278,8 @@
                 'logout': '退出',
                 'searchPlaceholder': '搜索商品...',
                 // 货币
-                'currency': '¥',
-                'currencySymbol': '¥',
+                'currency': '$',
+                'currencySymbol': '$',
                 // 首页
                 'featuredTitle': '精选好物推荐',
                 'featuredDesc': '我们实时挑选热度最高的商品，并提供专属领取通道，点击即可快速查看详情。',
@@ -4314,11 +4446,17 @@
                 'commentPlaceholder': '请分享您对产品的使用体验...',
                 'submitReview': '提交评价',
                 'reviewSubmitted': '评价已提交，感谢您的反馈！',
+                'reviewThankYou': '感谢您在 BeeFreebies 留下评价！我们非常感激。',
+                'reply': '回复',
+                'replyPlaceholder': '请输入您的回复内容',
+                'replySuccess': '回复已提交',
                 'reviewExists': '您已经评价过此订单了',
                 'reviewTime': '评价时间',
                 'adminReply': '管理员回复',
                 'replyReview': '回复评价',
                 'deleteReview': '删除评价',
+                'deleteOrder': '删除订单',
+                'customerReplies': '用户回复',
                 'purchasedProduct': '购买商品',
                 'customerName': '客户',
                 'stars': '星',
@@ -4503,11 +4641,17 @@
                 'commentPlaceholder': 'Please share your experience with this product...',
                 'submitReview': 'Submit Review',
                 'reviewSubmitted': 'Review submitted, thank you for your feedback!',
+                'reviewThankYou': 'Thanks for leaving a review on Beefreebies! We appreciate it.',
+                'reply': 'Reply',
+                'replyPlaceholder': 'Please enter your reply',
+                'replySuccess': 'Reply submitted',
                 'reviewExists': 'You have already reviewed this order',
                 'reviewTime': 'Review Time',
                 'adminReply': 'Admin Reply',
                 'replyReview': 'Reply',
                 'deleteReview': 'Delete Review',
+                'deleteOrder': 'Delete Order',
+                'customerReplies': 'Customer Replies',
                 'purchasedProduct': 'Purchased Product',
                 'customerName': 'Customer',
                 'stars': 'stars',
@@ -4523,11 +4667,7 @@
         
         // 格式化货币
         function formatCurrency(amount) {
-            if (currentLanguage === 'en') {
-                return `$${parseFloat(amount || 0).toFixed(2)}`;
-            } else {
-                return `¥${parseFloat(amount || 0).toFixed(2)}`;
-            }
+            return `$${parseFloat(amount || 0).toFixed(2)}`;
         }
         
         // 切换语言
@@ -8063,6 +8203,7 @@
 
                 // 如果表单中没有填写地址，且用户也没有保存的地址，跳转到地址页面
                 if (!hasFormAddress && !hasSavedAddress) {
+                    prepareReturnToSignup();
                     // 关闭报名模态框
                     closeModal('signup-modal');
                     
@@ -8117,6 +8258,8 @@
                     productId: currentProduct.id,
                     productName: productName,
                     price: currentProduct.price || 0,
+                    originalPrice: currentProduct.price || 0,
+                    promoPrice: currentProduct.newPrice !== undefined ? currentProduct.newPrice : 0,
                     image: currentProduct.image || '',
                     status: 'review',
                     date: Date.now(), // 保存完整时间戳，确保时间准确
@@ -8440,7 +8583,7 @@
                     const shouldCheck = selectAllOrdersCheckbox.checked;
                     document.querySelectorAll('.order-select-checkbox').forEach(cb => {
                         cb.checked = shouldCheck;
-                        const id = parseInt(cb.getAttribute('data-order-id'));
+                        const id = cb.getAttribute('data-order-id');
                         if (shouldCheck) {
                             selectedOrderIds.add(id);
                         } else {
@@ -8465,8 +8608,32 @@
                 saveHomepageSettings();
             });
 
-            document.getElementById('add-carousel-btn').addEventListener('click', () => {
-                addCarouselItem();
+            const addDesktopCarouselBtn = document.getElementById('add-carousel-btn-desktop');
+            if (addDesktopCarouselBtn) {
+                addDesktopCarouselBtn.addEventListener('click', () => addCarouselItem('desktop'));
+            }
+
+            const addMobileCarouselBtn = document.getElementById('add-carousel-btn-mobile');
+            if (addMobileCarouselBtn) {
+                addMobileCarouselBtn.addEventListener('click', () => addCarouselItem('mobile'));
+            }
+
+            const carouselTabs = document.querySelectorAll('.carousel-tab');
+            const carouselPanels = document.querySelectorAll('.carousel-panel');
+            carouselTabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const target = tab.getAttribute('data-carousel-tab');
+                    carouselTabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    carouselPanels.forEach(panel => {
+                        if (panel.getAttribute('data-carousel-panel') === target) {
+                            panel.classList.add('active');
+                        } else {
+                            panel.classList.remove('active');
+                        }
+                    });
+                    renderCarouselList(target);
+                });
             });
 
             // 订单筛选
@@ -9654,6 +9821,7 @@
             const userCenterLink = document.getElementById('user-center-link');
             const myOrdersLink = document.getElementById('my-orders-link');
             const adminLink = document.getElementById('admin-link');
+            const adminBottomNavBtn = document.getElementById('bottom-admin-btn');
             const usernameDisplay = document.getElementById('username-display');
 
             if (currentUser) {
@@ -9672,6 +9840,7 @@
                     if (myOrdersLink) myOrdersLink.style.display = 'none';
                     adminLink.style.display = 'none';
                     usernameDisplay.textContent = '用户名';
+                    if (adminBottomNavBtn) adminBottomNavBtn.style.display = 'none';
 
                     // 返回首页
                     document.getElementById('home-page').style.display = 'block';
@@ -9695,8 +9864,10 @@
                 // 根据用户角色显示后台管理链接
                 if (isAdmin()) {
                     adminLink.style.display = 'inline';
+                    if (adminBottomNavBtn) adminBottomNavBtn.style.display = 'inline-block';
                 } else {
                     adminLink.style.display = 'none';
+                    if (adminBottomNavBtn) adminBottomNavBtn.style.display = 'none';
                 }
             } else {
                 loginLink.style.display = 'inline';
@@ -9706,6 +9877,7 @@
                 if (myOrdersLink) myOrdersLink.style.display = 'none';
                 adminLink.style.display = 'none';
                 usernameDisplay.textContent = '用户名';
+                if (adminBottomNavBtn) adminBottomNavBtn.style.display = 'none';
             }
         }
 
@@ -9799,9 +9971,8 @@
                 return;
             }
 
-            const currencySymbol = currentLanguage === 'en' ? '$' : '¥';
-            const oldPrice = currentLanguage === 'en' ? `$${parseFloat(product.price || 0).toFixed(2)}` : `¥${parseFloat(product.price || 0).toFixed(2)}`;
-            const newPrice = currentLanguage === 'en' ? `$${parseFloat(product.newPrice !== undefined ? product.newPrice : 0).toFixed(2)}` : `¥${parseFloat(product.newPrice !== undefined ? product.newPrice : 0).toFixed(2)}`;
+            const oldPrice = formatCurrency(product.price || 0);
+            const newPrice = formatCurrency(product.newPrice !== undefined ? product.newPrice : 0);
             
             // 获取该产品的评价列表
             const productReviews = (product.reviews || []).sort((a, b) => b.createdAt - a.createdAt);
@@ -9871,7 +10042,28 @@
                                                 <span>${review.adminReply}</span>
                                             </div>
                                         ` : ''}
+                                        ${Array.isArray(review.replies) && review.replies.length ? `
+                                            <div class="customer-replies" style="margin-top: 15px; padding: 12px 15px; border-radius: 6px; background: #fff; border-left: 3px solid #2ecc71;">
+                                                <strong style="color:#2ecc71; display:block; margin-bottom:8px;">${t('customerReplies') || '用户回复'}</strong>
+                                                ${review.replies.map(reply => `
+                                                    <div class="customer-reply-item" style="margin-bottom: 10px;">
+                                                        <div style="display:flex; justify-content: space-between; font-size: 13px; color:#666; margin-bottom:4px;">
+                                                            <span><i class="fas fa-user-circle" style="margin-right:6px;"></i>${reply.userName || t('customerName')}</span>
+                                                            <span><i class="fas fa-clock" style="margin-right:6px;"></i>${formatDate(reply.createdAt)}</span>
+                                                        </div>
+                                                        <p style="margin:0; color:#34495e;">${reply.message}</p>
+                                                    </div>
+                                                `).join('')}
+                                            </div>
+                                        ` : ''}
                                     </div>
+                                    ${currentUser ? `
+                                        <div class="review-actions" style="margin-top: 15px; text-align: right;">
+                                            <button class="btn btn-sm btn-outline-primary review-reply-btn" data-review-id="${review.reviewId}" data-product-id="${product.id}">
+                                                <i class="fas fa-reply" style="margin-right:6px;"></i>${t('reply') || '回复'}
+                                            </button>
+                                        </div>
+                                    ` : ''}
                                 </div>
                             `).join('')}
                         </div>
@@ -9895,6 +10087,14 @@
                     showProductList();
                 });
             }
+
+            document.querySelectorAll('#product-detail .review-reply-btn').forEach(btn => {
+                btn.addEventListener('click', function () {
+                    const pid = this.getAttribute('data-product-id');
+                    const rid = this.getAttribute('data-review-id');
+                    handleReviewReply(pid, rid);
+                });
+            });
         }
 
         // 显示产品列表
@@ -9908,6 +10108,50 @@
 
             productDetail.style.display = 'none';
             productsGrid.style.display = 'grid';
+        }
+
+        function captureSignupFormData() {
+            const form = document.getElementById('signup-form');
+            if (!form) return null;
+
+            return {
+                name: document.getElementById('signup-name')?.value || '',
+                phone: document.getElementById('signup-phone')?.value || '',
+                email: document.getElementById('signup-email')?.value || '',
+                notes: document.getElementById('signup-notes')?.value || '',
+                address: document.getElementById('signup-address-hidden')?.value || ''
+            };
+        }
+
+        function restoreSignupFormData() {
+            if (!pendingSignupFormData) return;
+
+            const { name, phone, email, notes } = pendingSignupFormData;
+            const nameInput = document.getElementById('signup-name');
+            const phoneInput = document.getElementById('signup-phone');
+            const emailInput = document.getElementById('signup-email');
+            const notesInput = document.getElementById('signup-notes');
+
+            if (nameInput) nameInput.value = name || '';
+            if (phoneInput) phoneInput.value = phone || '';
+            if (emailInput) emailInput.value = email || '';
+            if (notesInput) notesInput.value = notes || '';
+
+            // 地址需要用户重新选择，避免旧值失效
+            const addressHidden = document.getElementById('signup-address-hidden');
+            if (addressHidden) {
+                addressHidden.value = '';
+            }
+
+            pendingSignupFormData = null;
+        }
+
+        function prepareReturnToSignup() {
+            pendingSignupFormData = captureSignupFormData();
+            shouldReturnToSignup = true;
+            if (currentProduct) {
+                pendingSignupProduct = currentProduct;
+            }
         }
 
         // 打开报名模态框
@@ -9953,6 +10197,10 @@
             // 显示模态框
             signupModal.style.display = 'flex';
             console.log('✅ 报名模态框已打开');
+
+            if (pendingSignupFormData) {
+                restoreSignupFormData();
+            }
         }
 
         // 更新报名表单中的地址选择器
@@ -10062,6 +10310,7 @@
                     updatedAddressBtn.addEventListener('click', function(e) {
                         e.preventDefault();
                         e.stopPropagation();
+                        prepareReturnToSignup();
                         
                         console.log('📍 点击了"前往用户中心添加地址"按钮');
                         
@@ -10160,21 +10409,31 @@
                 const hasNotReviewed = !order.hasReview || order.hasReview === false || order.hasReview === 'false';
                 const showReviewBtn = isCompleted && currentUser && hasNotReviewed;
                 
+                const relatedProduct = products.find(p => p.id === order.productId);
+                const originalPrice = relatedProduct && relatedProduct.price !== undefined
+                    ? relatedProduct.price
+                    : (order.originalPrice !== undefined ? order.originalPrice : order.price || 0);
+                const promoPriceRaw = relatedProduct && relatedProduct.newPrice !== undefined
+                    ? relatedProduct.newPrice
+                    : (order.promoPrice !== undefined ? order.promoPrice : 0);
+                const formattedOldPrice = formatCurrency(originalPrice);
+                const formattedNewPrice = formatCurrency(promoPriceRaw);
+                const formattedDate = formatDate(order.date);
+
                 const orderHtml = `
                     <div class="order-item" data-order-id="${order.id}" style="cursor: pointer; position: relative;">
                         <div class="order-image" style="background-image: url('${order.image}')"></div>
                         <div class="order-details" style="flex: 1;">
                             <div class="order-title">${order.productName}</div>
-                            <div class="order-price">¥${order.price}</div>
-                            <div class="order-date">${order.date}</div>
+                            <div class="order-price">
+                                <span class="order-price-old">${formattedOldPrice}</span>
+                                <span class="order-price-new">${formattedNewPrice}</span>
+                            </div>
+                            ${formattedDate ? `<div class="order-date">${formattedDate}</div>` : ''}
                             <div style="display: flex; align-items: center; gap: 8px; margin: 8px 0;">
                                 <span style="font-weight: 500; color: #666;">${t('orderId')}:</span>
                                 <span style="font-family: monospace; color: var(--primary); font-weight: 500;">${order.id}</span>
-                                <button class="btn btn-sm" onclick="event.stopPropagation(); copyOrderId('${order.id}');" 
-                                        style="padding: 4px 8px; font-size: 12px; background: #f8f9fa; border: 1px solid #dee2e6; color: #6c757d; border-radius: 4px; cursor: pointer; transition: all 0.2s; width: auto; min-width: auto; display: inline-flex; align-items: center; justify-content: center;"
-                                        onmouseover="this.style.background='#e9ecef'; this.style.borderColor='#adb5bd'; this.style.color='#495057';"
-                                        onmouseout="this.style.background='#f8f9fa'; this.style.borderColor='#dee2e6'; this.style.color='#6c757d';"
-                                        title="${t('copyOrderId') || '复制订单号'}">
+                                <button type="button" class="btn order-copy-btn" onclick="event.stopPropagation(); copyOrderId('${order.id}');" title="${t('copyOrderId') || '复制订单号'}">
                                     <i class="fas fa-copy"></i>
                                 </button>
                             </div>
@@ -10516,7 +10775,7 @@
 
             // 清理不存在的选中订单
             selectedOrderIds.forEach(id => {
-                if (!filteredOrders.some(o => o.id === id)) {
+                if (!filteredOrders.some(o => normalizeOrderId(o.id) === id)) {
                     selectedOrderIds.delete(id);
                 }
             });
@@ -10533,29 +10792,33 @@
                 const customerPhone = customerInfo.phone || '';
                 const customerEmail = customerInfo.email || '';
                 const productName = order.productName || '';
+                const orderIdStr = normalizeOrderId(order.id);
                 
-                const isChecked = currentUser && currentUser.role === 'admin' && selectedOrderIds.has(order.id);
+                const isChecked = currentUser && currentUser.role === 'admin' && selectedOrderIds.has(orderIdStr);
 
                 return `
                 <tr>
                     <td>
                         ${currentUser && currentUser.role === 'admin'
-                            ? `<input type="checkbox" class="order-select-checkbox" data-order-id="${order.id}" ${isChecked ? 'checked' : ''}>`
+                            ? `<input type="checkbox" class="order-select-checkbox" data-order-id="${orderIdStr}" ${isChecked ? 'checked' : ''}>`
                             : ''}
                     </td>
-                    <td>${order.id}</td>
+                    <td>${orderIdStr}</td>
                     <td>${productName}</td>
                     <td><a href="#" class="customer-name-link" data-customer-name="${customerName}" data-customer-phone="${customerPhone}" data-customer-email="${customerEmail}" style="color: var(--primary); text-decoration: underline; cursor: pointer;">${customerName || '-'}</a></td>
                     <td>${customerPhone || '-'}</td>
                     <td><span class="status-badge status-${order.status || 'pending'}">${getStatusText(order.status || 'pending')}</span></td>
                     <td>
-                        <span class="tracking-number-display" data-order-id="${order.id}">${order.trackingNumber || t('notFilled')}</span>
-                        <button class="btn btn-sm btn-primary" onclick="editTrackingNumber(${order.id})" style="margin-left: 5px;">${t('edit')}</button>
+                        <span class="tracking-number-display" data-order-id="${orderIdStr}">${order.trackingNumber || t('notFilled')}</span>
+                        <button class="btn btn-sm btn-primary" onclick="editTrackingNumber('${orderIdStr}')" style="margin-left: 5px;">${t('edit')}</button>
                     </td>
                     <td>${formatDate(order.date || order.updatedAt || Date.now())}</td>
                     <td>
-                        <button class="btn btn-sm btn-primary" onclick="viewOrderDetails(${order.id})">查看</button>
-                        <button class="btn btn-sm btn-secondary" onclick="openOrderStatusModal(${order.id})">更新状态</button>
+                        <button class="btn btn-sm btn-primary" onclick="viewOrderDetails('${orderIdStr}')">查看</button>
+                        <button class="btn btn-sm btn-secondary" onclick="openOrderStatusModal('${orderIdStr}')">更新状态</button>
+                        ${currentUser && currentUser.role === 'admin'
+                            ? `<button class="btn btn-sm btn-danger" onclick="deleteSingleOrder('${orderIdStr}')">${t('deleteOrder') || '删除订单'}</button>`
+                            : ''}
                     </td>
                 </tr>
             `;
@@ -10576,7 +10839,7 @@
             if (currentUser && currentUser.role === 'admin') {
                 tbody.querySelectorAll('.order-select-checkbox').forEach(checkbox => {
                     checkbox.addEventListener('change', () => {
-                        const id = parseInt(checkbox.getAttribute('data-order-id'));
+                        const id = checkbox.getAttribute('data-order-id');
                         if (checkbox.checked) {
                             selectedOrderIds.add(id);
                         } else {
@@ -10658,8 +10921,8 @@
                         <td>${review.adminReply ? `<span style="color:#2c3e50;">${review.adminReply}</span>` : '<span style="color:#bbb;">未回复</span>'}</td>
                         <td>${createdAt}</td>
                         <td>
-                            <button class="btn btn-sm btn-secondary" ${hasOrderLink ? `onclick="replyToReview(${review.orderId})"` : 'disabled'}>${t('replyReview') || '回复评价'}</button>
-                            <button class="btn btn-sm btn-danger" ${hasOrderLink ? `onclick="deleteReview(${review.orderId})"` : 'disabled'} style="margin-left:6px;">${t('deleteReview') || '删除评价'}</button>
+                            <button class="btn btn-sm btn-secondary" ${hasOrderLink ? `onclick="replyToReview('${review.orderId}')"` : 'disabled'}>${t('replyReview') || '回复评价'}</button>
+                            <button class="btn btn-sm btn-danger" ${hasOrderLink ? `onclick="deleteReview('${review.orderId}')"` : 'disabled'} style="margin-left:6px;">${t('deleteReview') || '删除评价'}</button>
                         </td>
                     </tr>
                 `;
@@ -11078,6 +11341,73 @@
             }
         }
 
+        async function deleteOrdersByIds(orderIds, showSuccessMessage = true) {
+            const ids = (orderIds || []).map(normalizeOrderId).filter(Boolean);
+            if (ids.length === 0) {
+                showNotification('未找到要删除的订单', 'warning');
+                return false;
+            }
+
+            const uniqueIds = Array.from(new Set(ids));
+            const ordersToDelete = uniqueIds
+                .map(id => findOrderById(id))
+                .filter(order => !!order);
+
+            if (ordersToDelete.length === 0) {
+                showNotification('未找到要删除的订单', 'warning');
+                return false;
+            }
+
+            const idSet = new Set(uniqueIds);
+
+            if (allOrders && allOrders.length > 0) {
+                allOrders = allOrders.filter(order => !idSet.has(normalizeOrderId(order.id)));
+                localStorage.setItem('allOrders', JSON.stringify(allOrders));
+            }
+
+            if (userOrders && userOrders.length > 0) {
+                userOrders = userOrders.filter(order => !idSet.has(normalizeOrderId(order.id)));
+                saveUserOrders();
+            }
+
+            if (cloudSync && cloudSync.isInitialized) {
+                const userOrderMap = new Map();
+                ordersToDelete.forEach(order => {
+                    if (!order.account) return;
+                    if (!userOrderMap.has(order.account)) {
+                        userOrderMap.set(order.account, []);
+                    }
+                    userOrderMap.get(order.account).push(normalizeOrderId(order.id));
+                });
+
+                for (const [account, idsForUser] of userOrderMap.entries()) {
+                    try {
+                        const ref = getCloudOrdersRefForAccount(account);
+                        if (!ref) continue;
+                        const snapshot = await ref.once('value');
+                        const cloudUserOrders = snapshot.val() || [];
+                        const filtered = cloudUserOrders.filter(o => !idsForUser.includes(normalizeOrderId(o.id)));
+                        await ref.set(filtered);
+                    } catch (error) {
+                        console.error(`同步删除用户 ${account} 订单失败:`, error);
+                    }
+                }
+            }
+
+            renderOrdersTable();
+            renderUserOrders();
+
+            if (showSuccessMessage) {
+                showNotification('订单已删除', 'success');
+            }
+
+            if (cloudSync && cloudSync.isInitialized && currentUser && currentUser.role === 'admin') {
+                cloudSync.loadAllOrders().catch(err => console.warn('刷新所有订单失败', err));
+            }
+
+            return true;
+        }
+
         async function deleteSelectedOrders() {
             if (!currentUser || currentUser.role !== 'admin') {
                 showNotification('只有管理员可以删除订单', 'warning');
@@ -11094,55 +11424,34 @@
                 return;
             }
 
-            try {
-                // 从全局订单数组移除
-                if (allOrders && allOrders.length > 0) {
-                    allOrders = allOrders.filter(order => !selectedOrderIds.has(order.id));
-                    localStorage.setItem('allOrders', JSON.stringify(allOrders));
-                }
-
-                // 处理当前用户订单
-                if (userOrders && userOrders.length > 0) {
-                    userOrders = userOrders.filter(order => !selectedOrderIds.has(order.id));
-                    saveUserOrders();
-                }
-
-                // 如果开启云端同步，为每个订单所属用户同步删除
-                if (cloudSync && cloudSync.isInitialized) {
-                    const userOrderMap = new Map();
-                    ids.forEach(id => {
-                        const order =
-                            allOrders.find(o => o.id === id) ||
-                            userOrders.find(o => o.id === id);
-                        if (order && order.account) {
-                            if (!userOrderMap.has(order.account)) {
-                                userOrderMap.set(order.account, []);
-                            }
-                            userOrderMap.get(order.account).push(id);
-                        }
-                    });
-
-                    for (const [account, orderIds] of userOrderMap.entries()) {
-                        try {
-                            const userPath = cloudSync.getUserPath(account);
-                            const ref = cloudSync.db.ref(`${userPath}/orders`);
-                            const snapshot = await ref.once('value');
-                            const cloudUserOrders = snapshot.val() || [];
-                            const filtered = cloudUserOrders.filter(o => !orderIds.includes(o.id));
-                            await ref.set(filtered);
-                        } catch (error) {
-                            console.error(`同步删除用户 ${account} 订单失败:`, error);
-                        }
-                    }
-                }
-
+            const result = await deleteOrdersByIds(ids, false);
+            if (result) {
                 selectedOrderIds.clear();
-                renderOrdersTable();
+                refreshOrderSelectionUI();
                 showNotification('批量删除订单完成', 'success');
-            } catch (error) {
-                console.error('批量删除订单失败:', error);
-                showNotification('批量删除订单失败：' + error.message, 'error');
             }
+        }
+
+        async function deleteSingleOrder(orderId) {
+            if (!currentUser || currentUser.role !== 'admin') {
+                showNotification('只有管理员可以删除订单', 'warning');
+                return;
+            }
+
+            const order = findOrderById(orderId);
+            if (!order) {
+                showNotification(t('orderNotFound') || '未找到订单信息', 'error');
+                return;
+            }
+
+            const orderLabel = normalizeOrderId(orderId);
+            if (!confirm(`确定要删除订单 ${orderLabel} 吗？此操作不可恢复。`)) {
+                return;
+            }
+
+            await deleteOrdersByIds([orderId]);
+            selectedOrderIds.delete(orderLabel);
+            refreshOrderSelectionUI();
         }
 
         // 显示客户历史订单信息
@@ -11188,7 +11497,11 @@
                                         </div>
                                         <div style="font-size: 14px;">
                                             <p style="margin: 5px 0;"><strong>产品：</strong>${order.productName}</p>
-                                            <p style="margin: 5px 0;"><strong>价格：</strong><span style="color: var(--primary); font-weight: 600;">¥${order.price}</span></p>
+                                            <p style="margin: 5px 0;">
+                                                <strong>价格：</strong>
+                                                <span class="order-price-old">${formatCurrency(order.originalPrice ?? order.price)}</span>
+                                                <span class="order-price-new">${formatCurrency(order.promoPrice ?? 0)}</span>
+                                            </p>
                                             <p style="margin: 5px 0;"><strong>地址：</strong>${order.customerInfo.address}</p>
                                             ${order.customerInfo.notes ? `<p style="margin: 5px 0;"><strong>备注：</strong>${order.customerInfo.notes}</p>` : ''}
                                         </div>
@@ -11208,13 +11521,47 @@
             showOrderDetailsModal(orderId);
         }
 
+        // ===== 订单辅助函数 =====
+        function normalizeOrderId(orderId) {
+            if (orderId === null || orderId === undefined) return '';
+            return String(orderId);
+        }
+
+        function findOrderById(orderId) {
+            const targetId = normalizeOrderId(orderId);
+            let order = userOrders.find(o => normalizeOrderId(o.id) === targetId);
+            if (!order && allOrders.length > 0) {
+                order = allOrders.find(o => normalizeOrderId(o.id) === targetId);
+            }
+            return order || null;
+        }
+
+        function getCloudOrdersRefForAccount(account) {
+            if (!cloudSync || !cloudSync.isInitialized || !account) return null;
+            const userPath = cloudSync.getUserPath(account);
+            return cloudSync.db.ref(`${userPath}/orders`);
+        }
+
+        function getCloudOrdersRefForOrder(order) {
+            if (!order || !order.account) return null;
+            return getCloudOrdersRefForAccount(order.account);
+        }
+
+        function findReviewContextByOrderId(orderId) {
+            const targetId = normalizeOrderId(orderId);
+            for (const product of products) {
+                if (!product || !Array.isArray(product.reviews)) continue;
+                const index = product.reviews.findIndex(review => normalizeOrderId(review.orderId) === targetId);
+                if (index > -1) {
+                    return { product, index };
+                }
+            }
+            return null;
+        }
+
         // 显示订单详情模态框（包含产品信息和快递单号）
         function showOrderDetailsModal(orderId) {
-            // 优先从userOrders查找，如果是管理员也从allOrders查找
-            let order = userOrders.find(o => o.id === orderId);
-            if (!order && currentUser && currentUser.role === 'admin' && allOrders.length > 0) {
-                order = allOrders.find(o => o.id === orderId);
-            }
+            const order = findOrderById(orderId);
             
             if (!order) {
                 console.error('未找到订单，订单ID:', orderId);
@@ -11244,7 +11591,11 @@
                                 <h3 style="margin-top: 0; color: var(--primary);">${order.productName}</h3>
                                 <div style="margin: 15px 0;">
                                     <p style="margin: 8px 0;"><strong>${t('orderId')}：</strong>${order.id}</p>
-                                    <p style="margin: 8px 0;"><strong>${t('price') || '价格'}：</strong><span style="color: #e74c3c; font-size: 18px; font-weight: bold;">${formatCurrency(order.price)}</span></p>
+                                    <p style="margin: 8px 0;">
+                                        <strong>${t('price') || '价格'}：</strong>
+                                        <span class="order-price-old">${formatCurrency(order.originalPrice ?? order.price)}</span>
+                                        <span class="order-price-new" style="font-size: 18px;">${formatCurrency(order.promoPrice ?? 0)}</span>
+                                    </p>
                                     <p style="margin: 8px 0;"><strong>${t('orderStatus')}：</strong><span class="status-badge status-${order.status}">${getStatusText(order.status)}</span></p>
                                     <p style="margin: 8px 0;"><strong>${t('orderTime')}：</strong>${formatDate(order.date)}</p>
                                 </div>
@@ -11263,7 +11614,7 @@
                                         <input type="text" id="tracking-number-input" value="${order.trackingNumber || ''}" 
                                                placeholder="${t('trackingNumberPlaceholder')}" 
                                                style="flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
-                                        <button class="btn btn-primary" onclick="saveTrackingNumber(${order.id})" style="padding: 10px 20px;">
+                                        <button class="btn btn-primary" onclick="saveTrackingNumber('${normalizeOrderId(order.id)}')" style="padding: 10px 20px;">
                                             <i class="fas fa-save"></i> ${t('save')}
                                         </button>
                                     </div>
@@ -11334,8 +11685,8 @@
 
                         ${(currentUser && currentUser.role === 'admin' && order.hasReview) ? `
                             <div style="margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
-                                <button class="btn btn-secondary" onclick="replyToReview(${order.id})">${t('replyReview') || '回复评价'}</button>
-                                <button class="btn btn-danger" onclick="deleteReview(${order.id})">${t('deleteReview') || '删除评价'}</button>
+                                <button class="btn btn-secondary" onclick="replyToReview('${normalizeOrderId(order.id)}')">${t('replyReview') || '回复评价'}</button>
+                                <button class="btn btn-danger" onclick="deleteReview('${normalizeOrderId(order.id)}')">${t('deleteReview') || '删除评价'}</button>
                             </div>
                         ` : ''}
                     </div>
@@ -11351,11 +11702,7 @@
             if (!input) return;
 
             const trackingNumber = input.value.trim();
-            // 优先从userOrders查找，如果是管理员也从allOrders查找
-            let order = userOrders.find(o => o.id === orderId);
-            if (!order && currentUser && currentUser.role === 'admin' && allOrders.length > 0) {
-                order = allOrders.find(o => o.id === orderId);
-            }
+            const order = findOrderById(orderId);
             
             if (!order) {
                 console.error('未找到订单，订单ID:', orderId);
@@ -11363,9 +11710,9 @@
                 return;
             }
             
-            // 如果订单在allOrders中但不在userOrders中，需要更新allOrders
-            const isInAllOrders = allOrders.some(o => o.id === orderId);
-            const isInUserOrders = userOrders.some(o => o.id === orderId);
+            const normalizedId = normalizeOrderId(orderId);
+            const isInAllOrders = allOrders.some(o => normalizeOrderId(o.id) === normalizedId);
+            const isInUserOrders = userOrders.some(o => normalizeOrderId(o.id) === normalizedId);
 
             // 更新订单的快递单号
             order.trackingNumber = trackingNumber;
@@ -11385,21 +11732,19 @@
             if (isInUserOrders) {
                 saveUserOrders(); // 这会触发云端同步
             } else if (isInAllOrders && currentUser && currentUser.role === 'admin' && order.account) {
-                // 如果订单不在userOrders中但在allOrders中，需要同步到对应用户的云端数据
                 if (cloudSync && cloudSync.isInitialized) {
                     try {
-                        const userPath = `users/${order.account}`;
-                        const userOrdersRef = cloudSync.db.ref(`${userPath}/orders`);
-                        const snapshot = await userOrdersRef.once('value');
-                        const userOrders = snapshot.val() || [];
-                        
-                        // 更新该用户的订单
-                        const orderIndex = userOrders.findIndex(o => o.id === orderId);
-                        if (orderIndex !== -1) {
-                            userOrders[orderIndex].trackingNumber = trackingNumber;
-                            userOrders[orderIndex].updatedAt = Date.now();
-                            await userOrdersRef.set(userOrders);
-                            console.log('✅ 已更新其他用户的订单快递单号');
+                        const userOrdersRef = getCloudOrdersRefForOrder(order);
+                        if (userOrdersRef) {
+                            const snapshot = await userOrdersRef.once('value');
+                            const userOrders = snapshot.val() || [];
+                            const orderIndex = userOrders.findIndex(o => normalizeOrderId(o.id) === normalizedId);
+                            if (orderIndex !== -1) {
+                                userOrders[orderIndex].trackingNumber = trackingNumber;
+                                userOrders[orderIndex].updatedAt = Date.now();
+                                await userOrdersRef.set(userOrders);
+                                console.log('✅ 已更新其他用户的订单快递单号');
+                            }
                         }
                     } catch (err) {
                         console.error('更新其他用户订单失败:', err);
@@ -11426,15 +11771,15 @@
             if (adminOrders && adminOrders.classList.contains('active')) {
                 renderOrdersTable();
             }
+
+            if (cloudSync && cloudSync.isInitialized && currentUser && currentUser.role === 'admin') {
+                cloudSync.loadAllOrders().catch(err => console.warn('刷新所有订单失败', err));
+            }
         }
 
         // 编辑快递单号（管理员功能）
         async function editTrackingNumber(orderId) {
-            // 优先从userOrders查找，如果是管理员也从allOrders查找
-            let order = userOrders.find(o => o.id === orderId);
-            if (!order && currentUser && currentUser.role === 'admin' && allOrders.length > 0) {
-                order = allOrders.find(o => o.id === orderId);
-            }
+            const order = findOrderById(orderId);
             
             if (!order) {
                 console.error('未找到订单，订单ID:', orderId);
@@ -11443,15 +11788,15 @@
             }
 
             const newTrackingNumber = prompt(t('enterTrackingNumber'), order.trackingNumber || '');
-            if (newTrackingNumber === null) return; // 用户取消
+            if (newTrackingNumber === null) return;
 
             const trackingNumber = newTrackingNumber.trim();
             order.trackingNumber = trackingNumber;
             order.updatedAt = Date.now();
             
-            // 如果订单在allOrders中，也需要更新
-            const isInAllOrders = allOrders.some(o => o.id === orderId);
-            const isInUserOrders = userOrders.some(o => o.id === orderId);
+            const normalizedId = normalizeOrderId(orderId);
+            const isInAllOrders = allOrders.some(o => normalizeOrderId(o.id) === normalizedId);
+            const isInUserOrders = userOrders.some(o => normalizeOrderId(o.id) === normalizedId);
             
             if (isInAllOrders) {
                 const allOrder = allOrders.find(o => o.id === orderId);
@@ -11466,21 +11811,19 @@
             if (isInUserOrders) {
                 saveUserOrders(); // 这会触发云端同步
             } else if (isInAllOrders && currentUser && currentUser.role === 'admin' && order.account) {
-                // 如果订单不在userOrders中但在allOrders中，需要同步到对应用户的云端数据
                 if (cloudSync && cloudSync.isInitialized) {
                     try {
-                        const userPath = `users/${order.account}`;
-                        const userOrdersRef = cloudSync.db.ref(`${userPath}/orders`);
-                        const snapshot = await userOrdersRef.once('value');
-                        const userOrders = snapshot.val() || [];
-                        
-                        // 更新该用户的订单
-                        const orderIndex = userOrders.findIndex(o => o.id === orderId);
-                        if (orderIndex !== -1) {
-                            userOrders[orderIndex].trackingNumber = trackingNumber;
-                            userOrders[orderIndex].updatedAt = Date.now();
-                            await userOrdersRef.set(userOrders);
-                            console.log('✅ 已更新其他用户的订单快递单号');
+                        const userOrdersRef = getCloudOrdersRefForOrder(order);
+                        if (userOrdersRef) {
+                            const snapshot = await userOrdersRef.once('value');
+                            const userOrders = snapshot.val() || [];
+                            const orderIndex = userOrders.findIndex(o => normalizeOrderId(o.id) === normalizedId);
+                            if (orderIndex !== -1) {
+                                userOrders[orderIndex].trackingNumber = trackingNumber;
+                                userOrders[orderIndex].updatedAt = Date.now();
+                                await userOrdersRef.set(userOrders);
+                                console.log('✅ 已更新其他用户的订单快递单号');
+                            }
                         }
                     } catch (err) {
                         console.error('更新其他用户订单失败:', err);
@@ -11490,15 +11833,15 @@
             
             renderOrdersTable();
             showNotification(t('trackingNumberUpdated'), 'success');
+
+            if (cloudSync && cloudSync.isInitialized && currentUser && currentUser.role === 'admin') {
+                cloudSync.loadAllOrders().catch(err => console.warn('刷新所有订单失败', err));
+            }
         }
 
         // 打开订单状态更新模态框（使用按钮选择）
         function openOrderStatusModal(orderId) {
-            // 优先从userOrders查找，如果是管理员也从allOrders查找
-            let order = userOrders.find(o => o.id === orderId);
-            if (!order && currentUser && currentUser.role === 'admin' && allOrders.length > 0) {
-                order = allOrders.find(o => o.id === orderId);
-            }
+            const order = findOrderById(orderId);
             
             if (!order) {
                 console.error('未找到订单，订单ID:', orderId);
@@ -11657,8 +12000,11 @@
                                 // 如果订单不在userOrders中但在allOrders中，需要同步到对应用户的云端数据
                                 if (cloudSync && cloudSync.isInitialized) {
                                     try {
-                                        const userPath = `users/${order.account}`;
-                                        const userOrdersRef = cloudSync.db.ref(`${userPath}/orders`);
+                                        const userOrdersRef = getCloudOrdersRefForOrder(order);
+                                        if (!userOrdersRef) {
+                                            console.warn('未能获取订单所属用户的云端路径');
+                                            return;
+                                        }
                                         const snapshot = await userOrdersRef.once('value');
                                         const cloudUserOrders = snapshot.val() || [];
                                         
@@ -11722,6 +12068,10 @@
                             renderUserOrders(); // 同时更新用户中心的订单列表
                             
                             modal.remove();
+
+                            if (cloudSync && cloudSync.isInitialized && currentUser && currentUser.role === 'admin') {
+                                cloudSync.loadAllOrders().catch(err => console.warn('刷新所有订单失败', err));
+                            }
                         } catch (error) {
                             console.error('更新订单状态失败:', error);
                             showNotification('更新订单状态失败，请重试', 'error');
@@ -11764,7 +12114,10 @@
                                 <img src="${order.image || ''}" alt="${order.productName}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 4px;">
                                 <div>
                                     <p style="margin: 0; font-weight: 500; font-size: 16px;">${order.productName}</p>
-                                    <p style="margin: 5px 0 0 0; color: #666;">${formatCurrency(order.price)}</p>
+                                    <p style="margin: 5px 0 0 0;">
+                                        <span class="order-price-old">${formatCurrency(order.originalPrice ?? order.price)}</span>
+                                        <span class="order-price-new">${formatCurrency(order.promoPrice ?? 0)}</span>
+                                    </p>
                                 </div>
                             </div>
                         </div>
@@ -11921,6 +12274,36 @@
             // 关闭模态框
             document.getElementById('review-modal').remove();
 
+            // 更新订单列表中的“写评价”按钮为感谢提示
+            try {
+                const selector = `.order-item[data-order-id="${orderId}"]`;
+                const orderItemEl = document.querySelector(selector);
+                if (orderItemEl) {
+                    const smallReviewBtn = orderItemEl.querySelector('button.btn.btn-primary.btn-sm');
+                    if (smallReviewBtn) {
+                        const badge = document.createElement('div');
+                        badge.className = 'review-thankyou-badge';
+                        badge.innerHTML = `<i class="fas fa-check-circle"></i>${t('reviewThankYou')}`;
+                        smallReviewBtn.replaceWith(badge);
+                    }
+                }
+
+                // 订单详情弹窗中的大按钮也替换为感谢提示
+                const orderDetailsModal = document.getElementById('order-details-modal');
+                if (orderDetailsModal) {
+                    const bigReviewBtn = orderDetailsModal.querySelector('button.btn.btn-primary');
+                    if (bigReviewBtn) {
+                        const badge = document.createElement('div');
+                        badge.className = 'review-thankyou-badge';
+                        badge.style.marginTop = '10px';
+                        badge.innerHTML = `<i class="fas fa-check-circle"></i>${t('reviewThankYou')}`;
+                        bigReviewBtn.replaceWith(badge);
+                    }
+                }
+            } catch (e) {
+                console.warn('更新评价按钮外观时出错:', e);
+            }
+
             // 如果当前在产品详情页，刷新评价列表
             const productDetail = document.getElementById('product-detail');
             if (productDetail && productDetail.style.display !== 'none' && currentProduct && currentProduct.id === review.productId) {
@@ -11942,13 +12325,17 @@
         }
 
         function findReviewByOrder(order) {
-            if (!order || !order.productId || !order.reviewId) return null;
-            const product = products.find(p => p.id === order.productId);
-            if (!product || !Array.isArray(product.reviews)) return null;
-            return {
-                product,
-                index: product.reviews.findIndex(r => r.reviewId === order.reviewId),
-            };
+            if (!order) return null;
+            if (order.productId && order.reviewId) {
+                const product = products.find(p => p.id === order.productId);
+                if (product && Array.isArray(product.reviews)) {
+                    const index = product.reviews.findIndex(r => r.reviewId === order.reviewId);
+                    if (index > -1) {
+                        return { product, index };
+                    }
+                }
+            }
+            return findReviewContextByOrderId(order.id);
         }
 
         async function replyToReview(orderId) {
@@ -11957,16 +12344,12 @@
                 return;
             }
 
-            let order = userOrders.find(o => o.id === orderId);
-            if (!order && currentUser && currentUser.role === 'admin' && allOrders.length > 0) {
-                order = allOrders.find(o => o.id === orderId);
-            }
+            const order = findOrderById(orderId);
             if (!order) {
-                showNotification(t('orderNotFound') || '未找到订单', 'error');
-                return;
+                console.warn('未找到订单，但尝试直接定位评价记录');
             }
 
-            const found = findReviewByOrder(order);
+            const found = order ? findReviewByOrder(order) : findReviewContextByOrderId(orderId);
             if (!found || found.index === -1) {
                 showNotification('未找到该订单对应的评价', 'error');
                 return;
@@ -12007,16 +12390,10 @@
                 return;
             }
 
-            let order = userOrders.find(o => o.id === orderId);
-            if (!order && currentUser && currentUser.role === 'admin' && allOrders.length > 0) {
-                order = allOrders.find(o => o.id === orderId);
-            }
+            const order = findOrderById(orderId);
             if (!order) {
-                showNotification(t('orderNotFound') || '未找到订单', 'error');
-                return;
-            }
-
-            if (!order.hasReview) {
+                console.warn('未找到订单记录，将直接尝试删除评价');
+            } else if (!order.hasReview) {
                 showNotification('该订单暂无评价', 'info');
                 return;
             }
@@ -12025,16 +12402,21 @@
                 return;
             }
 
-            const found = findReviewByOrder(order);
+            const found = order ? findReviewByOrder(order) : findReviewContextByOrderId(orderId);
             if (found && found.index > -1) {
                 const { product, index } = found;
                 product.reviews.splice(index, 1);
                 localStorage.setItem('products', JSON.stringify(products));
+            } else {
+                showNotification('未找到对应评价，无法删除', 'error');
+                return;
             }
 
-            order.hasReview = false;
-            delete order.reviewId;
-            saveUserOrders();
+            if (order) {
+                order.hasReview = false;
+                delete order.reviewId;
+                saveUserOrders();
+            }
 
             if (cloudSync && cloudSync.isInitialized) {
                 try {
@@ -12057,6 +12439,59 @@
             }
 
             showNotification('评价已删除', 'success');
+        }
+
+        async function handleReviewReply(productId, reviewId) {
+            if (!currentUser) {
+                showNotification('请先登录后再回复评价', 'warning');
+                return;
+            }
+
+            const product = products.find(p => normalizeOrderId(p.id) === normalizeOrderId(productId));
+            if (!product || !Array.isArray(product.reviews)) {
+                showNotification('未找到该评价', 'error');
+                return;
+            }
+
+            const review = product.reviews.find(r => r.reviewId === reviewId);
+            if (!review) {
+                showNotification('未找到该评价', 'error');
+                return;
+            }
+
+            const replyContent = prompt(t('replyPlaceholder') || '请输入您的回复');
+            if (replyContent === null) return;
+
+            const message = replyContent.trim();
+            if (!message) {
+                showNotification('回复内容不能为空', 'warning');
+                return;
+            }
+
+            if (!Array.isArray(review.replies)) {
+                review.replies = [];
+            }
+
+            review.replies.push({
+                replyId: 'reply_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
+                account: currentUser.account,
+                userName: currentUser.username || currentUser.account,
+                message,
+                createdAt: Date.now()
+            });
+
+            localStorage.setItem('products', JSON.stringify(products));
+
+            if (cloudSync && cloudSync.isInitialized) {
+                try {
+                    await cloudSync.syncProducts();
+                } catch (error) {
+                    console.error('同步回复失败:', error);
+                }
+            }
+
+            showProductDetail(product.id);
+            showNotification(t('replySuccess') || '回复已提交', 'success');
         }
 
         // 导出用户数据
@@ -12145,7 +12580,7 @@
             productsPerRow: 4,
             showCategories: true,
             showSearch: true,
-            carousel: [
+            desktopCarousel: [
                 {
                     id: 1,
                     image: 'https://images.unsplash.com/photo-1607082350899-7e105aa886ae?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80',
@@ -12162,11 +12597,64 @@
                     buttonText: '查看详情',
                     active: true
                 }
+            ],
+            mobileCarousel: [
+                {
+                    id: 101,
+                    image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+                    title: '移动端专享',
+                    description: '专为手机屏幕裁切的视觉体验',
+                    buttonText: '立即查看',
+                    active: true
+                },
+                {
+                    id: 102,
+                    image: 'https://images.unsplash.com/photo-1503602642458-232111445657?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+                    title: '口碑好物',
+                    description: '真实用户反馈，放心体验',
+                    buttonText: '查看更多',
+                    active: true
+                }
             ]
         };
 
+        homepageSettings = normalizeHomepageSettings(homepageSettings);
+
+        function normalizeHomepageSettings(settings) {
+            const normalized = { ...settings };
+
+            if (!Array.isArray(normalized.desktopCarousel) && Array.isArray(normalized.carousel)) {
+                normalized.desktopCarousel = normalized.carousel;
+            }
+
+            if (!Array.isArray(normalized.desktopCarousel)) {
+                normalized.desktopCarousel = [];
+            }
+
+            if (!Array.isArray(normalized.mobileCarousel)) {
+                normalized.mobileCarousel = JSON.parse(JSON.stringify(normalized.desktopCarousel));
+            }
+
+            normalized.desktopCarousel = normalized.desktopCarousel.map(item => ({
+                active: true,
+                ...item
+            }));
+
+            normalized.mobileCarousel = normalized.mobileCarousel.map(item => ({
+                active: true,
+                ...item
+            }));
+
+            if (normalized.carousel) {
+                delete normalized.carousel;
+            }
+
+            return normalized;
+        }
+
         // 加载主页设置
         function loadHomepageSettings() {
+            homepageSettings = normalizeHomepageSettings(homepageSettings);
             // 加载网站信息
             document.getElementById('site-title').value = homepageSettings.siteTitle;
             document.getElementById('site-slogan').value = homepageSettings.siteSlogan;
@@ -12183,19 +12671,26 @@
             document.getElementById('show-search').checked = homepageSettings.showSearch;
 
             // 渲染轮播图列表
-            renderCarouselList();
+            renderCarouselList('desktop');
+            renderCarouselList('mobile');
         }
 
         // 渲染轮播图列表
-        function renderCarouselList() {
-            const carouselList = document.getElementById('carousel-list');
+        function renderCarouselList(type = 'desktop') {
+            const listId = type === 'mobile' ? 'carousel-list-mobile' : 'carousel-list-desktop';
+            const carouselList = document.getElementById(listId);
+            if (!carouselList) return;
 
-            if (homepageSettings.carousel.length === 0) {
-                carouselList.innerHTML = '<p style="text-align: center; color: #999; padding: 20px;">暂无轮播图</p>';
+            const carouselData = type === 'mobile'
+                ? (homepageSettings.mobileCarousel || [])
+                : (homepageSettings.desktopCarousel || []);
+
+            if (carouselData.length === 0) {
+                carouselList.innerHTML = `<p style="text-align: center; color: #999; padding: 20px;">暂无${type === 'mobile' ? '移动端' : 'PC端'}轮播图</p>`;
                 return;
             }
 
-            carouselList.innerHTML = homepageSettings.carousel.map(item => `
+            carouselList.innerHTML = carouselData.map(item => `
                 <div class="carousel-item">
                     <div class="carousel-preview" style="background-image: url('${item.image}')"></div>
                     <div class="carousel-info">
@@ -12203,16 +12698,19 @@
                         <div class="carousel-desc">${item.description}</div>
                     </div>
                     <div class="carousel-actions">
-                        <button class="btn btn-sm btn-primary" onclick="editCarouselItem(${item.id})">编辑</button>
-                        <button class="btn btn-sm btn-danger" onclick="deleteCarouselItem(${item.id})">删除</button>
+                        <button class="btn btn-sm btn-primary" onclick="editCarouselItem(${item.id}, '${type}')">编辑</button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteCarouselItem(${item.id}, '${type}')">删除</button>
                     </div>
                 </div>
             `).join('');
         }
 
         // 编辑轮播图
-        function editCarouselItem(id) {
-            const item = homepageSettings.carousel.find(c => c.id === id);
+        function editCarouselItem(id, type = 'desktop') {
+            const collection = type === 'mobile'
+                ? (homepageSettings.mobileCarousel || [])
+                : (homepageSettings.desktopCarousel || []);
+            const item = collection.find(c => c.id === id);
             if (!item) return;
 
             const title = prompt('轮播图标题:', item.title);
@@ -12227,23 +12725,28 @@
                 item.image = image;
 
                 saveHomepageSettings();
-                renderCarouselList();
+                renderCarouselList(type);
                 showNotification('轮播图已更新', 'success');
             }
         }
 
         // 删除轮播图
-        function deleteCarouselItem(id) {
+        function deleteCarouselItem(id, type = 'desktop') {
+            const targetLabel = type === 'mobile' ? '移动端' : 'PC端';
             if (confirm('确定要删除这个轮播图吗？')) {
-                homepageSettings.carousel = homepageSettings.carousel.filter(c => c.id !== id);
+                if (type === 'mobile') {
+                    homepageSettings.mobileCarousel = (homepageSettings.mobileCarousel || []).filter(c => c.id !== id);
+                } else {
+                    homepageSettings.desktopCarousel = (homepageSettings.desktopCarousel || []).filter(c => c.id !== id);
+                }
                 saveHomepageSettings();
-                renderCarouselList();
-                showNotification('轮播图已删除', 'success');
+                renderCarouselList(type);
+                showNotification(`${targetLabel}轮播图已删除`, 'success');
             }
         }
 
         // 添加轮播图
-        function addCarouselItem() {
+        function addCarouselItem(type = 'desktop') {
             const title = prompt('轮播图标题:');
             const description = prompt('轮播图描述:');
             const buttonText = prompt('按钮文字:');
@@ -12259,10 +12762,20 @@
                     active: true
                 };
 
-                homepageSettings.carousel.push(newItem);
+                if (type === 'mobile') {
+                    if (!Array.isArray(homepageSettings.mobileCarousel)) {
+                        homepageSettings.mobileCarousel = [];
+                    }
+                    homepageSettings.mobileCarousel.push(newItem);
+                } else {
+                    if (!Array.isArray(homepageSettings.desktopCarousel)) {
+                        homepageSettings.desktopCarousel = [];
+                    }
+                    homepageSettings.desktopCarousel.push(newItem);
+                }
                 saveHomepageSettings();
-                renderCarouselList();
-                showNotification('轮播图已添加', 'success');
+                renderCarouselList(type);
+                showNotification(`${type === 'mobile' ? '移动端' : 'PC端'}轮播图已添加`, 'success');
             }
         }
 
@@ -12353,9 +12866,8 @@
             const carousel = document.querySelector('.carousel');
             if (!carousel) return;
 
-            const activeSlides = homepageSettings.carousel.filter(item => item.active);
+            const activeSlides = getSlidesForViewport();
 
-            // 更新轮播图HTML
             const slidesHTML = activeSlides.map((item, index) => `
                 <div class="carousel-slide ${index === 0 ? 'active' : ''}" style="background-image: url('${item.image}')">
                     <div class="carousel-content">
@@ -12373,10 +12885,22 @@
             carousel.innerHTML = slidesHTML + `<div class="carousel-indicators">${indicatorsHTML}</div>`;
         }
 
+        function getSlidesForViewport() {
+            const isMobileView = window.innerWidth <= 768;
+            const source = isMobileView
+                ? (homepageSettings.mobileCarousel || [])
+                : (homepageSettings.desktopCarousel || []);
+            return source.filter(item => item.active !== false);
+        }
+
+        window.addEventListener('resize', debounce(() => {
+            updateCarousel();
+        }, 200));
+
         // 重置主页设置
         function resetHomepageSettings() {
             if (confirm('确定要重置所有主页设置吗？这将恢复默认配置。')) {
-                homepageSettings = {
+                homepageSettings = normalizeHomepageSettings({
                     siteTitle: '电商平台',
                     siteSlogan: '优质商品，值得信赖',
                     siteLogo: 'https://d92ap0lo8fr10.cloudfront.net/A14TLSYJXI3UM6_acd40833aec9706776e6e1e4432f7198_ProductImage_PT02',
@@ -12386,7 +12910,7 @@
                     productsPerRow: 4,
                     showCategories: true,
                     showSearch: true,
-                    carousel: [
+                    desktopCarousel: [
                         {
                             id: 1,
                             image: 'https://images.unsplash.com/photo-1607082350899-7e105aa886ae?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80',
@@ -12403,8 +12927,26 @@
                             buttonText: '查看详情',
                             active: true
                         }
+                    ],
+                    mobileCarousel: [
+                        {
+                            id: 101,
+                            image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+                            title: '移动端专享',
+                            description: '专为手机屏幕裁切的视觉体验',
+                            buttonText: '立即查看',
+                            active: true
+                        },
+                        {
+                            id: 102,
+                            image: 'https://images.unsplash.com/photo-1503602642458-232111445657?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+                            title: '口碑好物',
+                            description: '真实用户反馈，放心体验',
+                            buttonText: '查看更多',
+                            active: true
+                        }
                     ]
-                };
+                });
 
                 saveHomepageSettings();
                 loadHomepageSettings();
@@ -13112,6 +13654,19 @@
                 updateSignupAddressSelector();
             }
             showNotification('Address saved successfully!', 'success');
+
+            if (shouldReturnToSignup) {
+                setTimeout(() => {
+                    shouldReturnToSignup = false;
+                    if (typeof showHomePage === 'function') {
+                        showHomePage();
+                    }
+                    const targetProduct = currentProduct || pendingSignupProduct;
+                    if (targetProduct) {
+                        openSignupModal(targetProduct);
+                    }
+                }, 300);
+            }
         }
 
         // 渲染地址列表
