@@ -2454,7 +2454,11 @@
             margin-bottom: 10px;
         }
 
-        /* 控制面板按钮样式 */
+        /* 控制面板按钮样式（当前暂不使用，整体隐藏控制面板 UI） */
+        #admin-control-panel {
+            display: none !important;
+        }
+
         #control-panel-btn:hover {
             background: #2980b9 !important;
             box-shadow: 0 2px 8px rgba(52, 152, 219, 0.3);
@@ -3407,6 +3411,18 @@
                 vertical-align: middle;
             }
 
+        .user-filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .user-filters .form-control {
+            min-width: 160px;
+            flex: 0 0 auto;
+        }
+
             /* 统计卡片优化 */
             .stats-grid {
                 grid-template-columns: 1fr;
@@ -3945,6 +3961,21 @@
                 </div>
 
                 <div class="admin-content">
+                    <div class="user-filters">
+                        <select id="user-role-filter" class="form-control">
+                            <option value="">全部角色</option>
+                            <option value="admin">管理员</option>
+                            <option value="user">普通用户</option>
+                        </select>
+                        <select id="user-status-filter" class="form-control">
+                            <option value="">全部状态</option>
+                            <option value="active">正常</option>
+                            <option value="banned">已禁用</option>
+                        </select>
+                        <input type="text" id="user-device-filter" class="form-control" placeholder="按设备号/标记筛选">
+                        <input type="text" id="user-search-input" class="form-control" placeholder="搜索用户名/账号/邮箱/电话">
+                    </div>
+
                     <div class="users-table-container">
                         <table class="admin-table" id="users-table">
                             <thead>
@@ -4647,19 +4678,23 @@
         // 注意:不再从localStorage初始化数据,而是在登录后从云端同步
         // 这确保用户始终获取最新的云端数据,避免本地缓存过期问题
 
-        let products = [];  // 产品数据将在登录后从云端加载
-        let userOrders = [];  // 当前用户的订单数据
-        let allOrders = [];  // 所有用户的订单数据（用于后台管理）
-        let userAddresses = [];  // 地址数据将在登录后从云端加载
-        let userProfile = {};  // 用户资料将在登录后从云端加载
-        let allUsers = [];  // 所有用户数据(仅管理员使用,从云端加载)
-        let currentProduct = null;
-        let pendingSignupProduct = null; // 记录待领取的产品（用户登录后需要打开报名模态框）
-        let pendingSignupFormData = null; // 记录用户已填写的报名表单数据
-        let shouldReturnToSignup = false; // 添加地址后是否需要返回报名表单
-        let currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
-        const selectedUserAccounts = new Set(); // 后台用户批量操作选择集合
-        const selectedOrderIds = new Set(); // 后台订单批量操作选择集合
+let products = [];  // 产品数据将在登录后从云端加载
+let userOrders = [];  // 当前用户的订单数据
+let allOrders = [];  // 所有用户的订单数据（用于后台管理）
+let userAddresses = [];  // 地址数据将在登录后从云端加载
+let userProfile = {};  // 用户资料将在登录后从云端加载
+let allUsers = [];  // 所有用户数据(仅管理员使用,从云端加载)
+let currentProduct = null;
+let pendingSignupProduct = null; // 记录待领取的产品（用户登录后需要打开报名模态框）
+let pendingSignupFormData = null; // 记录用户已填写的报名表单数据
+let shouldReturnToSignup = false; // 添加地址后是否需要返回报名表单
+let currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
+const selectedUserAccounts = new Set(); // 后台用户批量操作选择集合
+const selectedOrderIds = new Set(); // 后台订单批量操作选择集合
+let userFilterRole = '';
+let userFilterStatus = '';
+let userDeviceFilter = '';
+let userSearchTerm = '';
         
         // 语言设置
         let currentLanguage = localStorage.getItem('language') || 'en';
@@ -7846,7 +7881,9 @@
                 registerTime: new Date().toISOString(),
                 status: 'active',
                 // 🎯 新增：用户积分，默认 2 分
-                points: 2
+                points: 2,
+                // 记录注册设备ID，用于检测同设备多账号
+                deviceId: getDeviceId()
             };
 
             allUsers.push(newUser);
@@ -9163,6 +9200,39 @@
                     document.getElementById(`order-${status}`).classList.add('active');
                 });
             });
+
+            // 用户管理筛选控件
+            const userRoleFilterEl = document.getElementById('user-role-filter');
+            if (userRoleFilterEl) {
+                userRoleFilterEl.addEventListener('change', (e) => {
+                    userFilterRole = e.target.value;
+                    renderUsersTable();
+                });
+            }
+
+            const userStatusFilterEl = document.getElementById('user-status-filter');
+            if (userStatusFilterEl) {
+                userStatusFilterEl.addEventListener('change', (e) => {
+                    userFilterStatus = e.target.value;
+                    renderUsersTable();
+                });
+            }
+
+            const userDeviceFilterEl = document.getElementById('user-device-filter');
+            if (userDeviceFilterEl) {
+                userDeviceFilterEl.addEventListener('input', (e) => {
+                    userDeviceFilter = e.target.value.trim();
+                    renderUsersTable();
+                });
+            }
+
+            const userSearchInputEl = document.getElementById('user-search-input');
+            if (userSearchInputEl) {
+                userSearchInputEl.addEventListener('input', (e) => {
+                    userSearchTerm = e.target.value.trim();
+                    renderUsersTable();
+                });
+            }
 
             // Excel上传功能
             const excelUploadArea = document.getElementById('excel-upload-area');
@@ -11268,6 +11338,14 @@
             return statusMap[status] || status;
         }
 
+        function formatDeviceLabel(deviceId) {
+            if (!deviceId) return '';
+            const cleanId = String(deviceId).trim();
+            if (!cleanId) return '';
+            const suffix = cleanId.slice(-4).toUpperCase();
+            return `设备${suffix}`;
+        }
+
         function getCategoryLabel(category) {
             if (currentLanguage === 'en') {
                 const map = {
@@ -11348,10 +11426,19 @@
                     account: account,
                     role: 'admin',
                     registerTime: '系统预设',
-                    status: 'active'
+                    status: 'active',
+                    deviceId: null
                 })),
                 ...allUsers
             ];
+
+            // 统计每个设备ID注册的账号数量（仅普通用户）
+            const deviceUserCountMap = {};
+            allUsersList.forEach(user => {
+                if (user.role !== 'admin' && user.deviceId) {
+                    deviceUserCountMap[user.deviceId] = (deviceUserCountMap[user.deviceId] || 0) + 1;
+                }
+            });
 
             if (allUsersList.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 40px;">暂无用户数据</td></tr>';
@@ -11365,7 +11452,49 @@
                 }
             });
 
-            tbody.innerHTML = allUsersList.map(user => {
+            let filteredUsers = allUsersList.filter(user => {
+                const userStatus = user.status || 'active';
+
+                if (userFilterRole && user.role !== userFilterRole) {
+                    return false;
+                }
+
+                if (userFilterStatus && userStatus !== userFilterStatus) {
+                    return false;
+                }
+
+                if (userDeviceFilter) {
+                    const filterValue = userDeviceFilter.toLowerCase();
+                    const rawDevice = (user.deviceId || '').toLowerCase();
+                    const label = formatDeviceLabel(user.deviceId).toLowerCase();
+                    if (!rawDevice.includes(filterValue) && !label.includes(filterValue)) {
+                        return false;
+                    }
+                }
+
+                if (userSearchTerm) {
+                    const term = userSearchTerm.toLowerCase();
+                    const fields = [
+                        user.username || '',
+                        user.account || '',
+                        user.email || '',
+                        user.phone || ''
+                    ];
+                    const matched = fields.some(field => field.toLowerCase().includes(term));
+                    if (!matched) {
+                        return false;
+                    }
+                }
+
+                return true;
+            });
+
+            if (filteredUsers.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 40px;">未找到符合条件的用户</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = filteredUsers.map(user => {
                 // 获取用户密码
                 let userPassword = '******';
                 if (user.role === 'admin') {
@@ -11382,16 +11511,34 @@
                     ? '<span class="status-badge status-banned">已禁用</span>'
                     : '<span class="status-badge status-active">正常</span>';
 
+                // 是否为同设备注册的多个账号（普通用户）
+                const isSuspiciousDevice =
+                    user.role !== 'admin' &&
+                    user.deviceId &&
+                    deviceUserCountMap[user.deviceId] > 1;
+
+                const deviceLabel = formatDeviceLabel(user.deviceId);
+                const suspiciousBadge = isSuspiciousDevice && deviceLabel
+                    ? `<span class="status-badge status-pending" style="margin-left:6px;" title="同一设备注册了多个账号">${deviceLabel}</span>`
+                    : '';
+
+                let rowStyle = '';
+                if (userStatus === 'banned') {
+                    rowStyle = 'style="opacity: 0.6; background-color: #fff3f3;"';
+                } else if (isSuspiciousDevice) {
+                    rowStyle = 'style="background-color: #fffdf3;"';
+                }
+
                 const selectable = user.role !== 'admin';
                 const isChecked = selectable && selectedUserAccounts.has(user.account);
 
                 return `
-                    <tr ${userStatus === 'banned' ? 'style="opacity: 0.6; background-color: #fff3f3;"' : ''}>
+                    <tr ${rowStyle}>
                         <td class="select-col">
                             ${selectable ? `<input type="checkbox" class="user-select-checkbox" data-account="${user.account}" ${isChecked ? 'checked' : ''}>` : ''}
                         </td>
                         <td>${user.id}</td>
-                        <td>${user.username}</td>
+                        <td>${user.username || ''}${suspiciousBadge}</td>
                         <td>${user.account}</td>
                         <td>${userPassword}</td>
                         <td><span class="status-badge ${user.role === 'admin' ? 'status-active' : 'status-inactive'}">${user.role === 'admin' ? '管理员' : '普通用户'}</span></td>
