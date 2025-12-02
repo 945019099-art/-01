@@ -4734,6 +4734,20 @@ let userSearchTerm = '';
             return !!(currentUser && currentUser.role === 'admin');
         }
 
+        function refreshCurrentUserSnapshot(targetAccount) {
+            if (!currentUser || currentUser.role === 'admin') return;
+            const account = targetAccount || currentUser.account;
+            if (!account || !Array.isArray(allUsers) || allUsers.length === 0) return;
+            const latestUser = allUsers.find(u => u.account === account);
+            if (!latestUser) return;
+            currentUser = {
+                ...currentUser,
+                ...latestUser,
+                role: currentUser.role || latestUser.role || 'user'
+            };
+            saveCurrentUser();
+        }
+
         // 语言设置
         let currentLanguage = localStorage.getItem('language') || 'en';
         
@@ -6354,6 +6368,8 @@ let userSearchTerm = '';
                         
                         // 直接使用云端数据
                         userOrders = cloudOrders;
+                        const userOrdersKey = `userOrders_${currentUser.account || 'guest'}`;
+                        localStorage.setItem(userOrdersKey, JSON.stringify(userOrders));
                         localStorage.setItem('userOrders', JSON.stringify(userOrders));
                         
                         console.log('✅ 已从云端加载订单数据:', userOrders.length, '个订单');
@@ -6361,6 +6377,8 @@ let userSearchTerm = '';
                     } else {
                         // 云端没有订单，清空本地订单（防止旧数据）
                         userOrders = [];
+                        const userOrdersKey = `userOrders_${currentUser.account || 'guest'}`;
+                        localStorage.setItem(userOrdersKey, JSON.stringify(userOrders));
                         localStorage.setItem('userOrders', JSON.stringify(userOrders));
                         console.log('ℹ️ 云端暂无订单数据，已清空本地订单');
                         return false;
@@ -6369,6 +6387,8 @@ let userSearchTerm = '';
                     console.error('加载云端订单失败:', error);
                     // 出错时也清空本地订单，防止旧数据干扰
                     userOrders = [];
+                    const userOrdersKey = `userOrders_${currentUser.account || 'guest'}`;
+                    localStorage.setItem(userOrdersKey, JSON.stringify(userOrders));
                     localStorage.setItem('userOrders', JSON.stringify(userOrders));
                     return false;
                 }
@@ -6514,12 +6534,8 @@ let userSearchTerm = '';
 
                         // 如果当前用户已登录，刷新currentUser对象
                         if (currentUser && currentUser.account) {
-                            const updatedUser = allUsers.find(u => u.account === currentUser.account);
-                            if (updatedUser) {
-                                currentUser.username = updatedUser.username;
-                                currentUser.status = updatedUser.status;
-                                console.log('✅ 已刷新当前用户信息:', currentUser.username);
-                            }
+                            refreshCurrentUserSnapshot(currentUser.account);
+                            console.log('✅ 已刷新当前用户信息快照');
                         }
 
                         console.log('✅ 已从云端加载所有用户数据');
@@ -6618,14 +6634,10 @@ let userSearchTerm = '';
 
                         // 如果当前用户已登录，刷新currentUser对象
                         if (currentUser && currentUser.account) {
-                            const updatedUser = allUsers.find(u => u.account === currentUser.account);
-                            if (updatedUser) {
-                                currentUser.username = updatedUser.username;
-                                currentUser.status = updatedUser.status;
-                                // 更新用户个人信息显示
-                                if (document.getElementById('user-profile')?.classList.contains('active')) {
-                                    loadUserProfile();
-                                }
+                            refreshCurrentUserSnapshot(currentUser.account);
+                            // 更新用户个人信息显示
+                            if (document.getElementById('user-profile')?.classList.contains('active')) {
+                                loadUserProfile();
                             }
                         }
 
@@ -6783,6 +6795,8 @@ let userSearchTerm = '';
                     this.loadOrders(),
                     this.loadAddresses()
                 ]);
+
+                refreshCurrentUserSnapshot();
 
                 // 重新监听该用户的订单
                 this.attachUserOrdersListener();
@@ -7923,7 +7937,8 @@ let userSearchTerm = '';
                     account: user.account,
                     username: user.username,
                     role: 'user',
-                    status: user.status || 'active'
+                    status: user.status || 'active',
+                    points: typeof user.points === 'number' ? user.points : 1
                 };
             }
 
@@ -8509,6 +8524,7 @@ let userSearchTerm = '';
                     
                     currentUser = authResult;
                     saveCurrentUser();
+                    refreshCurrentUserSnapshot(authResult.account);
 
                     showNotification(`登录成功！正在从云端加载数据...`, 'success');
                     loginModal.style.display = 'none';
@@ -10798,7 +10814,18 @@ let userSearchTerm = '';
                 usernameDisplay.textContent = currentUser.username;
 
                 // 显示并更新积分
-                const safePoints = (currentUser.points == null || isNaN(currentUser.points)) ? 1 : Number(currentUser.points);
+                let safePoints = currentUser.points;
+                if ((safePoints == null || isNaN(safePoints)) && currentUser.account) {
+                    const latest = allUsers.find(u => u.account === currentUser.account);
+                    if (latest && latest.points != null) {
+                        safePoints = Number(latest.points);
+                    }
+                }
+                if (safePoints == null || isNaN(safePoints)) {
+                    safePoints = 1;
+                } else {
+                    safePoints = Number(safePoints);
+                }
                 currentUser.points = safePoints;
                 localStorage.setItem('currentUser', JSON.stringify(currentUser));
                 if (userPointsBadge && userPointsValue) {
