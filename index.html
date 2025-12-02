@@ -5012,6 +5012,8 @@ let userSearchTerm = '';
                 'pointsNotEnoughForSubmit': '您的蜜罐不足，无法完成本次领取。请完成评价以获取更多蜜罐。',
                 'pointsClaimUsed': '本次领取已消耗 1 个蜜罐',
                 'pointsReviewReward': '评价奖励：蜜罐 +2',
+                'duplicateClaimNotAllowed': '您已经领取过该商品，不能重复领取。',
+                'deviceRegisterLimitReached': '该设备已注册账号数量超过限制，无法继续注册。',
                 'username': '用户名',
                 'account': '账号',
                 'nickname': '昵称',
@@ -5223,6 +5225,8 @@ let userSearchTerm = '';
                 'pointsNotEnoughForSubmit': 'You do not have enough honey to complete this claim. Please complete a review to earn more honey.',
                 'pointsClaimUsed': 'This claim has used 1 honey',
                 'pointsReviewReward': 'Review reward: +2 honey',
+                'duplicateClaimNotAllowed': 'You have already claimed this product. Duplicate claims are not allowed.',
+                'deviceRegisterLimitReached': 'This device has reached the maximum number of registered accounts.',
                 'username': 'Username',
                 'account': 'Account',
                 'nickname': 'Nickname',
@@ -8169,6 +8173,16 @@ let userSearchTerm = '';
                 return { success: false, message: '账号已存在' };
             }
 
+            // 同一设备最多允许 3 个账号
+            const deviceId = getDeviceId();
+            const sameDeviceUsers = allUsers.filter(u => u.deviceId === deviceId);
+            if (sameDeviceUsers.length >= 3) {
+                return {
+                    success: false,
+                    message: t('deviceRegisterLimitReached') || '该设备已注册账号数量超过限制，无法继续注册。'
+                };
+            }
+
             const newUser = {
                 id: Date.now(),
                 account: account,
@@ -8180,7 +8194,7 @@ let userSearchTerm = '';
                 // 🎯 新增：用户积分（蜜罐），默认 1
                 points: 1,
                 // 记录注册设备ID，用于检测同设备多账号
-                deviceId: getDeviceId()
+                deviceId: deviceId
             };
 
             allUsers.push(newUser);
@@ -9424,36 +9438,53 @@ let userSearchTerm = '';
                     }
                 }
 
-                // ✅ 蜜罐消耗：每次成功领取前再次确认并扣除 1 个蜜罐
-                try {
-                    const user = allUsers.find(u => u.account === currentUser.account);
-                    const currentPoints = (user && user.points != null && !isNaN(user.points))
-                        ? Number(user.points)
-                        : 1;
-
-                    if (currentPoints <= 0) {
-                        showNotification(t('pointsNotEnoughForSubmit') || '您的蜜罐不足，无法完成本次领取。请完成评价以获取更多蜜罐。', 'warning');
-                        return;
+                // ✅ 普通用户限制：防止同一账户重复领取同一商品 + 蜜罐消耗
+                if (!isCurrentUserAdmin()) {
+                    // 防止同一账户重复领取同一商品
+                    if (currentUser && currentUser.account && Array.isArray(userOrders)) {
+                        const hasExisting = userOrders.some(o =>
+                            o &&
+                            o.productId === currentProduct.id &&
+                            o.account === currentUser.account &&
+                            o.status !== 'cancelled'
+                        );
+                        if (hasExisting) {
+                            showNotification(t('duplicateClaimNotAllowed') || '您已经领取过该商品，不能重复领取。', 'warning');
+                            return;
+                        }
                     }
 
-                    const newPoints = currentPoints - 1;
-                    if (user) {
-                        user.points = newPoints;
-                    }
-                    currentUser.points = newPoints;
-                    saveAllUsers();
-                    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                    // 蜜罐消耗：每次成功领取前再次确认并扣除 1 个蜜罐
+                    try {
+                        const user = allUsers.find(u => u.account === currentUser.account);
+                        const currentPoints = (user && user.points != null && !isNaN(user.points))
+                            ? Number(user.points)
+                            : 1;
 
-                    const badge = document.getElementById('user-points-badge');
-                    const valueEl = document.getElementById('user-points-value');
-                    if (badge && valueEl) {
-                        badge.style.display = 'inline-flex';
-                        valueEl.textContent = newPoints;
-                    }
+                        if (currentPoints <= 0) {
+                            showNotification(t('pointsNotEnoughForSubmit') || '您的蜜罐不足，无法完成本次领取。请完成评价以获取更多蜜罐。', 'warning');
+                            return;
+                        }
 
-                    showNotification(t('pointsClaimUsed') || '✅ 本次领取已消耗 1 个蜜罐', 'info');
-                } catch (err) {
-                    console.warn('扣减领取积分时出错:', err);
+                        const newPoints = currentPoints - 1;
+                        if (user) {
+                            user.points = newPoints;
+                        }
+                        currentUser.points = newPoints;
+                        saveAllUsers();
+                        localStorage.setItem('currentUser', JSON.stringify(currentUser));
+
+                        const badge = document.getElementById('user-points-badge');
+                        const valueEl = document.getElementById('user-points-value');
+                        if (badge && valueEl) {
+                            badge.style.display = 'inline-flex';
+                            valueEl.textContent = newPoints;
+                        }
+
+                        showNotification(t('pointsClaimUsed') || '✅ 本次领取已消耗 1 个蜜罐', 'info');
+                    } catch (err) {
+                        console.warn('扣减领取积分时出错:', err);
+                    }
                 }
 
                 // 创建新订单（本地存储）
@@ -14993,7 +15024,42 @@ let userSearchTerm = '';
                     localStorage.setItem('allOrders', JSON.stringify(allOrders));
                 }
 
-                showNotification(t('orderCancelled') || '订单已取消', 'success');
+                // ✅ 普通用户：订单取消后返还 1 个蜜罐（管理员不受限制）
+                if (!isCurrentUserAdmin()) {
+                    try {
+                        if (currentUser && currentUser.account) {
+                            const user = allUsers.find(u => u.account === currentUser.account);
+                            let currentPoints = (user && typeof user.points === 'number' && !isNaN(user.points))
+                                ? Number(user.points)
+                                : (typeof currentUser.points === 'number' ? Number(currentUser.points) : 0);
+
+                            const newPoints = currentPoints + 1;
+
+                            if (user) {
+                                user.points = newPoints;
+                            }
+                            currentUser.points = newPoints;
+                            saveAllUsers();
+                            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+
+                            const badge = document.getElementById('user-points-badge');
+                            const valueEl = document.getElementById('user-points-value');
+                            if (badge && valueEl) {
+                                badge.style.display = 'inline-flex';
+                                valueEl.textContent = newPoints;
+                            }
+
+                            showNotification((t('orderCancelled') || '订单已取消') + `，蜜罐 +1`, 'success');
+                        } else {
+                            showNotification(t('orderCancelled') || '订单已取消', 'success');
+                        }
+                    } catch (ptsErr) {
+                        console.warn('取消订单返还蜜罐时出错:', ptsErr);
+                        showNotification(t('orderCancelled') || '订单已取消', 'success');
+                    }
+                } else {
+                    showNotification(t('orderCancelled') || '订单已取消', 'success');
+                }
                 
                 // 刷新订单列表
                 renderUserOrders();
