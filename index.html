@@ -487,6 +487,37 @@
             background: white;
         }
 
+        /* 轮播图左右切换按钮 */
+        .carousel-arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.4);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 2;
+            transition: background 0.2s ease;
+            user-select: none;
+        }
+
+        .carousel-arrow:hover {
+            background: rgba(0, 0, 0, 0.65);
+        }
+
+        .carousel-arrow.prev {
+            left: 16px;
+        }
+
+        .carousel-arrow.next {
+            right: 16px;
+        }
+
         /* 产品网格样式 */
         .section-title {
             margin: 64px 0 32px;
@@ -3669,6 +3700,7 @@
         <div id="home-page">
             <!-- 轮播图 -->
             <div class="carousel">
+                <div class="carousel-arrow prev">&#10094;</div>
                 <div class="carousel-slide active"
                     style="background-image: url('https://images.unsplash.com/photo-1607082350899-7e105aa886ae?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80')">
                     <div class="carousel-content">
@@ -3685,6 +3717,7 @@
                         <a href="#" class="carousel-btn">View Details</a>
                     </div>
                 </div>
+                <div class="carousel-arrow next">&#10095;</div>
                 <div class="carousel-indicators">
                     <div class="indicator active"></div>
                     <div class="indicator"></div>
@@ -4696,6 +4729,11 @@ let userFilterStatus = '';
 let userDeviceFilter = '';
 let userSearchTerm = '';
         
+        // 判断当前用户是否为管理员
+        function isCurrentUserAdmin() {
+            return !!(currentUser && currentUser.role === 'admin');
+        }
+
         // 语言设置
         let currentLanguage = localStorage.getItem('language') || 'en';
         
@@ -4863,6 +4901,7 @@ let userSearchTerm = '';
                 'passwordMismatch': '两次输入的密码不一致！',
                 'passwordTooShort': '密码长度不能少于6位',
                 'registrationSuccess': '注册成功！',
+                'accountOrPasswordError': '账号或密码错误！',
                 'productNameRequired': '产品名称不能为空',
                 'productPriceRequired': '请输入有效的产品价格（必须大于0）',
                 'productImageRequired': '产品图片URL不能为空',
@@ -4871,6 +4910,15 @@ let userSearchTerm = '';
                 'productUpdateSuccess': '✅ 产品更新成功！',
                 'productUpdateFailed': '❌ 更新失败：未找到产品',
                 'systemError': '系统错误：未找到产品信息',
+                'errorTitle': '错误',
+                'successTitle': '成功',
+                'infoTitle': '提示',
+                'confirmTitle': '确认',
+                'profileSaveSuccess': '个人信息保存成功！',
+                'pleaseUploadExcel': '请上传Excel文件（.xlsx 或 .xls 格式）',
+                'invalidPhoneFormat': '请输入正确的手机号格式',
+                'invalidEmailFormat': '请输入正确的邮箱格式',
+                'importDataSaveError': '❌ 导入失败：数据保存出错',
                 'confirmLoadDemo': '确定要加载演示产品数据吗？这将添加6个演示产品。',
                 'confirmClearCache': '确定要清除所有本地缓存数据吗？此操作不可恢复！',
                 'confirmClearCloud': '确定要清空云端所有数据吗？此操作不可恢复！',
@@ -5064,6 +5112,7 @@ let userSearchTerm = '';
                 'passwordMismatch': 'The two passwords do not match!',
                 'passwordTooShort': 'Password must be at least 6 characters',
                 'registrationSuccess': 'Registration successful!',
+                'accountOrPasswordError': 'Incorrect account or password!',
                 'productNameRequired': 'Product name cannot be empty',
                 'productPriceRequired': 'Please enter a valid product price (must be greater than 0)',
                 'productImageRequired': 'Product image URL cannot be empty',
@@ -5072,6 +5121,15 @@ let userSearchTerm = '';
                 'productUpdateSuccess': '✅ Product updated successfully!',
                 'productUpdateFailed': '❌ Update failed: Product not found',
                 'systemError': 'System error: Product information not found',
+                'errorTitle': 'Error',
+                'successTitle': 'Success',
+                'infoTitle': 'Notice',
+                'confirmTitle': 'Confirm',
+                'profileSaveSuccess': 'Profile saved successfully!',
+                'pleaseUploadExcel': 'Please upload an Excel file (.xlsx or .xls)',
+                'invalidPhoneFormat': 'Please enter a valid phone number',
+                'invalidEmailFormat': 'Please enter a valid email address',
+                'importDataSaveError': '❌ Import failed: error while saving data',
                 'confirmLoadDemo': 'Are you sure you want to load demo product data? This will add 6 demo products.',
                 'confirmClearCache': 'Are you sure you want to clear all local cache data? This operation cannot be undone!',
                 'confirmClearCloud': 'Are you sure you want to clear all cloud data? This operation cannot be undone!',
@@ -6124,14 +6182,18 @@ let userSearchTerm = '';
                 try {
                     console.log('🔄 开始云端同步...');
 
-                    // 同步产品数据（全局共享）
-                    await this.syncProducts();
-
-                    // 同步所有用户数据（全局共享）
-                    await this.syncAllUsers();
-
-                    // 同步主页设置（全局共享）
-                    await this.syncHomepageSettings();
+                    // 同步全局共享数据
+                    if (isCurrentUserAdmin()) {
+                        // 管理员：以上传本地为准，覆盖云端
+                        await this.syncProducts();
+                        await this.syncAllUsers();
+                        await this.syncHomepageSettings();
+                    } else {
+                        // 普通用户：只从云端拉取最新数据，不上传覆盖
+                        await this.loadProducts();
+                        await this.loadAllUsers();
+                        await this.loadHomepageSettings();
+                    }
 
                     // 同步用户订单和地址
                     if (currentUser) {
@@ -6153,6 +6215,11 @@ let userSearchTerm = '';
 
             // 同步产品数据
             async syncProducts() {
+                // 只有管理员才允许把本地产品列表写回云端，防止普通用户覆盖管理员改动
+                if (!isCurrentUserAdmin()) {
+                    console.log('ℹ️ 当前用户不是管理员，跳过产品上传同步');
+                    return;
+                }
                 try {
                     // 设置同步标志，防止实时监听器覆盖本地修改
                     this.syncInProgress = true;
@@ -6415,6 +6482,11 @@ let userSearchTerm = '';
 
             // 同步所有用户数据（全局共享）
             async syncAllUsers() {
+                // 只有管理员才能上传全量用户数据
+                if (!isCurrentUserAdmin()) {
+                    console.log('ℹ️ 当前用户不是管理员，跳过用户数据上传');
+                    return;
+                }
                 try {
                     const usersRef = this.db.ref('allUsers');
 
@@ -6461,6 +6533,11 @@ let userSearchTerm = '';
 
             // 同步主页设置
             async syncHomepageSettings() {
+                // 主页设置仅管理员可上传
+                if (!isCurrentUserAdmin()) {
+                    console.log('ℹ️ 当前用户不是管理员，跳过主页设置上传');
+                    return;
+                }
                 try {
                     const settingsRef = this.db.ref('homepageSettings');
                     const settings = JSON.parse(localStorage.getItem('homepageSettings') || '{}');
@@ -6991,6 +7068,11 @@ let userSearchTerm = '';
             async processQueueItem(item) {
                 switch (item.action) {
                     case 'addProduct':
+                        // 只有管理员才允许通过离线队列修改产品
+                        if (!isCurrentUserAdmin()) {
+                            console.log('ℹ️ 非管理员离线操作 addProduct 已忽略');
+                            break;
+                        }
                         products.push(item.data);
                         localStorage.setItem('products', JSON.stringify(products));
                         if (cloudSync && cloudSync.isInitialized) {
@@ -6999,6 +7081,10 @@ let userSearchTerm = '';
                         break;
 
                     case 'updateProduct':
+                        if (!isCurrentUserAdmin()) {
+                            console.log('ℹ️ 非管理员离线操作 updateProduct 已忽略');
+                            break;
+                        }
                         const productIndex = products.findIndex(p => p.id === item.data.id);
                         if (productIndex !== -1) {
                             products[productIndex] = item.data;
@@ -7010,6 +7096,10 @@ let userSearchTerm = '';
                         break;
 
                     case 'deleteProduct':
+                        if (!isCurrentUserAdmin()) {
+                            console.log('ℹ️ 非管理员离线操作 deleteProduct 已忽略');
+                            break;
+                        }
                         products = products.filter(p => p.id !== item.data.id);
                         localStorage.setItem('products', JSON.stringify(products));
                         if (cloudSync && cloudSync.isInitialized) {
@@ -7202,39 +7292,14 @@ let userSearchTerm = '';
             });
         }
 
-        // 小工具：显示通知
+        // 小工具：显示通知（现阶段关闭 UI 弹窗，只在控制台记录）
         function showNotification(message, type = 'info') {
-            const notification = document.createElement('div');
-            notification.className = `notification notification-${type}`;
-            notification.style.cssText = `
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                padding: 15px 20px;
-                border-radius: 5px;
-                color: white;
-                font-weight: 500;
-                z-index: 10000;
-                animation: slideIn 0.3s ease;
-                max-width: 300px;
-            `;
-
-            const colors = {
-                success: '#2ecc71',
-                error: '#e74c3c',
-                warning: '#f39c12',
-                info: '#3498db'
-            };
-
-            notification.style.backgroundColor = colors[type] || colors.info;
-            notification.textContent = message;
-
-            document.body.appendChild(notification);
-
-            setTimeout(() => {
-                notification.style.animation = 'slideOut 0.3s ease';
-                setTimeout(() => notification.remove(), 300);
-            }, 3000);
+            try {
+                console.log('[Notification]', type, message);
+            } catch (e) {
+                // 忽略控制台错误
+            }
+            // 不再在页面右上角显示任何提示气泡
         }
 
         // ========== 初始化数据 - 完全移除本地演示数据 ==========
@@ -7880,8 +7945,8 @@ let userSearchTerm = '';
                 role: 'user',
                 registerTime: new Date().toISOString(),
                 status: 'active',
-                // 🎯 新增：用户积分，默认 2 分
-                points: 2,
+                // 🎯 新增：用户积分（蜜罐），默认 1
+                points: 1,
                 // 记录注册设备ID，用于检测同设备多账号
                 deviceId: getDeviceId()
             };
@@ -8074,8 +8139,11 @@ let userSearchTerm = '';
             }
 
             // 轮播图功能
+            const carouselContainer = document.querySelector('.carousel');
             const slides = document.querySelectorAll('.carousel-slide');
             const indicators = document.querySelectorAll('.indicator');
+            const prevArrow = document.querySelector('.carousel-arrow.prev');
+            const nextArrow = document.querySelector('.carousel-arrow.next');
             let currentSlide = 0;
 
             function showSlide(n) {
@@ -8093,12 +8161,78 @@ let userSearchTerm = '';
                 showSlide(currentSlide + 1);
             }, 5000);
 
+            // 指示点点击切换
             indicators.forEach((indicator, index) => {
                 indicator.addEventListener('click', () => {
                     clearInterval(carouselInterval);
                     showSlide(index);
                 });
             });
+
+            // 左右按钮点击切换
+            if (prevArrow) {
+                prevArrow.addEventListener('click', () => {
+                    clearInterval(carouselInterval);
+                    showSlide(currentSlide - 1);
+                });
+            }
+
+            if (nextArrow) {
+                nextArrow.addEventListener('click', () => {
+                    clearInterval(carouselInterval);
+                    showSlide(currentSlide + 1);
+                });
+            }
+
+            // 鼠标拖拽 / 触摸滑动切换
+            let dragStartX = null;
+            let isDragging = false;
+
+            function getClientX(event) {
+                if (event.touches && event.touches.length) {
+                    return event.touches[0].clientX;
+                }
+                if (event.changedTouches && event.changedTouches.length) {
+                    return event.changedTouches[0].clientX;
+                }
+                return event.clientX;
+            }
+
+            function handleDragStart(event) {
+                isDragging = true;
+                dragStartX = getClientX(event);
+            }
+
+            function handleDragEnd(event) {
+                if (!isDragging || dragStartX === null) return;
+                const endX = getClientX(event);
+                const deltaX = endX - dragStartX;
+                const threshold = 50; // 超过 50px 判定为滑动
+
+                if (Math.abs(deltaX) > threshold) {
+                    clearInterval(carouselInterval);
+                    if (deltaX < 0) {
+                        // 向左拖：下一张
+                        showSlide(currentSlide + 1);
+                    } else {
+                        // 向右拖：上一张
+                        showSlide(currentSlide - 1);
+                    }
+                }
+
+                isDragging = false;
+                dragStartX = null;
+            }
+
+            if (carouselContainer) {
+                // 鼠标事件
+                carouselContainer.addEventListener('mousedown', handleDragStart);
+                window.addEventListener('mouseup', handleDragEnd);
+
+                // 触摸事件（移动端）
+                carouselContainer.addEventListener('touchstart', handleDragStart, { passive: true });
+                carouselContainer.addEventListener('touchend', handleDragEnd);
+            }
 
             // 搜索功能
             const searchInput = document.getElementById('search-input');
@@ -8462,7 +8596,7 @@ let userSearchTerm = '';
                     // 账号被禁用
                     showNotification(authResult.message, 'error');
                 } else {
-                    showNotification('账号或密码错误！', 'error');
+                    showNotification(t('accountOrPasswordError') || '账号或密码错误！', 'error');
                 }
             });
 
@@ -8507,10 +8641,10 @@ let userSearchTerm = '';
                         await cloudSync.handleUserSessionChange();
                     }
 
-                    customAlert(t('registrationSuccess'), '成功').then(() => {
-                        registerModal.style.display = 'none';
-                        updateUserInterface();
-                    });
+                    // 注册成功后：直接提示 + 自动登录并关闭注册窗口
+                    showNotification(t('registrationSuccess'), 'success');
+                    registerModal.style.display = 'none';
+                    updateUserInterface();
                     renderUserOrders();
                     renderAddressList();
 
@@ -9058,7 +9192,7 @@ let userSearchTerm = '';
                     const user = allUsers.find(u => u.account === currentUser.account);
                     const currentPoints = (user && user.points != null && !isNaN(user.points))
                         ? Number(user.points)
-                        : 2;
+                        : 1;
 
                     if (currentPoints <= 0) {
                         showNotification(t('pointsNotEnoughForSubmit') || '您的蜜罐不足，无法完成本次领取。请完成评价以获取更多蜜罐。', 'warning');
@@ -10664,7 +10798,7 @@ let userSearchTerm = '';
                 usernameDisplay.textContent = currentUser.username;
 
                 // 显示并更新积分
-                const safePoints = (currentUser.points == null || isNaN(currentUser.points)) ? 2 : Number(currentUser.points);
+                const safePoints = (currentUser.points == null || isNaN(currentUser.points)) ? 1 : Number(currentUser.points);
                 currentUser.points = safePoints;
                 localStorage.setItem('currentUser', JSON.stringify(currentUser));
                 if (userPointsBadge && userPointsValue) {
@@ -10985,10 +11119,14 @@ let userSearchTerm = '';
                 const user = allUsers.find(u => u.account === currentUser.account);
                 const currentPoints = (user && user.points != null && !isNaN(user.points))
                     ? Number(user.points)
-                    : 2;
+                    : 1;
 
                 if (currentPoints <= 0) {
-                    showNotification(t('pointsNotEnoughForClaim') || '您的蜜罐不足，无法领取新产品。请完成评价以获取更多蜜罐。', 'warning');
+                    // 之前用右上角气泡提示，现在改为弹窗提示，避免“没反应”的感觉
+                    customAlert(
+                        t('pointsNotEnoughForClaim') || '您的蜜罐不足，无法领取新产品。请完成评价以获取更多蜜罐。',
+                        t('infoTitle') || '提示'
+                    );
                     return;
                 }
             } catch (err) {
@@ -10997,7 +11135,7 @@ let userSearchTerm = '';
 
             if (!product) {
                 console.error('❌ 报名失败：产品数据为空');
-                customAlert('系统错误：未找到产品信息', '错误');
+                customAlert(t('systemError'), t('errorTitle'));
                 return;
             }
 
@@ -11506,7 +11644,7 @@ let userSearchTerm = '';
 
                 // 获取用户状态
                 const userStatus = user.status || 'active';
-                const userPoints = (user.points == null || isNaN(user.points)) ? 2 : Number(user.points);
+                const userPoints = (user.points == null || isNaN(user.points)) ? 1 : Number(user.points);
                 const statusBadge = userStatus === 'banned'
                     ? '<span class="status-badge status-banned">已禁用</span>'
                     : '<span class="status-badge status-active">正常</span>';
@@ -11856,7 +11994,7 @@ let userSearchTerm = '';
             if (user) {
                 const userInfo = user[1] || user;
                 const password = userInfo.password || '系统预设密码';
-                const points = (userInfo.points == null || isNaN(userInfo.points)) ? 2 : Number(userInfo.points);
+                const points = (userInfo.points == null || isNaN(userInfo.points)) ? 1 : Number(userInfo.points);
 
                 // 创建详情模态框
                 const modal = document.createElement('div');
@@ -13280,7 +13418,7 @@ let userSearchTerm = '';
                 if (currentUser) {
                     const user = allUsers.find(u => u.account === currentUser.account);
                     if (user) {
-                        const oldPoints = (user.points == null || isNaN(user.points)) ? 2 : Number(user.points);
+                        const oldPoints = (user.points == null || isNaN(user.points)) ? 1 : Number(user.points);
                         const newPoints = oldPoints + 2;
                         user.points = newPoints;
                         currentUser.points = newPoints;
@@ -13489,7 +13627,7 @@ let userSearchTerm = '';
                 [...Object.entries(ADMIN_ACCOUNTS).map(([account, info]) =>
                     `${account},${info.username},${account},管理员,系统预设,0,正常`
                 ), ...allUsers.map(user => {
-                    const points = (user.points == null || isNaN(user.points)) ? 2 : Number(user.points);
+                    const points = (user.points == null || isNaN(user.points)) ? 1 : Number(user.points);
                     return `${user.id},${user.username},${user.account},普通用户,${user.registerTime},${points},${user.status}`;
                 })].join("\n");
 
@@ -14156,7 +14294,7 @@ let userSearchTerm = '';
             const fileName = file.name;
 
             if (!fileName.endsWith('.xlsx') && !fileName.endsWith('.xls')) {
-                customAlert('请上传Excel文件（.xlsx 或 .xls 格式）', '提示');
+                customAlert(t('pleaseUploadExcel'), t('infoTitle'));
                 return;
             }
 
@@ -14384,19 +14522,19 @@ let userSearchTerm = '';
 
             // 验证手机号
             if (profile.phone && !/^1[3-9]\d{9}$/.test(profile.phone)) {
-                customAlert('请输入正确的手机号格式', '提示');
+                customAlert(t('invalidPhoneFormat'), t('infoTitle'));
                 return;
             }
 
             // 验证邮箱
             if (profile.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(profile.email)) {
-                customAlert('请输入正确的邮箱格式', '提示');
+                customAlert(t('invalidEmailFormat'), t('infoTitle'));
                 return;
             }
 
             userProfile[currentUser.account] = profile;
             saveUserProfile();
-            customAlert('个人信息保存成功！', '成功');
+            customAlert(t('profileSaveSuccess'), t('successTitle'));
         }
 
         // 加载安全设置
@@ -14854,9 +14992,9 @@ let userSearchTerm = '';
                 console.log('🔧 导入调试 - 导入后的产品:', products);
 
                 if (saveResult) {
-                    customAlert(`✅ 成功导入 ${importedProducts.length} 个产品！`, '成功');
+                    customAlert(`✅ 成功导入 ${importedProducts.length} 个产品！`, t('successTitle'));
                 } else {
-                    customAlert('❌ 导入失败：数据保存出错', '错误');
+                    customAlert(t('importDataSaveError'), t('errorTitle'));
                 }
 
                 previewSection.remove();
@@ -15880,17 +16018,19 @@ let userSearchTerm = '';
             }
         });
 
-        // 替代alert函数
-        function customAlert(message, title = '提示') {
+            // 替代alert函数（支持多语言标题）
+            function customAlert(message, title) {
+                const finalTitle = title || (typeof t === 'function' ? (t('infoTitle') || '提示') : '提示');
             return new Promise((resolve) => {
-                showMessageModal(title, message, 'alert', () => resolve());
+                    showMessageModal(finalTitle, message, 'alert', () => resolve());
             });
         }
 
         // 替代confirm函数
-        function customConfirm(message, title = '确认') {
+            function customConfirm(message, title) {
+                const finalTitle = title || (typeof t === 'function' ? (t('confirmTitle') || '确认') : '确认');
             return new Promise((resolve) => {
-                showMessageModal(title, message, 'confirm', (result) => resolve(result));
+                    showMessageModal(finalTitle, message, 'confirm', (result) => resolve(result));
             });
         }
 
