@@ -492,22 +492,29 @@
             position: absolute;
             top: 50%;
             transform: translateY(-50%);
-            width: 40px;
-            height: 40px;
+            width: 48px;
+            height: 48px;
             border-radius: 50%;
-            background: rgba(0, 0, 0, 0.4);
+            background: rgba(0, 0, 0, 0.65);
             color: #fff;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            z-index: 2;
-            transition: background 0.2s ease;
+            z-index: 3;
+            transition: background 0.2s ease, opacity 0.2s ease, transform 0.2s ease;
             user-select: none;
+            opacity: 1; /* 始终可见 */
+            border: 2px solid rgba(255, 255, 255, 0.9);
+            box-shadow: 0 0 8px rgba(0, 0, 0, 0.4);
+            font-size: 24px;
+            line-height: 1;
         }
 
         .carousel-arrow:hover {
-            background: rgba(0, 0, 0, 0.65);
+            background: rgba(0, 0, 0, 0.85);
+            opacity: 1;
+            transform: translateY(-50%) scale(1.08);
         }
 
         .carousel-arrow.prev {
@@ -1060,12 +1067,153 @@
 
         .product-detail-image {
             flex: 1;
-            max-width: 400px;
+            max-width: 520px;
         }
 
-        .product-detail-image img {
-            width: 100%;
+        .product-gallery {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .product-gallery-main {
+            position: relative;
             border-radius: 8px;
+            overflow: hidden;
+            background: #f8f9fb;
+            border: 1px solid var(--border-subtle);
+            min-height: 360px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .product-gallery-slides {
+            width: 100%;
+            height: 100%;
+        }
+
+        .product-gallery-slide {
+            display: none;
+            width: 100%;
+            height: 100%;
+        }
+
+        .product-gallery-slide.active {
+            display: block;
+        }
+
+        /* 切换图片滑动动画（不改变布局，只做轻微平移动画） */
+        .product-gallery-slide.slide-from-left {
+            animation: gallerySlideFromLeft 0.25s ease-out;
+        }
+
+        .product-gallery-slide.slide-from-right {
+            animation: gallerySlideFromRight 0.25s ease-out;
+        }
+
+        @keyframes gallerySlideFromLeft {
+            from {
+                transform: translateX(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes gallerySlideFromRight {
+            from {
+                transform: translateX(20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .product-gallery-slide img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            background: #fff;
+        }
+
+        .product-gallery-arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.45);
+            border: none;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 2;
+            transition: background var(--transition-fast), opacity var(--transition-fast);
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .product-gallery-arrow:hover {
+            background: rgba(0, 0, 0, 0.65);
+        }
+
+        .product-gallery-arrow[data-action="prev"] {
+            left: 12px;
+        }
+
+        .product-gallery-arrow[data-action="next"] {
+            right: 12px;
+        }
+
+        /* 悬停时显示图片切换箭头 */
+        .product-gallery-main:hover .product-gallery-arrow {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* 顶部轮播箭头：默认半透明，悬停时更清晰，上面 hover 已处理 */
+
+        .product-gallery-thumbs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .product-gallery-thumb {
+            width: 70px;
+            height: 70px;
+            border-radius: 6px;
+            border: 2px solid transparent;
+            overflow: hidden;
+            padding: 0;
+            background: none;
+            cursor: pointer;
+            transition: border var(--transition-fast), transform var(--transition-fast);
+        }
+
+        .product-gallery-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .product-gallery-thumb:hover {
+            transform: translateY(-2px);
+            border-color: var(--primary-light);
+        }
+
+        .product-gallery-thumb.active {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 1px rgba(0, 120, 212, 0.15);
         }
 
         .product-detail-info {
@@ -1094,6 +1242,17 @@
         .product-detail-actions {
             display: flex;
             gap: 15px;
+        }
+
+        .product-image-inputs {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .product-image-inputs input {
+            width: 100%;
         }
 
         /* WhatsApp联系按钮样式 */
@@ -4496,8 +4655,16 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="edit-product-image">图片URL</label>
-                        <input type="text" id="edit-product-image" class="form-control" required>
+                        <label>图片URL（最多6张）</label>
+                        <div class="product-image-inputs">
+                            <input type="url" id="edit-product-image-1" class="form-control edit-product-image-url" placeholder="图片URL 1（封面）" required>
+                            <input type="url" id="edit-product-image-2" class="form-control edit-product-image-url" placeholder="图片URL 2（可选）">
+                            <input type="url" id="edit-product-image-3" class="form-control edit-product-image-url" placeholder="图片URL 3（可选）">
+                            <input type="url" id="edit-product-image-4" class="form-control edit-product-image-url" placeholder="图片URL 4（可选）">
+                            <input type="url" id="edit-product-image-5" class="form-control edit-product-image-url" placeholder="图片URL 5（可选）">
+                            <input type="url" id="edit-product-image-6" class="form-control edit-product-image-url" placeholder="图片URL 6（可选）">
+                        </div>
+                        <small style="color: #666; font-size: 12px;">留空的输入框会自动忽略</small>
                     </div>
                     <div class="form-group">
                         <label for="edit-product-description">产品描述</label>
@@ -5185,6 +5352,56 @@ let userSearchTerm = '';
         // 格式化货币
         function formatCurrency(amount) {
             return `$${parseFloat(amount || 0).toFixed(2)}`;
+        }
+
+        const PRODUCT_IMAGE_PLACEHOLDER = 'https://via.placeholder.com/600x600?text=No+Image';
+
+        function getProductImageUrls(product) {
+            if (!product) return [];
+            const urls = [];
+
+            // 1) 新结构：imageUrls 数组（按顺序保留，不去重）
+            if (Array.isArray(product.imageUrls)) {
+                product.imageUrls.forEach(url => {
+                    const normalized = (url || '').trim();
+                    if (normalized) {
+                        urls.push(normalized);
+                    }
+                });
+            }
+
+            // 2) 兼容旧结构：imageUrl1 ~ imageUrl6（如果数组里没填满，就继续补）
+            for (let i = 1; i <= 6 && urls.length < 6; i++) {
+                const key = `imageUrl${i}`;
+                if (product[key]) {
+                    const normalized = (product[key] || '').trim();
+                    if (normalized) {
+                        urls.push(normalized);
+                    }
+                }
+            }
+
+            // 3) 再兼容最老的 image 字段（只在前面都没内容时才用封面图）
+            if (!urls.length) {
+                const legacyImage = (product.image || '').trim();
+                if (legacyImage) {
+                    urls.push(legacyImage);
+                }
+            }
+
+            const sanitized = urls.slice(0, 6);
+            if (sanitized.length === 0) {
+                sanitized.push(PRODUCT_IMAGE_PLACEHOLDER);
+            }
+            return sanitized;
+        }
+
+        function getPrimaryProductImage(product) {
+            const urls = getProductImageUrls(product);
+            if (urls.length > 0) {
+                return urls[0];
+            }
+            return PRODUCT_IMAGE_PLACEHOLDER;
         }
         
         // 切换语言
@@ -8296,12 +8513,14 @@ let userSearchTerm = '';
             const homePage = document.getElementById('home-page');
             const userCenter = document.getElementById('user-center');
             const adminPanel = document.getElementById('admin-panel');
+            const topCarousel = document.querySelector('.carousel');
 
             function showHomePage() {
                 homePage.style.display = 'block';
                 userCenter.classList.remove('show');
                 userCenter.style.display = 'none';
                 adminPanel.style.display = 'none';
+                if (topCarousel) topCarousel.style.display = 'block';
                 // 只在首页显示搜索栏
                 if (searchBar) searchBar.style.display = 'flex';
                 renderProducts(products);
@@ -8318,6 +8537,7 @@ let userSearchTerm = '';
 
                 homePage.style.display = 'none';
                 adminPanel.style.display = 'none';
+                if (topCarousel) topCarousel.style.display = 'none';
                 
                 // 非首页隐藏搜索栏
                 if (searchBar) searchBar.style.display = 'none';
@@ -8342,6 +8562,7 @@ let userSearchTerm = '';
                 userCenter.classList.remove('show');
                 userCenter.style.display = 'none';
                 adminPanel.style.display = 'block';
+                if (topCarousel) topCarousel.style.display = 'none';
                 // 非首页隐藏搜索栏
                 if (searchBar) searchBar.style.display = 'none';
                 renderAdminProducts();
@@ -9706,6 +9927,17 @@ let userSearchTerm = '';
                         return;
                     }
 
+                    const editImageInputs = Array.from(document.querySelectorAll('.edit-product-image-url'));
+                    const editImageUrls = editImageInputs
+                        .map(input => input.value.trim())
+                        .filter(url => !!url)
+                        .slice(0, 6);
+
+                    if (editImageUrls.length === 0) {
+                        customAlert('请至少输入一张产品图片URL', '错误');
+                        return;
+                    }
+
                     const updatedProduct = {
                         id: productId,
                         name: document.getElementById('edit-product-name').value.trim(),
@@ -9713,9 +9945,14 @@ let userSearchTerm = '';
                         newPrice: parseFloat(document.getElementById('edit-product-new-price').value) || 0,
                         stock: parseInt(document.getElementById('edit-product-stock').value),
                         category: document.getElementById('edit-product-category').value,
-                        image: document.getElementById('edit-product-image').value.trim(),
+                        image: editImageUrls[0],
+                        imageUrls: editImageUrls,
                         description: document.getElementById('edit-product-description').value.trim()
                     };
+
+                    for (let i = 1; i <= 6; i++) {
+                        updatedProduct[`imageUrl${i}`] = editImageUrls[i - 1] || '';
+                    }
 
                     if (!updatedProduct.name) { customAlert(t('productNameRequired'), '错误'); return; }
                     if (!(updatedProduct.price > 0)) { customAlert(t('productPriceRequired'), '错误'); return; }
@@ -10858,6 +11095,7 @@ let userSearchTerm = '';
         function renderProducts(productsToRender) {
             const productsGrid = document.getElementById('products-grid');
             const productDetail = document.getElementById('product-detail');
+            const topCarousel = document.querySelector('.carousel');
 
             if (!productsGrid || !productDetail) {
                 console.info('首页已隐藏商品展示，renderProducts 跳过渲染。');
@@ -10879,7 +11117,7 @@ let userSearchTerm = '';
                 return `
                     <article class="home-feature-card" data-product-id="${product.id}">
                         <div class="home-feature-image">
-                            <img src="${product.image}" alt="${product.name}">
+                            <img src="${getPrimaryProductImage(product)}" alt="${product.name}">
                             <span class="home-feature-tag">${categoryLabel}</span>
                         </div>
                         <div class="home-feature-body">
@@ -10940,12 +11178,15 @@ let userSearchTerm = '';
 
             const productsGrid = document.getElementById('products-grid');
             const productDetail = document.getElementById('product-detail');
+            const topCarousel = document.querySelector('.carousel');
             if (!productsGrid || !productDetail) {
                 return;
             }
 
             const oldPrice = formatCurrency(product.price || 0);
             const newPrice = formatCurrency(product.newPrice !== undefined ? product.newPrice : 0);
+            const imageUrls = getProductImageUrls(product);
+            const hasMultipleImages = imageUrls.length > 1;
             
             // 获取该产品的评价列表
             const productReviews = (product.reviews || []).sort((a, b) => b.createdAt - a.createdAt);
@@ -10953,7 +11194,32 @@ let userSearchTerm = '';
             productDetail.innerHTML = `
                 <div class="product-detail-content">
                     <div class="product-detail-image">
-                        <img src="${product.image}" alt="${product.name}">
+                        <div class="product-gallery">
+                            <div class="product-gallery-main">
+                                ${hasMultipleImages ? `
+                                    <button type="button" class="product-gallery-arrow" data-action="prev"><i class="fas fa-chevron-left"></i></button>
+                                ` : ''}
+                                <div class="product-gallery-slides">
+                                    ${imageUrls.map((url, index) => `
+                                        <div class="product-gallery-slide ${index === 0 ? 'active' : ''}" data-index="${index}">
+                                            <img src="${url}" alt="${product.name} ${index + 1}">
+                                        </div>
+                                    `).join('')}
+                                </div>
+                                ${hasMultipleImages ? `
+                                    <button type="button" class="product-gallery-arrow" data-action="next"><i class="fas fa-chevron-right"></i></button>
+                                ` : ''}
+                            </div>
+                            ${imageUrls.length ? `
+                                <div class="product-gallery-thumbs">
+                                    ${imageUrls.map((url, index) => `
+                                        <button type="button" class="product-gallery-thumb ${index === 0 ? 'active' : ''}" data-index="${index}" aria-label="Preview image ${index + 1}">
+                                            <img src="${url}" alt="${product.name} thumbnail ${index + 1}">
+                                        </button>
+                                    `).join('')}
+                                </div>
+                            ` : ''}
+                        </div>
                     </div>
                     <div class="product-detail-info">
                         <h1 class="product-detail-title">${product.name}</h1>
@@ -11046,6 +11312,8 @@ let userSearchTerm = '';
 
             productsGrid.style.display = 'none';
             productDetail.style.display = 'block';
+            if (topCarousel) topCarousel.style.display = 'none';
+            if (topCarousel) topCarousel.style.display = 'none';
 
             // 绑定按钮事件，移除内联 onclick
             const signupNowBtn = document.querySelector('#product-detail .signup-now');
@@ -11068,12 +11336,15 @@ let userSearchTerm = '';
                     handleReviewReply(pid, rid);
                 });
             });
+
+            initProductGalleryControls();
         }
 
         // 显示产品列表
         function showProductList() {
             const productsGrid = document.getElementById('products-grid');
             const productDetail = document.getElementById('product-detail');
+            const topCarousel = document.querySelector('.carousel');
 
             if (!productsGrid || !productDetail) {
                 return;
@@ -11081,6 +11352,103 @@ let userSearchTerm = '';
 
             productDetail.style.display = 'none';
             productsGrid.style.display = 'grid';
+            if (topCarousel) topCarousel.style.display = 'block';
+        }
+
+        function initProductGalleryControls() {
+            const gallery = document.querySelector('#product-detail .product-gallery');
+            if (!gallery) return;
+
+            const slides = Array.from(gallery.querySelectorAll('.product-gallery-slide'));
+            const thumbs = Array.from(gallery.querySelectorAll('.product-gallery-thumb'));
+            if (!slides.length) return;
+
+            let currentIndex = slides.findIndex(slide => slide.classList.contains('active'));
+            if (currentIndex < 0) currentIndex = 0;
+
+            const showSlide = (index) => {
+                if (!slides.length) return;
+                const previousIndex = currentIndex;
+                currentIndex = (index + slides.length) % slides.length;
+
+                const directionClass = currentIndex > previousIndex ? 'slide-from-right' : 'slide-from-left';
+
+                slides.forEach((slide, idx) => {
+                    const isActive = idx === currentIndex;
+                    slide.classList.toggle('active', isActive);
+                    slide.classList.remove('slide-from-left', 'slide-from-right');
+                    if (isActive) {
+                        // 触发动画
+                        slide.classList.add(directionClass);
+                        slide.addEventListener('animationend', () => {
+                            slide.classList.remove('slide-from-left', 'slide-from-right');
+                        }, { once: true });
+                    }
+                });
+
+                thumbs.forEach((thumb, idx) => thumb.classList.toggle('active', idx === currentIndex));
+            };
+
+            const prevBtn = gallery.querySelector('[data-action="prev"]');
+            const nextBtn = gallery.querySelector('[data-action="next"]');
+
+            if (prevBtn) {
+                prevBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    showSlide(currentIndex - 1);
+                });
+            }
+
+            if (nextBtn) {
+                nextBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    showSlide(currentIndex + 1);
+                });
+            }
+
+            thumbs.forEach(thumb => {
+                thumb.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const index = parseInt(thumb.getAttribute('data-index'), 10);
+                    if (!isNaN(index)) {
+                        showSlide(index);
+                    }
+                });
+            });
+
+            // 移动端滑动切换
+            let touchStartX = null;
+            let touchStartY = null;
+
+            gallery.addEventListener('touchstart', (e) => {
+                if (!e.touches || !e.touches.length) return;
+                const touch = e.touches[0];
+                touchStartX = touch.clientX;
+                touchStartY = touch.clientY;
+            }, { passive: true });
+
+            gallery.addEventListener('touchend', (e) => {
+                if (touchStartX === null || !e.changedTouches || !e.changedTouches.length) return;
+                const touch = e.changedTouches[0];
+                const deltaX = touch.clientX - touchStartX;
+                const deltaY = touch.clientY - touchStartY;
+
+                // 只有左右滑动明显时才触发，避免与页面上下滚动冲突
+                if (Math.abs(deltaX) > 40 && Math.abs(deltaX) > Math.abs(deltaY)) {
+                    if (deltaX < 0) {
+                        // 向左滑，看下一张
+                        showSlide(currentIndex + 1);
+                    } else {
+                        // 向右滑，看上一张
+                        showSlide(currentIndex - 1);
+                    }
+                }
+
+                touchStartX = null;
+                touchStartY = null;
+            }, { passive: true });
         }
 
         function captureSignupFormData() {
@@ -14101,7 +14469,7 @@ let userSearchTerm = '';
                         <input type="checkbox" class="product-checkbox" data-product-id="${product.id}" 
                                style="width: 20px; height: 20px; cursor: pointer;">
                     </div>
-                    <div class="product-image" style="background-image: url('${product.image}')"></div>
+                    <div class="product-image" style="background-image: url('${getPrimaryProductImage(product)}')"></div>
                     <div class="product-info">
                         <h3 class="product-title">${product.name}</h3>
                         <div class="product-price">
@@ -14192,8 +14560,15 @@ let userSearchTerm = '';
             document.getElementById('edit-product-new-price').value = product.newPrice || 0;
             document.getElementById('edit-product-stock').value = product.stock;
             document.getElementById('edit-product-category').value = product.category;
-            document.getElementById('edit-product-image').value = product.image;
             document.getElementById('edit-product-description').value = product.description;
+
+            const editImageInputs = document.querySelectorAll('.edit-product-image-url');
+            const storedImages = Array.isArray(product.imageUrls) && product.imageUrls.length
+                ? product.imageUrls
+                : (product.image ? [product.image] : []);
+            editImageInputs.forEach((input, index) => {
+                input.value = storedImages[index] || '';
+            });
 
             // 显示模态框
             document.getElementById('edit-product-modal').style.display = 'flex';
@@ -14325,66 +14700,215 @@ let userSearchTerm = '';
                 return;
             }
 
-            // 显示上传状态
             const excelUploadArea = document.getElementById('excel-upload-area');
-            excelUploadArea.innerHTML = `
-                <i class="fas fa-spinner fa-spin"></i>
-                <h3>正在解析Excel文件...</h3>
-                <p>${fileName}</p>
-            `;
-            excelUploadArea.classList.add('processing');
-
-            // 模拟Excel解析过程
-            setTimeout(() => {
-                try {
-                    // 模拟解析Excel数据
-                    const parsedData = parseMockExcelData();
-
-                    excelUploadArea.innerHTML = `
-                        <i class="fas fa-check-circle" style="color: #2ecc71;"></i>
-                        <h3>解析成功！</h3>
-                        <p>发现 ${parsedData.length} 个产品</p>
-                        <small>点击可重新上传</small>
-                    `;
-                    excelUploadArea.classList.remove('processing');
-                    excelUploadArea.classList.add('success');
-
-                    // 显示解析结果预览
-                    showExcelDataPreview(parsedData);
-
-                } catch (error) {
-                    excelUploadArea.innerHTML = `
-                        <i class="fas fa-times-circle" style="color: #e74c3c;"></i>
-                        <h3>解析失败</h3>
-                        <p>${error.message}</p>
-                        <small>点击重新上传</small>
-                    `;
-                    excelUploadArea.classList.remove('processing');
-                    excelUploadArea.classList.add('error');
+            const setStatus = (state, title, message, iconHtml = '') => {
+                excelUploadArea.innerHTML = `
+                    ${iconHtml || ''}
+                    <h3>${title}</h3>
+                    <p>${message}</p>
+                    ${state === 'success' || state === 'error' ? '<small>点击可重新上传</small>' : ''}
+                `;
+                excelUploadArea.classList.remove('processing', 'success', 'error');
+                if (state) {
+                    excelUploadArea.classList.add(state);
                 }
-            }, 1500);
+            };
+
+            setStatus('processing', '正在解析Excel文件...', fileName, '<i class="fas fa-spinner fa-spin"></i>');
+
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                try {
+                    const workbook = XLSX.read(event.target.result, { type: 'array' });
+                    const parsedData = extractProductsFromWorkbook(workbook);
+
+                    if (!parsedData.length) {
+                        throw new Error('未检测到可导入的产品数据，请检查表头是否包含“产品名称”和“图片URL”。');
+                    }
+
+                    setStatus('success', '解析成功！', `发现 ${parsedData.length} 个产品`, '<i class="fas fa-check-circle" style="color: #2ecc71;"></i>');
+                    showExcelDataPreview(parsedData);
+                } catch (error) {
+                    console.error('解析Excel失败:', error);
+                    setStatus('error', '解析失败', error.message || '请检查Excel格式后重试', '<i class="fas fa-times-circle" style="color: #e74c3c;"></i>');
+                }
+            };
+
+            reader.onerror = () => {
+                setStatus('error', '读取失败', '文件读取过程中出现错误，请重试。', '<i class="fas fa-times-circle" style="color: #e74c3c;"></i>');
+            };
+
+            reader.readAsArrayBuffer(file);
         }
 
-        // 模拟解析Excel数据
-        function parseMockExcelData() {
-            return [
-                {
-                    name: '象棋',
-                    price: 13,
-                    image: 'https://images.unsplash.com/photo-1543092588-5d387b43de59?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
-                    category: '棋牌游戏',
-                    description: '经典中国象棋，精美木质棋盘',
-                    stock: 20
-                },
-                {
-                    name: '微信图片',
-                    price: 16,
-                    image: 'https://images.unsplash.com/photo-1611605698335-8b1569810432?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
-                    category: '数码产品',
-                    description: '高质量微信图片素材',
-                    stock: 50
+        function extractProductsFromWorkbook(workbook) {
+            if (!workbook || !workbook.SheetNames || !workbook.SheetNames.length) {
+                throw new Error('Excel文件中没有可用的工作表');
+            }
+
+            const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+            const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '' });
+            return convertRowsToProducts(rows);
+        }
+
+        function convertRowsToProducts(rows) {
+            if (!Array.isArray(rows) || rows.length < 2) {
+                throw new Error('Excel中没有有效的数据行');
+            }
+
+            const headerRow = rows[0].map(cell => cell?.toString().trim());
+            const headerInfo = buildHeaderInfo(headerRow, rows[1]);
+
+            if (headerInfo.name === -1) {
+                throw new Error('请在Excel中添加“产品名称”列');
+            }
+            if (!headerInfo.imageIndexes.length) {
+                throw new Error('请在Excel中至少提供一列“图片URL”');
+            }
+
+            const parsedProducts = [];
+
+            rows.slice(1).forEach((row, rowIdx) => {
+                if (!row || row.every(cell => !String(cell || '').trim())) {
+                    return;
                 }
-            ];
+
+                const name = getCellValue(row, headerInfo.name) || `未命名产品 ${rowIdx + 1}`;
+                const price = parseNumberCell(getCellValue(row, headerInfo.price));
+                const newPrice = parseNumberCell(getCellValue(row, headerInfo.newPrice));
+                const stock = parseStockCell(getCellValue(row, headerInfo.stock));
+                const category = normalizeCategoryName(getCellValue(row, headerInfo.category));
+                const description = getCellValue(row, headerInfo.description) || '暂无描述';
+                const imageUrls = extractImageUrlsFromRow(row, headerInfo.imageIndexes);
+
+                if (!imageUrls.length) {
+                    console.warn(`第 ${rowIdx + 2} 行没有检测到有效图片URL，已跳过该产品。`);
+                    return;
+                }
+
+                const product = {
+                    name,
+                    price: Number.isFinite(price) ? price : 0,
+                    newPrice: Number.isFinite(newPrice) ? newPrice : (Number.isFinite(price) ? price : 0),
+                    stock: Number.isFinite(stock) ? stock : 0,
+                    category,
+                    description,
+                    image: imageUrls[0],
+                    imageUrls
+                };
+
+                for (let i = 1; i <= 6; i++) {
+                    product[`imageUrl${i}`] = imageUrls[i - 1] || '';
+                }
+
+                parsedProducts.push(product);
+            });
+
+            if (!parsedProducts.length) {
+                throw new Error('所有数据行均无效，请确认填写了产品名称与图片URL');
+            }
+
+            return parsedProducts;
+        }
+
+        function buildHeaderInfo(headers, sampleRow = []) {
+            const normalizedHeaders = headers.map(h => (h || '').toString().trim().toLowerCase());
+
+            const info = {
+                name: findHeaderIndex(normalizedHeaders, ['产品名称', '商品名称', 'name', 'title']),
+                price: findHeaderIndex(normalizedHeaders, ['产品价格', '价格', '原价', 'price']),
+                newPrice: findHeaderIndex(normalizedHeaders, ['现价', '促销价', '新价格', '折后价', 'newprice', 'saleprice']),
+                stock: findHeaderIndex(normalizedHeaders, ['库存', 'stock', '数量', 'qty']),
+                category: findHeaderIndex(normalizedHeaders, ['分类', '品类', 'category']),
+                description: findHeaderIndex(normalizedHeaders, ['描述', '详情', '说明', 'description', 'detail']),
+                imageIndexes: []
+            };
+
+            if (info.name === -1 && headers.length > 1) info.name = 1;
+            if (info.price === -1) info.price = 0;
+
+            normalizedHeaders.forEach((header, idx) => {
+                if (/图片.*url/.test(header) || /image.*url/.test(header) || /^url\d*/.test(header)) {
+                    info.imageIndexes.push(idx);
+                }
+            });
+
+            // 无论是否匹配到表头，只要示例行中有 URL，就把该列视为图片列（避免只识别到“图片URL1”）
+            if (Array.isArray(sampleRow)) {
+                sampleRow.forEach((cell, idx) => {
+                    const value = (cell || '').toString().trim();
+                    if (/^https?:\/\//i.test(value) && !info.imageIndexes.includes(idx)) {
+                        info.imageIndexes.push(idx);
+                    }
+                });
+            }
+
+            info.imageIndexes = info.imageIndexes.slice(0, 6);
+            return info;
+        }
+
+        function findHeaderIndex(headers, keywords) {
+            for (const keyword of keywords) {
+                const normalizedKeyword = keyword.toLowerCase();
+                const index = headers.findIndex(header => header === normalizedKeyword || header.includes(normalizedKeyword));
+                if (index !== -1) {
+                    return index;
+                }
+            }
+            return -1;
+        }
+
+        function getCellValue(row, index) {
+            if (!row || index === -1 || index >= row.length) {
+                return '';
+            }
+            const cell = row[index];
+            if (cell === undefined || cell === null) {
+                return '';
+            }
+            return typeof cell === 'string' ? cell.trim() : cell.toString().trim();
+        }
+
+        function parseNumberCell(value) {
+            if (value === '' || value === null || value === undefined) return NaN;
+            if (typeof value === 'number') return value;
+            const sanitized = value.replace(/[^\d.,-]/g, '').replace(/,/g, '');
+            return sanitized ? parseFloat(sanitized) : NaN;
+        }
+
+        function parseStockCell(value) {
+            if (value === '' || value === null || value === undefined) return NaN;
+            if (typeof value === 'number') return value;
+            const sanitized = value.replace(/[^\d-]/g, '');
+            return sanitized ? parseInt(sanitized, 10) : NaN;
+        }
+
+        function normalizeCategoryName(value) {
+            if (!value) return 'other';
+            const text = value.toString().trim().toLowerCase();
+            if (!text) return 'other';
+            if (text.includes('电') || text.includes('数码') || text.includes('tech') || text.includes('digital')) return 'electronics';
+            if (text.includes('家') || text.includes('home')) return 'home';
+            if (text.includes('服') || text.includes('clo') || text.includes('鞋')) return 'clothing';
+            if (text.includes('美') || text.includes('beauty')) return 'beauty';
+            if (text.includes('运') || text.includes('sport')) return 'sports';
+            return text;
+        }
+
+        function extractImageUrlsFromRow(row, imageIndexes) {
+            const urls = [];
+            imageIndexes.forEach(idx => {
+                const raw = getCellValue(row, idx);
+                if (!raw) return;
+
+                raw.split(/[\s\n\r]+/).forEach(segment => {
+                    const candidate = segment.trim();
+                    if (/^https?:\/\//i.test(candidate) && !urls.includes(candidate)) {
+                        urls.push(candidate);
+                    }
+                });
+            });
+            return urls.slice(0, 6);
         }
 
         // 复制订单号
@@ -14965,7 +15489,7 @@ let userSearchTerm = '';
                 <div class="preview-products">
                     ${importedProducts.map((product, index) => `
                         <div class="preview-product-item">
-                            <div class="preview-product-image" style="background-image: url('${product.image}')"></div>
+                            <div class="preview-product-image" style="background-image: url('${getPrimaryProductImage(product)}')"></div>
                             <div class="preview-product-info">
                                 <div class="preview-product-name">${product.name}</div>
                                 <div class="preview-product-price">
@@ -15963,9 +16487,16 @@ let userSearchTerm = '';
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="product-image-input">产品图片URL <span style="color: var(--danger);">*</span></label>
-                        <input type="url" id="product-image-input" class="form-control" required>
-                        <small style="color: var(--gray); font-size: 12px; margin-top: 5px; display: block;">请输入完整的图片URL地址</small>
+                        <label>产品图片URL（最多6张） <span style="color: var(--danger);">*</span></label>
+                        <div class="product-image-inputs">
+                            <input type="url" id="product-image-input-1" class="form-control product-image-url-input" placeholder="图片URL 1（必填）" required>
+                            <input type="url" id="product-image-input-2" class="form-control product-image-url-input" placeholder="图片URL 2（可选）">
+                            <input type="url" id="product-image-input-3" class="form-control product-image-url-input" placeholder="图片URL 3（可选）">
+                            <input type="url" id="product-image-input-4" class="form-control product-image-url-input" placeholder="图片URL 4（可选）">
+                            <input type="url" id="product-image-input-5" class="form-control product-image-url-input" placeholder="图片URL 5（可选）">
+                            <input type="url" id="product-image-input-6" class="form-control product-image-url-input" placeholder="图片URL 6（可选）">
+                        </div>
+                        <small style="color: var(--gray); font-size: 12px; margin-top: 5px; display: block;">第一张图片将作为封面展示，支持最多6张图片URL</small>
                     </div>
                     <div class="form-group" id="product-preview-group" style="display: none;">
                         <label>图片预览</label>
@@ -16191,19 +16722,30 @@ let userSearchTerm = '';
             currentProductEditData.isEdit = !!product;
             currentProductEditData.id = product ? product.id : null;
 
+            const imageInputs = document.querySelectorAll('.product-image-url-input');
+
             if (product) {
                 titleEl.textContent = '编辑产品';
                 document.getElementById('product-name-input').value = product.name || '';
                 document.getElementById('product-price-input').value = product.price || '';
                 document.getElementById('product-stock-input').value = product.stock || 0;
                 document.getElementById('product-category-input').value = product.category || 'other';
-                document.getElementById('product-image-input').value = product.image || '';
                 document.getElementById('product-description-input').value = product.description || '';
-                updateProductPreview(product.image);
+
+                const storedImages = Array.isArray(product.imageUrls) && product.imageUrls.length
+                    ? product.imageUrls
+                    : (product.image ? [product.image] : []);
+
+                imageInputs.forEach((input, index) => {
+                    input.value = storedImages[index] || '';
+                });
+
+                updateProductPreview(storedImages[0] || '');
             } else {
                 titleEl.textContent = '添加产品';
                 form.reset();
                 document.getElementById('product-preview-group').style.display = 'none';
+                imageInputs.forEach(input => input.value = '');
             }
 
             modal.style.display = 'flex';
@@ -16222,7 +16764,11 @@ let userSearchTerm = '';
             const priceInput = document.getElementById('product-price-input').value;
             const stockInput = document.getElementById('product-stock-input').value;
             const category = document.getElementById('product-category-input').value;
-            const image = document.getElementById('product-image-input').value.trim();
+            const imageInputs = Array.from(document.querySelectorAll('.product-image-url-input'));
+            const imageUrls = imageInputs
+                .map(input => input.value.trim())
+                .filter(url => !!url)
+                .slice(0, 6);
             const description = document.getElementById('product-description-input').value.trim();
 
             if (!name) {
@@ -16236,8 +16782,8 @@ let userSearchTerm = '';
                 return;
             }
 
-            if (!image) {
-                showMessageModal('错误', '请输入产品图片URL', 'alert');
+            if (imageUrls.length === 0) {
+                showMessageModal('错误', '请至少输入一张产品图片URL', 'alert');
                 return;
             }
 
@@ -16251,7 +16797,11 @@ let userSearchTerm = '';
                     product.price = price;
                     product.stock = stock;
                     product.category = category;
-                    product.image = image;
+                    product.image = imageUrls[0];
+                    product.imageUrls = imageUrls;
+                    for (let i = 1; i <= 6; i++) {
+                        product[`imageUrl${i}`] = imageUrls[i - 1] || '';
+                    }
                     product.description = description;
                     saveProducts().then(() => {
                         renderAdminProducts();
@@ -16278,9 +16828,14 @@ let userSearchTerm = '';
                     newPrice: 0,
                     stock: stock < 0 ? 0 : stock,
                     category,
-                    image,
+                    image: imageUrls[0],
+                    imageUrls,
                     description
                 };
+
+                for (let i = 1; i <= 6; i++) {
+                    product[`imageUrl${i}`] = imageUrls[i - 1] || '';
+                }
 
                 products.push(product);
                 saveProducts().then((saveResult) => {
@@ -16314,9 +16869,12 @@ let userSearchTerm = '';
         }
 
         // 图片URL输入时更新预览
-        document.getElementById('product-image-input').addEventListener('input', function() {
+        const productCoverInput = document.getElementById('product-image-input-1');
+        if (productCoverInput) {
+            productCoverInput.addEventListener('input', function() {
             updateProductPreview(this.value);
-        });
+            });
+        }
 
         // 点击背景关闭
         document.getElementById('product-edit-modal').addEventListener('click', function(e) {
