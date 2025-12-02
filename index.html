@@ -8054,7 +8054,26 @@ let userSearchTerm = '';
 
         function saveAllUsers() {
             localStorage.setItem('allUsers', JSON.stringify(allUsers));
-            
+
+            // 优先直接写入 Firebase Realtime Database 的 allUsers 节点，确保跨设备可见
+            try {
+                if (typeof firebase !== 'undefined' &&
+                    firebase.apps &&
+                    firebase.apps.length > 0 &&
+                    typeof firebase.database === 'function') {
+                    const db = firebase.database();
+                    db.ref('allUsers').set(allUsers)
+                        .then(() => {
+                            console.log('✅ allUsers 已直接写入 Realtime Database');
+                        })
+                        .catch(err => {
+                            console.warn('⚠️ 直接写入 allUsers 失败，改用 CloudSyncManager/备用同步：', err);
+                        });
+                }
+            } catch (err) {
+                console.warn('⚠️ 写入 allUsers 到 Realtime Database 时出错，将使用 CloudSyncManager/备用同步：', err);
+            }
+
             // 同步到云端（使用CloudSyncManager）
             if (cloudSync && cloudSync.isInitialized) {
                 cloudSync.syncAllUsers().catch(err => {
@@ -11646,10 +11665,21 @@ let userSearchTerm = '';
                     : 1;
 
                 if (currentPoints <= 0) {
-                    // 之前用右上角气泡提示，现在改为弹窗提示，避免“没反应”的感觉
-                    customAlert(
-                        t('pointsNotEnoughForClaim') || '您的蜜罐不足，无法领取新产品。请完成评价以获取更多蜜罐。',
-                        t('infoTitle') || '提示'
+                    // 蜜罐为 0 时弹出提示，不允许继续领取
+                    const messageHtml = `
+                        <div style="font-size:14px; line-height:1.7; text-align:left;">
+                            <ul style="padding-left:18px; margin:8px 0 0;">
+                                <li>Write a review to earn <span style="color:#FBBF24; font-weight:700;">Honey</span>.</li>
+                                <li>Contact support for help.</li>
+                            </ul>
+                        </div>
+                    `;
+                    customAlertWithHtml?.(
+                        messageHtml,
+                        'Out of Honey Balance: 0'
+                    ) || customAlert(
+                        'Out of Honey Balance: 0\n\n• Write a review to earn Honey.\n• Contact support for help.',
+                        'Notice'
                     );
                     return;
                 }
