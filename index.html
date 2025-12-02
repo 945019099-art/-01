@@ -123,24 +123,28 @@
 
     <style>
         :root {
-            /* 主题色系统：更柔和、统一的现代配色 */
-            --primary: #2563eb;
-            --primary-soft: rgba(37, 99, 235, 0.08);
-            --secondary: #22c55e;
-            --secondary-soft: rgba(34, 197, 94, 0.08);
-            --danger: #ef4444;
-            --warning: #f59e0b;
-            --dark: #0f172a;
-            --dark-soft: rgba(15, 23, 42, 0.04);
-            --light: #f9fafb;
-            --gray: #6b7280;
-            --border-subtle: rgba(148, 163, 184, 0.35);
-            --shadow-soft: 0 18px 45px rgba(15, 23, 42, 0.08);
-            --radius-lg: 18px;
-            --radius-md: 12px;
-            --radius-sm: 8px;
-            --transition-fast: 0.18s ease-out;
-            --transition-normal: 0.24s ease-out;
+            /* 微软风格配色系统 */
+            --primary: #0078d4;
+            --primary-hover: #106ebe;
+            --primary-light: #deecf9;
+            --primary-soft: rgba(0, 120, 212, 0.1);
+            --secondary: #107c10;
+            --secondary-soft: rgba(16, 124, 16, 0.1);
+            --danger: #d13438;
+            --warning: #ffaa44;
+            --dark: #323130;
+            --dark-soft: rgba(50, 49, 48, 0.06);
+            --light: #faf9f8;
+            --gray: #605e5c;
+            --gray-light: #8a8886;
+            --border-subtle: rgba(0, 0, 0, 0.1);
+            --shadow-soft: 0 2px 4px rgba(0, 0, 0, 0.1);
+            --shadow-medium: 0 4px 8px rgba(0, 0, 0, 0.12);
+            --radius-lg: 4px;
+            --radius-md: 4px;
+            --radius-sm: 2px;
+            --transition-fast: 0.2s ease;
+            --transition-normal: 0.3s ease;
         }
 
         * {
@@ -152,7 +156,7 @@
         }
 
         body {
-            background: radial-gradient(circle at top left, #eef2ff 0, #f9fafb 40%, #e5e7eb 100%);
+            background: #ffffff;
             color: var(--dark);
             line-height: 1.6;
             -webkit-font-smoothing: antialiased;
@@ -184,7 +188,7 @@
             width: 60px;
             height: 60px;
             border: 4px solid #f3f3f3;
-            border-top: 4px solid #3498db;
+            border-top: 4px solid var(--primary);
             border-radius: 50%;
             animation: spin 1s linear infinite;
             margin-bottom: 20px;
@@ -218,16 +222,14 @@
             width: 100%;
             max-width: 1600px;
             margin: 0 auto;
-            padding: 0 30px 40px;
+            padding: 0 24px 80px;
         }
 
-        /* 导航栏样式 - 顶部磨砂导航 */
+        /* 导航栏样式 - 微软风格 */
         .navbar {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(18px);
-            -webkit-backdrop-filter: blur(18px);
-            box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
-            border-bottom: 1px solid rgba(148, 163, 184, 0.15);
+            background: #ffffff;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.08);
             position: sticky;
             top: 0;
             z-index: 1000;
@@ -260,8 +262,8 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 14px 0;
-            gap: 16px;
+            padding: 16px 0;
+            gap: 24px;
         }
 
         .logo {
@@ -288,47 +290,61 @@
         .nav-links {
             display: flex;
             list-style: none;
-            padding: 4px 10px;
-            border-radius: 999px;
-            background: rgba(248, 250, 252, 0.9);
-            border: 1px solid rgba(148, 163, 184, 0.3);
-            gap: 4px;
+            padding: 0;
+            border-radius: 0;
+            background: transparent;
+            border: none;
+            gap: 0;
         }
 
         .nav-links li {
             margin-left: 0;
+            display: flex;
+            align-items: center;
         }
 
         .nav-links a {
             position: relative;
             display: inline-flex;
             align-items: center;
-            padding: 8px 14px;
-            border-radius: 999px;
+            justify-content: center;
+            padding: 12px 16px;
+            border-radius: 0;
             text-decoration: none;
             color: var(--gray);
-            font-weight: 500;
-            font-size: 14px;
-            transition: color var(--transition-fast), background-color var(--transition-fast),
-                transform var(--transition-fast), box-shadow var(--transition-fast);
+            font-weight: 400;
+            font-size: 15px;
+            line-height: 1.4;
+            min-height: 48px;
+            transition: color var(--transition-fast), background-color var(--transition-fast);
         }
 
         .nav-links a:hover {
-            color: var(--dark);
-            background: white;
-            box-shadow: 0 8px 25px rgba(15, 23, 42, 0.08);
-            transform: translateY(-1px);
+            color: var(--primary);
+            background: var(--primary-light);
+        }
+
+        .nav-links a.active {
+            color: var(--primary);
+            background: transparent;
+            border-bottom: 2px solid var(--primary);
         }
 
         .search-bar {
             display: flex;
             width: 42%;
             max-width: 520px;
-            border-radius: 999px;
-            background: rgba(248, 250, 252, 0.9);
-            border: 1px solid rgba(148, 163, 184, 0.5);
+            border-radius: 2px;
+            background: #ffffff;
+            border: 1px solid rgba(0, 0, 0, 0.2);
             overflow: hidden;
-            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04);
+            box-shadow: none;
+            transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+        }
+
+        .search-bar:focus-within {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 1px var(--primary);
         }
 
         .search-bar input {
@@ -346,7 +362,7 @@
         }
 
         .search-bar button {
-            background: linear-gradient(135deg, var(--primary), #1d4ed8);
+            background: var(--primary);
             color: white;
             border: none;
             padding: 0 18px;
@@ -356,9 +372,12 @@
             justify-content: center;
             gap: 6px;
             font-size: 14px;
-            font-weight: 500;
-            transition: background var(--transition-fast), transform var(--transition-fast),
-                box-shadow var(--transition-fast);
+            font-weight: 400;
+            transition: background var(--transition-fast);
+        }
+
+        .search-bar button:hover {
+            background: var(--primary-hover);
         }
 
         .user-actions {
@@ -375,20 +394,16 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 36px;
-            height: 36px;
-            border-radius: 999px;
-            border: 1px solid rgba(148, 163, 184, 0.5);
-            background: rgba(248, 250, 252, 0.9);
-            transition: background var(--transition-fast), color var(--transition-fast),
-                transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
+            padding: 8px 12px;
+            border-radius: 2px;
+            border: 1px solid rgba(0, 0, 0, 0.2);
+            background: #ffffff;
+            transition: background var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast);
         }
 
         .user-actions a:hover {
-            background: white;
-            border-color: rgba(37, 99, 235, 0.6);
-            box-shadow: 0 12px 30px rgba(15, 23, 42, 0.15);
-            transform: translateY(-1px);
+            background: var(--primary-light);
+            border-color: var(--primary);
             color: var(--primary);
         }
 
@@ -399,12 +414,12 @@
         /* 轮播图样式 */
         .carousel {
             position: relative;
-            height: 400px;
+            height: 450px;
             overflow: hidden;
             border-radius: var(--radius-lg);
-            margin: 20px 0 30px;
-            box-shadow: var(--shadow-soft);
-            border: 1px solid rgba(148, 163, 184, 0.35);
+            margin: 32px 0 48px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+            border: 1px solid rgba(0, 0, 0, 0.08);
         }
 
         .carousel-slide {
@@ -441,9 +456,14 @@
             background: var(--primary);
             color: white;
             padding: 10px 20px;
-            border-radius: 4px;
+            border-radius: 2px;
             text-decoration: none;
-            font-weight: bold;
+            font-weight: 400;
+            transition: background var(--transition-fast);
+        }
+
+        .carousel-btn:hover {
+            background: var(--primary-hover);
         }
 
         .carousel-indicators {
@@ -469,17 +489,19 @@
 
         /* 产品网格样式 */
         .section-title {
-            margin: 30px 0 20px;
-            font-size: 24px;
+            margin: 64px 0 32px;
+            font-size: 36px;
             color: var(--dark);
             border-left: 4px solid var(--primary);
-            padding-left: 10px;
+            padding-left: 20px;
+            font-weight: 300;
+            line-height: 1.2;
         }
 
         .products-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
-            gap: 28px;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 24px;
             margin-bottom: 80px;
             max-width: 100%;
             margin-left: auto;
@@ -488,21 +510,20 @@
 
 
         .product-card {
-            background: radial-gradient(circle at top left, rgba(37, 99, 235, 0.04), #ffffff 35%);
+            background: #ffffff;
             border-radius: var(--radius-lg);
             overflow: hidden;
-            box-shadow: 0 18px 40px rgba(15, 23, 42, 0.06);
-            transition: transform var(--transition-normal), box-shadow var(--transition-normal),
-                border-color var(--transition-normal), background var(--transition-normal);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+            transition: box-shadow var(--transition-normal), transform var(--transition-normal);
             cursor: pointer;
-            border: 1px solid var(--border-subtle);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            display: flex;
+            flex-direction: column;
         }
 
         .product-card:hover {
-            transform: translateY(-10px) translateZ(0);
-            box-shadow: 0 30px 70px rgba(15, 23, 42, 0.16);
-            border-color: rgba(37, 99, 235, 0.55);
-            background: radial-gradient(circle at top left, rgba(37, 99, 235, 0.08), #ffffff 45%);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.16), 0 2px 4px rgba(0, 0, 0, 0.23);
+            transform: translateY(-2px);
         }
 
         .product-image {
@@ -511,13 +532,16 @@
             background-size: contain;
             background-repeat: no-repeat;
             background-position: center;
-            background-color: #f7f8fa;
+            background-color: #faf9f8;
             position: relative;
-            padding: 20px;
+            padding: 24px;
         }
 
         .product-info {
-            padding: 22px 22px 20px;
+            padding: 20px 24px 24px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
         }
 
         /* 首页精选区域单独控制卡片尺寸 */
@@ -549,12 +573,12 @@
         }
 
         .product-title {
-            font-size: 17px;
-            font-weight: 600;
+            font-size: 16px;
+            font-weight: 400;
             margin-bottom: 12px;
             color: var(--dark);
             line-height: 1.5;
-            height: 52px;
+            min-height: 48px;
             overflow: hidden;
             display: -webkit-box;
             -webkit-line-clamp: 2;
@@ -564,9 +588,10 @@
 
         .product-price {
             font-size: 24px;
-            font-weight: 700;
-            color: #ef4444;
+            font-weight: 600;
+            color: var(--dark);
             margin-bottom: 16px;
+            margin-top: auto;
         }
 
         .product-actions {
@@ -577,85 +602,85 @@
         }
 
         .btn {
-            padding: 10px 18px;
+            padding: 12px 24px;
             border: none;
-            border-radius: 999px;
+            border-radius: 2px;
             cursor: pointer;
-            font-weight: 500;
-            letter-spacing: 0.01em;
-            transition: background var(--transition-fast), color var(--transition-fast),
-                transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
+            font-weight: 400;
+            letter-spacing: 0;
+            transition: background var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast);
             font-size: 14px;
             flex: 1;
             border: 1px solid transparent;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 6px;
+            gap: 8px;
+            min-height: 40px;
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, var(--primary), #1d4ed8);
+            background: var(--primary);
             color: white;
-            box-shadow: 0 12px 25px rgba(37, 99, 235, 0.35);
+            box-shadow: none;
         }
 
         .btn-primary:hover {
-            background: linear-gradient(135deg, #1d4ed8, #1e40af);
-            transform: translateY(-1px);
-            box-shadow: 0 18px 40px rgba(37, 99, 235, 0.5);
+            background: var(--primary-hover);
         }
 
         .btn-secondary {
-            background: linear-gradient(135deg, var(--secondary), #16a34a);
+            background: var(--secondary);
             color: white;
-            box-shadow: 0 12px 25px rgba(34, 197, 94, 0.35);
+            box-shadow: none;
         }
 
         .btn-secondary:hover {
-            background: linear-gradient(135deg, #16a34a, #15803d);
-            transform: translateY(-1px);
-            box-shadow: 0 18px 40px rgba(34, 197, 94, 0.5);
+            background: #0e6b0e;
         }
 
         .btn-danger {
-            background: linear-gradient(135deg, #ef4444, #dc2626);
+            background: var(--danger);
             color: white;
-            box-shadow: 0 12px 25px rgba(239, 68, 68, 0.35);
+            box-shadow: none;
         }
 
         .btn-danger:hover {
-            background: linear-gradient(135deg, #dc2626, #b91c1c);
-            transform: translateY(-1px);
-            box-shadow: 0 18px 40px rgba(239, 68, 68, 0.5);
+            background: #a4262c;
         }
 
         /* 首页精选展示 */
         .featured-showcase {
-            margin-top: 40px;
-            background: #fff;
-            border-radius: 22px;
-            padding: 36px;
-            box-shadow: 0 25px 55px rgba(15, 23, 42, 0.08);
+            margin-top: 48px;
+            background: #ffffff;
+            border-radius: var(--radius-lg);
+            padding: 48px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+            border: 1px solid rgba(0, 0, 0, 0.08);
         }
 
         .featured-head {
             display: flex;
             justify-content: space-between;
-            gap: 20px;
+            gap: 24px;
             flex-wrap: wrap;
+            margin-bottom: 32px;
         }
 
         .featured-head h2 {
             margin: 0;
-            font-size: 30px;
-            color: #111827;
+            font-size: 36px;
+            color: var(--dark);
+            font-weight: 300;
+            line-height: 1.2;
         }
 
         .featured-head p {
-            margin: 6px 0 0;
-            color: #6b7280;
-            max-width: 520px;
+            margin: 12px 0 0;
+            color: var(--gray);
+            max-width: 600px;
+            font-size: 16px;
+            line-height: 1.6;
         }
 
         .featured-meta {
@@ -673,24 +698,37 @@
         .category-filter {
             display: flex;
             flex-wrap: wrap;
-            gap: 14px;
-            margin: 28px 0 18px;
+            gap: 12px;
+            margin: 32px 0 24px;
         }
 
         .category-item {
-            padding: 10px 22px;
-            border-radius: 999px;
-            background: #f3f4f6;
-            color: #4b5563;
+            padding: 10px 20px;
+            border-radius: 2px;
+            background: #ffffff;
+            color: var(--gray);
             font-size: 14px;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all var(--transition-fast);
+            border: 1px solid rgba(0, 0, 0, 0.15);
+            font-weight: 400;
+            min-height: 40px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .category-item:hover {
+            background: var(--primary-light);
+            border-color: var(--primary);
+            color: var(--primary);
         }
 
         .category-item.active {
             background: var(--primary);
             color: #fff;
-            box-shadow: 0 12px 24px rgba(52, 152, 219, 0.35);
+            border-color: var(--primary);
+            box-shadow: 0 2px 4px rgba(0, 120, 212, 0.2);
         }
 
         #products-grid {
@@ -791,13 +829,14 @@
             background: white;
             width: 90%;
             max-width: 500px;
-            border-radius: 8px;
+            border-radius: 2px;
             overflow: hidden;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+            border: 1px solid var(--border-subtle);
         }
 
         .modal-header {
-            padding: 15px 20px;
+            padding: 20px 24px;
             background: var(--primary);
             color: white;
             display: flex;
@@ -807,6 +846,8 @@
 
         .modal-header h3 {
             margin: 0;
+            font-weight: 400;
+            font-size: 20px;
         }
 
         .close-modal {
@@ -818,7 +859,7 @@
         }
 
         .modal-body {
-            padding: 20px;
+            padding: 24px;
             max-height: 70vh;
             overflow-y: auto;
         }
@@ -926,10 +967,23 @@
 
         .form-control {
             width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 16px;
+            padding: 10px 14px;
+            border: 1px solid rgba(0, 0, 0, 0.2);
+            border-radius: 2px;
+            font-size: 15px;
+            background: #ffffff;
+            transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+            min-height: 40px;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 1px var(--primary);
+        }
+
+        .form-control::placeholder {
+            color: var(--gray-light);
         }
 
         .form-actions {
@@ -1785,6 +1839,18 @@
             text-align: center;
         }
 
+        /* 订单状态列宽度优化 */
+        #orders-table th:nth-child(6),
+        #orders-table td:nth-child(6) {
+            min-width: 100px;
+            width: auto;
+            white-space: nowrap;
+        }
+
+        #orders-table td:nth-child(6) {
+            text-align: center;
+        }
+
         .danger-zone {
             margin-top: 30px;
             padding: 20px;
@@ -1855,10 +1921,14 @@
         }
 
         .status-badge {
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 500;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: 400;
+            display: inline-block;
+            white-space: nowrap;
+            text-align: center;
+            min-width: 60px;
         }
 
         .status-active {
@@ -2519,15 +2589,17 @@
 
             .logo {
                 font-size: 18px;
-                min-height: 45px;
+                min-height: 40px;
                 margin: 0;
                 flex-shrink: 0;
                 order: 1;
+                display: flex;
+                align-items: center;
             }
             
             .logo img {
-                height: 45px;
-                max-width: 180px;
+                height: 40px;
+                max-width: 150px;
             }
 
             /* 汉堡菜单按钮 */
@@ -2647,16 +2719,29 @@
 
             .user-actions a {
                 margin: 0;
-                font-size: 12px;
-                padding: 6px 10px;
+                font-size: 13px;
+                padding: 10px 16px;
                 background: var(--primary);
                 color: white;
-                border-radius: 6px;
+                border-radius: 2px;
                 white-space: nowrap;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                gap: 6px;
+                font-weight: 400;
+                box-shadow: none;
+                transition: background var(--transition-fast);
+                min-height: 40px;
+                border: none;
             }
 
             .user-actions a:hover {
-                background: var(--primary-dark);
+                background: var(--primary-hover);
+            }
+
+            .user-actions a i {
+                font-size: 14px;
             }
 
             /* 退出按钮优化 */
@@ -2669,19 +2754,28 @@
         /* 移动端导航重排：直接展示菜单 */
         @media (max-width: 768px) {
             .nav-container {
-                flex-wrap: wrap;
-                align-items: stretch;
-                gap: 12px;
+                flex-wrap: nowrap;
+                align-items: center;
+                gap: 10px;
+                padding: 10px 15px;
             }
 
             .logo {
-                margin: 0 auto;
-                flex: 1 1 100%;
-                justify-content: center;
+                margin: 0;
+                flex: 0 0 auto;
+                order: 1;
+                min-width: 120px;
+                max-width: 150px;
             }
 
             .logo img {
-                margin: 0 auto;
+                margin: 0;
+                height: 40px;
+                max-width: 100%;
+            }
+
+            .menu-toggle {
+                order: 2;
             }
 
             .nav-links {
@@ -2693,15 +2787,17 @@
 
             .search-bar {
                 order: 3;
-                width: 100%;
+                flex: 1;
+                min-width: 0;
+                margin: 0;
             }
 
             .user-actions {
                 order: 4;
-                width: 100%;
-                flex-wrap: wrap;
-                justify-content: flex-start;
-                gap: 10px;
+                flex: 0 0 auto;
+                flex-wrap: nowrap;
+                justify-content: flex-end;
+                gap: 8px;
             }
 
             .user-actions > * {
@@ -2710,8 +2806,8 @@
 
             .language-selector {
                 width: auto;
-                margin-left: auto !important;
-                order: 10;
+                margin-left: 0 !important;
+                order: 5;
             }
         }
 
@@ -2720,16 +2816,20 @@
             .nav-container {
                 padding: 8px 10px;
                 gap: 6px;
+                flex-wrap: nowrap;
             }
 
             .logo {
                 font-size: 16px;
                 min-height: 40px;
+                flex: 0 0 auto;
+                min-width: 100px;
+                max-width: 120px;
             }
             
             .logo img {
-                height: 40px;
-                max-width: 150px;
+                height: 35px;
+                max-width: 100%;
             }
 
             .menu-toggle {
@@ -2737,6 +2837,11 @@
                 padding: 6px 8px;
                 min-width: 40px;
                 min-height: 40px;
+            }
+
+            .search-bar {
+                flex: 1;
+                min-width: 0;
             }
 
             .search-bar input {
@@ -2750,6 +2855,17 @@
 
             .user-actions {
                 gap: 4px;
+                flex-wrap: nowrap;
+            }
+
+            .user-actions a {
+                font-size: 11px;
+                padding: 8px 12px;
+                min-height: 36px;
+            }
+
+            .user-actions a i {
+                font-size: 12px;
             }
 
             .language-selector select {
@@ -4075,6 +4191,34 @@
                             <div class="stat-info">
                                 <h3 id="pending-orders">0</h3>
                                 <p>待处理订单</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 数据库备份/恢复功能 -->
+                    <div class="database-backup-section" style="margin-top: 40px; background: #ffffff; border-radius: 4px; padding: 32px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24); border: 1px solid rgba(0, 0, 0, 0.08);">
+                        <h3 style="margin: 0 0 8px 0; font-size: 24px; font-weight: 300; color: var(--dark);">数据库备份与恢复</h3>
+                        <p style="margin: 0 0 24px 0; color: var(--gray); font-size: 14px; line-height: 1.6;">
+                            备份所有网站数据（产品、订单、用户、设置等）到本地文件，或从备份文件恢复数据。此操作会覆盖当前所有数据，请谨慎操作。
+                        </p>
+                        
+                        <div style="display: flex; gap: 16px; flex-wrap: wrap;">
+                            <button id="download-database-btn" class="btn btn-primary" style="flex: 0 0 auto;">
+                                <i class="fas fa-download"></i> 下载数据库备份
+                            </button>
+                            <label for="upload-database-input" class="btn btn-secondary" style="flex: 0 0 auto; cursor: pointer; margin: 0;">
+                                <i class="fas fa-upload"></i> 上传数据库备份
+                                <input type="file" id="upload-database-input" accept=".json" style="display: none;" onchange="handleDatabaseUpload(event)">
+                            </label>
+                        </div>
+
+                        <div id="database-backup-info" style="margin-top: 24px; padding: 16px; background: var(--primary-light); border-radius: 2px; border-left: 4px solid var(--primary); display: none;">
+                            <div style="display: flex; align-items: start; gap: 12px;">
+                                <i class="fas fa-info-circle" style="color: var(--primary); font-size: 18px; margin-top: 2px;"></i>
+                                <div style="flex: 1;">
+                                    <div style="font-weight: 500; color: var(--dark); margin-bottom: 4px;">备份信息</div>
+                                    <div id="database-backup-details" style="font-size: 13px; color: var(--gray); line-height: 1.6;"></div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -6101,18 +6245,29 @@
                     const cloudOrders = snapshot.val();
 
                     if (cloudOrders && Array.isArray(cloudOrders) && cloudOrders.length > 0) {
-                        // 使用智能合并而不是直接覆盖
-                        mergeOrdersData(cloudOrders, currentUser.account);
+                        // 登录后直接使用云端数据，不清除本地缓存后应该没有旧数据
+                        // 但为了安全，先清空本地订单再加载云端数据
+                        userOrders = [];
+                        localStorage.removeItem('userOrders');
+                        
+                        // 直接使用云端数据
+                        userOrders = cloudOrders;
+                        localStorage.setItem('userOrders', JSON.stringify(userOrders));
+                        
                         console.log('✅ 已从云端加载订单数据:', userOrders.length, '个订单');
                         return true;
                     } else {
-                        // 云端没有订单，但不清空本地订单（可能本地有未同步的）
-                        console.log('ℹ️ 云端暂无订单数据，保留本地订单');
+                        // 云端没有订单，清空本地订单（防止旧数据）
+                        userOrders = [];
+                        localStorage.setItem('userOrders', JSON.stringify(userOrders));
+                        console.log('ℹ️ 云端暂无订单数据，已清空本地订单');
                         return false;
                     }
                 } catch (error) {
                     console.error('加载云端订单失败:', error);
-                    // 出错时不清空本地订单，保留本地数据
+                    // 出错时也清空本地订单，防止旧数据干扰
+                    userOrders = [];
+                    localStorage.setItem('userOrders', JSON.stringify(userOrders));
                     return false;
                 }
             }
@@ -7078,7 +7233,8 @@
 
         // 加载演示产品数据（仅在管理员手动触发时使用）
         function loadDemoProducts() {
-            if (confirm(t('confirmLoadDemo'))) {
+            customConfirm(t('confirmLoadDemo'), '确认加载示例数据').then(confirmed => {
+                if (!confirmed) return;
                 const demoProducts = [
                     {
                         id: Date.now() + 1,
@@ -7140,7 +7296,7 @@
                 saveProducts();
                 renderAdminProducts();
                 showNotification('演示产品已加载', 'success');
-            }
+            });
         }
 
 
@@ -8018,13 +8174,14 @@
             adminLink.addEventListener('click', (e) => {
                 e.preventDefault();
                 if (!isLoggedIn()) {
-                    alert(t('pleaseLogin'));
-                    document.getElementById('login-modal').style.display = 'flex';
+                    customAlert(t('pleaseLogin'), '提示').then(() => {
+                        document.getElementById('login-modal').style.display = 'flex';
+                    });
                     return;
                 }
 
                 if (!isAdmin()) {
-                    alert(t('insufficientPermissions'));
+                    customAlert(t('insufficientPermissions'), '权限不足');
                     return;
                 }
 
@@ -8036,8 +8193,9 @@
                 if (currentUser) {
                     showUserCenter();
                 } else {
-                    alert(t('pleaseLogin'));
-                    document.getElementById('login-modal').style.display = 'flex';
+                    customAlert(t('pleaseLogin'), '提示').then(() => {
+                        document.getElementById('login-modal').style.display = 'flex';
+                    });
                 }
             });
 
@@ -8131,7 +8289,7 @@
                 const password = document.getElementById('login-password').value;
 
                 if (!account || !password) {
-                    alert(t('pleaseFillCompleteInfo'));
+                    customAlert(t('pleaseFillCompleteInfo'), '提示');
                     return;
                 }
 
@@ -8142,13 +8300,41 @@
                     return;
                 }
 
-                const authResult = authenticateUser(account, password);
-                if (authResult && !authResult.banned) {
-                    // ========== 清空旧用户数据，准备加载新用户数据 ==========
-                    console.log('🔄 登录成功，清空旧用户数据...');
+                // ========== 登录前清除本地缓存，防止旧数据干扰 ==========
+                console.log('🧹 登录前清除本地缓存...');
+                try {
+                    // 清除用户相关的本地缓存
+                    localStorage.removeItem('userOrders');
+                    localStorage.removeItem('userAddresses');
+                    
+                    // 清除可能存在的旧订单缓存（针对不同用户的订单）
+                    // 遍历localStorage，清除所有以'userOrders_'开头的key
+                    const keysToRemove = [];
+                    for (let i = 0; i < localStorage.length; i++) {
+                        const key = localStorage.key(i);
+                        if (key && (key.startsWith('userOrders_') || key.startsWith('userAddresses_'))) {
+                            keysToRemove.push(key);
+                        }
+                    }
+                    keysToRemove.forEach(key => {
+                        localStorage.removeItem(key);
+                        console.log('🗑️ 已清除缓存:', key);
+                    });
+                    
+                    // 清空内存中的旧数据
                     userOrders = [];
                     userAddresses = [];
                     userProfile = {};
+                    
+                    console.log('✅ 本地缓存已清除');
+                } catch (error) {
+                    console.warn('⚠️ 清除缓存时出现错误:', error);
+                }
+
+                const authResult = authenticateUser(account, password);
+                if (authResult && !authResult.banned) {
+                    // ========== 清空旧用户数据，准备加载新用户数据 ==========
+                    console.log('🔄 登录成功，准备加载新用户数据...');
                     
                     currentUser = authResult;
                     saveCurrentUser();
@@ -8251,17 +8437,17 @@
                 const confirm = document.getElementById('register-confirm').value;
 
                 if (!account || !password || !confirm) {
-                    alert(t('pleaseFillCompleteInfo'));
+                    customAlert(t('pleaseFillCompleteInfo'), '提示');
                     return;
                 }
 
                 if (password !== confirm) {
-                    alert(t('passwordMismatch'));
+                    customAlert(t('passwordMismatch'), '错误');
                     return;
                 }
 
                 if (password.length < 6) {
-                    alert(t('passwordTooShort'));
+                    customAlert(t('passwordTooShort'), '错误');
                     return;
                 }
 
@@ -8284,9 +8470,10 @@
                         await cloudSync.handleUserSessionChange();
                     }
 
-                    alert(t('registrationSuccess'));
-                    registerModal.style.display = 'none';
-                    updateUserInterface();
+                    customAlert(t('registrationSuccess'), '成功').then(() => {
+                        registerModal.style.display = 'none';
+                        updateUserInterface();
+                    });
                     renderUserOrders();
                     renderAddressList();
 
@@ -8298,7 +8485,7 @@
                         }, 500);
                     }
                 } else {
-                    alert(result.message);
+                    customAlert(result.message, '提示');
                 }
             });
 
@@ -8422,7 +8609,8 @@
             const clearCacheBtn = document.getElementById('clear-cache');
             if (clearCacheBtn) {
                 clearCacheBtn.addEventListener('click', function () {
-                    if (confirm(t('confirmClearCache'))) {
+                    customConfirm(t('confirmClearCache'), '确认清除缓存').then(confirmed => {
+                        if (!confirmed) return;
                         localStorage.removeItem('products');
                         localStorage.removeItem('userOrders');
                         localStorage.removeItem('allUsers');
@@ -8434,11 +8622,305 @@
                             renderAdminProducts();
                         }
                         showNotification('✅ 本地缓存已清除！', 'success');
-                    }
+                    });
                 });
             }
 
             // WhatsApp按钮已通过HTML直接链接，无需JavaScript处理
+
+            // ========== 数据库备份与恢复功能 ==========
+            // 下载数据库备份
+            const downloadDatabaseBtn = document.getElementById('download-database-btn');
+            if (downloadDatabaseBtn) {
+                downloadDatabaseBtn.addEventListener('click', function() {
+                    try {
+                        // 收集所有需要备份的数据
+                        const backupData = {
+                            version: '1.0',
+                            timestamp: new Date().toISOString(),
+                            data: {
+                                products: JSON.parse(localStorage.getItem('products') || '[]'),
+                                userOrders: JSON.parse(localStorage.getItem('userOrders') || '[]'),
+                                allOrders: JSON.parse(localStorage.getItem('allOrders') || '[]'),
+                                allUsers: JSON.parse(localStorage.getItem('allUsers') || '[]'),
+                                homepageSettings: JSON.parse(localStorage.getItem('homepageSettings') || '{}'),
+                                currentUser: JSON.parse(localStorage.getItem('currentUser') || 'null'),
+                                language: localStorage.getItem('language') || 'en'
+                            }
+                        };
+
+                        // 统计信息
+                        const stats = {
+                            productsCount: backupData.data.products.length,
+                            ordersCount: backupData.data.userOrders.length,
+                            allOrdersCount: backupData.data.allOrders.length,
+                            usersCount: backupData.data.allUsers.length
+                        };
+
+                        // 创建JSON字符串
+                        const jsonString = JSON.stringify(backupData, null, 2);
+                        
+                        // 创建Blob对象
+                        const blob = new Blob([jsonString], { type: 'application/json' });
+                        
+                        // 创建下载链接
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `database-backup-${new Date().toISOString().split('T')[0]}-${Date.now()}.json`;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+
+                        // 显示备份信息
+                        const infoDiv = document.getElementById('database-backup-info');
+                        const detailsDiv = document.getElementById('database-backup-details');
+                        if (infoDiv && detailsDiv) {
+                            detailsDiv.innerHTML = `
+                                <div><strong>备份时间：</strong>${new Date(backupData.timestamp).toLocaleString()}</div>
+                                <div><strong>产品数量：</strong>${stats.productsCount}</div>
+                                <div><strong>用户订单数量：</strong>${stats.ordersCount}</div>
+                                <div><strong>全部订单数量：</strong>${stats.allOrdersCount}</div>
+                                <div><strong>用户数量：</strong>${stats.usersCount}</div>
+                            `;
+                            infoDiv.style.display = 'block';
+                        }
+
+                        showNotification('✅ 数据库备份已下载', 'success');
+                    } catch (error) {
+                        console.error('备份失败:', error);
+                        showMessageModal('错误', '数据库备份失败：' + error.message, 'alert');
+                    }
+                });
+            }
+
+            // 上传数据库备份并恢复
+            window.handleDatabaseUpload = function(event) {
+                const file = event.target.files[0];
+                if (!file) {
+                    return;
+                }
+
+                // 验证文件类型
+                if (!file.name.endsWith('.json')) {
+                    showMessageModal('错误', '请上传JSON格式的备份文件', 'alert');
+                    event.target.value = '';
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const backupData = JSON.parse(e.target.result);
+
+                        // 验证备份文件格式
+                        if (!backupData || !backupData.data) {
+                            throw new Error('无效的备份文件格式');
+                        }
+
+                        // 验证数据结构（allOrders是可选的，兼容旧版本备份）
+                        const requiredKeys = ['products', 'userOrders', 'allUsers', 'homepageSettings'];
+                        const missingKeys = requiredKeys.filter(key => !(key in backupData.data));
+                        if (missingKeys.length > 0) {
+                            throw new Error('备份文件缺少必要的数据：' + missingKeys.join(', '));
+                        }
+
+                        // 验证数据类型
+                        if (!Array.isArray(backupData.data.products)) {
+                            throw new Error('产品数据格式错误');
+                        }
+                        if (!Array.isArray(backupData.data.userOrders)) {
+                            throw new Error('用户订单数据格式错误');
+                        }
+                        if (!Array.isArray(backupData.data.allUsers)) {
+                            throw new Error('用户数据格式错误');
+                        }
+                        if (typeof backupData.data.homepageSettings !== 'object') {
+                            throw new Error('设置数据格式错误');
+                        }
+                        // allOrders是可选的，如果没有则设为空数组
+                        if (backupData.data.allOrders && !Array.isArray(backupData.data.allOrders)) {
+                            throw new Error('全部订单数据格式错误');
+                        }
+
+                        // 显示确认对话框
+                        const stats = {
+                            productsCount: backupData.data.products.length,
+                            ordersCount: backupData.data.userOrders.length,
+                            allOrdersCount: (backupData.data.allOrders || []).length,
+                            usersCount: backupData.data.allUsers.length,
+                            backupTime: backupData.timestamp ? new Date(backupData.timestamp).toLocaleString() : '未知'
+                        };
+
+                        customConfirm(
+                            `确定要恢复数据库吗？\n\n` +
+                            `备份信息：\n` +
+                            `- 备份时间：${stats.backupTime}\n` +
+                            `- 产品数量：${stats.productsCount}\n` +
+                            `- 用户订单数量：${stats.ordersCount}\n` +
+                            `- 全部订单数量：${stats.allOrdersCount}\n` +
+                            `- 用户数量：${stats.usersCount}\n\n` +
+                            `警告：此操作将清空当前所有数据并替换为备份数据！`,
+                            '确认恢复数据库'
+                        ).then(confirmed => {
+                            if (!confirmed) {
+                                event.target.value = '';
+                                return;
+                            }
+
+                            try {
+                                // 清空当前数据
+                                localStorage.removeItem('products');
+                                localStorage.removeItem('userOrders');
+                                localStorage.removeItem('allOrders');
+                                localStorage.removeItem('allUsers');
+                                localStorage.removeItem('homepageSettings');
+                                localStorage.removeItem('userAddresses');
+                                
+                                // 清除所有用户相关的缓存
+                                const keysToRemove = [];
+                                for (let i = 0; i < localStorage.length; i++) {
+                                    const key = localStorage.key(i);
+                                    if (key && (key.startsWith('userOrders_') || key.startsWith('userAddresses_'))) {
+                                        keysToRemove.push(key);
+                                    }
+                                }
+                                keysToRemove.forEach(key => localStorage.removeItem(key));
+                                
+                                // 恢复数据
+                                localStorage.setItem('products', JSON.stringify(backupData.data.products));
+                                localStorage.setItem('userOrders', JSON.stringify(backupData.data.userOrders));
+                                if (backupData.data.allOrders && Array.isArray(backupData.data.allOrders)) {
+                                    localStorage.setItem('allOrders', JSON.stringify(backupData.data.allOrders));
+                                } else {
+                                    localStorage.setItem('allOrders', JSON.stringify([]));
+                                }
+                                localStorage.setItem('allUsers', JSON.stringify(backupData.data.allUsers));
+                                localStorage.setItem('homepageSettings', JSON.stringify(backupData.data.homepageSettings));
+                                
+                                if (backupData.data.currentUser && backupData.data.currentUser !== 'null') {
+                                    localStorage.setItem('currentUser', JSON.stringify(backupData.data.currentUser));
+                                } else {
+                                    localStorage.removeItem('currentUser');
+                                }
+                                
+                                if (backupData.data.language) {
+                                    localStorage.setItem('language', backupData.data.language);
+                                }
+
+                                // 重新加载全局变量
+                                products = backupData.data.products || [];
+                                userOrders = backupData.data.userOrders || [];
+                                allOrders = backupData.data.allOrders || [];
+                                allUsers = backupData.data.allUsers || [];
+                                homepageSettings = backupData.data.homepageSettings || {};
+                                currentUser = backupData.data.currentUser || null;
+
+                                // 重新渲染页面
+                                if (typeof renderProducts === 'function') {
+                                    renderProducts(products);
+                                }
+                                
+                                // 如果管理员面板打开，刷新所有相关页面
+                                const adminPanel = document.getElementById('admin-panel');
+                                if (adminPanel && adminPanel.style.display !== 'none') {
+                                    if (typeof renderAdminProducts === 'function') {
+                                        renderAdminProducts();
+                                    }
+                                    if (typeof updateStatistics === 'function') {
+                                        updateStatistics();
+                                    }
+                                    if (typeof renderOrdersTable === 'function') {
+                                        renderOrdersTable();
+                                    }
+                                    if (typeof renderUsersTable === 'function') {
+                                        renderUsersTable();
+                                    }
+                                }
+
+                                // 更新用户界面
+                                if (typeof updateUserInterface === 'function') {
+                                    updateUserInterface();
+                                }
+                                
+                                // 如果用户中心打开，刷新订单列表
+                                const userCenter = document.getElementById('user-center');
+                                if (userCenter && userCenter.style.display !== 'none') {
+                                    if (typeof renderUserOrders === 'function') {
+                                        renderUserOrders();
+                                    }
+                                }
+                                
+                                // 应用主页设置
+                                if (typeof applyHomepageSettings === 'function') {
+                                    applyHomepageSettings();
+                                }
+
+                                // 显示备份信息
+                                const infoDiv = document.getElementById('database-backup-info');
+                                const detailsDiv = document.getElementById('database-backup-details');
+                                if (infoDiv && detailsDiv) {
+                                    detailsDiv.innerHTML = `
+                                        <div><strong>恢复时间：</strong>${new Date().toLocaleString()}</div>
+                                        <div><strong>备份时间：</strong>${stats.backupTime}</div>
+                                        <div><strong>产品数量：</strong>${stats.productsCount}</div>
+                                        <div><strong>用户订单数量：</strong>${stats.ordersCount}</div>
+                                        <div><strong>全部订单数量：</strong>${stats.allOrdersCount}</div>
+                                        <div><strong>用户数量：</strong>${stats.usersCount}</div>
+                                    `;
+                                    infoDiv.style.display = 'block';
+                                }
+
+                                showMessageModal('成功', '数据库已成功恢复！', 'alert');
+                                showNotification('✅ 数据库恢复成功', 'success');
+
+                                // 同步到云端（如果已初始化）
+                                if (cloudSync && cloudSync.isInitialized) {
+                                    cloudSync.syncAllData().catch(err => {
+                                        console.warn('云端同步失败:', err);
+                                        showNotification('⚠️ 数据已恢复，但云端同步失败', 'warning');
+                                    });
+                                }
+
+                            } catch (error) {
+                                console.error('恢复失败:', error);
+                                showMessageModal('错误', '数据库恢复失败：' + error.message, 'alert');
+                                
+                                // 如果恢复失败，尝试重新加载页面数据
+                                try {
+                                    products = JSON.parse(localStorage.getItem('products') || '[]');
+                                    userOrders = JSON.parse(localStorage.getItem('userOrders') || '[]');
+                                    allOrders = JSON.parse(localStorage.getItem('allOrders') || '[]');
+                                    allUsers = JSON.parse(localStorage.getItem('allUsers') || '[]');
+                                    homepageSettings = JSON.parse(localStorage.getItem('homepageSettings') || '{}');
+                                    if (typeof renderProducts === 'function') {
+                                        renderProducts(products);
+                                    }
+                                } catch (reloadError) {
+                                    console.error('重新加载数据失败:', reloadError);
+                                    showMessageModal('错误', '数据恢复失败，页面可能需要刷新', 'alert');
+                                }
+                            }
+
+                            // 清空文件输入
+                            event.target.value = '';
+                        });
+
+                    } catch (error) {
+                        console.error('读取备份文件失败:', error);
+                        showMessageModal('错误', '读取备份文件失败：' + error.message, 'alert');
+                        event.target.value = '';
+                    }
+                };
+
+                reader.onerror = function() {
+                    showMessageModal('错误', '读取文件失败', 'alert');
+                    event.target.value = '';
+                };
+
+                reader.readAsText(file);
+            };
 
             // 报名表单 - 修改这部分代码
             const signupForm = document.getElementById('signup-form');
@@ -8451,8 +8933,9 @@
                     
                     if (!currentUser) {
                         console.warn('⚠️ 用户未登录');
-                        alert(t('pleaseLogin'));
-                        document.getElementById('login-modal').style.display = 'flex';
+                        customAlert(t('pleaseLogin'), '提示').then(() => {
+                            document.getElementById('login-modal').style.display = 'flex';
+                        });
                         return;
                     }
                     
@@ -8509,7 +8992,7 @@
                 // 检查currentProduct是否存在
                 if (!currentProduct) {
                     console.error('❌ 提交失败：currentProduct为空');
-                    alert(t('systemError'));
+                    customAlert(t('systemError'), '系统错误');
                     return;
                 }
 
@@ -8722,74 +9205,7 @@
             // 添加产品按钮
             document.getElementById('add-product-btn').addEventListener('click', () => {
                 console.log('🔷 点击添加产品按钮，当前产品数量:', products.length);
-
-                const name = prompt('产品名称：');
-                if (!name || name.trim() === '') {
-                    alert(t('productNameRequired'));
-                    return;
-                }
-
-                const priceInput = prompt('产品价格：');
-                const price = parseFloat(priceInput);
-                if (!priceInput || isNaN(price) || price <= 0) {
-                    alert(t('productPriceRequired'));
-                    return;
-                }
-
-                const stockInput = prompt('产品库存：') || '0';
-                const stock = parseInt(stockInput);
-
-                const category = prompt('产品分类（electronics/home/clothing/beauty/sports/other）：') || 'other';
-
-                const image = prompt('产品图片URL：');
-                if (!image || image.trim() === '') {
-                    alert(t('productImageRequired'));
-                    return;
-                }
-
-                const description = prompt('产品描述：') || '';
-
-                // 生成唯一ID - 确保即使数组为空也能正常工作
-                let newId = 1;
-                if (products.length > 0) {
-                    const existingIds = products.map(p => parseInt(p.id) || 0);
-                    const maxId = Math.max(...existingIds);
-                    newId = maxId + 1;
-                }
-
-                const product = {
-                    id: newId,
-                    name: name.trim(),
-                    price: price,
-                    newPrice: 0, // 默认新价格为0
-                    stock: isNaN(stock) || stock < 0 ? 0 : stock,
-                    category: category,
-                    image: image.trim(),
-                    description: description
-                };
-
-                console.log('🔷 准备添加产品:', product);
-
-                // 添加产品
-                products.push(product);
-                console.log('🔷 产品已添加到数组，当前产品数量:', products.length);
-
-                // 保存到本地并同步到云端（等待完成）
-                saveProducts().then((saveResult) => {
-                    console.log('🔷 保存结果:', saveResult);
-                    if (saveResult) {
-                        // 确保渲染两个地方的产品列表
-                        renderAdminProducts();
-                        renderProducts(products);
-                        showNotification('产品添加成功！ID: ' + product.id, 'success');
-                        console.log('✅ 产品添加成功，已渲染并同步到云端');
-                    } else {
-                        alert(t('productAddFailed'));
-                    }
-                }).catch(err => {
-                    console.error('❌ 产品保存失败:', err);
-                    alert(t('productAddFailed'));
-                });
+                openProductEditModal(null);
             });
 
             // 批量操作按钮
@@ -9066,7 +9482,7 @@
                     const productId = parseInt(document.getElementById('edit-product-id').value);
                     const targetProduct = products.find(p => p.id === productId);
                     if (!targetProduct) {
-                        alert(t('productNotFound'));
+                        customAlert(t('productNotFound'), '错误');
                         return;
                     }
 
@@ -9081,10 +9497,10 @@
                         description: document.getElementById('edit-product-description').value.trim()
                     };
 
-                    if (!updatedProduct.name) { alert(t('productNameRequired')); return; }
-                    if (!(updatedProduct.price > 0)) { alert(t('productPriceRequired')); return; }
-                    if (updatedProduct.stock < 0) { alert(t('stock') + ' ' + t('cannotBeNegative')); return; }
-                    if (!updatedProduct.image) { alert(t('productImageRequired')); return; }
+                    if (!updatedProduct.name) { customAlert(t('productNameRequired'), '错误'); return; }
+                    if (!(updatedProduct.price > 0)) { customAlert(t('productPriceRequired'), '错误'); return; }
+                    if (updatedProduct.stock < 0) { customAlert(t('stock') + ' ' + t('cannotBeNegative'), '错误'); return; }
+                    if (!updatedProduct.image) { customAlert(t('productImageRequired'), '错误'); return; }
 
                     const productIndex = products.findIndex(p => p.id === productId);
                     if (productIndex !== -1) {
@@ -9093,7 +9509,7 @@
                         // 保存到本地并同步到云端（等待完成）
                         saveProducts().then(() => {
                             console.log('✅ 产品数据（包括newPrice）已保存并同步到云端');
-                            alert(t('productUpdateSuccess'));
+                            customAlert(t('productUpdateSuccess'), '成功');
                             closeModal('edit-product-modal');
                             if (document.getElementById('admin-panel').style.display !== 'none') {
                                 renderAdminProducts();
@@ -9103,7 +9519,7 @@
                             }
                         }).catch(err => {
                             console.warn('⚠️ 产品数据保存或同步失败:', err);
-                            alert(t('productUpdateSuccess')); // 即使同步失败，本地已保存，仍显示成功
+                            customAlert(t('productUpdateSuccess'), '成功'); // 即使同步失败，本地已保存，仍显示成功
                             closeModal('edit-product-modal');
                             if (document.getElementById('admin-panel').style.display !== 'none') {
                                 renderAdminProducts();
@@ -9113,7 +9529,7 @@
                             }
                         });
                     } else {
-                        alert(t('productUpdateFailed'));
+                        customAlert(t('productUpdateFailed'), '错误');
                     }
                 });
             }
@@ -10511,7 +10927,7 @@
 
             if (!product) {
                 console.error('❌ 报名失败：产品数据为空');
-                alert('系统错误：未找到产品信息');
+                customAlert('系统错误：未找到产品信息', '错误');
                 return;
             }
 
@@ -13139,70 +13555,29 @@
             const item = collection.find(c => c.id === id);
             if (!item) return;
 
-            const title = prompt('轮播图标题:', item.title);
-            const description = prompt('轮播图描述:', item.description);
-            const buttonText = prompt('按钮文字:', item.buttonText);
-            const image = prompt('图片URL:', item.image);
-
-            if (title && description && buttonText && image) {
-                item.title = title;
-                item.description = description;
-                item.buttonText = buttonText;
-                item.image = image;
-
-                saveHomepageSettings();
-                renderCarouselList(type);
-                showNotification('轮播图已更新', 'success');
-            }
+            openCarouselEditModal(type, item);
         }
 
         // 删除轮播图
         function deleteCarouselItem(id, type = 'desktop') {
             const targetLabel = type === 'mobile' ? '移动端' : 'PC端';
-            if (confirm('确定要删除这个轮播图吗？')) {
-                if (type === 'mobile') {
-                    homepageSettings.mobileCarousel = (homepageSettings.mobileCarousel || []).filter(c => c.id !== id);
-                } else {
-                    homepageSettings.desktopCarousel = (homepageSettings.desktopCarousel || []).filter(c => c.id !== id);
+            customConfirm(`确定要删除这个${targetLabel}轮播图吗？`, '确认删除').then(confirmed => {
+                if (confirmed) {
+                    if (type === 'mobile') {
+                        homepageSettings.mobileCarousel = (homepageSettings.mobileCarousel || []).filter(c => c.id !== id);
+                    } else {
+                        homepageSettings.desktopCarousel = (homepageSettings.desktopCarousel || []).filter(c => c.id !== id);
+                    }
+                    saveHomepageSettings();
+                    renderCarouselList(type);
+                    showNotification(`${targetLabel}轮播图已删除`, 'success');
                 }
-                saveHomepageSettings();
-                renderCarouselList(type);
-                showNotification(`${targetLabel}轮播图已删除`, 'success');
-            }
+            });
         }
 
         // 添加轮播图
         function addCarouselItem(type = 'desktop') {
-            const title = prompt('轮播图标题:');
-            const description = prompt('轮播图描述:');
-            const buttonText = prompt('按钮文字:');
-            const image = prompt('图片URL:');
-
-            if (title && description && buttonText && image) {
-                const newItem = {
-                    id: Date.now(),
-                    title,
-                    description,
-                    buttonText,
-                    image,
-                    active: true
-                };
-
-                if (type === 'mobile') {
-                    if (!Array.isArray(homepageSettings.mobileCarousel)) {
-                        homepageSettings.mobileCarousel = [];
-                    }
-                    homepageSettings.mobileCarousel.push(newItem);
-                } else {
-                    if (!Array.isArray(homepageSettings.desktopCarousel)) {
-                        homepageSettings.desktopCarousel = [];
-                    }
-                    homepageSettings.desktopCarousel.push(newItem);
-                }
-                saveHomepageSettings();
-                renderCarouselList(type);
-                showNotification(`${type === 'mobile' ? '移动端' : 'PC端'}轮播图已添加`, 'success');
-            }
+            openCarouselEditModal(type, null);
         }
 
         // 保存主页设置
@@ -13455,7 +13830,7 @@
                     const product = products.find(p => parseInt(p.id) === productId);
 
                     if (!product) {
-                        alert('删除失败：未找到对应产品数据');
+                        customAlert('删除失败：未找到对应产品数据', '错误');
                         return;
                     }
 
@@ -13494,7 +13869,7 @@
             console.log('📝 编辑产品:', product);
 
             if (!product) {
-                alert('产品数据错误');
+                customAlert('产品数据错误', '错误');
                 return;
             }
 
@@ -13634,7 +14009,7 @@
             const fileName = file.name;
 
             if (!fileName.endsWith('.xlsx') && !fileName.endsWith('.xls')) {
-                alert('请上传Excel文件（.xlsx 或 .xls 格式）');
+                customAlert('请上传Excel文件（.xlsx 或 .xls 格式）', '提示');
                 return;
             }
 
@@ -13862,19 +14237,19 @@
 
             // 验证手机号
             if (profile.phone && !/^1[3-9]\d{9}$/.test(profile.phone)) {
-                alert('请输入正确的手机号格式');
+                customAlert('请输入正确的手机号格式', '提示');
                 return;
             }
 
             // 验证邮箱
             if (profile.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(profile.email)) {
-                alert('请输入正确的邮箱格式');
+                customAlert('请输入正确的邮箱格式', '提示');
                 return;
             }
 
             userProfile[currentUser.account] = profile;
             saveUserProfile();
-            alert('个人信息保存成功！');
+            customAlert('个人信息保存成功！', '成功');
         }
 
         // 加载安全设置
@@ -14009,19 +14384,19 @@
             console.log('Form values:', { name, phone, detail, city, state, postal });
 
             if (!name || !phone || !detail || !city || !state || !postal) {
-                alert('Please fill in all required fields');
+                customAlert('Please fill in all required fields', '提示');
                 return;
             }
 
             // 验证电话号码（美国格式）
             if (!/^[\d\s\-\(\)]+$/.test(phone)) {
-                alert('Please enter a valid phone number');
+                customAlert('Please enter a valid phone number', '提示');
                 return;
             }
 
             // 验证邮编（美国格式：5位或5+4位）
             if (!/^\d{5}(-\d{4})?$/.test(postal)) {
-                alert('Please enter a valid ZIP code (e.g., 12345 or 12345-6789)');
+                customAlert('Please enter a valid ZIP code (e.g., 12345 or 12345-6789)', '提示');
                 return;
             }
 
@@ -14332,9 +14707,9 @@
                 console.log('🔧 导入调试 - 导入后的产品:', products);
 
                 if (saveResult) {
-                    alert(`✅ 成功导入 ${importedProducts.length} 个产品！`);
+                    customAlert(`✅ 成功导入 ${importedProducts.length} 个产品！`, '成功');
                 } else {
-                    alert('❌ 导入失败：数据保存出错');
+                    customAlert('❌ 导入失败：数据保存出错', '错误');
                 }
 
                 previewSection.remove();
@@ -15182,6 +15557,459 @@
             console.log('   输入 firebaseHelp() 查看可用命令');
             console.log('');
         }
+    </script>
+
+    <!-- 通用消息模态框（替代alert和confirm） -->
+    <div class="modal" id="message-modal">
+        <div class="modal-content" style="max-width: 450px;">
+            <div class="modal-header" id="message-modal-header">
+                <h3 id="message-modal-title">提示</h3>
+                <button class="close-modal" onclick="closeMessageModal()">&times;</button>
+            </div>
+            <div class="modal-body" style="text-align: center; padding: 30px;">
+                <p id="message-modal-text" style="margin: 0; color: var(--dark); font-size: 16px; line-height: 1.6;"></p>
+            </div>
+            <div class="modal-footer" id="message-modal-footer" style="padding: 15px 20px; display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid var(--border-subtle);">
+                <button class="btn btn-secondary" id="message-modal-cancel" onclick="closeMessageModal()" style="display: none;">取消</button>
+                <button class="btn btn-primary" id="message-modal-confirm" onclick="confirmMessageModal()" style="display: none;">确定</button>
+                <button class="btn btn-primary" id="message-modal-ok" onclick="closeMessageModal()">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 轮播图编辑模态框 -->
+    <div class="modal" id="carousel-edit-modal">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h3 id="carousel-edit-title">添加轮播图</h3>
+                <button class="close-modal" onclick="closeCarouselEditModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="carousel-edit-form">
+                    <div class="form-group">
+                        <label for="carousel-title-input">轮播图标题</label>
+                        <input type="text" id="carousel-title-input" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="carousel-description-input">轮播图描述</label>
+                        <textarea id="carousel-description-input" class="form-control" rows="3" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="carousel-button-text-input">按钮文字</label>
+                        <input type="text" id="carousel-button-text-input" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="carousel-image-input">图片URL</label>
+                        <input type="url" id="carousel-image-input" class="form-control" required>
+                        <small style="color: var(--gray); font-size: 12px; margin-top: 5px; display: block;">请输入完整的图片URL地址</small>
+                    </div>
+                    <div class="form-group" id="carousel-preview-group" style="display: none;">
+                        <label>图片预览</label>
+                        <div style="width: 100%; height: 200px; border: 1px solid var(--border-subtle); border-radius: 2px; overflow: hidden; background: var(--light); display: flex; align-items: center; justify-content: center;">
+                            <img id="carousel-preview-img" src="" alt="预览" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer" style="padding: 15px 20px; display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid var(--border-subtle);">
+                <button class="btn btn-secondary" onclick="closeCarouselEditModal()">取消</button>
+                <button class="btn btn-primary" onclick="saveCarouselItem()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 产品添加/编辑模态框 -->
+    <div class="modal" id="product-edit-modal">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h3 id="product-edit-title">添加产品</h3>
+                <button class="close-modal" onclick="closeProductEditModal()">&times;</button>
+            </div>
+            <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+                <form id="product-edit-form">
+                    <div class="form-group">
+                        <label for="product-name-input">产品名称 <span style="color: var(--danger);">*</span></label>
+                        <input type="text" id="product-name-input" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="product-price-input">产品价格 <span style="color: var(--danger);">*</span></label>
+                        <input type="number" id="product-price-input" class="form-control" step="0.01" min="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="product-stock-input">产品库存</label>
+                        <input type="number" id="product-stock-input" class="form-control" min="0" value="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="product-category-input">产品分类</label>
+                        <select id="product-category-input" class="form-control">
+                            <option value="electronics">Electronics</option>
+                            <option value="home">Home & Living</option>
+                            <option value="clothing">Clothing & Shoes</option>
+                            <option value="beauty">Beauty & Skincare</option>
+                            <option value="sports">Sports & Outdoors</option>
+                            <option value="other" selected>Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="product-image-input">产品图片URL <span style="color: var(--danger);">*</span></label>
+                        <input type="url" id="product-image-input" class="form-control" required>
+                        <small style="color: var(--gray); font-size: 12px; margin-top: 5px; display: block;">请输入完整的图片URL地址</small>
+                    </div>
+                    <div class="form-group" id="product-preview-group" style="display: none;">
+                        <label>图片预览</label>
+                        <div style="width: 100%; height: 200px; border: 1px solid var(--border-subtle); border-radius: 2px; overflow: hidden; background: var(--light); display: flex; align-items: center; justify-content: center;">
+                            <img id="product-preview-img" src="" alt="预览" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="product-description-input">产品描述</label>
+                        <textarea id="product-description-input" class="form-control" rows="4"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer" style="padding: 15px 20px; display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid var(--border-subtle);">
+                <button class="btn btn-secondary" onclick="closeProductEditModal()">取消</button>
+                <button class="btn btn-primary" onclick="saveProductItem()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ========== 通用消息模态框函数（替代alert和confirm） ==========
+        let messageModalCallback = null;
+        let messageModalType = 'alert'; // 'alert' 或 'confirm'
+
+        function showMessageModal(title, message, type = 'alert', callback = null) {
+            const modal = document.getElementById('message-modal');
+            const titleEl = document.getElementById('message-modal-title');
+            const textEl = document.getElementById('message-modal-text');
+            const headerEl = document.getElementById('message-modal-header');
+            const okBtn = document.getElementById('message-modal-ok');
+            const confirmBtn = document.getElementById('message-modal-confirm');
+            const cancelBtn = document.getElementById('message-modal-cancel');
+
+            titleEl.textContent = title || '提示';
+            textEl.textContent = message;
+            messageModalType = type;
+            messageModalCallback = callback;
+
+            if (type === 'confirm') {
+                okBtn.style.display = 'none';
+                confirmBtn.style.display = 'inline-flex';
+                cancelBtn.style.display = 'inline-flex';
+                headerEl.style.background = 'var(--primary)';
+            } else {
+                okBtn.style.display = 'inline-flex';
+                confirmBtn.style.display = 'none';
+                cancelBtn.style.display = 'none';
+                headerEl.style.background = 'var(--primary)';
+            }
+
+            modal.style.display = 'flex';
+        }
+
+        function closeMessageModal() {
+            const modal = document.getElementById('message-modal');
+            modal.style.display = 'none';
+            if (messageModalCallback && messageModalType === 'confirm') {
+                messageModalCallback(false);
+            }
+            messageModalCallback = null;
+        }
+
+        function confirmMessageModal() {
+            const modal = document.getElementById('message-modal');
+            modal.style.display = 'none';
+            if (messageModalCallback) {
+                messageModalCallback(true);
+            }
+            messageModalCallback = null;
+        }
+
+        // 点击背景关闭
+        document.getElementById('message-modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeMessageModal();
+            }
+        });
+
+        // 替代alert函数
+        function customAlert(message, title = '提示') {
+            return new Promise((resolve) => {
+                showMessageModal(title, message, 'alert', () => resolve());
+            });
+        }
+
+        // 替代confirm函数
+        function customConfirm(message, title = '确认') {
+            return new Promise((resolve) => {
+                showMessageModal(title, message, 'confirm', (result) => resolve(result));
+            });
+        }
+
+        // ========== 轮播图编辑模态框函数 ==========
+        let currentCarouselEditData = { id: null, type: 'desktop', isEdit: false };
+
+        function openCarouselEditModal(type = 'desktop', item = null) {
+            const modal = document.getElementById('carousel-edit-modal');
+            const titleEl = document.getElementById('carousel-edit-title');
+            const form = document.getElementById('carousel-edit-form');
+
+            currentCarouselEditData.type = type;
+            currentCarouselEditData.isEdit = !!item;
+            currentCarouselEditData.id = item ? item.id : null;
+
+            if (item) {
+                titleEl.textContent = `编辑${type === 'mobile' ? '移动端' : 'PC端'}轮播图`;
+                document.getElementById('carousel-title-input').value = item.title || '';
+                document.getElementById('carousel-description-input').value = item.description || '';
+                document.getElementById('carousel-button-text-input').value = item.buttonText || '';
+                document.getElementById('carousel-image-input').value = item.image || '';
+                updateCarouselPreview(item.image);
+            } else {
+                titleEl.textContent = `添加${type === 'mobile' ? '移动端' : 'PC端'}轮播图`;
+                form.reset();
+                document.getElementById('carousel-preview-group').style.display = 'none';
+            }
+
+            modal.style.display = 'flex';
+        }
+
+        function closeCarouselEditModal() {
+            const modal = document.getElementById('carousel-edit-modal');
+            modal.style.display = 'none';
+            document.getElementById('carousel-edit-form').reset();
+            document.getElementById('carousel-preview-group').style.display = 'none';
+            currentCarouselEditData = { id: null, type: 'desktop', isEdit: false };
+        }
+
+        function saveCarouselItem() {
+            const title = document.getElementById('carousel-title-input').value.trim();
+            const description = document.getElementById('carousel-description-input').value.trim();
+            const buttonText = document.getElementById('carousel-button-text-input').value.trim();
+            const image = document.getElementById('carousel-image-input').value.trim();
+
+            if (!title || !description || !buttonText || !image) {
+                showMessageModal('错误', '请填写所有必填字段', 'alert');
+                return;
+            }
+
+            if (currentCarouselEditData.isEdit && currentCarouselEditData.id) {
+                // 编辑模式
+                const collection = currentCarouselEditData.type === 'mobile'
+                    ? (homepageSettings.mobileCarousel || [])
+                    : (homepageSettings.desktopCarousel || []);
+                const item = collection.find(c => c.id === currentCarouselEditData.id);
+                if (item) {
+                    item.title = title;
+                    item.description = description;
+                    item.buttonText = buttonText;
+                    item.image = image;
+                    saveHomepageSettings();
+                    renderCarouselList(currentCarouselEditData.type);
+                    showMessageModal('成功', '轮播图已更新', 'alert');
+                    closeCarouselEditModal();
+                }
+            } else {
+                // 添加模式
+                const newItem = {
+                    id: Date.now(),
+                    title,
+                    description,
+                    buttonText,
+                    image,
+                    active: true
+                };
+
+                if (currentCarouselEditData.type === 'mobile') {
+                    if (!Array.isArray(homepageSettings.mobileCarousel)) {
+                        homepageSettings.mobileCarousel = [];
+                    }
+                    homepageSettings.mobileCarousel.push(newItem);
+                } else {
+                    if (!Array.isArray(homepageSettings.desktopCarousel)) {
+                        homepageSettings.desktopCarousel = [];
+                    }
+                    homepageSettings.desktopCarousel.push(newItem);
+                }
+                saveHomepageSettings();
+                renderCarouselList(currentCarouselEditData.type);
+                showMessageModal('成功', `${currentCarouselEditData.type === 'mobile' ? '移动端' : 'PC端'}轮播图已添加`, 'alert');
+                closeCarouselEditModal();
+            }
+        }
+
+        function updateCarouselPreview(imageUrl) {
+            const previewGroup = document.getElementById('carousel-preview-group');
+            const previewImg = document.getElementById('carousel-preview-img');
+            if (imageUrl) {
+                previewImg.src = imageUrl;
+                previewGroup.style.display = 'block';
+                previewImg.onerror = function() {
+                    previewImg.src = '';
+                    previewImg.alt = '图片加载失败';
+                };
+            } else {
+                previewGroup.style.display = 'none';
+            }
+        }
+
+        // 图片URL输入时更新预览
+        document.getElementById('carousel-image-input').addEventListener('input', function() {
+            updateCarouselPreview(this.value);
+        });
+
+        // 点击背景关闭
+        document.getElementById('carousel-edit-modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeCarouselEditModal();
+            }
+        });
+
+        // ========== 产品编辑模态框函数 ==========
+        let currentProductEditData = { id: null, isEdit: false };
+
+        function openProductEditModal(product = null) {
+            const modal = document.getElementById('product-edit-modal');
+            const titleEl = document.getElementById('product-edit-title');
+            const form = document.getElementById('product-edit-form');
+
+            currentProductEditData.isEdit = !!product;
+            currentProductEditData.id = product ? product.id : null;
+
+            if (product) {
+                titleEl.textContent = '编辑产品';
+                document.getElementById('product-name-input').value = product.name || '';
+                document.getElementById('product-price-input').value = product.price || '';
+                document.getElementById('product-stock-input').value = product.stock || 0;
+                document.getElementById('product-category-input').value = product.category || 'other';
+                document.getElementById('product-image-input').value = product.image || '';
+                document.getElementById('product-description-input').value = product.description || '';
+                updateProductPreview(product.image);
+            } else {
+                titleEl.textContent = '添加产品';
+                form.reset();
+                document.getElementById('product-preview-group').style.display = 'none';
+            }
+
+            modal.style.display = 'flex';
+        }
+
+        function closeProductEditModal() {
+            const modal = document.getElementById('product-edit-modal');
+            modal.style.display = 'none';
+            document.getElementById('product-edit-form').reset();
+            document.getElementById('product-preview-group').style.display = 'none';
+            currentProductEditData = { id: null, isEdit: false };
+        }
+
+        function saveProductItem() {
+            const name = document.getElementById('product-name-input').value.trim();
+            const priceInput = document.getElementById('product-price-input').value;
+            const stockInput = document.getElementById('product-stock-input').value;
+            const category = document.getElementById('product-category-input').value;
+            const image = document.getElementById('product-image-input').value.trim();
+            const description = document.getElementById('product-description-input').value.trim();
+
+            if (!name) {
+                showMessageModal('错误', '请输入产品名称', 'alert');
+                return;
+            }
+
+            const price = parseFloat(priceInput);
+            if (!priceInput || isNaN(price) || price <= 0) {
+                showMessageModal('错误', '请输入有效的产品价格', 'alert');
+                return;
+            }
+
+            if (!image) {
+                showMessageModal('错误', '请输入产品图片URL', 'alert');
+                return;
+            }
+
+            const stock = parseInt(stockInput) || 0;
+
+            if (currentProductEditData.isEdit && currentProductEditData.id) {
+                // 编辑模式 - 需要找到产品并更新
+                const product = products.find(p => p.id == currentProductEditData.id);
+                if (product) {
+                    product.name = name;
+                    product.price = price;
+                    product.stock = stock;
+                    product.category = category;
+                    product.image = image;
+                    product.description = description;
+                    saveProducts().then(() => {
+                        renderAdminProducts();
+                        renderProducts(products);
+                        showMessageModal('成功', '产品已更新', 'alert');
+                        closeProductEditModal();
+                    }).catch(err => {
+                        showMessageModal('错误', '产品更新失败', 'alert');
+                    });
+                }
+            } else {
+                // 添加模式
+                let newId = 1;
+                if (products.length > 0) {
+                    const existingIds = products.map(p => parseInt(p.id) || 0);
+                    const maxId = Math.max(...existingIds);
+                    newId = maxId + 1;
+                }
+
+                const product = {
+                    id: newId,
+                    name,
+                    price,
+                    newPrice: 0,
+                    stock: stock < 0 ? 0 : stock,
+                    category,
+                    image,
+                    description
+                };
+
+                products.push(product);
+                saveProducts().then((saveResult) => {
+                    if (saveResult) {
+                        renderAdminProducts();
+                        renderProducts(products);
+                        showMessageModal('成功', '产品添加成功！ID: ' + product.id, 'alert');
+                        closeProductEditModal();
+                    } else {
+                        showMessageModal('错误', '产品添加失败', 'alert');
+                    }
+                }).catch(err => {
+                    showMessageModal('错误', '产品添加失败', 'alert');
+                });
+            }
+        }
+
+        function updateProductPreview(imageUrl) {
+            const previewGroup = document.getElementById('product-preview-group');
+            const previewImg = document.getElementById('product-preview-img');
+            if (imageUrl) {
+                previewImg.src = imageUrl;
+                previewGroup.style.display = 'block';
+                previewImg.onerror = function() {
+                    previewImg.src = '';
+                    previewImg.alt = '图片加载失败';
+                };
+            } else {
+                previewGroup.style.display = 'none';
+            }
+        }
+
+        // 图片URL输入时更新预览
+        document.getElementById('product-image-input').addEventListener('input', function() {
+            updateProductPreview(this.value);
+        });
+
+        // 点击背景关闭
+        document.getElementById('product-edit-modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeProductEditModal();
+            }
+        });
     </script>
 </body>
 
