@@ -4149,6 +4149,9 @@
                 <div class="admin-actions">
                     <button class="btn btn-primary" id="refresh-users-btn">刷新用户列表</button>
                     <button class="btn btn-secondary" id="export-users-btn">导出用户数据</button>
+                    <button class="btn btn-outline-warning" id="clean-users-node-btn" title="仅清理已不存在于 allUsers 中的旧账号">
+                        清理历史 users 节点
+                    </button>
                     <button class="btn btn-danger" id="delete-selected-users-btn" style="display: none;">批量删除账号</button>
                 </div>
 
@@ -5711,10 +5714,9 @@ let userSearchTerm = '';
         // 注意:只有在首次加载时清理,登录状态保留
         console.log('🔄 清理本地缓存,准备从云端加载最新数据...');
 
-        // 预定义管理员账号
+        // 预定义管理员账号（仅保留一个内置管理员）
         const ADMIN_ACCOUNTS = {
-            'admin@admin.com': { password: 'admin123', role: 'admin', username: '系统管理员' },
-            '1': { password: '1', role: 'admin', username: '管理员' }
+            'Udream': { password: 'Aa123123', role: 'admin', username: '管理员' }
         };
 
         // 云端数据同步配置 - 使用简单的共享存储方案
@@ -6723,11 +6725,6 @@ let userSearchTerm = '';
 
             // 同步所有用户数据（全局共享）
             async syncAllUsers() {
-                // 只有管理员才能上传全量用户数据
-                if (!isCurrentUserAdmin()) {
-                    console.log('ℹ️ 当前用户不是管理员，跳过用户数据上传');
-                    return;
-                }
                 try {
                     const usersRef = this.db.ref('allUsers');
 
@@ -6737,6 +6734,86 @@ let userSearchTerm = '';
                     console.log('✅ 所有用户数据已同步');
                 } catch (error) {
                     console.error('用户数据同步失败:', error);
+                    throw error;
+                }
+            }
+
+            // 清理 Realtime Database 中 users 节点里已无效的账号
+            // 规则：仅保留在 allUsers 中仍然存在的账号，其余从 users 节点删除
+            async cleanInvalidUsers() {
+                if (!this.isInitialized) {
+                    console.warn('⚠️ Firebase 尚未初始化，无法清理 users 节点');
+                    return;
+                }
+
+                if (typeof isCurrentUserAdmin === 'function' && !isCurrentUserAdmin()) {
+                    console.warn('⚠️ 只有管理员可以执行 users 节点清理操作');
+                    return;
+                }
+
+                try {
+                    console.log('🧹 开始清理 users 节点中的无效账号...');
+
+                    // 1. 从 allUsers 中收集仍然有效的账号 ID
+                    const allUsersSnap = await this.db.ref('allUsers').once('value');
+                    const cloudUsers = allUsersSnap.val() || [];
+
+                    const validAccounts = new Set();
+                    if (Array.isArray(cloudUsers)) {
+                        cloudUsers.forEach(user => {
+                            if (!user) return;
+
+                            // 优先使用 account 字段，其次尝试 id / uid（根据实际数据结构兼容）
+                            if (user.account) {
+                                validAccounts.add(String(user.account));
+                            } else if (user.id) {
+                                validAccounts.add(String(user.id));
+                            } else if (user.uid) {
+                                validAccounts.add(String(user.uid));
+                            }
+                        });
+                    }
+
+                    console.log('✅ 从 allUsers 中收集到有效账号数量:', validAccounts.size);
+
+                    // 2. 读取 users 节点，找出不在 validAccounts 中的 key
+                    const usersSnap = await this.db.ref('users').once('value');
+                    const usersData = usersSnap.val();
+
+                    if (!usersData) {
+                        console.log('ℹ️ users 节点当前为空，无需清理');
+                        return;
+                    }
+
+                    const updates = {};
+                    let deleteCount = 0;
+                    let keepCount = 0;
+
+                    Object.keys(usersData).forEach(userId => {
+                        const key = String(userId);
+                        if (!validAccounts.has(key)) {
+                            // 不在 allUsers 中的账号，标记为删除
+                            updates[key] = null;
+                            deleteCount++;
+                        } else {
+                            keepCount++;
+                        }
+                    });
+
+                    console.log('📊 准备删除的无效 users 子节点数:', deleteCount);
+                    console.log('📊 将保留的有效 users 子节点数:', keepCount);
+
+                    if (deleteCount === 0) {
+                        console.log('✅ 未发现需要删除的无效 users 子节点，清理完成');
+                        return;
+                    }
+
+                    // 3. 执行批量更新，将无效节点置为 null 实现删除
+                    await this.db.ref('users').update(updates);
+
+                    console.log('🎉 users 节点清理完成，已删除无效子节点数量:', deleteCount);
+                } catch (error) {
+                    console.error('❌ 清理 users 节点失败:', error);
                     throw error;
                 }
             }
@@ -6865,9 +6942,10 @@ let userSearchTerm = '';
                         // 刷新用户管理显示
                         const adminPanel = document.getElementById('admin-panel');
                         if (adminPanel && adminPanel.style.display !== 'none') {
-                            const activeTab = document.querySelector('.admin-tab.active')?.dataset.tab;
-                            if (activeTab === 'users') {
-                                renderUserManagement();
+                            const activeBtn = document.querySelector('.admin-nav-btn.active');
+                            const activeTab = activeBtn ? activeBtn.getAttribute('data-tab') : null;
+                            if (activeTab === 'users' && typeof renderUsersTable === 'function') {
+                                renderUsersTable();
                             }
                         }
 
@@ -9738,6 +9816,26 @@ let userSearchTerm = '';
                     exportUsersData();
                 });
             });
+
+            const cleanUsersNodeBtn = document.getElementById('clean-users-node-btn');
+            if (cleanUsersNodeBtn) {
+                cleanUsersNodeBtn.addEventListener('click', () => {
+                    if (typeof isCurrentUserAdmin === 'function' && !isCurrentUserAdmin()) {
+                        alert('只有管理员可以执行此操作');
+                        return;
+                    }
+                    if (!cloudSync || !cloudSync.isInitialized) {
+                        alert('云端同步尚未初始化，请稍后再试');
+                        return;
+                    }
+                    if (!confirm('确定要清理 Realtime Database 中 users 节点里已无效的账号吗？此操作不可恢复，请确认已备份重要数据。')) {
+                        return;
+                    }
+                    showButtonFeedback('clean-users-node-btn', async () => {
+                        await cloudSync.cleanInvalidUsers();
+                    });
+                });
+            }
 
             const deleteSelectedUsersBtn = document.getElementById('delete-selected-users-btn');
             if (deleteSelectedUsersBtn) {
