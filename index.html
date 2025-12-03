@@ -8,6 +8,182 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
+    <!-- 清除所有本地缓存 - 在页面加载前执行 -->
+    <script>
+        (function() {
+            // 清除所有本地存储缓存（账号、订单、产品等所有数据）
+            try {
+                console.log('🧹 正在清除所有本地缓存数据...');
+                
+                // 保存语言设置（唯一需要保留的设置）
+                const savedLanguage = localStorage.getItem('language');
+                
+                // 需要清除的所有数据键名列表
+                const keysToRemove = [
+                    // 用户相关
+                    'currentUser',              // 当前登录用户
+                    'allUsers',                 // 所有用户数据
+                    
+                    // 订单相关
+                    'userOrders',               // 用户订单（通用）
+                    'allOrders',                // 所有订单
+                    
+                    // 地址相关
+                    'userAddresses',            // 用户地址（通用）
+                    
+                    // 产品相关
+                    'products',                 // 产品数据
+                    
+                    // 设置相关
+                    'homepageSettings',         // 首页设置
+                    'deviceRegisterLimits',     // 设备注册限制
+                    'dataSourceMode',           // 数据源模式
+                    
+                    // 同步相关
+                    'ecommerce_sync_data',      // 跨设备同步数据
+                    'ecommerce_last_sync',      // 最后同步时间
+                    
+                    // 设备相关
+                    'device_id',                // 设备ID
+                    
+                    // 队列相关
+                    'offlineQueue'              // 离线队列
+                ];
+                
+                // 清除指定的键
+                keysToRemove.forEach(key => {
+                    if (localStorage.getItem(key) !== null) {
+                        localStorage.removeItem(key);
+                        console.log(`✅ 已清除: ${key}`);
+                    }
+                });
+                
+                // 清除所有以 userOrders_ 开头的键（用户特定订单）
+                const userOrdersKeys = [];
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    if (key && key.startsWith('userOrders_')) {
+                        userOrdersKeys.push(key);
+                    }
+                }
+                userOrdersKeys.forEach(key => {
+                    localStorage.removeItem(key);
+                    console.log(`✅ 已清除: ${key}`);
+                });
+                
+                // 清除所有以 userAddresses_ 开头的键（用户特定地址）
+                const userAddressesKeys = [];
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    if (key && key.startsWith('userAddresses_')) {
+                        userAddressesKeys.push(key);
+                    }
+                }
+                userAddressesKeys.forEach(key => {
+                    localStorage.removeItem(key);
+                    console.log(`✅ 已清除: ${key}`);
+                });
+                
+                // 清除所有以 cache_ 开头的缓存键
+                const cacheKeys = [];
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    if (key && key.startsWith('cache_')) {
+                        cacheKeys.push(key);
+                    }
+                }
+                cacheKeys.forEach(key => {
+                    localStorage.removeItem(key);
+                    console.log(`✅ 已清除缓存: ${key}`);
+                });
+                
+                // 清除所有其他可能的用户相关键（除了language）
+                const allKeys = [];
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    if (key && key !== 'language') {
+                        // 检查是否还有遗漏的键
+                        if (!keysToRemove.includes(key) && 
+                            !key.startsWith('userOrders_') && 
+                            !key.startsWith('userAddresses_') && 
+                            !key.startsWith('cache_')) {
+                            allKeys.push(key);
+                        }
+                    }
+                }
+                // 清除所有其他键（除了language）
+                allKeys.forEach(key => {
+                    localStorage.removeItem(key);
+                    console.log(`✅ 已清除其他数据: ${key}`);
+                });
+                
+                // 恢复语言设置
+                if (savedLanguage) {
+                    localStorage.setItem('language', savedLanguage);
+                    console.log(`✅ 已保留语言设置: ${savedLanguage}`);
+                }
+                
+                // 清除 sessionStorage 中的所有数据
+                try {
+                    sessionStorage.clear();
+                    console.log('✅ 已清除所有 sessionStorage 数据');
+                } catch (e) {
+                    console.warn('清除 sessionStorage 时出错:', e);
+                    // 如果clear()失败，尝试逐个清除
+                    try {
+                        const sessionKeys = ['currentUser', 'userSession', 'authToken', 'userData'];
+                        sessionKeys.forEach(key => {
+                            if (sessionStorage.getItem(key) !== null) {
+                                sessionStorage.removeItem(key);
+                                console.log(`✅ 已清除 sessionStorage: ${key}`);
+                            }
+                        });
+                    } catch (e2) {
+                        console.warn('逐个清除 sessionStorage 时出错:', e2);
+                    }
+                }
+                
+                // 清除 IndexedDB（如果存在）
+                try {
+                    if ('indexedDB' in window) {
+                        indexedDB.databases().then(databases => {
+                            databases.forEach(db => {
+                                if (db.name) {
+                                    indexedDB.deleteDatabase(db.name);
+                                    console.log(`✅ 已清除 IndexedDB: ${db.name}`);
+                                }
+                            });
+                        }).catch(e => {
+                            console.warn('清除 IndexedDB 时出错:', e);
+                        });
+                    }
+                } catch (e) {
+                    console.warn('访问 IndexedDB 时出错:', e);
+                }
+                
+                // 清除 Service Worker 缓存
+                try {
+                    if ('caches' in window) {
+                        caches.keys().then(names => {
+                            names.forEach(name => {
+                                caches.delete(name);
+                                console.log(`✅ 已清除 Service Worker 缓存: ${name}`);
+                            });
+                        }).catch(e => {
+                            console.warn('清除 Service Worker 缓存时出错:', e);
+                        });
+                    }
+                } catch (e) {
+                    console.warn('访问 Service Worker 缓存时出错:', e);
+                }
+                
+                console.log('✅✅ 所有本地缓存数据清除完成！');
+            } catch (error) {
+                console.error('❌ 清除本地缓存时出错:', error);
+            }
+        })();
+    </script>
+
     <!-- Firebase SDK - 多重加载策略 -->
     <script>
         // Firebase SDK 加载管理器
@@ -4898,6 +5074,137 @@
     </div>
 
     <script>
+        // ========== 工具函数库 ==========
+        // localStorage 工具函数 - 统一处理 JSON 序列化和错误处理
+        const Storage = {
+            get(key, defaultValue = null) {
+                try {
+                    const item = localStorage.getItem(key);
+                    return item ? JSON.parse(item) : defaultValue;
+                } catch (error) {
+                    console.error(`读取 localStorage[${key}] 失败:`, error);
+                    return defaultValue;
+                }
+            },
+            set(key, value) {
+                try {
+                    localStorage.setItem(key, JSON.stringify(value));
+                    return true;
+                } catch (error) {
+                    console.error(`写入 localStorage[${key}] 失败:`, error);
+                    // 如果存储空间不足，尝试清理旧数据
+                    if (error.name === 'QuotaExceededError') {
+                        console.warn('存储空间不足，尝试清理缓存...');
+                        this.clearCache();
+                        try {
+                            localStorage.setItem(key, JSON.stringify(value));
+                            return true;
+                        } catch (e) {
+                            console.error('清理后仍无法写入:', e);
+                        }
+                    }
+                    return false;
+                }
+            },
+            remove(key) {
+                try {
+                    localStorage.removeItem(key);
+                    return true;
+                } catch (error) {
+                    console.error(`删除 localStorage[${key}] 失败:`, error);
+                    return false;
+                }
+            },
+            clearCache() {
+                // 清理缓存数据，保留重要数据
+                const importantKeys = ['currentUser', 'allUsers', 'deviceRegisterLimits', 'language'];
+                const keysToRemove = [];
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    if (key && key.startsWith('cache_') && !importantKeys.includes(key)) {
+                        keysToRemove.push(key);
+                    }
+                }
+                keysToRemove.forEach(key => localStorage.removeItem(key));
+            }
+        };
+
+        // DOM 查询缓存
+        const DOMCache = {
+            cache: new Map(),
+            get(selector, useCache = true) {
+                if (useCache && this.cache.has(selector)) {
+                    const cached = this.cache.get(selector);
+                    if (document.contains(cached)) {
+                        return cached;
+                    }
+                    this.cache.delete(selector);
+                }
+                const element = document.querySelector(selector);
+                if (element && useCache) {
+                    this.cache.set(selector, element);
+                }
+                return element;
+            },
+            getAll(selector) {
+                return document.querySelectorAll(selector);
+            },
+            clear() {
+                this.cache.clear();
+            }
+        };
+
+        // 防抖函数
+        function debounce(func, wait, immediate = false) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    timeout = null;
+                    if (!immediate) func.apply(this, args);
+                };
+                const callNow = immediate && !timeout;
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+                if (callNow) func.apply(this, args);
+            };
+        }
+
+        // 节流函数
+        function throttle(func, limit) {
+            let inThrottle;
+            return function(...args) {
+                if (!inThrottle) {
+                    func.apply(this, args);
+                    inThrottle = true;
+                    setTimeout(() => inThrottle = false, limit);
+                }
+            };
+        }
+
+        // 安全的 HTML 转义
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // 安全的属性设置
+        function setSafeAttribute(element, attr, value) {
+            if (element && value != null) {
+                element.setAttribute(attr, String(value));
+            }
+        }
+
+        // 批量 DOM 操作优化
+        function batchDOMUpdate(callback) {
+            if (document.createDocumentFragment) {
+                const fragment = document.createDocumentFragment();
+                callback(fragment);
+                return fragment;
+            }
+            return callback(null);
+        }
+
         // ========== 数据存储 - 始终从云端加载最新数据 ==========
         // 注意:不再从localStorage初始化数据,而是在登录后从云端同步
         // 这确保用户始终获取最新的云端数据,避免本地缓存过期问题
@@ -4909,13 +5216,13 @@ let userAddresses = [];  // 地址数据将在登录后从云端加载
 let userProfile = {};  // 用户资料将在登录后从云端加载
 let allUsers = [];  // 所有用户数据(仅管理员使用,从云端加载)
 // 设备注册限制配置：{ deviceId: limit }，默认限制为2
-let deviceRegisterLimits = JSON.parse(localStorage.getItem('deviceRegisterLimits')) || {};
+let deviceRegisterLimits = Storage.get('deviceRegisterLimits', {});
 const DEFAULT_DEVICE_REGISTER_LIMIT = 2; // 默认每个设备最多注册2个账号
 let currentProduct = null;
 let pendingSignupProduct = null; // 记录待领取的产品（用户登录后需要打开报名模态框）
 let pendingSignupFormData = null; // 记录用户已填写的报名表单数据
 let shouldReturnToSignup = false; // 添加地址后是否需要返回报名表单
-let currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
+let currentUser = Storage.get('currentUser', null);
 const selectedUserAccounts = new Set(); // 后台用户批量操作选择集合
 const selectedOrderIds = new Set(); // 后台订单批量操作选择集合
 let userFilterRole = '';
@@ -5741,7 +6048,7 @@ let userSearchTerm = '';
         // 切换语言
         function switchLanguage(lang) {
             currentLanguage = lang;
-            localStorage.setItem('language', lang);
+            Storage.set('language', lang);
             applyLanguage();
             if (cloudSync && cloudSync.isInitialized) {
                 cloudSync.syncHomepageSettings();
@@ -8444,10 +8751,10 @@ let userSearchTerm = '';
             // 使用用户特定的localStorage key
             if (currentUser && currentUser.account) {
                 const userOrdersKey = `userOrders_${currentUser.account}`;
-                localStorage.setItem(userOrdersKey, JSON.stringify(userOrders));
+                Storage.set(userOrdersKey, userOrders);
             }
             // 兼容旧代码
-            localStorage.setItem('userOrders', JSON.stringify(userOrders));
+            Storage.set('userOrders', userOrders);
             
             // 更新全局订单数组（如果当前用户是管理员）
             if (currentUser && currentUser.role === 'admin') {
@@ -8505,17 +8812,17 @@ let userSearchTerm = '';
         }
 
         function saveCurrentUser() {
-            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            Storage.set('currentUser', currentUser);
         }
 
         function saveUserAddresses() {
             // 使用用户特定的localStorage key
             if (currentUser && currentUser.account) {
                 const userAddressesKey = `userAddresses_${currentUser.account}`;
-                localStorage.setItem(userAddressesKey, JSON.stringify(userAddresses));
+                Storage.set(userAddressesKey, userAddresses);
             }
             // 兼容旧代码
-            localStorage.setItem('userAddresses', JSON.stringify(userAddresses));
+            Storage.set('userAddresses', userAddresses);
             
             // 同步到云端（使用CloudSyncManager）
             if (cloudSync && cloudSync.isInitialized) {
@@ -8526,12 +8833,12 @@ let userSearchTerm = '';
         }
 
         function saveUserProfile() {
-            localStorage.setItem('userProfile', JSON.stringify(userProfile));
+            Storage.set('userProfile', userProfile);
         }
 
         // 保存设备注册限制
         function saveDeviceRegisterLimits() {
-            localStorage.setItem('deviceRegisterLimits', JSON.stringify(deviceRegisterLimits));
+            Storage.set('deviceRegisterLimits', deviceRegisterLimits);
         }
 
         // 获取设备的注册限制
@@ -8543,12 +8850,12 @@ let userSearchTerm = '';
 
         // 更新设备限制列表显示
         function updateDeviceLimitsList() {
-            const contentDiv = document.getElementById('device-limits-content');
+            const contentDiv = DOMCache.get('#device-limits-content');
             if (!contentDiv) return;
 
             const devices = Object.keys(deviceRegisterLimits);
             if (devices.length === 0) {
-                contentDiv.innerHTML = '<p style="color: #666; margin: 0;">暂无自定义限制，所有设备使用默认限制(' + DEFAULT_DEVICE_REGISTER_LIMIT + ')</p>';
+                contentDiv.innerHTML = `<p style="color: #666; margin: 0;">暂无自定义限制，所有设备使用默认限制(${DEFAULT_DEVICE_REGISTER_LIMIT})</p>`;
                 return;
             }
 
@@ -8560,41 +8867,61 @@ let userSearchTerm = '';
                 }
             });
 
-            let html = '<table style="width: 100%; border-collapse: collapse;">';
-            html += '<thead><tr style="background-color: #e9ecef;"><th style="padding: 8px; text-align: left; border: 1px solid #dee2e6;">设备ID</th>';
-            html += '<th style="padding: 8px; text-align: center; border: 1px solid #dee2e6;">限制数量</th>';
-            html += '<th style="padding: 8px; text-align: center; border: 1px solid #dee2e6;">已注册</th>';
-            html += '<th style="padding: 8px; text-align: center; border: 1px solid #dee2e6;">操作</th></tr></thead><tbody>';
-
-            devices.forEach(deviceId => {
+            // 使用模板字符串优化性能
+            const rows = devices.map(deviceId => {
                 const limit = deviceRegisterLimits[deviceId];
                 const currentCount = deviceUserCountMap[deviceId] || 0;
                 const statusColor = currentCount >= limit ? '#dc3545' : (currentCount >= limit * 0.8 ? '#ffc107' : '#28a745');
-                html += `<tr style="border-bottom: 1px solid #dee2e6;">`;
-                html += `<td style="padding: 8px; border: 1px solid #dee2e6;">${formatDeviceLabel(deviceId)}<br><small style="color: #666;">${deviceId}</small></td>`;
-                html += `<td style="padding: 8px; text-align: center; border: 1px solid #dee2e6;">${limit}</td>`;
-                html += `<td style="padding: 8px; text-align: center; border: 1px solid #dee2e6; color: ${statusColor}; font-weight: bold;">${currentCount}</td>`;
-                html += `<td style="padding: 8px; text-align: center; border: 1px solid #dee2e6;">`;
-                html += `<button class="btn btn-sm btn-danger" onclick="removeDeviceLimit('${deviceId}')" style="padding: 4px 8px; font-size: 12px;">删除</button>`;
-                html += `</td></tr>`;
-            });
+                const escapedDeviceId = escapeHtml(deviceId);
+                return `
+                    <tr style="border-bottom: 1px solid #dee2e6;">
+                        <td style="padding: 8px; border: 1px solid #dee2e6;">${escapeHtml(formatDeviceLabel(deviceId))}<br><small style="color: #666;">${escapedDeviceId}</small></td>
+                        <td style="padding: 8px; text-align: center; border: 1px solid #dee2e6;">${limit}</td>
+                        <td style="padding: 8px; text-align: center; border: 1px solid #dee2e6; color: ${statusColor}; font-weight: bold;">${currentCount}</td>
+                        <td style="padding: 8px; text-align: center; border: 1px solid #dee2e6;">
+                            <button class="btn btn-sm btn-danger" onclick="removeDeviceLimit('${escapedDeviceId.replace(/'/g, "\\'")}')" style="padding: 4px 8px; font-size: 12px;">删除</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
 
-            html += '</tbody></table>';
-            contentDiv.innerHTML = html;
+            contentDiv.innerHTML = `
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background-color: #e9ecef;">
+                            <th style="padding: 8px; text-align: left; border: 1px solid #dee2e6;">设备ID</th>
+                            <th style="padding: 8px; text-align: center; border: 1px solid #dee2e6;">限制数量</th>
+                            <th style="padding: 8px; text-align: center; border: 1px solid #dee2e6;">已注册</th>
+                            <th style="padding: 8px; text-align: center; border: 1px solid #dee2e6;">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>${rows}</tbody>
+                </table>
+            `;
         }
 
         // 删除设备限制
         function removeDeviceLimit(deviceId) {
-            if (confirm(`确定要删除设备 ${formatDeviceLabel(deviceId)} 的自定义注册限制吗？删除后将使用默认限制(${DEFAULT_DEVICE_REGISTER_LIMIT})。`)) {
-                delete deviceRegisterLimits[deviceId];
-                saveDeviceRegisterLimits();
-                updateDeviceLimitsList();
-                showMessageModal('成功', '设备限制已删除', 'success');
+            if (!deviceId) {
+                console.error('removeDeviceLimit: deviceId 不能为空');
+                return;
+            }
+            const deviceLabel = formatDeviceLabel(deviceId);
+            if (confirm(`确定要删除设备 ${deviceLabel} 的自定义注册限制吗？删除后将使用默认限制(${DEFAULT_DEVICE_REGISTER_LIMIT})。`)) {
+                try {
+                    delete deviceRegisterLimits[deviceId];
+                    saveDeviceRegisterLimits();
+                    updateDeviceLimitsList();
+                    showMessageModal('成功', '设备限制已删除', 'success');
+                } catch (error) {
+                    console.error('删除设备限制失败:', error);
+                    showMessageModal('错误', '删除设备限制失败', 'alert');
+                }
             }
         }
 
         function saveAllUsers() {
-            localStorage.setItem('allUsers', JSON.stringify(allUsers));
+            Storage.set('allUsers', allUsers);
             
             // 同步到云端（使用CloudSyncManager）
             if (cloudSync && cloudSync.isInitialized) {
@@ -8871,8 +9198,8 @@ let userSearchTerm = '';
         })();
 
         document.addEventListener('DOMContentLoaded', async function () {
-            const loader = document.getElementById('page-loader');
-            const loaderProgress = document.getElementById('loader-progress');
+            const loader = DOMCache.get('#page-loader');
+            const loaderProgress = DOMCache.get('#loader-progress');
             
             try {
                 // 更新加载进度
