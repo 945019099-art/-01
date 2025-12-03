@@ -1360,6 +1360,11 @@
             transform: translateY(0);
         }
 
+        .honey-highlight {
+            color: #ffd700;
+            font-weight: bold;
+        }
+
         .user-sidebar {
             background: white;
             border-radius: 8px;
@@ -4149,10 +4154,10 @@
                 <div class="admin-actions">
                     <button class="btn btn-primary" id="refresh-users-btn">刷新用户列表</button>
                     <button class="btn btn-secondary" id="export-users-btn">导出用户数据</button>
-                    <button class="btn btn-outline-warning" id="clean-users-node-btn" title="仅清理已不存在于 allUsers 中的旧账号">
-                        清理历史 users 节点
-                    </button>
                     <button class="btn btn-danger" id="delete-selected-users-btn" style="display: none;">批量删除账号</button>
+                    <button class="btn btn-danger" id="clear-cloud-users-btn" style="margin-left: auto; background-color: #c0392b; border-color: #c0392b;">
+                        清理users（保留与allUsers一致）
+                    </button>
                 </div>
 
                 <div class="admin-content">
@@ -4910,12 +4915,30 @@ let userSearchTerm = '';
             if (!account || !Array.isArray(allUsers) || allUsers.length === 0) return;
             const latestUser = allUsers.find(u => u.account === account);
             if (!latestUser) return;
+            
+            // 保存更新前的状态用于对比
+            const previousStatus = currentUser.status;
+            const previousPoints = currentUser.points;
+            const previousUsername = currentUser.username;
+            
+            // 更新 currentUser 对象（保留 role，因为管理员账号不在 allUsers 中）
             currentUser = {
                 ...currentUser,
                 ...latestUser,
                 role: currentUser.role || latestUser.role || 'user'
             };
             saveCurrentUser();
+            
+            // 如果状态、积分或用户名发生变化，记录日志
+            if (previousStatus !== latestUser.status) {
+                console.log(`🔄 用户状态已更新: ${previousStatus} -> ${latestUser.status}`);
+            }
+            if (previousPoints !== latestUser.points) {
+                console.log(`🔄 用户积分已更新: ${previousPoints} -> ${latestUser.points}`);
+            }
+            if (previousUsername !== latestUser.username) {
+                console.log(`🔄 用户名已更新: ${previousUsername} -> ${latestUser.username}`);
+            }
         }
 
         // 语言设置
@@ -5016,7 +5039,8 @@ let userSearchTerm = '';
                 'pointsClaimUsed': '本次领取已消耗 1 个蜜罐',
                 'pointsReviewReward': '评价奖励：蜜罐 +2',
                 'duplicateClaimNotAllowed': '您已经领取过该商品，不能重复领取。',
-                'deviceRegisterLimitReached': '该设备已注册账号数量超过限制，无法继续注册。',
+                'productAlreadyClaimed': '这个产品已经领取过啦，快去看看其它好物吧！',
+                'deviceRegisterLimitReached': '已经有账户啦，快去登录账户领取好物吧！',
                 'username': '用户名',
                 'account': '账号',
                 'nickname': '昵称',
@@ -5134,7 +5158,153 @@ let userSearchTerm = '';
                 'customerName': '客户',
                 'stars': '星',
                 'reviewRequired': '请填写评价内容',
-                'ratingRequired': '请选择评分'
+                'ratingRequired': '请选择评分',
+                'ok': '确定',
+                'cancel': '取消',
+                'confirm': '确认',
+                'noticeTitle': '提示',
+                'outOfHoneyTitle': '蜜罐不足',
+                'balance': '余额',
+                'writeReviewToEarnHoney': '完成评价可获得蜜罐。',
+                'contactSupportForHelp': '联系支持获取帮助。',
+                'honey': '蜜罐',
+                // 登录/注册相关
+                'accountNotExists': '账号不存在，请检查账号是否正确或先注册',
+                'accountExists': '账号已存在',
+                'accountDisabled': '账号被禁用',
+                'loginFailed': '登录失败',
+                'loginFailedRetry': '登录失败，请稍后重试',
+                'registerFailed': '注册失败',
+                'registerFailedRetry': '注册失败，请稍后重试',
+                'pleaseEnterAccount': '请输入账号',
+                'accountMinLength': '账号长度至少为3个字符',
+                'pleaseConfirmPassword': '请确认密码',
+                'passwordMinLength': '密码长度至少为6个字符',
+                'passwordMismatchRetry': '两次输入的密码不一致，请重新输入',
+                'passwordFormatError': '密码只能包含字母、数字和特殊字符(@$!%*#?&)，长度至少6位',
+                'pleaseEnterAtLeastOneImage': '请至少输入一张产品图片URL',
+                'deleteFailedProductNotFound': '删除失败：未找到对应产品数据',
+                'confirmDeleteProduct': '确定要删除产品 "{name}" 吗？此操作不可撤销！',
+                'productDataError': '产品数据错误',
+                'noProductDataDetected': '未检测到可导入的产品数据，请检查表头是否包含"产品名称"和"图片URL"。',
+                'parseFailed': '解析失败',
+                'checkExcelFormat': '请检查Excel格式后重试',
+                'readFailed': '读取失败',
+                'fileReadError': '文件读取过程中出现错误，请重试。',
+                // 用户管理相关
+                'confirmResetUserData': '确定要重置此用户的所有数据吗？这将删除用户的订单、地址等信息！',
+                'userDataReset': '用户数据已重置',
+                'confirmBanUser': '确定要禁用此用户吗？禁用后该用户将无法登录系统。',
+                'userBanned': '用户已禁用',
+                'confirmUnbanUser': '确定要解禁此用户吗？',
+                'userUnbanned': '用户已解禁',
+                'userNotExists': '用户不存在',
+                'confirmDeleteUser': '⚠️ 警告：您即将彻底删除用户账号！\n\n用户信息：\n账号：{account}\n用户名：{username}\n注册时间：{registerTime}\n\n此操作将删除：\n✓ 用户账号\n✓ 所有订单记录\n✓ 收货地址\n✓ 个人资料\n\n⚠️ 此操作不可撤销！确定要继续吗？',
+                'finalConfirmDelete': '最后确认：请输入用户账号 "{account}" 以确认删除\n\n⚠️ 输入错误将取消删除操作',
+                'accountInputMismatch': '账号输入不匹配，删除操作已取消',
+                'userDeletedSuccess': '✅ 用户账号 "{account}" 及所有相关数据已彻底删除\n删除了 {orders} 个订单和 {addresses} 个地址',
+                'deleteUserFailed': '删除用户失败',
+                'accountDeletedByAdmin': '您的账号已被管理员删除',
+                'pleaseSelectAccountsToDelete': '请先勾选要删除的账号',
+                'confirmDeleteSelectedAccounts': '确定要删除选中的 {count} 个账号吗？此操作不可撤销。',
+                'deletingAccounts': '正在批量删除账号，请稍候...',
+                'batchDeleteComplete': '批量删除完成',
+                'pleaseLoginBeforeDeletion': '请先登录后再进行账号注销',
+                'confirmDeleteSelfAccount': '确定要注销当前账号吗？该操作会删除所有订单、地址与个人资料，且无法恢复。',
+                'finalConfirmDeleteSelf': '请输入账号 "{account}" 以确认注销',
+                'accountInputMismatchCancel': '账号输入不匹配，操作已取消',
+                'accountDeletedSuccess': '账号已成功注销',
+                'deleteAccountFailed': '注销失败',
+                // 订单管理相关
+                'noOrdersToDelete': '未找到要删除的订单',
+                'confirmDeleteSelectedOrders': '确定要删除选中的 {count} 个订单吗？此操作不可恢复。',
+                'confirmDeleteOrder': '确定要删除订单 {orderLabel} 吗？此操作不可恢复。',
+                'confirmDeleteReview': '确定要删除该条评价吗？此操作不可恢复。',
+                // 产品管理相关
+                'confirmDeleteSelectedProducts': '确定要删除以下 {count} 个产品吗？\n\n{productNames}\n\n此操作不可撤销！',
+                // 轮播图相关
+                'confirmDeleteCarousel': '确定要删除这个{targetLabel}轮播图吗？',
+                'confirmResetHomepageSettings': '确定要重置所有主页设置吗？这将恢复默认配置。',
+                // 加载提示
+                'checkingURLSync': '检查URL同步数据...',
+                'initializingCloudSync': '初始化云端同步...',
+                'connectingCloudDatabase': '连接云端数据库...',
+                'loadingCloudData': '加载云端数据...',
+                'cloudSyncTimeout': '云端同步超时...',
+                'firebaseNotLoaded': 'Firebase未加载...',
+                'renderingPage': '渲染页面内容...',
+                'loadFailed': '加载失败',
+                'testing': '测试中...',
+                'statusConnected': '状态：连接正常',
+                'statusDisconnected': '状态：未连接',
+                'statusConnectionFailed': '状态：连接失败',
+                'testCloudConnection': '测试云端连接',
+                'syncing': '同步中...',
+                'forceSyncData': '强制同步数据',
+                'clearingCloudUsers': '正在清理云端 users...',
+                'testingConnection': '正在测试...',
+                'connectionSuccess': '连接成功',
+                'cannotReadLocalData': '无法读取本地数据',
+                'logCleared': '日志已清空',
+                'pleaseSelectAddress': '请选择地址',
+                'noUserData': '暂无用户数据',
+                'noMatchingUsers': '未找到符合条件的用户',
+                'noOrderData': '暂无订单数据',
+                'noReviewData': '暂无评价数据',
+                'systemDefaultPassword': '系统预设密码',
+                'hidePassword': '隐藏密码',
+                'showPassword': '显示密码',
+                'operationFailed': '操作失败',
+                'noCarouselPC': '暂无PC端轮播图',
+                'noCarouselMobile': '暂无移动端轮播图',
+                'noProductsAddOrImport': '暂无商品，请添加或导入商品',
+                'batchEdit': '批量编辑',
+                'batchDelete': '批量删除',
+                'lastSync': '上次同步：{timeAgo}',
+                'waitingFirstSync': '等待首次同步...',
+                'cloudSyncNotEnabled': '云端同步未启用',
+                'editCarouselPC': '编辑PC端轮播图',
+                'editCarouselMobile': '编辑移动端轮播图',
+                'addCarouselPC': '添加PC端轮播图',
+                'addCarouselMobile': '添加移动端轮播图',
+                'editProduct': '编辑产品',
+                'addProduct': '添加产品',
+                'confirmLoadDemoData': '确认加载示例数据',
+                'confirmClearCache': '确认清除缓存',
+                // 数据库备份恢复相关
+                'databaseBackupFailed': '数据库备份失败：{error}',
+                'pleaseUploadJSONFile': '请上传JSON格式的备份文件',
+                'databaseRestoredSuccess': '数据库已成功恢复！',
+                'databaseRestoreFailed': '数据库恢复失败：{error}',
+                'dataRestoreFailed': '数据恢复失败，页面可能需要刷新',
+                'readBackupFileFailed': '读取备份文件失败：{error}',
+                'readFileFailed': '读取文件失败',
+                // 云端同步相关
+                'cloudSyncNotEnabledError': '云端同步未启用，无法操作云端用户数据',
+                'onlyAdminCanOperate': '只有管理员可以执行此操作',
+                'cloudAllUsersEmpty': '云端 allUsers 为空，出于安全考虑已跳过 users 清理。',
+                'clearCloudUsersFailed': '清理云端 users 失败：{error}',
+                // 用户管理相关
+                'enterNewPassword': '请输入新密码（至少6位）：',
+                'passwordTooShortError': '密码长度不能少于6位',
+                // 订单状态相关
+                'confirmStatusUpdateSuffix': '吗？',
+                'updatingOrderStatus': '正在更新订单状态并同步到云端...',
+                // 产品管理相关
+                'pleaseFillAllRequiredFields': '请填写所有必填字段',
+                'carouselUpdated': '轮播图已更新',
+                'mobileCarouselAdded': '移动端轮播图已添加',
+                'pcCarouselAdded': 'PC端轮播图已添加',
+                'pleaseEnterProductName': '请输入产品名称',
+                'pleaseEnterValidPrice': '请输入有效的产品价格',
+                'productUpdated': '产品已更新',
+                'productUpdateFailedError': '产品更新失败',
+                'productAddedSuccess': '产品添加成功！ID: {id}',
+                'productAddFailedError': '产品添加失败',
+                'replyContentCannotBeEmpty': '回复内容不能为空',
+                'reviewNotFound': '未找到该订单对应的评价',
+                'passwordIncorrect': '密码错误，请重新输入',
+                'importProductsSuccess': '成功导入 {count} 个产品！'
             },
             en: {
                 // 导航
@@ -5229,7 +5399,8 @@ let userSearchTerm = '';
                 'pointsClaimUsed': 'This claim has used 1 honey',
                 'pointsReviewReward': 'Review reward: +2 honey',
                 'duplicateClaimNotAllowed': 'You have already claimed this product. Duplicate claims are not allowed.',
-                'deviceRegisterLimitReached': 'This device has reached the maximum number of registered accounts.',
+                'productAlreadyClaimed': 'You have already claimed this product. Check out other great items!',
+                'deviceRegisterLimitReached': 'You already have an account. Please log in to claim items!',
                 'username': 'Username',
                 'account': 'Account',
                 'nickname': 'Nickname',
@@ -5347,7 +5518,144 @@ let userSearchTerm = '';
                 'customerName': 'Customer',
                 'stars': 'stars',
                 'reviewRequired': 'Please enter your review',
-                'ratingRequired': 'Please select a rating'
+                'ratingRequired': 'Please select a rating',
+                // 登录/注册相关
+                'accountNotExists': 'Account does not exist. Please check if the account is correct or register first',
+                'accountExists': 'Account already exists',
+                'accountDisabled': 'Account disabled',
+                'loginFailed': 'Login failed',
+                'loginFailedRetry': 'Login failed, please try again later',
+                'registerFailed': 'Registration failed',
+                'registerFailedRetry': 'Registration failed, please try again later',
+                'pleaseEnterAccount': 'Please enter account',
+                'accountMinLength': 'Account must be at least 3 characters',
+                'pleaseConfirmPassword': 'Please confirm password',
+                'passwordMinLength': 'Password must be at least 6 characters',
+                'passwordMismatchRetry': 'The two passwords do not match, please re-enter',
+                'passwordFormatError': 'Password can only contain letters, numbers and special characters (@$!%*#?&), at least 6 characters',
+                'pleaseEnterAtLeastOneImage': 'Please enter at least one product image URL',
+                'deleteFailedProductNotFound': 'Delete failed: Product data not found',
+                'confirmDeleteProduct': 'Are you sure you want to delete product "{name}"? This operation cannot be undone!',
+                'productDataError': 'Product data error',
+                'noProductDataDetected': 'No product data detected. Please check if the header contains "Product Name" and "Image URL".',
+                'parseFailed': 'Parse failed',
+                'checkExcelFormat': 'Please check Excel format and try again',
+                'readFailed': 'Read failed',
+                'fileReadError': 'An error occurred while reading the file. Please try again.',
+                // 用户管理相关
+                'confirmResetUserData': 'Are you sure you want to reset all data for this user? This will delete the user\'s orders, addresses and other information!',
+                'userDataReset': 'User data has been reset',
+                'confirmBanUser': 'Are you sure you want to ban this user? Banned users will not be able to log in to the system.',
+                'userBanned': 'User has been banned',
+                'confirmUnbanUser': 'Are you sure you want to unban this user?',
+                'userUnbanned': 'User has been unbanned',
+                'userNotExists': 'User does not exist',
+                'confirmDeleteUser': '⚠️ Warning: You are about to permanently delete a user account!\n\nUser Information:\nAccount: {account}\nUsername: {username}\nRegistration Time: {registerTime}\n\nThis operation will delete:\n✓ User account\n✓ All order records\n✓ Shipping addresses\n✓ Personal information\n\n⚠️ This operation cannot be undone! Are you sure you want to continue?',
+                'finalConfirmDelete': 'Final confirmation: Please enter user account "{account}" to confirm deletion\n\n⚠️ Entering incorrectly will cancel the deletion operation',
+                'accountInputMismatch': 'Account input does not match, deletion operation cancelled',
+                'userDeletedSuccess': '✅ User account "{account}" and all related data have been permanently deleted\nDeleted {orders} orders and {addresses} addresses',
+                'deleteUserFailed': 'Failed to delete user',
+                'accountDeletedByAdmin': 'Your account has been deleted by the administrator',
+                'pleaseSelectAccountsToDelete': 'Please select accounts to delete first',
+                'confirmDeleteSelectedAccounts': 'Are you sure you want to delete the selected {count} accounts? This operation cannot be undone.',
+                'deletingAccounts': 'Deleting accounts in batch, please wait...',
+                'batchDeleteComplete': 'Batch deletion completed',
+                'pleaseLoginBeforeDeletion': 'Please login before account deletion',
+                'confirmDeleteSelfAccount': 'Are you sure you want to delete your current account? This operation will delete all orders, addresses and personal information, and cannot be recovered.',
+                'finalConfirmDeleteSelf': 'Please enter account "{account}" to confirm deletion',
+                'accountInputMismatchCancel': 'Account input does not match, operation cancelled',
+                'accountDeletedSuccess': 'Account successfully deleted',
+                'deleteAccountFailed': 'Account deletion failed',
+                // 订单管理相关
+                'noOrdersToDelete': 'No orders found to delete',
+                'confirmDeleteSelectedOrders': 'Are you sure you want to delete the selected {count} orders? This operation cannot be undone.',
+                'confirmDeleteOrder': 'Are you sure you want to delete order {orderLabel}? This operation cannot be undone.',
+                'confirmDeleteReview': 'Are you sure you want to delete this review? This operation cannot be undone.',
+                // 产品管理相关
+                'confirmDeleteSelectedProducts': 'Are you sure you want to delete the following {count} products?\n\n{productNames}\n\nThis operation cannot be undone!',
+                // 轮播图相关
+                'confirmDeleteCarousel': 'Are you sure you want to delete this {targetLabel} carousel?',
+                'confirmResetHomepageSettings': 'Are you sure you want to reset all homepage settings? This will restore default configuration.',
+                // 加载提示
+                'checkingURLSync': 'Checking URL sync data...',
+                'initializingCloudSync': 'Initializing cloud sync...',
+                'connectingCloudDatabase': 'Connecting to cloud database...',
+                'loadingCloudData': 'Loading cloud data...',
+                'cloudSyncTimeout': 'Cloud sync timeout...',
+                'firebaseNotLoaded': 'Firebase not loaded...',
+                'renderingPage': 'Rendering page content...',
+                'loadFailed': 'Load failed',
+                'testing': 'Testing...',
+                'statusConnected': 'Status: Connected',
+                'statusDisconnected': 'Status: Disconnected',
+                'statusConnectionFailed': 'Status: Connection failed',
+                'testCloudConnection': 'Test cloud connection',
+                'syncing': 'Syncing...',
+                'forceSyncData': 'Force sync data',
+                'clearingCloudUsers': 'Clearing cloud users...',
+                'testingConnection': 'Testing connection...',
+                'connectionSuccess': 'Connection successful',
+                'cannotReadLocalData': 'Cannot read local data',
+                'logCleared': 'Log cleared',
+                'pleaseSelectAddress': 'Please select address',
+                'noUserData': 'No user data',
+                'noMatchingUsers': 'No matching users found',
+                'noOrderData': 'No order data',
+                'noReviewData': 'No review data',
+                'systemDefaultPassword': 'System default password',
+                'hidePassword': 'Hide password',
+                'showPassword': 'Show password',
+                'operationFailed': 'Operation failed',
+                'noCarouselPC': 'No PC carousel',
+                'noCarouselMobile': 'No mobile carousel',
+                'noProductsAddOrImport': 'No products, please add or import products',
+                'batchEdit': 'Batch edit',
+                'batchDelete': 'Batch delete',
+                'lastSync': 'Last sync: {timeAgo}',
+                'waitingFirstSync': 'Waiting for first sync...',
+                'cloudSyncNotEnabled': 'Cloud sync not enabled',
+                'editCarouselPC': 'Edit PC carousel',
+                'editCarouselMobile': 'Edit mobile carousel',
+                'addCarouselPC': 'Add PC carousel',
+                'addCarouselMobile': 'Add mobile carousel',
+                'editProduct': 'Edit product',
+                'addProduct': 'Add product',
+                'confirmLoadDemoData': 'Confirm load demo data',
+                'confirmClearCache': 'Confirm clear cache',
+                // 数据库备份恢复相关
+                'databaseBackupFailed': 'Database backup failed: {error}',
+                'pleaseUploadJSONFile': 'Please upload a JSON format backup file',
+                'databaseRestoredSuccess': 'Database restored successfully!',
+                'databaseRestoreFailed': 'Database restore failed: {error}',
+                'dataRestoreFailed': 'Data restore failed, page may need to be refreshed',
+                'readBackupFileFailed': 'Failed to read backup file: {error}',
+                'readFileFailed': 'Failed to read file',
+                // 云端同步相关
+                'cloudSyncNotEnabledError': 'Cloud sync not enabled, cannot operate cloud user data',
+                'onlyAdminCanOperate': 'Only administrators can perform this operation',
+                'cloudAllUsersEmpty': 'Cloud allUsers is empty, skipped users cleanup for security reasons.',
+                'clearCloudUsersFailed': 'Failed to clear cloud users: {error}',
+                // 用户管理相关
+                'enterNewPassword': 'Please enter new password (at least 6 characters):',
+                'passwordTooShortError': 'Password must be at least 6 characters',
+                // 订单状态相关
+                'confirmStatusUpdateSuffix': '?',
+                'updatingOrderStatus': 'Updating order status and syncing to cloud...',
+                // 产品管理相关
+                'pleaseFillAllRequiredFields': 'Please fill in all required fields',
+                'carouselUpdated': 'Carousel updated',
+                'mobileCarouselAdded': 'Mobile carousel added',
+                'pcCarouselAdded': 'PC carousel added',
+                'pleaseEnterProductName': 'Please enter product name',
+                'pleaseEnterValidPrice': 'Please enter a valid product price',
+                'productUpdated': 'Product updated',
+                'productUpdateFailedError': 'Product update failed',
+                'productAddedSuccess': 'Product added successfully! ID: {id}',
+                'productAddFailedError': 'Product add failed',
+                'replyContentCannotBeEmpty': 'Reply content cannot be empty',
+                'reviewNotFound': 'Review not found for this order',
+                'passwordIncorrect': 'Password incorrect, please re-enter',
+                'importProductsSuccess': 'Successfully imported {count} products!'
             }
         };
         
@@ -5714,9 +6022,9 @@ let userSearchTerm = '';
         // 注意:只有在首次加载时清理,登录状态保留
         console.log('🔄 清理本地缓存,准备从云端加载最新数据...');
 
-        // 预定义管理员账号（仅保留一个内置管理员）
+        // 预定义管理员账号
         const ADMIN_ACCOUNTS = {
-            'Udream': { password: 'Aa123123', role: 'admin', username: '管理员' }
+            'Udream': { password: 'Aa123123', role: 'admin', username: '系统管理员' }
         };
 
         // 云端数据同步配置 - 使用简单的共享存储方案
@@ -6727,93 +7035,103 @@ let userSearchTerm = '';
             async syncAllUsers() {
                 try {
                     const usersRef = this.db.ref('allUsers');
+                    this.syncInProgress = true;
 
-                    // 上传所有用户到云端
-                    await usersRef.set(allUsers);
-
-                    console.log('✅ 所有用户数据已同步');
+                    if (isCurrentUserAdmin()) {
+                        // 管理员：上传全量用户数据
+                        await usersRef.set(allUsers);
+                        console.log('✅ 所有用户数据已同步（管理员全量同步）');
+                    } else {
+                        // 非管理员：只将自己添加到云端的 allUsers 数组
+                        let targetAccount = null;
+                        let targetUserData = null;
+                        
+                        // 优先使用 currentUser.account，如果没有则查找 allUsers 中最新的用户（用于注册时的情况）
+                        if (currentUser && currentUser.account) {
+                            targetAccount = currentUser.account;
+                            targetUserData = allUsers.find(u => u.account === targetAccount);
+                        } else if (allUsers.length > 0) {
+                            // 如果没有 currentUser，使用 allUsers 中最新注册的用户（按 id 或 registerTime 排序）
+                            const sortedUsers = [...allUsers].sort((a, b) => {
+                                const aId = a.id || (a.registerTime ? new Date(a.registerTime).getTime() : 0);
+                                const bId = b.id || (b.registerTime ? new Date(b.registerTime).getTime() : 0);
+                                return bId - aId; // 降序，最新的在前
+                            });
+                            targetUserData = sortedUsers[0];
+                            targetAccount = targetUserData.account;
+                            console.log('ℹ️ 未登录状态，同步最新注册的用户:', targetAccount);
+                        }
+                        
+                        if (targetAccount && targetUserData) {
+                            console.log('ℹ️ 非管理员用户，只同步用户到云端 allUsers:', targetAccount);
+                            
+                            // 使用事务原子地更新 allUsers，避免并发写导致的丢失
+                            await usersRef.transaction((current) => {
+                                let list = Array.isArray(current) ? current.slice() : [];
+                                const idx = list.findIndex(u => u && u.account === targetAccount);
+                                if (idx >= 0) {
+                                    list[idx] = targetUserData;
+                                } else {
+                                    list.push(targetUserData);
+                                }
+                                return list;
+                            });
+                            console.log('✅ 通过事务已写入云端 allUsers:', targetAccount);
+                        } else {
+                            console.log('ℹ️ 未找到可同步的用户数据，跳过同步');
+                        }
+                    }
                 } catch (error) {
                     console.error('用户数据同步失败:', error);
                     throw error;
                 }
             }
 
-            // 清理 Realtime Database 中 users 节点里已无效的账号
-            // 规则：仅保留在 allUsers 中仍然存在的账号，其余从 users 节点删除
-            async cleanInvalidUsers() {
-                if (!this.isInitialized) {
-                    console.warn('⚠️ Firebase 尚未初始化，无法清理 users 节点');
-                    return;
+            // 清理云端 users 节点：仅删除在 allUsers 中不存在的账号
+            async clearCloudUsers() {
+                // 只有管理员才能执行此操作
+                if (!isCurrentUserAdmin()) {
+                    console.warn('ℹ️ 当前用户不是管理员，禁止清理云端 users 节点');
+                    throw new Error('只有管理员可以清理云端 users 节点');
                 }
 
-                if (typeof isCurrentUserAdmin === 'function' && !isCurrentUserAdmin()) {
-                    console.warn('⚠️ 只有管理员可以执行 users 节点清理操作');
-                    return;
+                if (!this.isInitialized || !this.db) {
+                    throw new Error('云端同步未初始化，无法操作云端用户数据');
                 }
 
                 try {
-                    console.log('🧹 开始清理 users 节点中的无效账号...');
-
-                    // 1. 从 allUsers 中收集仍然有效的账号 ID
                     const allUsersSnap = await this.db.ref('allUsers').once('value');
-                    const cloudUsers = allUsersSnap.val() || [];
-
-                    const validAccounts = new Set();
-                    if (Array.isArray(cloudUsers)) {
-                        cloudUsers.forEach(user => {
-                            if (!user) return;
-
-                            // 优先使用 account 字段，其次尝试 id / uid（根据实际数据结构兼容）
-                            if (user.account) {
-                                validAccounts.add(String(user.account));
-                            } else if (user.id) {
-                                validAccounts.add(String(user.id));
-                            } else if (user.uid) {
-                                validAccounts.add(String(user.uid));
-                            }
-                        });
+                    const cloudAllUsers = Array.isArray(allUsersSnap.val()) ? allUsersSnap.val() : [];
+                    // 安全保护：当 allUsers 为空时，不执行清理操作，避免误删
+                    if (cloudAllUsers.length === 0) {
+                        console.warn('⚠️ 云端 allUsers 为空，出于安全考虑跳过 users 清理');
+                        return { removed: 0, skipped: true, reason: 'empty_allUsers' };
                     }
+                    const keepAccounts = new Set(cloudAllUsers.map(u => u && u.account).filter(Boolean));
 
-                    console.log('✅ 从 allUsers 中收集到有效账号数量:', validAccounts.size);
-
-                    // 2. 读取 users 节点，找出不在 validAccounts 中的 key
-                    const usersSnap = await this.db.ref('users').once('value');
-                    const usersData = usersSnap.val();
-
-                    if (!usersData) {
-                        console.log('ℹ️ users 节点当前为空，无需清理');
-                        return;
-                    }
+                    const usersRef = this.db.ref('users');
+                    const usersSnap = await usersRef.once('value');
+                    const usersData = usersSnap.val() || {};
 
                     const updates = {};
-                    let deleteCount = 0;
-                    let keepCount = 0;
-
-                    Object.keys(usersData).forEach(userId => {
-                        const key = String(userId);
-                        if (!validAccounts.has(key)) {
-                            // 不在 allUsers 中的账号，标记为删除
-                            updates[key] = null;
-                            deleteCount++;
-                        } else {
-                            keepCount++;
+                    let removeCount = 0;
+                    Object.keys(usersData).forEach(accountKey => {
+                        if (!keepAccounts.has(accountKey)) {
+                            updates[accountKey] = null; // 置为 null 即删除该子节点
+                            removeCount++;
                         }
                     });
 
-                    console.log('📊 准备删除的无效 users 子节点数:', deleteCount);
-                    console.log('📊 将保留的有效 users 子节点数:', keepCount);
-
-                    if (deleteCount === 0) {
-                        console.log('✅ 未发现需要删除的无效 users 子节点，清理完成');
-                        return;
+                    if (removeCount === 0) {
+                        console.log('ℹ️ users 节点无需清理（所有账号均在 allUsers 中存在）');
+                        return { removed: 0 };
                     }
 
-                    // 3. 执行批量更新，将无效节点置为 null 实现删除
-                    await this.db.ref('users').update(updates);
-
-                    console.log('🎉 users 节点清理完成，已删除无效子节点数量:', deleteCount);
+                    await usersRef.update(updates);
+                    console.log(`✅ 已清理 users 节点：删除 ${removeCount} 个账号（仅保留在 allUsers 中存在的账号）`);
+                    return { removed: removeCount };
                 } catch (error) {
-                    console.error('❌ 清理 users 节点失败:', error);
+                    console.error('清理云端 users 节点失败:', error);
                     throw error;
                 }
             }
@@ -6927,25 +7245,58 @@ let userSearchTerm = '';
                 allUsersRef.on('value', (snapshot) => {
                     const cloudUsers = snapshot.val();
                     if (cloudUsers && Array.isArray(cloudUsers) && !this.syncInProgress) {
+                        const previousAllUsers = JSON.parse(JSON.stringify(allUsers)); // 保存之前的数据用于对比
                         allUsers = cloudUsers;
                         localStorage.setItem('allUsers', JSON.stringify(allUsers));
 
                         // 如果当前用户已登录，刷新currentUser对象
                         if (currentUser && currentUser.account) {
-                            refreshCurrentUserSnapshot(currentUser.account);
-                            // 更新用户个人信息显示
-                            if (document.getElementById('user-profile')?.classList.contains('active')) {
-                                loadUserProfile();
+                            const previousUser = previousAllUsers.find(u => u.account === currentUser.account);
+                            const currentUserData = allUsers.find(u => u.account === currentUser.account);
+                            
+                            // 检查用户数据是否有变化
+                            const hasChanges = !previousUser || 
+                                previousUser.status !== currentUserData?.status ||
+                                previousUser.points !== currentUserData?.points ||
+                                previousUser.username !== currentUserData?.username ||
+                                previousUser.password !== currentUserData?.password;
+                            
+                            if (hasChanges && currentUserData) {
+                                refreshCurrentUserSnapshot(currentUser.account);
+                                
+                                // 立即更新用户界面显示
+                                updateUserInterface();
+                                
+                                // 如果用户被禁用，updateUserInterface 会处理登出逻辑
+                                if (currentUserData.status === 'banned') {
+                                    console.log('⚠️ 用户已被禁用，已自动退出登录');
+                                    return; // updateUserInterface 已处理登出，直接返回
+                                }
+                                
+                                // 更新用户个人信息显示（如果用户中心已打开）
+                                if (document.getElementById('user-profile')?.classList.contains('active')) {
+                                    if (typeof loadUserProfile === 'function') {
+                                        loadUserProfile();
+                                    }
+                                }
+                                
+                                // 如果积分发生变化，显示提示
+                                if (previousUser && previousUser.points !== currentUserData.points) {
+                                    showNotification(`您的积分已更新：${currentUserData.points}`, 'info');
+                                }
+                                
+                                console.log('✅ 用户数据已从云端更新并刷新界面');
                             }
                         }
 
-                        // 刷新用户管理显示
+                        // 刷新用户管理显示（管理员界面）
                         const adminPanel = document.getElementById('admin-panel');
                         if (adminPanel && adminPanel.style.display !== 'none') {
-                            const activeBtn = document.querySelector('.admin-nav-btn.active');
-                            const activeTab = activeBtn ? activeBtn.getAttribute('data-tab') : null;
-                            if (activeTab === 'users' && typeof renderUsersTable === 'function') {
-                                renderUsersTable();
+                            const activeTab = document.querySelector('.admin-tab.active')?.dataset.tab;
+                            if (activeTab === 'users') {
+                                if (typeof renderUserManagement === 'function') {
+                                    renderUserManagement();
+                                }
                             }
                         }
 
@@ -7096,6 +7447,23 @@ let userSearchTerm = '';
                 ]);
 
                 refreshCurrentUserSnapshot();
+
+                // 确保全局变量已更新（从localStorage重新加载）
+                if (currentUser && currentUser.account) {
+                    const userOrdersKey = `userOrders_${currentUser.account}`;
+                    const userAddressesKey = `userAddresses_${currentUser.account}`;
+                    userOrders = JSON.parse(localStorage.getItem(userOrdersKey)) || JSON.parse(localStorage.getItem('userOrders')) || [];
+                    userAddresses = JSON.parse(localStorage.getItem(userAddressesKey)) || JSON.parse(localStorage.getItem('userAddresses')) || [];
+                    console.log('✅ handleUserSessionChange - 数据已加载 - 订单数:', userOrders.length, '地址数:', userAddresses.length);
+                    
+                    // 立即刷新界面显示
+                    if (typeof renderUserOrders === 'function') {
+                        renderUserOrders();
+                    }
+                    if (typeof renderAddressList === 'function') {
+                        renderAddressList();
+                    }
+                }
 
                 // 重新监听该用户的订单
                 this.attachUserOrdersListener();
@@ -7646,7 +8014,7 @@ let userSearchTerm = '';
 
         // 加载演示产品数据（仅在管理员手动触发时使用）
         function loadDemoProducts() {
-            customConfirm(t('confirmLoadDemo'), '确认加载示例数据').then(confirmed => {
+            customConfirm(t('confirmLoadDemo'), t('confirmLoadDemoData')).then(confirmed => {
                 if (!confirmed) return;
                 const demoProducts = [
                     {
@@ -8054,26 +8422,7 @@ let userSearchTerm = '';
 
         function saveAllUsers() {
             localStorage.setItem('allUsers', JSON.stringify(allUsers));
-
-            // 优先直接写入 Firebase Realtime Database 的 allUsers 节点，确保跨设备可见
-            try {
-                if (typeof firebase !== 'undefined' &&
-                    firebase.apps &&
-                    firebase.apps.length > 0 &&
-                    typeof firebase.database === 'function') {
-                    const db = firebase.database();
-                    db.ref('allUsers').set(allUsers)
-                        .then(() => {
-                            console.log('✅ allUsers 已直接写入 Realtime Database');
-                        })
-                        .catch(err => {
-                            console.warn('⚠️ 直接写入 allUsers 失败，改用 CloudSyncManager/备用同步：', err);
-                        });
-                }
-            } catch (err) {
-                console.warn('⚠️ 写入 allUsers 到 Realtime Database 时出错，将使用 CloudSyncManager/备用同步：', err);
-            }
-
+            
             // 同步到云端（使用CloudSyncManager）
             if (cloudSync && cloudSync.isInitialized) {
                 cloudSync.syncAllUsers().catch(err => {
@@ -8231,17 +8580,26 @@ let userSearchTerm = '';
         // 用户认证
         function authenticateUser(account, password) {
             // 检查管理员账号
-            if (ADMIN_ACCOUNTS[account] && ADMIN_ACCOUNTS[account].password === password) {
-                return {
-                    account: account,
-                    username: ADMIN_ACCOUNTS[account].username,
-                    role: 'admin',
-                    status: 'active'
-                };
+            if (ADMIN_ACCOUNTS[account]) {
+                if (ADMIN_ACCOUNTS[account].password === password) {
+                    return {
+                        account: account,
+                        username: ADMIN_ACCOUNTS[account].username,
+                        role: 'admin',
+                        status: 'active'
+                    };
+                } else {
+                    // 管理员账号存在但密码错误
+                    return {
+                        success: false,
+                        error: 'password',
+                        message: '密码错误，请重新输入'
+                    };
+                }
             }
 
             // 检查普通用户
-            const user = allUsers.find(u => u.account === account && u.password === password);
+            const user = allUsers.find(u => u.account === account);
             if (user) {
                 // 检查用户是否被禁用
                 if (user.status === 'banned') {
@@ -8250,33 +8608,48 @@ let userSearchTerm = '';
                         message: '您的账号已被禁用，请联系管理员'
                     };
                 }
-
-                return {
-                    account: user.account,
-                    username: user.username,
-                    role: 'user',
-                    status: user.status || 'active',
-                    points: typeof user.points === 'number' ? user.points : 1
-                };
+                
+                // 检查密码是否正确
+                if (user.password === password) {
+                    return {
+                        account: user.account,
+                        username: user.username,
+                        role: 'user',
+                        status: user.status || 'active',
+                        points: typeof user.points === 'number' ? user.points : 1
+                    };
+                } else {
+                    // 账号存在但密码错误
+                    return {
+                        success: false,
+                        error: 'password',
+                        message: t('passwordIncorrect')
+                    };
+                }
             }
 
-            return null;
+            // 账号不存在
+            return {
+                success: false,
+                error: 'account',
+                message: t('accountNotExists')
+            };
         }
 
         // 注册用户
         function registerUser(account, password, username) {
             // 检查账号是否已存在
             if (ADMIN_ACCOUNTS[account] || allUsers.find(u => u.account === account)) {
-                return { success: false, message: '账号已存在' };
+                return { success: false, message: t('accountExists') };
             }
 
-            // 同一设备最多允许 3 个账号
+            // 同一设备最多允许 2 个账号
             const deviceId = getDeviceId();
             const sameDeviceUsers = allUsers.filter(u => u.deviceId === deviceId);
-            if (sameDeviceUsers.length >= 3) {
+            if (sameDeviceUsers.length >= 2) {
                 return {
                     success: false,
-                    message: t('deviceRegisterLimitReached') || '该设备已注册账号数量超过限制，无法继续注册。'
+                    message: t('deviceRegisterLimitReached') || '已经有账户啦，快去登录账户领取好物吧！'
                 };
             }
 
@@ -8692,14 +9065,14 @@ let userSearchTerm = '';
             adminLink.addEventListener('click', (e) => {
                 e.preventDefault();
                 if (!isLoggedIn()) {
-                    customAlert(t('pleaseLogin'), '提示').then(() => {
+                    customAlert(t('pleaseLogin'), t('infoTitle')).then(() => {
                         document.getElementById('login-modal').style.display = 'flex';
                     });
                     return;
                 }
 
                 if (!isAdmin()) {
-                    customAlert(t('insufficientPermissions'), '权限不足');
+                    customAlert(t('insufficientPermissions'), t('insufficientPermissionsTitle'));
                     return;
                 }
 
@@ -8711,7 +9084,7 @@ let userSearchTerm = '';
                 if (currentUser) {
                     showUserCenter();
                 } else {
-                    customAlert(t('pleaseLogin'), '提示').then(() => {
+                    customAlert(t('pleaseLogin'), t('infoTitle')).then(() => {
                         document.getElementById('login-modal').style.display = 'flex';
                     });
                 }
@@ -8807,7 +9180,7 @@ let userSearchTerm = '';
                 const password = document.getElementById('login-password').value;
 
                 if (!account || !password) {
-                    customAlert(t('pleaseFillCompleteInfo'), '提示');
+                    customAlert(t('pleaseFillCompleteInfo'), t('infoTitle'));
                     return;
                 }
 
@@ -8850,7 +9223,10 @@ let userSearchTerm = '';
                 }
 
                 const authResult = authenticateUser(account, password);
-                if (authResult && !authResult.banned) {
+                
+                // 检查登录结果
+                if (authResult && !authResult.banned && authResult.success !== false && authResult.account) {
+                    // 登录成功
                     // ========== 清空旧用户数据，准备加载新用户数据 ==========
                     console.log('🔄 登录成功，准备加载新用户数据...');
                     
@@ -8892,6 +9268,14 @@ let userSearchTerm = '';
 
                             // 同步当前用户相关数据并建立监听
                             await cloudSync.handleUserSessionChange();
+                            
+                            // 确保从localStorage重新加载最新的订单和地址数据（handleUserSessionChange已更新）
+                            const userOrdersKey = `userOrders_${authResult.account}`;
+                            const userAddressesKey = `userAddresses_${authResult.account}`;
+                            userOrders = JSON.parse(localStorage.getItem(userOrdersKey)) || JSON.parse(localStorage.getItem('userOrders')) || [];
+                            userAddresses = JSON.parse(localStorage.getItem(userAddressesKey)) || JSON.parse(localStorage.getItem('userAddresses')) || [];
+                            
+                            console.log('✅ 登录后数据已同步 - 订单数:', userOrders.length, '地址数:', userAddresses.length);
 
                             showNotification(`☁️ 云端数据加载完成！欢迎 ${authResult.username}`, 'success');
                         } else {
@@ -8918,11 +9302,19 @@ let userSearchTerm = '';
                         allUsers = JSON.parse(localStorage.getItem('allUsers')) || [];
                     }
 
-                    // 更新界面显示
+                    // 更新界面显示 - 确保在数据加载完成后立即刷新
                     updateUserInterface();
                     renderProducts(products);
+                    // 强制刷新订单和地址列表，确保显示最新数据
                     renderUserOrders();
                     renderAddressList();
+                    
+                    // 额外延迟刷新一次，确保数据完全同步
+                    setTimeout(() => {
+                        renderUserOrders();
+                        renderAddressList();
+                        console.log('🔄 界面已刷新 - 订单数:', userOrders.length, '地址数:', userAddresses.length);
+                    }, 300);
 
                     // 如果是管理员，显示控制面板
                     if (authResult.role === 'admin') {
@@ -8942,31 +9334,64 @@ let userSearchTerm = '';
 
                 } else if (authResult && authResult.banned) {
                     // 账号被禁用
-                    showNotification(authResult.message, 'error');
+                    customAlert(authResult.message, t('accountDisabled'));
+                } else if (authResult && authResult.success === false) {
+                    // 登录失败，显示具体错误原因
+                    customAlert(authResult.message, t('loginFailed'));
                 } else {
-                    showNotification(t('accountOrPasswordError') || '账号或密码错误！', 'error');
+                    // 未知错误
+                    customAlert(t('loginFailedRetry'), t('errorTitle'));
                 }
             });
 
             // 注册表单
             document.getElementById('register-form').addEventListener('submit', async (e) => {
                 e.preventDefault();
-                const account = document.getElementById('register-account').value;
+                const account = document.getElementById('register-account').value.trim();
                 const password = document.getElementById('register-password').value;
                 const confirm = document.getElementById('register-confirm').value;
 
-                if (!account || !password || !confirm) {
-                    customAlert(t('pleaseFillCompleteInfo'), '提示');
+                // 验证账号是否为空
+                if (!account) {
+                    customAlert(t('pleaseEnterAccount'), t('registerFailed'));
                     return;
                 }
 
-                if (password !== confirm) {
-                    customAlert(t('passwordMismatch'), '错误');
+                // 验证账号格式（建议使用邮箱格式）
+                if (account.length < 3) {
+                    customAlert(t('accountMinLength'), t('registerFailed'));
                     return;
                 }
 
+                // 验证密码是否为空
+                if (!password) {
+                    customAlert(t('enterPassword'), t('registerFailed'));
+                    return;
+                }
+
+                // 验证确认密码是否为空
+                if (!confirm) {
+                    customAlert(t('pleaseConfirmPassword'), t('registerFailed'));
+                    return;
+                }
+
+                // 验证密码长度
                 if (password.length < 6) {
-                    customAlert(t('passwordTooShort'), '错误');
+                    customAlert(t('passwordMinLength'), t('registerFailed'));
+                    return;
+                }
+
+                // 验证密码是否匹配
+                if (password !== confirm) {
+                    customAlert(t('passwordMismatchRetry'), t('registerFailed'));
+                    return;
+                }
+
+                // 验证密码强度（建议：至少包含字母或数字，但允许纯字母或纯数字）
+                // 只检查是否包含有效字符，不强制要求同时包含字母和数字
+                const passwordRegex = /^[A-Za-z\d@$!%*#?&]{6,}$/;
+                if (!passwordRegex.test(password)) {
+                    customAlert(t('passwordFormatError'), t('registerFailed'));
                     return;
                 }
 
@@ -8980,17 +9405,39 @@ let userSearchTerm = '';
                     userAddresses = [];
                     userProfile = {};
                     
-                    currentUser = { account, username, role: 'user' };
+                    // 从 allUsers 中获取刚注册的完整用户数据
+                    const newUserData = allUsers.find(u => u.account === account);
+                    if (newUserData) {
+                        currentUser = {
+                            account: newUserData.account,
+                            username: newUserData.username,
+                            role: newUserData.role,
+                            status: newUserData.status,
+                            points: newUserData.points
+                        };
+                    } else {
+                        // 如果找不到，使用基本信息
+                        currentUser = { account, username, role: 'user' };
+                    }
                     saveCurrentUser();
 
-                    // 同步到云端
+                    // 同步到云端（确保新用户被添加到云端的 allUsers）
                     if (cloudSync && cloudSync.isInitialized) {
-                        await cloudSync.syncAllUsers();
-                        await cloudSync.handleUserSessionChange();
+                        try {
+                            console.log('🔄 开始同步新注册用户到云端 allUsers...');
+                            await cloudSync.syncAllUsers();
+                            await cloudSync.handleUserSessionChange();
+                            console.log('✅ 新用户已同步到云端 allUsers');
+                        } catch (syncError) {
+                            console.error('同步到云端失败:', syncError);
+                            // 即使同步失败，本地注册已成功，继续执行
+                        }
+                    } else {
+                        console.warn('⚠️ 云端同步未初始化，新用户仅保存在本地');
                     }
 
                     // 注册成功后：直接提示 + 自动登录并关闭注册窗口
-                    showNotification(t('registrationSuccess'), 'success');
+                    showNotification(t('registrationSuccess') || '注册成功！', 'success');
                     registerModal.style.display = 'none';
                     updateUserInterface();
                     renderUserOrders();
@@ -9004,7 +9451,8 @@ let userSearchTerm = '';
                         }, 500);
                     }
                 } else {
-                    customAlert(result.message, '提示');
+                    // 注册失败，显示具体错误原因
+                    customAlert(result.message || t('registerFailedRetry'), t('registerFailed'));
                 }
             });
 
@@ -9128,7 +9576,7 @@ let userSearchTerm = '';
             const clearCacheBtn = document.getElementById('clear-cache');
             if (clearCacheBtn) {
                 clearCacheBtn.addEventListener('click', function () {
-                    customConfirm(t('confirmClearCache'), '确认清除缓存').then(confirmed => {
+                    customConfirm(t('confirmClearCache'), t('confirmClearCache')).then(confirmed => {
                         if (!confirmed) return;
                         localStorage.removeItem('products');
                         localStorage.removeItem('userOrders');
@@ -9209,7 +9657,7 @@ let userSearchTerm = '';
                         showNotification('✅ 数据库备份已下载', 'success');
                     } catch (error) {
                         console.error('备份失败:', error);
-                        showMessageModal('错误', '数据库备份失败：' + error.message, 'alert');
+                        showMessageModal(t('errorTitle'), t('databaseBackupFailed').replace('{error}', error.message), 'alert');
                     }
                 });
             }
@@ -9223,7 +9671,7 @@ let userSearchTerm = '';
 
                 // 验证文件类型
                 if (!file.name.endsWith('.json')) {
-                    showMessageModal('错误', '请上传JSON格式的备份文件', 'alert');
+                    showMessageModal(t('errorTitle'), t('pleaseUploadJSONFile'), 'alert');
                     event.target.value = '';
                     return;
                 }
@@ -9391,7 +9839,7 @@ let userSearchTerm = '';
                                     infoDiv.style.display = 'block';
                                 }
 
-                                showMessageModal('成功', '数据库已成功恢复！', 'alert');
+                                showMessageModal(t('successTitle'), t('databaseRestoredSuccess'), 'alert');
                                 showNotification('✅ 数据库恢复成功', 'success');
 
                                 // 同步到云端（如果已初始化）
@@ -9404,7 +9852,7 @@ let userSearchTerm = '';
 
                             } catch (error) {
                                 console.error('恢复失败:', error);
-                                showMessageModal('错误', '数据库恢复失败：' + error.message, 'alert');
+                                showMessageModal(t('errorTitle'), t('databaseRestoreFailed').replace('{error}', error.message), 'alert');
                                 
                                 // 如果恢复失败，尝试重新加载页面数据
                                 try {
@@ -9418,7 +9866,7 @@ let userSearchTerm = '';
                                     }
                                 } catch (reloadError) {
                                     console.error('重新加载数据失败:', reloadError);
-                                    showMessageModal('错误', '数据恢复失败，页面可能需要刷新', 'alert');
+                                    showMessageModal(t('errorTitle'), t('dataRestoreFailed'), 'alert');
                                 }
                             }
 
@@ -9428,13 +9876,13 @@ let userSearchTerm = '';
 
                     } catch (error) {
                         console.error('读取备份文件失败:', error);
-                        showMessageModal('错误', '读取备份文件失败：' + error.message, 'alert');
+                        showMessageModal(t('errorTitle'), t('readBackupFileFailed').replace('{error}', error.message), 'alert');
                         event.target.value = '';
                     }
                 };
 
                 reader.onerror = function() {
-                    showMessageModal('错误', '读取文件失败', 'alert');
+                    showMessageModal(t('errorTitle'), t('readFileFailed'), 'alert');
                     event.target.value = '';
                 };
 
@@ -9452,7 +9900,7 @@ let userSearchTerm = '';
                     
                     if (!currentUser) {
                         console.warn('⚠️ 用户未登录');
-                        customAlert(t('pleaseLogin'), '提示').then(() => {
+                        customAlert(t('pleaseLogin'), t('infoTitle')).then(() => {
                             document.getElementById('login-modal').style.display = 'flex';
                         });
                         return;
@@ -9511,7 +9959,7 @@ let userSearchTerm = '';
                 // 检查currentProduct是否存在
                 if (!currentProduct) {
                     console.error('❌ 提交失败：currentProduct为空');
-                    customAlert(t('systemError'), '系统错误');
+                    customAlert(t('systemError'), t('errorTitle'));
                     return;
                 }
 
@@ -9836,29 +10284,57 @@ let userSearchTerm = '';
                 });
             });
 
-            const cleanUsersNodeBtn = document.getElementById('clean-users-node-btn');
-            if (cleanUsersNodeBtn) {
-                cleanUsersNodeBtn.addEventListener('click', () => {
-                    if (typeof isCurrentUserAdmin === 'function' && !isCurrentUserAdmin()) {
-                        alert('只有管理员可以执行此操作');
-                        return;
-                    }
-                    if (!cloudSync || !cloudSync.isInitialized) {
-                        alert('云端同步尚未初始化，请稍后再试');
-                        return;
-                    }
-                    if (!confirm('确定要清理 Realtime Database 中 users 节点里已无效的账号吗？此操作不可恢复，请确认已备份重要数据。')) {
-                        return;
-                    }
-                    showButtonFeedback('clean-users-node-btn', async () => {
-                        await cloudSync.cleanInvalidUsers();
-                    });
-                });
-            }
-
             const deleteSelectedUsersBtn = document.getElementById('delete-selected-users-btn');
             if (deleteSelectedUsersBtn) {
                 deleteSelectedUsersBtn.addEventListener('click', deleteSelectedUsers);
+            }
+
+            const clearCloudUsersBtn = document.getElementById('clear-cloud-users-btn');
+            if (clearCloudUsersBtn) {
+                clearCloudUsersBtn.addEventListener('click', async () => {
+                    try {
+                        if (!cloudSync || !cloudSync.isInitialized) {
+                            showMessageModal(t('errorTitle'), t('cloudSyncNotEnabledError'), 'alert');
+                            return;
+                        }
+
+                        if (!isCurrentUserAdmin()) {
+                            showMessageModal(t('errorTitle'), t('onlyAdminCanOperate'), 'alert');
+                            return;
+                        }
+
+                        const confirmed = await customConfirm(
+                            '此操作将清理云端 users 节点：仅删除那些不在 allUsers 列表中的账号数据。\n\n• allUsers 不会被修改\n• 本地用户列表不变\n\n是否继续？',
+                            '危险操作确认'
+                        );
+                        if (!confirmed) {
+                            return;
+                        }
+
+                        // 按钮禁用与状态反馈
+                        clearCloudUsersBtn.disabled = true;
+                        const originalText = clearCloudUsersBtn.textContent;
+                        clearCloudUsersBtn.textContent = '正在清理云端 users...';
+
+                        try {
+                            const result = await cloudSync.clearCloudUsers();
+                            if (result && result.skipped) {
+                                showMessageModal(t('infoTitle'), t('cloudAllUsersEmpty'), 'alert');
+                            } else {
+                                const removed = result?.removed || 0;
+                                showNotification(`已清理 users：删除 ${removed} 个账号（仅删除不在 allUsers 的账号）`, 'success');
+                            }
+                        } catch (err) {
+                            console.error('清理云端 users 失败:', err);
+                            showMessageModal(t('errorTitle'), t('clearCloudUsersFailed').replace('{error}', err.message || err), 'alert');
+                        } finally {
+                            clearCloudUsersBtn.disabled = false;
+                            clearCloudUsersBtn.textContent = originalText;
+                        }
+                    } catch (e) {
+                        console.error('处理清空云端用户按钮点击时出错:', e);
+                    }
+                });
             }
 
             const selectAllUsersCheckbox = document.getElementById('select-all-users');
@@ -10071,7 +10547,7 @@ let userSearchTerm = '';
                     const productId = parseInt(document.getElementById('edit-product-id').value);
                     const targetProduct = products.find(p => p.id === productId);
                     if (!targetProduct) {
-                        customAlert(t('productNotFound'), '错误');
+                        customAlert(t('productNotFound'), t('errorTitle'));
                         return;
                     }
 
@@ -10082,7 +10558,7 @@ let userSearchTerm = '';
                         .slice(0, 6);
 
                     if (editImageUrls.length === 0) {
-                        customAlert('请至少输入一张产品图片URL', '错误');
+                        customAlert(t('pleaseEnterAtLeastOneImage'), t('errorTitle'));
                         return;
                     }
 
@@ -10102,10 +10578,10 @@ let userSearchTerm = '';
                         updatedProduct[`imageUrl${i}`] = editImageUrls[i - 1] || '';
                     }
 
-                    if (!updatedProduct.name) { customAlert(t('productNameRequired'), '错误'); return; }
-                    if (!(updatedProduct.price > 0)) { customAlert(t('productPriceRequired'), '错误'); return; }
-                    if (updatedProduct.stock < 0) { customAlert(t('stock') + ' ' + t('cannotBeNegative'), '错误'); return; }
-                    if (!updatedProduct.image) { customAlert(t('productImageRequired'), '错误'); return; }
+                    if (!updatedProduct.name) { customAlert(t('productNameRequired'), t('errorTitle')); return; }
+                    if (!(updatedProduct.price > 0)) { customAlert(t('productPriceRequired'), t('errorTitle')); return; }
+                    if (updatedProduct.stock < 0) { customAlert(t('stock') + ' ' + t('cannotBeNegative'), t('errorTitle')); return; }
+                    if (!updatedProduct.image) { customAlert(t('productImageRequired'), t('errorTitle')); return; }
 
                     const productIndex = products.findIndex(p => p.id === productId);
                     if (productIndex !== -1) {
@@ -11657,6 +12133,24 @@ let userSearchTerm = '';
                 return;
             }
 
+            // ✅ 检查是否已经领取过该产品
+            if (currentUser && currentUser.account && Array.isArray(userOrders)) {
+                const hasExisting = userOrders.some(o =>
+                    o &&
+                    o.productId === product.id &&
+                    o.account === currentUser.account &&
+                    o.status !== 'cancelled'
+                );
+                if (hasExisting) {
+                    // 使用弹窗提示，而不是通知
+                    customAlert(
+                        t('productAlreadyClaimed') || '这个产品已经领取过啦，快去看看其它好物吧！',
+                        t('infoTitle') || '提示'
+                    );
+                    return;
+                }
+            }
+
             // 💎 领取前检查蜜罐
             try {
                 const user = allUsers.find(u => u.account === currentUser.account);
@@ -11665,22 +12159,14 @@ let userSearchTerm = '';
                     : 1;
 
                 if (currentPoints <= 0) {
-                    // 蜜罐为 0 时弹出提示，不允许继续领取
-                    const messageHtml = `
-                        <div style="font-size:14px; line-height:1.7; text-align:left;">
-                            <ul style="padding-left:18px; margin:8px 0 0;">
-                                <li>Write a review to earn <span style="color:#FBBF24; font-weight:700;">Honey</span>.</li>
-                                <li>Contact support for help.</li>
-                            </ul>
-                        </div>
-                    `;
-                    customAlertWithHtml?.(
-                        messageHtml,
-                        'Out of Honey Balance: 0'
-                    ) || customAlert(
-                        'Out of Honey Balance: 0\n\n• Write a review to earn Honey.\n• Contact support for help.',
-                        'Notice'
-                    );
+                    // 之前用右上角气泡提示，现在改为弹窗提示，避免"没反应"的感觉
+                    const isEnglish = (typeof t === 'function' && t('pointsBalance') === 'Honey Balance') || 
+                                      (typeof window !== 'undefined' && window.currentLanguage === 'en');
+                    const alertMessage = isEnglish 
+                        ? 'Balance: 0<br><br>• Write a review to earn <span class="honey-highlight">Honey</span>.<br><br>• Contact support for help.'
+                        : '余额: 0<br><br>• 完成评价可获得<span class="honey-highlight">蜜罐</span>。<br><br>• 如需帮助，请联系客服。';
+                    const alertTitle = isEnglish ? 'Out of Honey' : '蜜罐不足';
+                    customAlert(alertMessage, alertTitle);
                     return;
                 }
             } catch (err) {
@@ -12644,9 +13130,9 @@ let userSearchTerm = '';
 
         // 修改用户密码
         function editUserPassword(account) {
-            const newPassword = prompt('请输入新密码（至少6位）：');
+            const newPassword = prompt(t('enterNewPassword'));
             if (!newPassword || newPassword.length < 6) {
-                showNotification('密码长度不能少于6位', 'error');
+                showNotification(t('passwordTooShortError'), 'error');
                 return;
             }
 
@@ -12705,7 +13191,7 @@ let userSearchTerm = '';
 
         // 重置用户数据
         function resetUserData(account) {
-            if (!confirm('确定要重置此用户的所有数据吗？这将删除用户的订单、地址等信息！')) {
+            if (!confirm(t('confirmResetUserData'))) {
                 return;
             }
 
@@ -12716,19 +13202,19 @@ let userSearchTerm = '';
             saveUserOrders();
             saveUserAddresses();
 
-            showNotification('用户数据已重置', 'success');
+            showNotification(t('userDataReset'), 'success');
         }
 
         // 禁用用户
         function banUser(account) {
-            if (confirm('确定要禁用此用户吗？禁用后该用户将无法登录系统。')) {
+            if (confirm(t('confirmBanUser'))) {
                 const user = allUsers.find(u => u.account === account);
                 if (user) {
                     user.status = 'banned';
                     user.bannedTime = new Date().toISOString();
                     saveAllUsers();
                     renderUsersTable();
-                    showNotification('用户已禁用', 'success');
+                    showNotification(t('userBanned'), 'success');
 
                     // 关闭用户详情模态框
                     const modals = document.querySelectorAll('.modal');
@@ -12747,14 +13233,14 @@ let userSearchTerm = '';
 
         // 解禁用户
         function unbanUser(account) {
-            if (confirm('确定要解禁此用户吗？')) {
+            if (confirm(t('confirmUnbanUser'))) {
                 const user = allUsers.find(u => u.account === account);
                 if (user) {
                     user.status = 'active';
                     delete user.bannedTime;
                     saveAllUsers();
                     renderUsersTable();
-                    showNotification('用户已解禁', 'success');
+                    showNotification(t('userUnbanned'), 'success');
 
                     // 关闭用户详情模态框
                     const modals = document.querySelectorAll('.modal');
@@ -12852,23 +13338,16 @@ let userSearchTerm = '';
         async function deleteUserAccount(account) {
             const user = allUsers.find(u => u.account === account);
             if (!user) {
-                showNotification('用户不存在', 'error');
+                showNotification(t('userNotExists'), 'error');
                 return;
             }
 
             // 二次确认删除操作
             const confirmDelete = confirm(
-                `⚠️ 警告：您即将彻底删除用户账号！\n\n` +
-                `用户信息：\n` +
-                `账号：${account}\n` +
-                `用户名：${user.username}\n` +
-                `注册时间：${user.registerTime}\n\n` +
-                `此操作将删除：\n` +
-                `✓ 用户账号\n` +
-                `✓ 所有订单记录\n` +
-                `✓ 收货地址\n` +
-                `✓ 个人资料\n\n` +
-                `⚠️ 此操作不可撤销！确定要继续吗？`
+                t('confirmDeleteUser')
+                    .replace('{account}', account)
+                    .replace('{username}', user.username)
+                    .replace('{registerTime}', user.registerTime)
             );
 
             if (!confirmDelete) {
@@ -12877,13 +13356,12 @@ let userSearchTerm = '';
 
             // 再次确认
             const finalConfirm = prompt(
-                `最后确认：请输入用户账号 "${account}" 以确认删除\n\n` +
-                `⚠️ 输入错误将取消删除操作`,
+                t('finalConfirmDelete').replace('{account}', account),
                 ''
             );
 
             if (finalConfirm !== account) {
-                showNotification('账号输入不匹配，删除操作已取消', 'warning');
+                showNotification(t('accountInputMismatch'), 'warning');
                 return;
             }
 
@@ -12900,8 +13378,10 @@ let userSearchTerm = '';
                 modals.forEach(modal => modal.remove());
 
                 showNotification(
-                    `✅ 用户账号 "${account}" 及所有相关数据已彻底删除\n` +
-                    `删除了 ${orders} 个订单和 ${addresses} 个地址`,
+                    t('userDeletedSuccess')
+                        .replace('{account}', account)
+                        .replace('{orders}', orders)
+                        .replace('{addresses}', addresses),
                     'success'
                 );
 
@@ -12915,7 +13395,7 @@ let userSearchTerm = '';
                         await cloudSync.handleUserSessionChange();
                     }
                     updateUserInterface();
-                    showNotification('您的账号已被管理员删除', 'error');
+                    showNotification(t('accountDeletedByAdmin'), 'error');
                     // 跳转到首页
                     document.getElementById('home-page').style.display = 'block';
                     document.getElementById('user-center').style.display = 'none';
@@ -12924,22 +13404,22 @@ let userSearchTerm = '';
 
             } catch (error) {
                 console.error('❌ 删除用户失败:', error);
-                showNotification('删除用户失败: ' + error.message, 'error');
+                showNotification(t('deleteUserFailed') + ': ' + error.message, 'error');
             }
         }
 
         async function deleteSelectedUsers() {
             if (selectedUserAccounts.size === 0) {
-                showNotification('请先勾选要删除的账号', 'warning');
+                showNotification(t('pleaseSelectAccountsToDelete'), 'warning');
                 return;
             }
 
             const accounts = Array.from(selectedUserAccounts);
-            if (!confirm(`确定要删除选中的 ${accounts.length} 个账号吗？此操作不可撤销。`)) {
+            if (!confirm(t('confirmDeleteSelectedAccounts').replace('{count}', accounts.length))) {
                 return;
             }
 
-            showNotification('正在批量删除账号，请稍候...', 'info');
+            showNotification(t('deletingAccounts'), 'info');
 
             for (const account of accounts) {
                 try {
@@ -12951,24 +13431,24 @@ let userSearchTerm = '';
             }
 
             renderUsersTable();
-            showNotification('批量删除完成', 'success');
+            showNotification(t('batchDeleteComplete'), 'success');
         }
 
         async function handleSelfAccountDeletion() {
             if (!currentUser) {
-                showNotification('请先登录后再进行账号注销', 'warning');
+                showNotification(t('pleaseLoginBeforeDeletion'), 'warning');
                 return;
             }
 
             const account = currentUser.account;
-            const firstConfirm = confirm('确定要注销当前账号吗？该操作会删除所有订单、地址与个人资料，且无法恢复。');
+            const firstConfirm = confirm(t('confirmDeleteSelfAccount'));
             if (!firstConfirm) {
                 return;
             }
 
-            const finalInput = prompt(`请输入账号 "${account}" 以确认注销`, '');
+            const finalInput = prompt(t('finalConfirmDeleteSelf').replace('{account}', account), '');
             if (finalInput !== account) {
-                showNotification('账号输入不匹配，操作已取消', 'warning');
+                showNotification(t('accountInputMismatchCancel'), 'warning');
                 return;
             }
 
@@ -12983,17 +13463,17 @@ let userSearchTerm = '';
 
                 updateUserInterface();
                 showHomePage();
-                showNotification('账号已成功注销', 'success');
+                showNotification(t('accountDeletedSuccess'), 'success');
             } catch (error) {
                 console.error('注销账号失败:', error);
-                showNotification('注销失败：' + error.message, 'error');
+                showNotification(t('deleteAccountFailed') + '：' + error.message, 'error');
             }
         }
 
         async function deleteOrdersByIds(orderIds, showSuccessMessage = true) {
             const ids = (orderIds || []).map(normalizeOrderId).filter(Boolean);
             if (ids.length === 0) {
-                showNotification('未找到要删除的订单', 'warning');
+                showNotification(t('noOrdersToDelete'), 'warning');
                 return false;
             }
 
@@ -13069,7 +13549,7 @@ let userSearchTerm = '';
             }
 
             const ids = Array.from(selectedOrderIds);
-            if (!confirm(`确定要删除选中的 ${ids.length} 个订单吗？此操作不可恢复。`)) {
+            if (!confirm(t('confirmDeleteSelectedOrders').replace('{count}', ids.length))) {
                 return;
             }
 
@@ -13077,7 +13557,7 @@ let userSearchTerm = '';
             if (result) {
                 selectedOrderIds.clear();
                 refreshOrderSelectionUI();
-                showNotification('批量删除订单完成', 'success');
+                showNotification(t('batchDeleteComplete'), 'success');
             }
         }
 
@@ -13094,7 +13574,7 @@ let userSearchTerm = '';
             }
 
             const orderLabel = normalizeOrderId(orderId);
-            if (!confirm(`确定要删除订单 ${orderLabel} 吗？此操作不可恢复。`)) {
+            if (!confirm(t('confirmDeleteOrder').replace('{orderLabel}', orderLabel))) {
                 return;
             }
 
@@ -13592,9 +14072,9 @@ let userSearchTerm = '';
                     const newStatus = this.getAttribute('data-status');
                     const statusText = this.querySelector('span').textContent;
 
-                    if (confirm(`${t('confirmStatusUpdate')}"${statusText}"吗？`)) {
+                    if (confirm(`${t('confirmStatusUpdate')}"${statusText}"${t('confirmStatusUpdateSuffix')}`)) {
                         // 显示更新中提示
-                        showNotification('正在更新订单状态并同步到云端...', 'info');
+                        showNotification(t('updatingOrderStatus'), 'info');
                         
                         try {
                             // 更新订单状态
@@ -14031,13 +14511,13 @@ let userSearchTerm = '';
 
             const found = order ? findReviewByOrder(order) : findReviewContextByOrderId(orderId);
             if (!found || found.index === -1) {
-                showNotification('未找到该订单对应的评价', 'error');
+                showNotification(t('reviewNotFound'), 'error');
                 return;
             }
 
             const { product, index } = found;
             const currentReply = product.reviews[index].adminReply || '';
-            const reply = prompt(t('adminReply') || '管理员回复', currentReply);
+            const reply = prompt(t('adminReply'), currentReply);
             if (reply === null) return;
 
             product.reviews[index].adminReply = reply.trim();
@@ -14078,7 +14558,7 @@ let userSearchTerm = '';
                 return;
             }
 
-            if (!confirm('确定要删除该条评价吗？此操作不可恢复。')) {
+            if (!confirm(t('confirmDeleteReview'))) {
                 return;
             }
 
@@ -14139,12 +14619,12 @@ let userSearchTerm = '';
                 return;
             }
 
-            const replyContent = prompt(t('replyPlaceholder') || '请输入您的回复');
+            const replyContent = prompt(t('replyPlaceholder'));
             if (replyContent === null) return;
 
             const message = replyContent.trim();
             if (!message) {
-                showNotification('回复内容不能为空', 'warning');
+                showNotification(t('replyContentCannotBeEmpty'), 'warning');
                 return;
             }
 
@@ -14399,8 +14879,8 @@ let userSearchTerm = '';
 
         // 删除轮播图
         function deleteCarouselItem(id, type = 'desktop') {
-            const targetLabel = type === 'mobile' ? '移动端' : 'PC端';
-            customConfirm(`确定要删除这个${targetLabel}轮播图吗？`, '确认删除').then(confirmed => {
+            const targetLabel = type === 'mobile' ? t('mobile') : t('desktop');
+            customConfirm(t('confirmDeleteCarousel').replace('{targetLabel}', targetLabel), t('confirmTitle')).then(confirmed => {
                 if (confirmed) {
                     if (type === 'mobile') {
                         homepageSettings.mobileCarousel = (homepageSettings.mobileCarousel || []).filter(c => c.id !== id);
@@ -14558,7 +15038,7 @@ let userSearchTerm = '';
 
         // 重置主页设置
         function resetHomepageSettings() {
-            if (confirm('确定要重置所有主页设置吗？这将恢复默认配置。')) {
+            if (confirm(t('confirmResetHomepageSettings'))) {
                 homepageSettings = normalizeHomepageSettings({
                     siteTitle: '电商平台',
                     siteSlogan: '优质商品，值得信赖',
@@ -14669,11 +15149,11 @@ let userSearchTerm = '';
                     const product = products.find(p => parseInt(p.id) === productId);
 
                     if (!product) {
-                        customAlert('删除失败：未找到对应产品数据', '错误');
+                        customAlert(t('deleteFailedProductNotFound'), t('errorTitle'));
                         return;
                     }
 
-                    if (confirm(`确定要删除产品 "${product.name}" 吗？此操作不可撤销！`)) {
+                    if (confirm(t('confirmDeleteProduct').replace('{name}', product.name))) {
                         try {
                             products = products.filter(p => parseInt(p.id) !== productId);
                             saveProducts();
@@ -14685,7 +15165,7 @@ let userSearchTerm = '';
                             setTimeout(() => {
                                 productCard.remove();
                                 if (products.length === 0) {
-                                    adminProductsGrid.innerHTML = '<div class="no-products">暂无商品，请添加或导入商品</div>';
+                                    adminProductsGrid.innerHTML = `<div class="no-products">${t('noProductsAddOrImport')}</div>`;
                                 }
                                 showNotification(`成功删除产品: ${product.name}`, 'success');
                             }, 300);
@@ -14708,7 +15188,7 @@ let userSearchTerm = '';
             console.log('📝 编辑产品:', product);
 
             if (!product) {
-                customAlert('产品数据错误', '错误');
+                customAlert(t('productDataError'), t('errorTitle'));
                 return;
             }
 
@@ -14882,19 +15362,19 @@ let userSearchTerm = '';
                     const parsedData = extractProductsFromWorkbook(workbook);
 
                     if (!parsedData.length) {
-                        throw new Error('未检测到可导入的产品数据，请检查表头是否包含“产品名称”和“图片URL”。');
+                        throw new Error(t('noProductDataDetected'));
                     }
 
-                    setStatus('success', '解析成功！', `发现 ${parsedData.length} 个产品`, '<i class="fas fa-check-circle" style="color: #2ecc71;"></i>');
+                    setStatus('success', t('parseSuccess') || '解析成功！', t('foundProducts')?.replace('{count}', parsedData.length) || `发现 ${parsedData.length} 个产品`, '<i class="fas fa-check-circle" style="color: #2ecc71;"></i>');
                     showExcelDataPreview(parsedData);
                 } catch (error) {
                     console.error('解析Excel失败:', error);
-                    setStatus('error', '解析失败', error.message || '请检查Excel格式后重试', '<i class="fas fa-times-circle" style="color: #e74c3c;"></i>');
+                    setStatus('error', t('parseFailed'), error.message || t('checkExcelFormat'), '<i class="fas fa-times-circle" style="color: #e74c3c;"></i>');
                 }
             };
 
             reader.onerror = () => {
-                setStatus('error', '读取失败', '文件读取过程中出现错误，请重试。', '<i class="fas fa-times-circle" style="color: #e74c3c;"></i>');
+                setStatus('error', t('readFailed'), t('fileReadError'), '<i class="fas fa-times-circle" style="color: #e74c3c;"></i>');
             };
 
             reader.readAsArrayBuffer(file);
@@ -15118,7 +15598,7 @@ let userSearchTerm = '';
             }
 
             // 确认取消
-            if (!confirm(t('confirmCancelOrder') || '确定要取消这个订单吗？')) {
+            if (!confirm(t('confirmCancelOrder'))) {
                 return;
             }
 
@@ -15414,13 +15894,13 @@ let userSearchTerm = '';
             console.log('Form values:', { name, phone, detail, city, state, postal });
 
             if (!name || !phone || !detail || !city || !state || !postal) {
-                customAlert('Please fill in all required fields', '提示');
+                customAlert(t('pleaseFillAllFields'), t('infoTitle'));
                 return;
             }
 
             // 验证电话号码（美国格式）
             if (!/^[\d\s\-\(\)]+$/.test(phone)) {
-                customAlert('Please enter a valid phone number', '提示');
+                customAlert(t('pleaseEnterValidPhone'), t('infoTitle'));
                 return;
             }
 
@@ -15737,7 +16217,7 @@ let userSearchTerm = '';
                 console.log('🔧 导入调试 - 导入后的产品:', products);
 
                 if (saveResult) {
-                    customAlert(`✅ 成功导入 ${importedProducts.length} 个产品！`, t('successTitle'));
+                    customAlert(`✅ ${t('importProductsSuccess').replace('{count}', importedProducts.length)}`, t('successTitle'));
                 } else {
                     customAlert(t('importDataSaveError'), t('errorTitle'));
                 }
@@ -15848,7 +16328,7 @@ let userSearchTerm = '';
             const selectedProducts = products.filter(p => selectedIds.includes(parseInt(p.id)));
             const productNames = selectedProducts.map(p => p.name).join('、');
 
-            if (!confirm(`确定要删除以下 ${selectedIds.length} 个产品吗？\n\n${productNames}\n\n此操作不可撤销！`)) {
+            if (!confirm(t('confirmDeleteSelectedProducts').replace('{count}', selectedIds.length).replace('{productNames}', productNames))) {
                 return;
             }
 
@@ -16716,6 +17196,43 @@ let userSearchTerm = '';
         let messageModalCallback = null;
         let messageModalType = 'alert'; // 'alert' 或 'confirm'
 
+        // 简易翻译映射（用于兜底将常见中文提示翻为英文）
+        const INLINE_CN_EN_MAP = {
+            '网络已连接': 'Network connected',
+            '您已离线，数据将被缓存': 'You are offline. Data will be cached',
+            '正在同步数据...': 'Syncing data...',
+            '成功同步': 'Sync successful',
+            '缓存已清除': 'Cache cleared',
+            '请先登录': 'Please login first',
+            '权限不足': 'Insufficient permissions',
+            '账号被禁用': 'Account disabled',
+            '登录失败，请稍后重试': 'Login failed, please try again later',
+            '注册成功！': 'Registration successful!',
+            '注册失败，请稍后重试': 'Registration failed, please try again later',
+            '请输入账号': 'Please enter account',
+            '账号长度至少为3个字符': 'Account must be at least 3 characters',
+            '请输入密码': 'Please enter password',
+            '请确认密码': 'Please confirm password',
+            '密码长度至少为6个字符': 'Password must be at least 6 characters',
+            '两次输入的密码不一致，请重新输入': 'The two passwords do not match, please re-enter',
+            '产品名称不能为空': 'Product name cannot be empty',
+            '请输入有效的产品价格': 'Please enter a valid price',
+            '请至少输入一张产品图片URL': 'Please enter at least one product image URL',
+            '产品已更新': 'Product updated',
+            '产品添加成功！': 'Product added successfully!',
+            '产品添加失败': 'Failed to add product',
+            '用户不存在': 'User not found',
+            '用户数据已重置': 'User data has been reset',
+            '用户已禁用': 'User has been disabled',
+            '用户已解禁': 'User has been unbanned',
+            '订单已删除': 'Order deleted',
+            '请先勾选要删除的订单': 'Please select orders to delete first'
+        };
+        function translateInline(msg){
+            if (!msg || currentLanguage !== 'en') return msg;
+            return INLINE_CN_EN_MAP[msg] || msg;
+        }
+
         function showMessageModal(title, message, type = 'alert', callback = null) {
             const modal = document.getElementById('message-modal');
             const titleEl = document.getElementById('message-modal-title');
@@ -16725,10 +17242,23 @@ let userSearchTerm = '';
             const confirmBtn = document.getElementById('message-modal-confirm');
             const cancelBtn = document.getElementById('message-modal-cancel');
 
-            titleEl.textContent = title || '提示';
-            textEl.textContent = message;
+            // 标题与消息统一国际化
+            const titleMap = { '错误': (t('errorTitle')||'Error'), '成功': (t('successTitle')||'Success'), '提示': (t('infoTitle')||'Notice'), '确认': (t('confirmTitle')||'Confirm'), '系统错误': (t('errorTitle')||'Error')};
+            const finalTitle = titleMap[title] || title || (t('infoTitle') || 'Notice');
+            titleEl.textContent = finalTitle;
+            // 支持 HTML 内容（如果 message 包含 HTML 标签则使用 innerHTML，否则使用 textContent）
+            if (typeof message === 'string' && (message.includes('<') && message.includes('>'))) {
+                textEl.innerHTML = translateInline(message);
+            } else {
+                textEl.textContent = translateInline(message);
+            }
             messageModalType = type;
             messageModalCallback = callback;
+
+            // 更新按钮文案
+            okBtn.textContent = (t('ok') || 'OK');
+            confirmBtn.textContent = (t('confirm') || 'Confirm');
+            cancelBtn.textContent = (t('cancel') || 'Cancel');
 
             if (type === 'confirm') {
                 okBtn.style.display = 'none';
@@ -16772,7 +17302,7 @@ let userSearchTerm = '';
 
             // 替代alert函数（支持多语言标题）
             function customAlert(message, title) {
-                const finalTitle = title || (typeof t === 'function' ? (t('infoTitle') || '提示') : '提示');
+                const finalTitle = title || (typeof t === 'function' ? t('infoTitle') : 'Info');
             return new Promise((resolve) => {
                     showMessageModal(finalTitle, message, 'alert', () => resolve());
             });
@@ -16780,7 +17310,7 @@ let userSearchTerm = '';
 
         // 替代confirm函数
             function customConfirm(message, title) {
-                const finalTitle = title || (typeof t === 'function' ? (t('confirmTitle') || '确认') : '确认');
+                const finalTitle = title || (typeof t === 'function' ? t('confirmTitle') : 'Confirm');
             return new Promise((resolve) => {
                     showMessageModal(finalTitle, message, 'confirm', (result) => resolve(result));
             });
@@ -16829,7 +17359,7 @@ let userSearchTerm = '';
             const image = document.getElementById('carousel-image-input').value.trim();
 
             if (!title || !description || !buttonText || !image) {
-                showMessageModal('错误', '请填写所有必填字段', 'alert');
+                showMessageModal(t('errorTitle'), t('pleaseFillAllRequiredFields'), 'alert');
                 return;
             }
 
@@ -16846,7 +17376,7 @@ let userSearchTerm = '';
                     item.image = image;
                     saveHomepageSettings();
                     renderCarouselList(currentCarouselEditData.type);
-                    showMessageModal('成功', '轮播图已更新', 'alert');
+                    showMessageModal(t('successTitle'), t('carouselUpdated'), 'alert');
                     closeCarouselEditModal();
                 }
             } else {
@@ -16873,7 +17403,7 @@ let userSearchTerm = '';
                 }
                 saveHomepageSettings();
                 renderCarouselList(currentCarouselEditData.type);
-                showMessageModal('成功', `${currentCarouselEditData.type === 'mobile' ? '移动端' : 'PC端'}轮播图已添加`, 'alert');
+                showMessageModal(t('successTitle'), currentCarouselEditData.type === 'mobile' ? t('mobileCarouselAdded') : t('pcCarouselAdded'), 'alert');
                 closeCarouselEditModal();
             }
         }
@@ -16966,18 +17496,18 @@ let userSearchTerm = '';
             const description = document.getElementById('product-description-input').value.trim();
 
             if (!name) {
-                showMessageModal('错误', '请输入产品名称', 'alert');
+                showMessageModal(t('errorTitle'), t('pleaseEnterProductName'), 'alert');
                 return;
             }
 
             const price = parseFloat(priceInput);
             if (!priceInput || isNaN(price) || price <= 0) {
-                showMessageModal('错误', '请输入有效的产品价格', 'alert');
+                showMessageModal(t('errorTitle'), t('pleaseEnterValidPrice'), 'alert');
                 return;
             }
 
             if (imageUrls.length === 0) {
-                showMessageModal('错误', '请至少输入一张产品图片URL', 'alert');
+                showMessageModal(t('errorTitle'), t('pleaseEnterAtLeastOneImage'), 'alert');
                 return;
             }
 
@@ -17000,10 +17530,10 @@ let userSearchTerm = '';
                     saveProducts().then(() => {
                         renderAdminProducts();
                         renderProducts(products);
-                        showMessageModal('成功', '产品已更新', 'alert');
+                        showMessageModal(t('successTitle'), t('productUpdated'), 'alert');
                         closeProductEditModal();
                     }).catch(err => {
-                        showMessageModal('错误', '产品更新失败', 'alert');
+                        showMessageModal(t('errorTitle'), t('productUpdateFailedError'), 'alert');
                     });
                 }
             } else {
@@ -17036,13 +17566,13 @@ let userSearchTerm = '';
                     if (saveResult) {
                         renderAdminProducts();
                         renderProducts(products);
-                        showMessageModal('成功', '产品添加成功！ID: ' + product.id, 'alert');
+                        showMessageModal(t('successTitle'), t('productAddedSuccess').replace('{id}', product.id), 'alert');
                         closeProductEditModal();
                     } else {
-                        showMessageModal('错误', '产品添加失败', 'alert');
+                        showMessageModal(t('errorTitle'), t('productAddFailedError'), 'alert');
                     }
                 }).catch(err => {
-                    showMessageModal('错误', '产品添加失败', 'alert');
+                    showMessageModal(t('errorTitle'), t('productAddFailedError'), 'alert');
                 });
             }
         }
