@@ -6058,6 +6058,9 @@ let userSearchTerm = '';
                 this.userOrdersRef = null;
                 this.pendingOrderUpdate = null;
                 this.orderUpdateTimer = null;
+                this.userAddressesRef = null;
+                this.pendingAddressUpdate = null;
+                this.addressUpdateTimer = null;
                 this.allOrdersRef = null;
 
                 // ========== Firebase 配置 ==========
@@ -7385,6 +7388,19 @@ let userSearchTerm = '';
                 this.pendingOrderUpdate = null;
             }
 
+            // 移除用户地址监听器
+            detachUserAddressesListener() {
+                if (this.userAddressesRef) {
+                    this.userAddressesRef.off();
+                    this.userAddressesRef = null;
+                }
+                if (this.addressUpdateTimer) {
+                    clearTimeout(this.addressUpdateTimer);
+                    this.addressUpdateTimer = null;
+                }
+                this.pendingAddressUpdate = null;
+            }
+
             // 监听用户订单变化
             attachUserOrdersListener() {
                 if (!this.isInitialized || !currentUser) return;
@@ -7416,6 +7432,73 @@ let userSearchTerm = '';
                 });
             }
 
+            // 监听用户地址变化
+            attachUserAddressesListener() {
+                if (!this.isInitialized || !currentUser) return;
+
+                this.detachUserAddressesListener();
+
+                const userPath = this.getUserPath();
+                const addressesRef = this.db.ref(`${userPath}/addresses`);
+                this.userAddressesRef = addressesRef;
+
+                addressesRef.on('value', (snapshot) => {
+                    const cloudAddresses = snapshot.val();
+                    if (cloudAddresses && Array.isArray(cloudAddresses)) {
+                        if (this.syncInProgress) {
+                            console.log('⏳ 同步进行中，延迟处理云端地址更新...');
+                            this.pendingAddressUpdate = cloudAddresses;
+                            if (this.addressUpdateTimer) clearTimeout(this.addressUpdateTimer);
+                            this.addressUpdateTimer = setTimeout(() => {
+                                if (this.pendingAddressUpdate) {
+                                    console.log('🔄 延迟处理云端地址更新');
+                                    this.processUserAddressUpdate(this.pendingAddressUpdate, true);
+                                    this.pendingAddressUpdate = null;
+                                }
+                            }, 1500);
+                        } else {
+                            this.processUserAddressUpdate(cloudAddresses, false);
+                        }
+                    } else if (cloudAddresses === null) {
+                        // 云端地址被清空
+                        userAddresses = [];
+                        const userAddressesKey = `userAddresses_${currentUser.account || 'guest'}`;
+                        localStorage.setItem(userAddressesKey, JSON.stringify(userAddresses));
+                        localStorage.setItem('userAddresses', JSON.stringify(userAddresses));
+                        if (typeof renderAddressList === 'function') {
+                            renderAddressList();
+                        }
+                    }
+                });
+            }
+
+            // 处理云端地址更新
+            processUserAddressUpdate(cloudAddresses, immediate = false) {
+                if (!currentUser || !Array.isArray(cloudAddresses)) return;
+
+                // 更新全局变量和localStorage
+                userAddresses = cloudAddresses;
+                const userAddressesKey = `userAddresses_${currentUser.account || 'guest'}`;
+                localStorage.setItem(userAddressesKey, JSON.stringify(userAddresses));
+                localStorage.setItem('userAddresses', JSON.stringify(userAddresses));
+                
+                console.log('✅ 地址数据已从云端更新:', userAddresses.length, '个地址');
+
+                // 刷新地址列表显示
+                if (immediate) {
+                    if (typeof renderAddressList === 'function') {
+                        renderAddressList();
+                    }
+                } else {
+                    clearTimeout(window.addressUpdateTimer);
+                    window.addressUpdateTimer = setTimeout(() => {
+                        if (typeof renderAddressList === 'function') {
+                            renderAddressList();
+                        }
+                    }, 300);
+                }
+            }
+
             // 移除管理员订单监听器
             detachAllOrdersListener() {
                 if (this.allOrdersRef) {
@@ -7430,6 +7513,7 @@ let userSearchTerm = '';
 
                 // 清理旧监听器
                 this.detachUserOrdersListener();
+                this.detachUserAddressesListener();
                 this.detachAllOrdersListener();
 
                 if (!currentUser) {
@@ -7456,7 +7540,7 @@ let userSearchTerm = '';
                     userAddresses = JSON.parse(localStorage.getItem(userAddressesKey)) || JSON.parse(localStorage.getItem('userAddresses')) || [];
                     console.log('✅ handleUserSessionChange - 数据已加载 - 订单数:', userOrders.length, '地址数:', userAddresses.length);
                     
-                    // 立即刷新界面显示
+                    // 立即刷新界面显示（同步执行，不等待）
                     if (typeof renderUserOrders === 'function') {
                         renderUserOrders();
                     }
@@ -7465,8 +7549,9 @@ let userSearchTerm = '';
                     }
                 }
 
-                // 重新监听该用户的订单
+                // 重新监听该用户的订单和地址（实时同步）
                 this.attachUserOrdersListener();
+                this.attachUserAddressesListener();
 
                 // 管理员需要同步所有订单
                 if (currentUser.role === 'admin') {
@@ -7537,11 +7622,16 @@ let userSearchTerm = '';
                 }
 
                 // 移除所有监听器
+                this.detachUserOrdersListener();
+                this.detachUserAddressesListener();
+                this.detachAllOrdersListener();
+                
                 if (this.db) {
                     this.db.ref('products').off();
                     if (currentUser) {
                         const userPath = this.getUserPath();
                         this.db.ref(`${userPath}/orders`).off();
+                        this.db.ref(`${userPath}/addresses`).off();
                     }
                 }
             }
@@ -9277,6 +9367,12 @@ let userSearchTerm = '';
                             
                             console.log('✅ 登录后数据已同步 - 订单数:', userOrders.length, '地址数:', userAddresses.length);
 
+                            // 立即更新界面显示（在显示通知之前）
+                            updateUserInterface();
+                            renderProducts(products);
+                            renderUserOrders();
+                            renderAddressList();
+
                             showNotification(`☁️ 云端数据加载完成！欢迎 ${authResult.username}`, 'success');
                         } else {
                             // 云端同步未启用,回退到本地缓存
@@ -9288,6 +9384,13 @@ let userSearchTerm = '';
                             userOrders = JSON.parse(localStorage.getItem(userOrdersKey)) || [];
                             userAddresses = JSON.parse(localStorage.getItem(userAddressesKey)) || [];
                             allUsers = JSON.parse(localStorage.getItem('allUsers')) || [];
+                            
+                            // 立即更新界面显示
+                            updateUserInterface();
+                            renderProducts(products);
+                            renderUserOrders();
+                            renderAddressList();
+                            
                             showNotification(`💾 云端未连接，已加载本地数据！欢迎 ${authResult.username}`, 'warning');
                         }
                     } catch (error) {
@@ -9300,21 +9403,13 @@ let userSearchTerm = '';
                         userOrders = JSON.parse(localStorage.getItem(userOrdersKey)) || [];
                         userAddresses = JSON.parse(localStorage.getItem(userAddressesKey)) || [];
                         allUsers = JSON.parse(localStorage.getItem('allUsers')) || [];
-                    }
-
-                    // 更新界面显示 - 确保在数据加载完成后立即刷新
-                    updateUserInterface();
-                    renderProducts(products);
-                    // 强制刷新订单和地址列表，确保显示最新数据
-                    renderUserOrders();
-                    renderAddressList();
-                    
-                    // 额外延迟刷新一次，确保数据完全同步
-                    setTimeout(() => {
+                        
+                        // 立即更新界面显示
+                        updateUserInterface();
+                        renderProducts(products);
                         renderUserOrders();
                         renderAddressList();
-                        console.log('🔄 界面已刷新 - 订单数:', userOrders.length, '地址数:', userAddresses.length);
-                    }, 300);
+                    }
 
                     // 如果是管理员，显示控制面板
                     if (authResult.role === 'admin') {
