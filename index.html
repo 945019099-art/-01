@@ -4161,6 +4161,22 @@
                 </div>
 
                 <div class="admin-content">
+                    <!-- 设备注册限制管理区域 -->
+                    <div class="device-limit-section" style="margin-bottom: 20px; padding: 15px; background-color: #f8f9fa; border-radius: 8px; border: 1px solid #dee2e6;">
+                        <h3 style="margin-top: 0; margin-bottom: 15px; font-size: 16px; color: #333;">设备注册限制管理</h3>
+                        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                            <input type="text" id="device-limit-device-input" class="form-control" placeholder="输入设备ID" style="flex: 1; min-width: 200px;">
+                            <input type="number" id="device-limit-value-input" class="form-control" placeholder="注册限制数量" min="0" max="100" value="2" style="width: 150px;">
+                            <button class="btn btn-primary" id="set-device-limit-btn">设置限制</button>
+                            <button class="btn btn-secondary" id="view-device-limits-btn">查看所有限制</button>
+                            <button class="btn btn-danger" id="reset-device-limit-btn">重置为默认(2)</button>
+                        </div>
+                        <div id="device-limits-list" style="margin-top: 15px; display: none;">
+                            <h4 style="font-size: 14px; margin-bottom: 10px;">当前设备注册限制：</h4>
+                            <div id="device-limits-content" style="max-height: 200px; overflow-y: auto;"></div>
+                        </div>
+                    </div>
+
                     <div class="user-filters">
                         <select id="user-role-filter" class="form-control">
                             <option value="">全部角色</option>
@@ -4892,6 +4908,9 @@ let allOrders = [];  // 所有用户的订单数据（用于后台管理）
 let userAddresses = [];  // 地址数据将在登录后从云端加载
 let userProfile = {};  // 用户资料将在登录后从云端加载
 let allUsers = [];  // 所有用户数据(仅管理员使用,从云端加载)
+// 设备注册限制配置：{ deviceId: limit }，默认限制为2
+let deviceRegisterLimits = JSON.parse(localStorage.getItem('deviceRegisterLimits')) || {};
+const DEFAULT_DEVICE_REGISTER_LIMIT = 2; // 默认每个设备最多注册2个账号
 let currentProduct = null;
 let pendingSignupProduct = null; // 记录待领取的产品（用户登录后需要打开报名模态框）
 let pendingSignupFormData = null; // 记录用户已填写的报名表单数据
@@ -8510,6 +8529,70 @@ let userSearchTerm = '';
             localStorage.setItem('userProfile', JSON.stringify(userProfile));
         }
 
+        // 保存设备注册限制
+        function saveDeviceRegisterLimits() {
+            localStorage.setItem('deviceRegisterLimits', JSON.stringify(deviceRegisterLimits));
+        }
+
+        // 获取设备的注册限制
+        function getDeviceRegisterLimit(deviceId) {
+            return deviceRegisterLimits[deviceId] !== undefined 
+                ? deviceRegisterLimits[deviceId] 
+                : DEFAULT_DEVICE_REGISTER_LIMIT;
+        }
+
+        // 更新设备限制列表显示
+        function updateDeviceLimitsList() {
+            const contentDiv = document.getElementById('device-limits-content');
+            if (!contentDiv) return;
+
+            const devices = Object.keys(deviceRegisterLimits);
+            if (devices.length === 0) {
+                contentDiv.innerHTML = '<p style="color: #666; margin: 0;">暂无自定义限制，所有设备使用默认限制(' + DEFAULT_DEVICE_REGISTER_LIMIT + ')</p>';
+                return;
+            }
+
+            // 统计每个设备的实际注册数量
+            const deviceUserCountMap = {};
+            allUsers.forEach(user => {
+                if (user.role !== 'admin' && user.deviceId) {
+                    deviceUserCountMap[user.deviceId] = (deviceUserCountMap[user.deviceId] || 0) + 1;
+                }
+            });
+
+            let html = '<table style="width: 100%; border-collapse: collapse;">';
+            html += '<thead><tr style="background-color: #e9ecef;"><th style="padding: 8px; text-align: left; border: 1px solid #dee2e6;">设备ID</th>';
+            html += '<th style="padding: 8px; text-align: center; border: 1px solid #dee2e6;">限制数量</th>';
+            html += '<th style="padding: 8px; text-align: center; border: 1px solid #dee2e6;">已注册</th>';
+            html += '<th style="padding: 8px; text-align: center; border: 1px solid #dee2e6;">操作</th></tr></thead><tbody>';
+
+            devices.forEach(deviceId => {
+                const limit = deviceRegisterLimits[deviceId];
+                const currentCount = deviceUserCountMap[deviceId] || 0;
+                const statusColor = currentCount >= limit ? '#dc3545' : (currentCount >= limit * 0.8 ? '#ffc107' : '#28a745');
+                html += `<tr style="border-bottom: 1px solid #dee2e6;">`;
+                html += `<td style="padding: 8px; border: 1px solid #dee2e6;">${formatDeviceLabel(deviceId)}<br><small style="color: #666;">${deviceId}</small></td>`;
+                html += `<td style="padding: 8px; text-align: center; border: 1px solid #dee2e6;">${limit}</td>`;
+                html += `<td style="padding: 8px; text-align: center; border: 1px solid #dee2e6; color: ${statusColor}; font-weight: bold;">${currentCount}</td>`;
+                html += `<td style="padding: 8px; text-align: center; border: 1px solid #dee2e6;">`;
+                html += `<button class="btn btn-sm btn-danger" onclick="removeDeviceLimit('${deviceId}')" style="padding: 4px 8px; font-size: 12px;">删除</button>`;
+                html += `</td></tr>`;
+            });
+
+            html += '</tbody></table>';
+            contentDiv.innerHTML = html;
+        }
+
+        // 删除设备限制
+        function removeDeviceLimit(deviceId) {
+            if (confirm(`确定要删除设备 ${formatDeviceLabel(deviceId)} 的自定义注册限制吗？删除后将使用默认限制(${DEFAULT_DEVICE_REGISTER_LIMIT})。`)) {
+                delete deviceRegisterLimits[deviceId];
+                saveDeviceRegisterLimits();
+                updateDeviceLimitsList();
+                showMessageModal('成功', '设备限制已删除', 'success');
+            }
+        }
+
         function saveAllUsers() {
             localStorage.setItem('allUsers', JSON.stringify(allUsers));
             
@@ -8733,10 +8816,14 @@ let userSearchTerm = '';
                 return { success: false, message: t('accountExists') };
             }
 
-            // 同一设备最多允许 2 个账号
+            // 检查设备注册限制（可配置）
             const deviceId = getDeviceId();
             const sameDeviceUsers = allUsers.filter(u => u.deviceId === deviceId);
-            if (sameDeviceUsers.length >= 2) {
+            // 获取该设备的注册限制，如果没有设置则使用默认值
+            const deviceLimit = deviceRegisterLimits[deviceId] !== undefined 
+                ? deviceRegisterLimits[deviceId] 
+                : DEFAULT_DEVICE_REGISTER_LIMIT;
+            if (sameDeviceUsers.length >= deviceLimit) {
                 return {
                     success: false,
                     message: t('deviceRegisterLimitReached') || '已经有账户啦，快去登录账户领取好物吧！'
@@ -10382,6 +10469,65 @@ let userSearchTerm = '';
             const deleteSelectedUsersBtn = document.getElementById('delete-selected-users-btn');
             if (deleteSelectedUsersBtn) {
                 deleteSelectedUsersBtn.addEventListener('click', deleteSelectedUsers);
+            }
+
+            // 设备注册限制管理事件
+            const setDeviceLimitBtn = document.getElementById('set-device-limit-btn');
+            if (setDeviceLimitBtn) {
+                setDeviceLimitBtn.addEventListener('click', () => {
+                    const deviceId = document.getElementById('device-limit-device-input').value.trim();
+                    const limitValue = parseInt(document.getElementById('device-limit-value-input').value);
+                    
+                    if (!deviceId) {
+                        showMessageModal('错误', '请输入设备ID', 'alert');
+                        return;
+                    }
+                    
+                    if (isNaN(limitValue) || limitValue < 0 || limitValue > 100) {
+                        showMessageModal('错误', '请输入有效的限制数量（0-100）', 'alert');
+                        return;
+                    }
+                    
+                    deviceRegisterLimits[deviceId] = limitValue;
+                    saveDeviceRegisterLimits();
+                    showMessageModal('成功', `设备 ${deviceId} 的注册限制已设置为 ${limitValue}`, 'success');
+                    document.getElementById('device-limit-device-input').value = '';
+                    updateDeviceLimitsList();
+                });
+            }
+
+            const viewDeviceLimitsBtn = document.getElementById('view-device-limits-btn');
+            if (viewDeviceLimitsBtn) {
+                viewDeviceLimitsBtn.addEventListener('click', () => {
+                    const listDiv = document.getElementById('device-limits-list');
+                    if (listDiv.style.display === 'none') {
+                        updateDeviceLimitsList();
+                        listDiv.style.display = 'block';
+                    } else {
+                        listDiv.style.display = 'none';
+                    }
+                });
+            }
+
+            const resetDeviceLimitBtn = document.getElementById('reset-device-limit-btn');
+            if (resetDeviceLimitBtn) {
+                resetDeviceLimitBtn.addEventListener('click', () => {
+                    const deviceId = document.getElementById('device-limit-device-input').value.trim();
+                    if (!deviceId) {
+                        showMessageModal('错误', '请输入要重置的设备ID', 'alert');
+                        return;
+                    }
+                    
+                    if (deviceRegisterLimits[deviceId] !== undefined) {
+                        delete deviceRegisterLimits[deviceId];
+                        saveDeviceRegisterLimits();
+                        showMessageModal('成功', `设备 ${deviceId} 的注册限制已重置为默认值(${DEFAULT_DEVICE_REGISTER_LIMIT})`, 'success');
+                        document.getElementById('device-limit-device-input').value = '';
+                        updateDeviceLimitsList();
+                    } else {
+                        showMessageModal('提示', `设备 ${deviceId} 未设置自定义限制，已使用默认值`, 'info');
+                    }
+                });
             }
 
             const clearCloudUsersBtn = document.getElementById('clear-cloud-users-btn');
@@ -12652,6 +12798,11 @@ let userSearchTerm = '';
                 case 'users':
                     document.getElementById('admin-users').classList.add('active');
                     renderUsersTable();
+                    // 如果设备限制列表已展开，更新显示
+                    const deviceLimitsList = document.getElementById('device-limits-list');
+                    if (deviceLimitsList && deviceLimitsList.style.display !== 'none') {
+                        updateDeviceLimitsList();
+                    }
                     break;
                 case 'orders':
                     document.getElementById('admin-orders').classList.add('active');
@@ -12791,9 +12942,15 @@ let userSearchTerm = '';
                     deviceUserCountMap[user.deviceId] > 1;
 
                 const deviceLabel = formatDeviceLabel(user.deviceId);
-                const suspiciousBadge = isSuspiciousDevice && deviceLabel
-                    ? `<span class="status-badge status-pending" style="margin-left:6px;" title="同一设备注册了多个账号">${deviceLabel}</span>`
+                // 获取设备注册限制信息
+                const deviceLimit = user.deviceId ? getDeviceRegisterLimit(user.deviceId) : null;
+                const deviceCurrentCount = user.deviceId ? (deviceUserCountMap[user.deviceId] || 0) : 0;
+                const deviceLimitInfo = user.deviceId && deviceLimit !== null
+                    ? ` (${deviceCurrentCount}/${deviceLimit})`
                     : '';
+                const suspiciousBadge = isSuspiciousDevice && deviceLabel
+                    ? `<span class="status-badge status-pending" style="margin-left:6px;" title="同一设备注册了多个账号${deviceLimitInfo ? '，限制：' + deviceLimit + '，当前：' + deviceCurrentCount : ''}">${deviceLabel}${deviceLimitInfo}</span>`
+                    : (deviceLabel ? `<span class="status-badge" style="margin-left:6px; background-color: #6c757d; color: white;" title="设备注册限制：${deviceLimit}，当前：${deviceCurrentCount}">${deviceLabel}${deviceLimitInfo}</span>` : '');
 
                 let rowStyle = '';
                 if (userStatus === 'banned') {
