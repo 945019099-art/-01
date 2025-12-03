@@ -8,181 +8,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
-    <!-- 清除所有本地缓存 - 在页面加载前执行 -->
-    <script>
-        (function() {
-            // 清除所有本地存储缓存（账号、订单、产品等所有数据）
-            try {
-                console.log('🧹 正在清除所有本地缓存数据...');
-                
-                // 保存语言设置（唯一需要保留的设置）
-                const savedLanguage = localStorage.getItem('language');
-                
-                // 需要清除的所有数据键名列表
-                const keysToRemove = [
-                    // 用户相关
-                    'currentUser',              // 当前登录用户
-                    'allUsers',                 // 所有用户数据
-                    
-                    // 订单相关
-                    'userOrders',               // 用户订单（通用）
-                    'allOrders',                // 所有订单
-                    
-                    // 地址相关
-                    'userAddresses',            // 用户地址（通用）
-                    
-                    // 产品相关
-                    'products',                 // 产品数据
-                    
-                    // 设置相关
-                    'homepageSettings',         // 首页设置
-                    'deviceRegisterLimits',     // 设备注册限制
-                    'dataSourceMode',           // 数据源模式
-                    
-                    // 同步相关
-                    'ecommerce_sync_data',      // 跨设备同步数据
-                    'ecommerce_last_sync',      // 最后同步时间
-                    
-                    // 设备相关
-                    'device_id',                // 设备ID
-                    
-                    // 队列相关
-                    'offlineQueue'              // 离线队列
-                ];
-                
-                // 清除指定的键
-                keysToRemove.forEach(key => {
-                    if (localStorage.getItem(key) !== null) {
-                        localStorage.removeItem(key);
-                        console.log(`✅ 已清除: ${key}`);
-                    }
-                });
-                
-                // 清除所有以 userOrders_ 开头的键（用户特定订单）
-                const userOrdersKeys = [];
-                for (let i = 0; i < localStorage.length; i++) {
-                    const key = localStorage.key(i);
-                    if (key && key.startsWith('userOrders_')) {
-                        userOrdersKeys.push(key);
-                    }
-                }
-                userOrdersKeys.forEach(key => {
-                    localStorage.removeItem(key);
-                    console.log(`✅ 已清除: ${key}`);
-                });
-                
-                // 清除所有以 userAddresses_ 开头的键（用户特定地址）
-                const userAddressesKeys = [];
-                for (let i = 0; i < localStorage.length; i++) {
-                    const key = localStorage.key(i);
-                    if (key && key.startsWith('userAddresses_')) {
-                        userAddressesKeys.push(key);
-                    }
-                }
-                userAddressesKeys.forEach(key => {
-                    localStorage.removeItem(key);
-                    console.log(`✅ 已清除: ${key}`);
-                });
-                
-                // 清除所有以 cache_ 开头的缓存键
-                const cacheKeys = [];
-                for (let i = 0; i < localStorage.length; i++) {
-                    const key = localStorage.key(i);
-                    if (key && key.startsWith('cache_')) {
-                        cacheKeys.push(key);
-                    }
-                }
-                cacheKeys.forEach(key => {
-                    localStorage.removeItem(key);
-                    console.log(`✅ 已清除缓存: ${key}`);
-                });
-                
-                // 清除所有其他可能的用户相关键（除了language）
-                const allKeys = [];
-                for (let i = 0; i < localStorage.length; i++) {
-                    const key = localStorage.key(i);
-                    if (key && key !== 'language') {
-                        // 检查是否还有遗漏的键
-                        if (!keysToRemove.includes(key) && 
-                            !key.startsWith('userOrders_') && 
-                            !key.startsWith('userAddresses_') && 
-                            !key.startsWith('cache_')) {
-                            allKeys.push(key);
-                        }
-                    }
-                }
-                // 清除所有其他键（除了language）
-                allKeys.forEach(key => {
-                    localStorage.removeItem(key);
-                    console.log(`✅ 已清除其他数据: ${key}`);
-                });
-                
-                // 恢复语言设置
-                if (savedLanguage) {
-                    localStorage.setItem('language', savedLanguage);
-                    console.log(`✅ 已保留语言设置: ${savedLanguage}`);
-                }
-                
-                // 清除 sessionStorage 中的所有数据
-                try {
-                    sessionStorage.clear();
-                    console.log('✅ 已清除所有 sessionStorage 数据');
-                } catch (e) {
-                    console.warn('清除 sessionStorage 时出错:', e);
-                    // 如果clear()失败，尝试逐个清除
-                    try {
-                        const sessionKeys = ['currentUser', 'userSession', 'authToken', 'userData'];
-                        sessionKeys.forEach(key => {
-                            if (sessionStorage.getItem(key) !== null) {
-                                sessionStorage.removeItem(key);
-                                console.log(`✅ 已清除 sessionStorage: ${key}`);
-                            }
-                        });
-                    } catch (e2) {
-                        console.warn('逐个清除 sessionStorage 时出错:', e2);
-                    }
-                }
-                
-                // 清除 IndexedDB（如果存在）
-                try {
-                    if ('indexedDB' in window) {
-                        indexedDB.databases().then(databases => {
-                            databases.forEach(db => {
-                                if (db.name) {
-                                    indexedDB.deleteDatabase(db.name);
-                                    console.log(`✅ 已清除 IndexedDB: ${db.name}`);
-                                }
-                            });
-                        }).catch(e => {
-                            console.warn('清除 IndexedDB 时出错:', e);
-                        });
-                    }
-                } catch (e) {
-                    console.warn('访问 IndexedDB 时出错:', e);
-                }
-                
-                // 清除 Service Worker 缓存
-                try {
-                    if ('caches' in window) {
-                        caches.keys().then(names => {
-                            names.forEach(name => {
-                                caches.delete(name);
-                                console.log(`✅ 已清除 Service Worker 缓存: ${name}`);
-                            });
-                        }).catch(e => {
-                            console.warn('清除 Service Worker 缓存时出错:', e);
-                        });
-                    }
-                } catch (e) {
-                    console.warn('访问 Service Worker 缓存时出错:', e);
-                }
-                
-                console.log('✅✅ 所有本地缓存数据清除完成！');
-            } catch (error) {
-                console.error('❌ 清除本地缓存时出错:', error);
-            }
-        })();
-    </script>
+    <!-- 原本这里有“页面加载时清除所有本地缓存”的脚本
+         已移除，改为仅在用户主动退出登录时清除本地数据 -->
 
     <!-- Firebase SDK - 多重加载策略 -->
     <script>
@@ -7206,13 +7033,21 @@ let userSearchTerm = '';
                 }
             }
 
-            // 从云端加载订单数据
+            // 从云端加载订单数据（更安全：优先保护本地数据，不轻易清空）
             async loadOrders() {
                 if (!this.isInitialized || !currentUser) {
-                    // 未登录时清空订单
+                    // 未登录时清空订单（这是用户主动退出/未登录场景，属于正常清空）
                     userOrders = [];
                     localStorage.setItem('userOrders', JSON.stringify(userOrders));
                     return false;
+                }
+
+                // 在尝试加载前，先备份一份当前本地订单数据，防止意外丢失
+                try {
+                    const backupKey = `userOrders_backup_${currentUser.account || 'guest'}`;
+                    localStorage.setItem(backupKey, JSON.stringify(userOrders || []));
+                } catch (backupError) {
+                    console.warn('备份本地订单失败（不影响正常流程）:', backupError);
                 }
 
                 try {
@@ -7221,35 +7056,57 @@ let userSearchTerm = '';
                     const cloudOrders = snapshot.val();
 
                     if (cloudOrders && Array.isArray(cloudOrders) && cloudOrders.length > 0) {
-                        // 登录后直接使用云端数据，不清除本地缓存后应该没有旧数据
-                        // 但为了安全，先清空本地订单再加载云端数据
-                        userOrders = [];
-                        localStorage.removeItem('userOrders');
-                        
-                        // 直接使用云端数据
-                        userOrders = cloudOrders;
+                        // ✅ 云端有订单：与本地订单进行合并，避免本地或云端单方面覆盖
+                        console.log('✅ 检测到云端订单数据，开始合并本地与云端订单...');
+                        try {
+                            mergeOrdersData(cloudOrders, currentUser.account || 'guest');
+                        } catch (mergeError) {
+                            console.warn('合并订单数据失败，改为直接使用云端订单:', mergeError);
+                            userOrders = cloudOrders;
+                        }
+
                         const userOrdersKey = `userOrders_${currentUser.account || 'guest'}`;
                         localStorage.setItem(userOrdersKey, JSON.stringify(userOrders));
                         localStorage.setItem('userOrders', JSON.stringify(userOrders));
-                        
-                        console.log('✅ 已从云端加载订单数据:', userOrders.length, '个订单');
+
+                        console.log('✅ 已从云端加载并合并订单数据:', userOrders.length, '个订单');
                         return true;
                     } else {
-                        // 云端没有订单，清空本地订单（防止旧数据）
-                        userOrders = [];
-                        const userOrdersKey = `userOrders_${currentUser.account || 'guest'}`;
-                        localStorage.setItem(userOrdersKey, JSON.stringify(userOrders));
-                        localStorage.setItem('userOrders', JSON.stringify(userOrders));
-                        console.log('ℹ️ 云端暂无订单数据，已清空本地订单');
-                        return false;
+                        // ℹ️ 云端没有订单
+                        if (Array.isArray(userOrders) && userOrders.length > 0) {
+                            // ✅ 本地有订单，但云端为空：保护本地数据，提示并尝试向云端同步
+                            console.warn('⚠️ 云端暂无订单数据，但本地存在', userOrders.length, '个订单，将保留本地数据并尝试同步到云端');
+                            if (typeof showNotification === 'function') {
+                                showNotification('检测到本地有未同步的订单，正在尝试同步到云端…', 'warning');
+                            }
+
+                            // 尝试把本地订单同步到云端（不会清空云端现有数据，因为此时云端本来就是空的）
+                            try {
+                                if (typeof this.syncOrders === 'function') {
+                                    await this.syncOrders();
+                                }
+                            } catch (syncError) {
+                                console.error('尝试将本地订单同步到云端失败:', syncError);
+                            }
+
+                            // 不清空本地订单，只是记录日志
+                            return true;
+                        } else {
+                            // 云端和本地都没有订单，确保本地是空数组即可
+                            userOrders = [];
+                            const userOrdersKey = `userOrders_${currentUser.account || 'guest'}`;
+                            localStorage.setItem(userOrdersKey, JSON.stringify(userOrders));
+                            localStorage.setItem('userOrders', JSON.stringify(userOrders));
+                            console.log('ℹ️ 云端和本地均无订单数据');
+                            return false;
+                        }
                     }
                 } catch (error) {
-                    console.error('加载云端订单失败:', error);
-                    // 出错时也清空本地订单，防止旧数据干扰
-                    userOrders = [];
-                    const userOrdersKey = `userOrders_${currentUser.account || 'guest'}`;
-                    localStorage.setItem(userOrdersKey, JSON.stringify(userOrders));
-                    localStorage.setItem('userOrders', JSON.stringify(userOrders));
+                    console.error('加载云端订单失败（本地数据将被保留）:', error);
+                    // ❗ 加载失败时不再清空本地订单，避免把用户订单“误删”
+                    if (typeof showNotification === 'function') {
+                        showNotification('加载云端订单失败，已暂时保留本地订单数据', 'warning');
+                    }
                     return false;
                 }
             }
@@ -7321,13 +7178,21 @@ let userSearchTerm = '';
                 }
             }
 
-            // 从云端加载地址数据
+            // 从云端加载地址数据（更安全：优先保护本地数据，不轻易清空）
             async loadAddresses() {
                 if (!this.isInitialized || !currentUser) {
-                    // 未登录时清空地址
+                    // 未登录时清空地址（这是用户主动退出/未登录场景，属于正常清空）
                     userAddresses = [];
                     localStorage.setItem('userAddresses', JSON.stringify(userAddresses));
                     return false;
+                }
+
+                // 在尝试加载前，先备份一份当前本地地址数据，防止意外丢失
+                try {
+                    const backupKey = `userAddresses_backup_${currentUser.account || 'guest'}`;
+                    localStorage.setItem(backupKey, JSON.stringify(userAddresses || []));
+                } catch (backupError) {
+                    console.warn('备份本地地址失败（不影响正常流程）:', backupError);
                 }
 
                 try {
@@ -7336,27 +7201,49 @@ let userSearchTerm = '';
                     const cloudAddresses = snapshot.val();
 
                     if (cloudAddresses && Array.isArray(cloudAddresses) && cloudAddresses.length > 0) {
+                        // ✅ 云端有地址：直接以云端为准覆盖本地（地址一般不需要复杂合并）
                         userAddresses = cloudAddresses;
-                        // 使用用户特定的localStorage key
                         const userAddressesKey = `userAddresses_${currentUser.account || 'guest'}`;
                         localStorage.setItem(userAddressesKey, JSON.stringify(userAddresses));
                         localStorage.setItem('userAddresses', JSON.stringify(userAddresses)); // 兼容旧代码
                         console.log('✅ 已从云端加载地址数据:', userAddresses.length, '个地址');
                         return true;
                     } else {
-                        // 云端没有地址，清空本地地址
-                        userAddresses = [];
-                        const userAddressesKey = `userAddresses_${currentUser.account || 'guest'}`;
-                        localStorage.setItem(userAddressesKey, JSON.stringify(userAddresses));
-                        localStorage.setItem('userAddresses', JSON.stringify(userAddresses));
-                        console.log('ℹ️ 云端暂无地址数据');
-                        return false;
+                        // ℹ️ 云端没有地址
+                        if (Array.isArray(userAddresses) && userAddresses.length > 0) {
+                            // ✅ 本地有地址但云端为空：保护本地数据，提示并尝试同步到云端
+                            console.warn('⚠️ 云端暂无地址数据，但本地存在', userAddresses.length, '个地址，将保留本地数据并尝试同步到云端');
+                            if (typeof showNotification === 'function') {
+                                showNotification('检测到本地有未同步的地址，正在尝试同步到云端…', 'warning');
+                            }
+
+                            try {
+                                if (typeof this.syncAddresses === 'function') {
+                                    await this.syncAddresses();
+                                }
+                            } catch (syncError) {
+                                console.error('尝试将本地地址同步到云端失败:', syncError);
+                            }
+
+                            // 不清空本地地址，只是记录日志
+                            return true;
+                        } else {
+                            // 云端和本地都没有地址，确保本地是空数组即可
+                            userAddresses = [];
+                            const userAddressesKey = `userAddresses_${currentUser.account || 'guest'}`;
+                            localStorage.setItem(userAddressesKey, JSON.stringify(userAddresses));
+                            localStorage.setItem('userAddresses', JSON.stringify(userAddresses));
+                            console.log('ℹ️ 云端和本地均无地址数据');
+                            return false;
+                        }
                     }
                 } catch (error) {
-                    console.error('加载云端地址失败:', error);
-                    // 出错时也清空地址
-                    userAddresses = [];
-                return false;
+                    console.error('加载云端地址失败（本地数据将被保留）:', error);
+                    // ❗ 加载失败时不再清空本地地址，避免把用户地址“误删”
+                    if (typeof showNotification === 'function') {
+                        showNotification('加载云端地址失败，已暂时保留本地地址数据', 'warning');
+                    }
+                    return false;
                 }
             }
 
@@ -7367,9 +7254,19 @@ let userSearchTerm = '';
                     this.syncInProgress = true;
 
                     if (isCurrentUserAdmin()) {
-                        // 管理员：上传全量用户数据
-                        await usersRef.set(allUsers);
-                        console.log('✅ 所有用户数据已同步（管理员全量同步）');
+                        // 管理员：不再“全量覆盖”，而是先读取云端，再与本地 allUsers 合并后写回，避免误删新注册账号
+                        console.log('🔄 管理员正在同步所有用户数据（云端 ∪ 本地 合并模式）...');
+                        const snapshot = await usersRef.once('value');
+                        const cloudUsers = Array.isArray(snapshot.val()) ? snapshot.val() : [];
+
+                        const mergedUsers = mergeUsersData(cloudUsers, allUsers);
+                        await usersRef.set(mergedUsers);
+
+                        // 同步回本地内存和 localStorage，确保管理员端看到的是最新合并结果
+                        allUsers = mergedUsers;
+                        localStorage.setItem('allUsers', JSON.stringify(allUsers));
+
+                        console.log('✅ 所有用户数据已同步（管理员合并后写回云端）');
                     } else {
                         // 非管理员：只将自己添加到云端的 allUsers 数组
                         let targetAccount = null;
@@ -8415,8 +8312,8 @@ let userSearchTerm = '';
                     console.log('📦 已从本地加载所有订单:', allOrders.length, '个');
                 }
             } catch (e) {
-                console.error('加载本地所有订单失败:', e);
-                allOrders = [];
+                // 解析本地所有订单失败时，不再强制清空内存中的 allOrders，避免覆盖已有有效数据
+                console.error('加载本地所有订单失败（保留当前内存数据）:', e);
             }
 
             console.log('📋 系统初始化完成');
@@ -8809,6 +8706,47 @@ let userSearchTerm = '';
             allOrders = Array.from(allOrdersMap.values());
             localStorage.setItem('allOrders', JSON.stringify(allOrders));
             console.log('✅ 全局订单数组已更新:', allOrders.length, '个订单');
+        }
+
+        // 智能合并用户数据列表：按 account 去重，尽量以云端为准，同时保留本地新增用户
+        function mergeUsersData(cloudUsers, localUsers) {
+            const resultMap = new Map();
+
+            // 先把云端用户放进去（默认以云端为准）
+            if (Array.isArray(cloudUsers)) {
+                cloudUsers.forEach(user => {
+                    if (user && user.account) {
+                        resultMap.set(user.account, user);
+                    }
+                });
+            }
+
+            // 再合并本地用户：云端不存在的账号直接加入；云端存在的，仅在本地明显更新时覆盖
+            if (Array.isArray(localUsers)) {
+                localUsers.forEach(user => {
+                    if (!user || !user.account) return;
+                    const account = user.account;
+                    const cloudUser = resultMap.get(account);
+
+                    if (!cloudUser) {
+                        // 云端没有这个账号，本地是新增用户，直接加入
+                        resultMap.set(account, user);
+                    } else {
+                        // 同一账号同时存在于云端和本地，按时间戳/注册时间决定是否覆盖
+                        const cloudTime = cloudUser.updatedAt
+                            || (cloudUser.registerTime ? new Date(cloudUser.registerTime).getTime() : 0);
+                        const localTime = user.updatedAt
+                            || (user.registerTime ? new Date(user.registerTime).getTime() : 0);
+
+                        if (localTime > cloudTime) {
+                            // 本地看起来更新更晚，用本地覆盖云端版本
+                            resultMap.set(account, user);
+                        }
+                    }
+                });
+            }
+
+            return Array.from(resultMap.values());
         }
 
         function saveCurrentUser() {
@@ -9286,8 +9224,8 @@ let userSearchTerm = '';
                                 console.log('📦 已从本地加载所有订单:', allOrders.length, '个');
                             }
                         } catch (e) {
-                            console.error('加载本地所有订单失败:', e);
-                            allOrders = [];
+                            // 解析本地所有订单失败时，不再强制清空内存中的 allOrders，避免覆盖已有有效数据
+                            console.error('加载本地所有订单失败（保留当前内存数据）:', e);
                         }
                     } else {
                         loaderProgress.textContent = currentLanguage === 'zh' ? '云端同步超时...' : 'Cloud sync timeout...';
@@ -9965,9 +9903,66 @@ let userSearchTerm = '';
                 }
             });
 
+            // 用户主动退出时，清除本地所有数据
+            function clearAllLocalDataOnLogout() {
+                try {
+                    console.log('🧹 用户主动退出，开始清除本地所有数据...');
+
+                    // 清除 localStorage 全部数据
+                    localStorage.clear();
+
+                    // 清除 sessionStorage 全部数据
+                    try {
+                        sessionStorage.clear();
+                    } catch (e) {
+                        console.warn('清除 sessionStorage 时出错:', e);
+                    }
+
+                    // 可选：清除 IndexedDB（如果有使用）
+                    try {
+                        if ('indexedDB' in window && indexedDB.databases) {
+                            indexedDB.databases().then(databases => {
+                                databases.forEach(db => {
+                                    if (db.name) {
+                                        indexedDB.deleteDatabase(db.name);
+                                        console.log(`✅ 已清除 IndexedDB: ${db.name}`);
+                                    }
+                                });
+                            }).catch(e => {
+                                console.warn('清除 IndexedDB 时出错:', e);
+                            });
+                        }
+                    } catch (e) {
+                        console.warn('访问 IndexedDB 时出错:', e);
+                    }
+
+                    // 可选：清除 Service Worker 缓存
+                    try {
+                        if ('caches' in window) {
+                            caches.keys().then(names => {
+                                names.forEach(name => {
+                                    caches.delete(name);
+                                    console.log(`✅ 已清除 Service Worker 缓存: ${name}`);
+                                });
+                            }).catch(e => {
+                                console.warn('清除 Service Worker 缓存时出错:', e);
+                            });
+                        }
+                    } catch (e) {
+                        console.warn('访问 Service Worker 缓存时出错:', e);
+                    }
+
+                    console.log('✅ 用户退出后，本地数据已全部清除');
+                } catch (error) {
+                    console.error('❌ 退出时清除本地数据出错:', error);
+                }
+            }
+
             // 退出登录
             logoutLink.addEventListener('click', async (e) => {
                 e.preventDefault();
+
+                // 先处理当前会话和云端状态
                 currentUser = null;
                 localStorage.removeItem('currentUser');
                 if (cloudSync && cloudSync.isInitialized) {
@@ -9976,6 +9971,11 @@ let userSearchTerm = '';
                     userOrders = [];
                     userAddresses = [];
                 }
+
+                // 清除所有本地数据（只在用户主动退出时执行）
+                clearAllLocalDataOnLogout();
+
+                // 更新界面并返回主页
                 updateUserInterface();
                 showHomePage();
             });
