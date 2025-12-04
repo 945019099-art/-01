@@ -4523,6 +4523,23 @@
             <div class="admin-page" id="admin-reviews">
                 <div class="admin-actions">
                     <button class="btn btn-primary" id="refresh-reviews-btn">刷新评价列表</button>
+                    <div style="flex: 1;"></div>
+                    <div class="admin-search">
+                        <select id="reviews-filter-category" class="admin-search-input" style="flex: 0 0 120px;">
+                            <option value="all">全部字段</option>
+                            <option value="product">按产品</option>
+                            <option value="user">按用户</option>
+                            <option value="comment">按评价内容</option>
+                            <option value="rating">按评分</option>
+                            <option value="reply">按管理员回复</option>
+                        </select>
+                        <input
+                            type="text"
+                            id="reviews-search-input"
+                            class="admin-search-input"
+                            placeholder="搜索评价（产品名/用户/内容等）"
+                        >
+                    </div>
                 </div>
                 <div class="admin-content">
                     <div class="reviews-table-container">
@@ -5373,6 +5390,8 @@ let userFilterStatus = '';
 let userDeviceFilter = '';
 let userSearchTerm = '';
 let adminProductSearchTerm = '';
+let reviewSearchTerm = '';
+let reviewSearchCategory = 'all';
 const paginationState = {
     products: { page: 1, pageSize: 30 },
     users: { page: 1, pageSize: 10 },
@@ -9396,18 +9415,61 @@ const paginationContainers = {
             }
         }
 
-        function saveAllUsers() {
-            Storage.set('allUsers', allUsers);
-            
-            // 同步到云端（使用CloudSyncManager）
-            if (cloudSync && cloudSync.isInitialized) {
-                cloudSync.syncAllUsers().catch(err => {
-                    console.error('用户数据云端同步失败:', err);
-                    // 如果云端同步失败，尝试使用旧的同步方式作为备用
-                    if (CLOUD_STORAGE.enabled) {
-                        syncToCloud('users', allUsers);
+        // 通用的管理员更新包装器：优先在云端执行写入 + 重新加载，避免本地旧数据覆盖云端
+        async function runAdminUpdate(writeFn, reloadFn) {
+            const isAdminUser = currentUser && currentUser.role === 'admin';
+            const canUseCloud = cloudSync && cloudSync.isInitialized;
+
+            // 如果无法使用云端或当前不是管理员，则直接执行本地逻辑
+            if (!isAdminUser || !canUseCloud) {
+                try {
+                    if (typeof writeFn === 'function') {
+                        await writeFn();
                     }
-                });
+                    if (typeof reloadFn === 'function') {
+                        await reloadFn();
+                    }
+                } catch (e) {
+                    console.error('runAdminUpdate 本地执行出错:', e);
+                }
+                return;
+            }
+
+            // 管理员 + 云端可用：使用安全模式，防止监听器用旧数据覆盖
+            try {
+                cloudSync.syncInProgress = true;
+
+                if (typeof writeFn === 'function') {
+                    await writeFn();
+                }
+                if (typeof reloadFn === 'function') {
+                    await reloadFn();
+                }
+            } catch (e) {
+                console.error('runAdminUpdate 云端执行出错:', e);
+            } finally {
+                setTimeout(() => {
+                    if (cloudSync) {
+                        cloudSync.syncInProgress = false;
+                    }
+                }, 500);
+            }
+        }
+
+        async function saveAllUsers() {
+            // 本地持久化一份最新的 allUsers 作为缓存
+            try {
+                Storage.set('allUsers', allUsers);
+            } catch (e) {
+                console.warn('保存本地 allUsers 失败:', e);
+            }
+            
+            // 使用统一的管理员更新流程同步到云端
+            if (cloudSync && cloudSync.isInitialized && typeof cloudSync.syncAllUsers === 'function') {
+                await runAdminUpdate(
+                    () => cloudSync.syncAllUsers(),
+                    null
+                );
             } else if (CLOUD_STORAGE.enabled) {
                 // 如果CloudSyncManager未初始化，使用旧的同步方式
                 syncToCloud('users', allUsers);
@@ -11355,6 +11417,28 @@ const paginationContainers = {
 
                 adminProductSearchInput.addEventListener('input', (e) => {
                     handleProductSearch(e.target.value);
+                });
+            }
+
+            // 评价搜索与分类筛选
+            const reviewsSearchInput = document.getElementById('reviews-search-input');
+            const reviewsFilterCategory = document.getElementById('reviews-filter-category');
+            if (reviewsSearchInput) {
+                const handleReviewSearch = debounce((value) => {
+                    reviewSearchTerm = value;
+                    resetPagination('reviews');
+                    renderReviewsTable();
+                }, 300);
+
+                reviewsSearchInput.addEventListener('input', (e) => {
+                    handleReviewSearch(e.target.value);
+                });
+            }
+            if (reviewsFilterCategory) {
+                reviewsFilterCategory.addEventListener('change', (e) => {
+                    reviewSearchCategory = e.target.value || 'all';
+                    resetPagination('reviews');
+                    renderReviewsTable();
                 });
             }
 
@@ -14317,9 +14401,52 @@ const paginationContainers = {
             const tbody = document.getElementById('reviews-table-body');
             if (!tbody) return;
 
-            const reviews = collectAllReviews();
-            if (reviews.length === 0) {
+            const allReviews = collectAllReviews();
+            if (!Array.isArray(allReviews) || allReviews.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:40px;">暂无评价数据</td></tr>';
+                updatePaginationControls('reviews', 0);
+                return;
+            }
+
+            const keyword = (reviewSearchTerm || '').trim().toLowerCase();
+            const category = (reviewSearchCategory || 'all');
+
+            const filteredReviews = keyword
+                ? allReviews.filter(review => {
+                    if (!review) return false;
+                    const k = keyword;
+
+                    const fields = {
+                        product: [review.productName],
+                        user: [review.userName, review.userAccount],
+                        comment: [review.comment],
+                        rating: [String(review.rating)],
+                        reply: [review.adminReply],
+                        all: [
+                            review.productName,
+                            review.userName,
+                            review.userAccount,
+                            review.comment,
+                            String(review.rating),
+                            review.adminReply
+                        ]
+                    };
+
+                    const targets = fields[category] || fields.all;
+
+                    return targets.some(field => {
+                        if (field === undefined || field === null) return false;
+                        return field.toString().toLowerCase().includes(k);
+                    });
+                })
+                : allReviews;
+
+            const reviews = filteredReviews;
+            if (reviews.length === 0) {
+                const emptyMessage = keyword
+                    ? '未找到匹配的评价，请尝试其他关键词或切换筛选分类'
+                    : '暂无评价数据';
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:40px;">${emptyMessage}</td></tr>`;
                 updatePaginationControls('reviews', 0);
                 return;
             }
@@ -14469,7 +14596,7 @@ const paginationContainers = {
         }
 
         // 修改用户密码
-        function editUserPassword(account) {
+        async function editUserPassword(account) {
             const newPassword = prompt(t('enterNewPassword'));
             if (!newPassword || newPassword.length < 6) {
                 showNotification(t('passwordTooShortError'), 'error');
@@ -14477,18 +14604,19 @@ const paginationContainers = {
             }
 
             const user = allUsers.find(u => u.account === account);
-            if (user) {
-                user.password = newPassword;
-                user.updatedAt = Date.now();
-                saveAllUsers();
-                showNotification('密码修改成功', 'success');
-            } else {
+            if (!user) {
                 showNotification('只能修改普通用户密码', 'error');
+                return;
             }
+
+            user.password = newPassword;
+            user.updatedAt = Date.now();
+            await saveAllUsers();
+            showNotification('密码修改成功', 'success');
         }
 
         // 更新用户积分（管理员操作）
-        function updateUserPoints(account) {
+        async function updateUserPoints(account) {
             const input = document.getElementById('user-points-input');
             if (!input) {
                 showNotification('未找到蜜罐输入框', 'error');
@@ -14517,14 +14645,8 @@ const paginationContainers = {
                 updateUserInterface();
             }
 
-            saveAllUsers();
-
-            // 触发云端同步（如果可用）
-            if (cloudSync && cloudSync.isInitialized && typeof cloudSync.syncAllUsers === 'function') {
-                cloudSync.syncAllUsers().catch(err => {
-                    console.warn('同步用户积分到云端失败:', err);
-                });
-            }
+            // 使用统一的管理员更新流程，同步到云端
+            await saveAllUsers();
 
             showNotification('用户蜜罐已更新', 'success');
             // 同步刷新用户列表中的积分显示
@@ -14547,15 +14669,15 @@ const paginationContainers = {
             showNotification(t('userDataReset'), 'success');
         }
 
-        // 禁用用户
-        function banUser(account) {
+        // 禁用用户（管理员操作）
+        async function banUser(account) {
             if (confirm(t('confirmBanUser'))) {
                 const user = allUsers.find(u => u.account === account);
                 if (user) {
                     user.status = 'banned';
                     user.bannedTime = new Date().toISOString();
                     user.updatedAt = Date.now();
-                    saveAllUsers();
+                    await saveAllUsers();
                     renderUsersTable();
                     showNotification(t('userBanned'), 'success');
 
@@ -14574,15 +14696,15 @@ const paginationContainers = {
             }
         }
 
-        // 解禁用户
-        function unbanUser(account) {
+        // 解禁用户（管理员操作）
+        async function unbanUser(account) {
             if (confirm(t('confirmUnbanUser'))) {
                 const user = allUsers.find(u => u.account === account);
                 if (user) {
                     user.status = 'active';
                     delete user.bannedTime;
                     user.updatedAt = Date.now();
-                    saveAllUsers();
+                    await saveAllUsers();
                     renderUsersTable();
                     showNotification(t('userUnbanned'), 'success');
 
@@ -15027,6 +15149,93 @@ const paginationContainers = {
         function getCloudOrdersRefForOrder(order) {
             if (!order || !order.account) return null;
             return getCloudOrdersRefForAccount(order.account);
+        }
+
+        // 管理员专用：直接在云端更新指定订单的状态（以云端为唯一真源）
+        // 返回 true 表示已在云端成功更新并刷新到本地；false 表示需要回退到本地旧逻辑
+        async function adminUpdateOrderStatusOnCloud(order, newStatus, statusText) {
+            try {
+                if (!cloudSync || !cloudSync.isInitialized) {
+                    console.warn('adminUpdateOrderStatusOnCloud: cloudSync 未初始化，使用本地更新逻辑');
+                    return false;
+                }
+                if (!currentUser || currentUser.role !== 'admin') {
+                    console.warn('adminUpdateOrderStatusOnCloud: 当前用户不是管理员，使用本地更新逻辑');
+                    return false;
+                }
+                if (!order || !order.id) {
+                    console.error('adminUpdateOrderStatusOnCloud: 订单无效');
+                    return false;
+                }
+
+                const userOrdersRef = getCloudOrdersRefForOrder(order);
+                if (!userOrdersRef) {
+                    console.warn('adminUpdateOrderStatusOnCloud: 无法定位订单所属用户路径，使用本地更新逻辑');
+                    return false;
+                }
+
+                console.log('🔄 管理员正在云端更新订单状态:', {
+                    orderId: order.id,
+                    account: order.account,
+                    newStatus,
+                    statusText
+                });
+
+                // 在更新期间暂时阻止实时监听覆盖本地数据
+                cloudSync.syncInProgress = true;
+
+                const snapshot = await userOrdersRef.once('value');
+                let cloudUserOrders = snapshot.val() || [];
+                if (!Array.isArray(cloudUserOrders)) {
+                    console.warn('adminUpdateOrderStatusOnCloud: 云端订单数据格式异常，使用本地更新逻辑');
+                    return false;
+                }
+
+                const orderIndex = cloudUserOrders.findIndex(o => o && o.id === order.id);
+                if (orderIndex === -1) {
+                    console.warn('adminUpdateOrderStatusOnCloud: 云端未找到该订单，使用本地更新逻辑');
+                    return false;
+                }
+
+                const updateTimestamp = Date.now();
+                const original = cloudUserOrders[orderIndex] || {};
+
+                cloudUserOrders[orderIndex] = {
+                    ...original,
+                    status: newStatus,
+                    updatedAt: updateTimestamp
+                };
+
+                await userOrdersRef.set(cloudUserOrders);
+
+                console.log('✅ 管理员已在云端更新订单状态:', {
+                    orderId: order.id,
+                    newStatus,
+                    updatedAt: updateTimestamp
+                });
+
+                // 从云端重新加载所有订单，刷新后台列表（以云端为准）
+                if (typeof cloudSync.loadAllOrders === 'function') {
+                    try {
+                        await cloudSync.loadAllOrders();
+                        console.log('✅ 已从云端重新加载所有订单（管理员视图）');
+                    } catch (reloadErr) {
+                        console.warn('adminUpdateOrderStatusOnCloud: 重新加载所有订单失败（可忽略）:', reloadErr);
+                    }
+                }
+
+                return true;
+            } catch (e) {
+                console.error('adminUpdateOrderStatusOnCloud 执行失败:', e);
+                return false;
+            } finally {
+                // 稍微延迟清理标记，避免监听器立刻覆盖
+                if (cloudSync) {
+                    setTimeout(() => {
+                        cloudSync.syncInProgress = false;
+                    }, 500);
+                }
+            }
         }
 
         function findReviewContextByOrderId(orderId) {
@@ -15714,7 +15923,32 @@ const paginationContainers = {
                         showNotification(t('updatingOrderStatus'), 'info');
                         
                         try {
-                            // 更新订单状态
+                            let handledByCloud = false;
+
+                            // 优先使用“云端为唯一真源”的管理员专用更新逻辑
+                            if (cloudSync && cloudSync.isInitialized && currentUser && currentUser.role === 'admin') {
+                                handledByCloud = await adminUpdateOrderStatusOnCloud(order, newStatus, statusText);
+                            }
+
+                            if (handledByCloud) {
+                                // 云端更新成功：本地列表依赖 loadAllOrders 和实时监听刷新
+                                showNotification(`订单状态已更新为"${statusText}"，已同步到云端！`, 'success');
+                                
+                                // 立即刷新后台表格（使用最新的 allOrders）
+                                if (typeof renderOrdersTable === 'function') {
+                                    renderOrdersTable();
+                                }
+                                if (typeof renderUserOrders === 'function') {
+                                    renderUserOrders();
+                                }
+
+                                modal.remove();
+                                return;
+                            }
+
+                            // ===== 云端不可用或订单找不到时，回退为原有的本地 + 云端混合更新逻辑 =====
+
+                            // 更新订单状态（本地对象）
                             order.status = newStatus;
                             order.updatedAt = Date.now();
                             
@@ -15751,7 +15985,7 @@ const paginationContainers = {
                                     try {
                                         cloudSync.syncInProgress = true;
                                         await cloudSync.syncOrders();
-                                        console.log('✅ 订单状态已同步到云端');
+                                        console.log('✅ 订单状态已同步到云端（回退逻辑）');
                                         showNotification(`订单状态已更新为"${statusText}"，已同步到云端！`, 'success');
                                     } catch (err) {
                                         console.error('云端同步失败:', err);
@@ -15799,7 +16033,7 @@ const paginationContainers = {
                                             
                                             // 使用 set 方法更新，这会触发所有客户端的实时监听器
                                             await userOrdersRef.set(cloudUserOrders);
-                                            console.log('✅ 已更新其他用户的订单状态到云端');
+                                            console.log('✅ 已更新其他用户的订单状态到云端（回退逻辑）');
                                             console.log('   订单ID:', order.id);
                                             console.log('   新状态:', newStatus);
                                             console.log('   更新时间戳:', updateTimestamp);
