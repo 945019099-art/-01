@@ -7990,8 +7990,9 @@ const paginationContainers = {
                 if (orderDetailModal) {
                     const orderIdAttr = orderDetailModal.querySelector('[data-order-id]');
                     if (orderIdAttr) {
-                        const orderId = parseInt(orderIdAttr.getAttribute('data-order-id'));
-                        const updatedOrder = userOrders.find(o => o.id === orderId);
+                        // 使用normalizeOrderId确保兼容新旧订单ID格式（数字或字符串）
+                        const orderId = normalizeOrderId(orderIdAttr.getAttribute('data-order-id'));
+                        const updatedOrder = userOrders.find(o => normalizeOrderId(o.id) === orderId);
                         if (updatedOrder) {
                             setTimeout(() => {
                                 showOrderDetailsModal(orderId);
@@ -11249,8 +11250,10 @@ const paginationContainers = {
                 }
 
                 // 创建新订单（本地存储）
+                // 使用时间戳+随机字符串确保订单号唯一性，避免并发下单时订单号重复
+                const orderId = Date.now() + '_' + Math.random().toString(36).substr(2, 9) + '_' + Math.random().toString(36).substr(2, 5);
                 const newOrder = {
-                    id: Date.now(),
+                    id: orderId,
                     productId: currentProduct.id,
                     productName: productName,
                     price: currentProduct.price || 0,
@@ -13904,7 +13907,8 @@ const paginationContainers = {
                 item.addEventListener('click', function(e) {
                     const orderId = this.getAttribute('data-order-id');
                     if (orderId) {
-                        showOrderDetailsModal(parseInt(orderId));
+                        // 使用normalizeOrderId确保兼容新旧订单ID格式（数字或字符串）
+                        showOrderDetailsModal(normalizeOrderId(orderId));
                     }
                 });
             });
@@ -15218,27 +15222,6 @@ const paginationContainers = {
                 };
 
                 await userOrdersRef.set(cloudUserOrders);
-
-                // 同步更新当前页面内存中的 userOrders / allOrders，避免等待云端回传时界面显示旧状态
-                try {
-                    const targetId = normalizeOrderId(order.id);
-                    if (Array.isArray(userOrders)) {
-                        const localUserOrder = userOrders.find(o => o && normalizeOrderId(o.id) === targetId);
-                        if (localUserOrder) {
-                            localUserOrder.status = newStatus;
-                            localUserOrder.updatedAt = strongUpdateTimestamp;
-                        }
-                    }
-                    if (Array.isArray(allOrders)) {
-                        const localAllOrder = allOrders.find(o => o && normalizeOrderId(o.id) === targetId);
-                        if (localAllOrder) {
-                            localAllOrder.status = newStatus;
-                            localAllOrder.updatedAt = strongUpdateTimestamp;
-                        }
-                    }
-                } catch (localUpdateErr) {
-                    console.warn('adminUpdateOrderStatusOnCloud: 本地内存订单更新失败（可忽略）:', localUpdateErr);
-                }
 
                 console.log('✅ 管理员已在云端更新订单状态:', {
                     orderId: order.id,
