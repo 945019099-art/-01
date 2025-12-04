@@ -5302,6 +5302,12 @@ let pendingSignupProduct = null; // 记录待领取的产品（用户登录后�
 let pendingSignupFormData = null; // 记录用户已填写的报名表单数据
 let shouldReturnToSignup = false; // 添加地址后是否需要返回报名表单
 let currentUser = Storage.get('currentUser', null);
+const SESSION_STORAGE_KEYS = {
+    id: 'currentSessionId',
+    info: 'currentSessionInfo'
+};
+let currentSessionId = Storage.get(SESSION_STORAGE_KEYS.id, null);
+let currentSessionInfo = Storage.get(SESSION_STORAGE_KEYS.info, null);
 const selectedUserAccounts = new Set(); // 后台用户批量操作选择集合
 const selectedOrderIds = new Set(); // 后台订单批量操作选择集合
 let userFilterRole = '';
@@ -6491,6 +6497,7 @@ const paginationContainers = {
                 this.pendingAddressUpdate = null;
                 this.addressUpdateTimer = null;
                 this.allOrdersRef = null;
+                this.sessionRef = null;
 
                 // ========== Firebase 配置 ==========
                 // 
@@ -6722,6 +6729,18 @@ const paginationContainers = {
                     console.log('🎉🎉🎉 云端同步系统完全就绪！');
                     console.log('⏰ 完成时间:', new Date().toLocaleString());
                     // 移除启动提示，避免干扰用户
+
+                    if (currentUser) {
+                        try {
+                            if (currentSessionInfo && currentSessionInfo.account === currentUser.account) {
+                                await this.claimUserSession(currentUser.account, currentSessionInfo);
+                            } else {
+                                await startSingleDeviceSession(currentUser.account);
+                            }
+                        } catch (sessionError) {
+                            console.error('初始化单设备会话失败:', sessionError);
+                        }
+                    }
 
                 } catch (error) {
                     console.error('❌❌❌ Firebase 初始化失败:', error);
@@ -7138,6 +7157,72 @@ const paginationContainers = {
                 return `users/${userId.replace(/[.@]/g, '_')}`;
             }
 
+            getSessionPath(targetAccount) {
+                const accountValue = targetAccount || (currentUser ? currentUser.account : null);
+                if (!accountValue) return 'sessions/guest';
+                return `sessions/${accountValue.replace(/[.@]/g, '_')}`;
+            }
+
+            attachSessionListener(account) {
+                if (!this.isInitialized || !account) return;
+                this.detachSessionListener();
+
+                try {
+                    const path = this.getSessionPath(account);
+                    this.sessionRef = this.db.ref(path);
+                    this.sessionRef.on('value', (snapshot) => {
+                        const sessionData = snapshot.val();
+                        handleCloudSessionUpdate(sessionData);
+                    });
+                    console.log(`👂 已监听账号 ${account} 的会话状态`);
+                } catch (error) {
+                    console.error('监听会话状态失败:', error);
+                }
+            }
+
+            detachSessionListener() {
+                if (this.sessionRef) {
+                    this.sessionRef.off();
+                    this.sessionRef = null;
+                }
+            }
+
+            async claimUserSession(account, sessionInfo) {
+                if (!this.isInitialized || !account || !sessionInfo) return false;
+
+                try {
+                    const sessionPath = this.getSessionPath(account);
+                    await this.db.ref(sessionPath).set({
+                        ...sessionInfo,
+                        lastActive: Date.now()
+                    });
+                    console.log(`🔐 会话锁定：账号 ${account} -> ${sessionInfo.deviceLabel}`);
+                    return true;
+                } catch (error) {
+                    console.error('声明云端会话失败:', error);
+                    throw error;
+                }
+            }
+
+            async releaseUserSession(account, sessionId) {
+                if (!this.isInitialized || !account) return;
+
+                try {
+                    const sessionPath = this.getSessionPath(account);
+                    await this.db.ref(sessionPath).transaction(current => {
+                        if (!current) return null;
+                        if (!sessionId || current.sessionId === sessionId) {
+                            return null;
+                        }
+                        // 如果云端记录已经被新设备更新，则保持不变
+                        return current;
+                    });
+                    console.log(`🔓 会话已释放：${account}`);
+                } catch (error) {
+                    console.error('释放云端会话失败:', error);
+                }
+            }
+
             async deleteUserAccount(account) {
                 if (!this.isInitialized || !account) return;
                 const userPath = this.getUserPath(account);
@@ -7146,6 +7231,31 @@ const paginationContainers = {
                     console.log(`✅ 已从云端删除账号 ${account}`);
                 } catch (error) {
                     console.error(`云端删除账号 ${account} 失败:`, error);
+                    throw error;
+                }
+            }
+
+            async removeAccountFromAllUsers(account) {
+                if (!this.isInitialized || !account) return false;
+
+                const usersRef = this.db.ref('allUsers');
+                try {
+                    const transactionResult = await usersRef.transaction(current => {
+                        if (!Array.isArray(current)) {
+                            return current;
+                        }
+                        const filtered = current.filter(user => user && user.account !== account);
+                        return filtered.length === current.length ? current : filtered;
+                    });
+
+                    if (transactionResult && transactionResult.committed) {
+                        console.log(`✅ 已从云端 allUsers 移除账号 ${account}`);
+                    } else {
+                        console.log(`ℹ️ 云端 allUsers 中未找到账号 ${account} 或无需更新`);
+                    }
+                    return true;
+                } catch (error) {
+                    console.error(`云端 allUsers 移除账号 ${account} 失败:`, error);
                     throw error;
                 }
             }
@@ -8029,6 +8139,7 @@ const paginationContainers = {
                 this.detachUserOrdersListener();
                 this.detachUserAddressesListener();
                 this.detachAllOrdersListener();
+                this.detachSessionListener();
 
                 if (!currentUser) {
                     userOrders = [];
@@ -8066,6 +8177,7 @@ const paginationContainers = {
                 // 重新监听该用户的订单和地址（实时同步）
                 this.attachUserOrdersListener();
                 this.attachUserAddressesListener();
+                this.attachSessionListener(currentUser.account);
 
                 // 管理员需要同步所有订单
                 if (currentUser.role === 'admin') {
@@ -9155,6 +9267,157 @@ const paginationContainers = {
             Storage.set('currentUser', currentUser);
         }
 
+        function generateSessionId() {
+            return `sess_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
+        }
+
+        function persistCurrentSession(sessionInfo) {
+            currentSessionInfo = sessionInfo || null;
+            currentSessionId = sessionInfo ? sessionInfo.sessionId : null;
+
+            if (sessionInfo) {
+                Storage.set(SESSION_STORAGE_KEYS.id, currentSessionId);
+                Storage.set(SESSION_STORAGE_KEYS.info, sessionInfo);
+            } else {
+                Storage.remove(SESSION_STORAGE_KEYS.id);
+                Storage.remove(SESSION_STORAGE_KEYS.info);
+            }
+        }
+
+        async function startSingleDeviceSession(account) {
+            if (!account) return;
+
+            const deviceId = getDeviceId();
+            let sessionInfo = currentSessionInfo;
+
+            if (!sessionInfo || sessionInfo.account !== account || sessionInfo.deviceId !== deviceId) {
+                sessionInfo = {
+                    sessionId: generateSessionId(),
+                    account,
+                    deviceId,
+                    deviceLabel: formatDeviceLabel(deviceId) || '其他设备',
+                    loginTime: Date.now(),
+                    lastActive: Date.now(),
+                    userAgent: navigator.userAgent || 'unknown',
+                    platform: navigator.platform || 'unknown'
+                };
+            } else {
+                sessionInfo = {
+                    ...sessionInfo,
+                    lastActive: Date.now()
+                };
+            }
+
+            persistCurrentSession(sessionInfo);
+
+            if (cloudSync && cloudSync.isInitialized && typeof cloudSync.claimUserSession === 'function') {
+                try {
+                    await cloudSync.claimUserSession(account, sessionInfo);
+                    console.log('✅ 已在云端声明当前设备会话');
+                } catch (error) {
+                    console.error('声明云端会话失败:', error);
+                    showNotification('无法同步登录状态，单设备保护已降级为本地模式', 'warning');
+                }
+            } else {
+                console.warn('cloudSync 未初始化，单设备登录限制仅在本地生效');
+            }
+        }
+
+        async function releaseActiveSessionOnLogout(account, sessionId) {
+            if (!account || !sessionId) return;
+            if (cloudSync && cloudSync.isInitialized && typeof cloudSync.releaseUserSession === 'function') {
+                try {
+                    await cloudSync.releaseUserSession(account, sessionId);
+                    console.log('✅ 已释放云端会话', account);
+                } catch (error) {
+                    console.error('释放云端会话失败:', error);
+                }
+            }
+        }
+
+        async function finalizeLogout(options = {}) {
+            const {
+                clearLocalData = false,
+                releaseSession = false,
+                reason = 'manual'
+            } = options;
+
+            const previousAccount = currentUser ? currentUser.account : null;
+            const previousSessionId = currentSessionId;
+
+            if (releaseSession && previousAccount && previousSessionId) {
+                await releaseActiveSessionOnLogout(previousAccount, previousSessionId);
+            }
+
+            currentUser = null;
+            Storage.remove('currentUser');
+            persistCurrentSession(null);
+
+            if (cloudSync && cloudSync.isInitialized) {
+                await cloudSync.handleUserSessionChange();
+            } else {
+                userOrders = [];
+                userAddresses = [];
+                localStorage.removeItem('userOrders');
+                localStorage.removeItem('userAddresses');
+            }
+
+            if (clearLocalData) {
+                clearAllLocalDataOnLogout();
+            }
+
+            updateUserInterface();
+            showHomePage();
+
+            console.log(`ℹ️ 已完成退出流程，原因: ${reason}`);
+        }
+
+        async function handleForcedLogout(reason = 'remote', context = {}) {
+            let message = context.message;
+            let type = 'warning';
+
+            if (reason === 'remote') {
+                const deviceLabel = context.deviceLabel || '其他设备';
+                message = `检测到账号已在${deviceLabel}登录，本设备已自动退出`;
+            } else if (reason === 'banned') {
+                message = '您的账号已被禁用，已自动退出登录';
+                type = 'error';
+            } else if (reason === 'deleted') {
+                message = '账号已被删除，当前设备已退出';
+                type = 'error';
+            } else if (!message) {
+                message = '已退出登录';
+            }
+
+            showNotification(message, type);
+
+            await finalizeLogout({
+                clearLocalData: false,
+                releaseSession: reason !== 'remote',
+                reason
+            });
+        }
+
+        function handleCloudSessionUpdate(sessionData) {
+            if (!currentUser) return;
+
+            if (!sessionData || !sessionData.sessionId) {
+                return;
+            }
+
+            if (!currentSessionId) {
+                const storedId = Storage.get(SESSION_STORAGE_KEYS.id, null);
+                if (storedId) {
+                    currentSessionId = storedId;
+                }
+            }
+
+            if (currentSessionId && sessionData.sessionId !== currentSessionId) {
+                handleForcedLogout('remote', { deviceLabel: sessionData.deviceLabel })
+                    .catch(err => console.error('处理远程登出失败:', err));
+            }
+        }
+
         function saveUserAddresses() {
             // 使用用户特定的localStorage key
             if (currentUser && currentUser.account) {
@@ -9550,6 +9813,14 @@ const paginationContainers = {
                 
             // 先检查URL同步数据
             loadSyncFromURL();
+
+                if (currentUser && !currentSessionId) {
+                    try {
+                        await startSingleDeviceSession(currentUser.account);
+                    } catch (error) {
+                        console.error('初始化会话失败:', error);
+                    }
+                }
 
                 // 更新加载进度
                 loaderProgress.textContent = currentLanguage === 'zh' ? '初始化云端同步...' : 'Initializing cloud sync...';
@@ -10080,6 +10351,7 @@ const paginationContainers = {
                     currentUser = authResult;
                     saveCurrentUser();
                     refreshCurrentUserSnapshot(authResult.account);
+                    await startSingleDeviceSession(authResult.account);
 
                     showNotification(`登录成功！正在从云端加载数据...`, 'success');
                     loginModal.style.display = 'none';
@@ -10272,6 +10544,7 @@ const paginationContainers = {
                         currentUser = { account, username, role: 'user' };
                     }
                     saveCurrentUser();
+                    await startSingleDeviceSession(account);
 
                     // 同步到云端（确保新用户被添加到云端的 allUsers）
                     if (cloudSync && cloudSync.isInitialized) {
@@ -10366,23 +10639,11 @@ const paginationContainers = {
             // 退出登录
             logoutLink.addEventListener('click', async (e) => {
                 e.preventDefault();
-
-                // 先处理当前会话和云端状态
-                currentUser = null;
-                localStorage.removeItem('currentUser');
-                if (cloudSync && cloudSync.isInitialized) {
-                    await cloudSync.handleUserSessionChange();
-                } else {
-                    userOrders = [];
-                    userAddresses = [];
-                }
-
-                // 清除所有本地数据（只在用户主动退出时执行）
-                clearAllLocalDataOnLogout();
-
-                // 更新界面并返回主页
-                updateUserInterface();
-                showHomePage();
+                await finalizeLogout({
+                    clearLocalData: true,
+                    releaseSession: true,
+                    reason: 'manual'
+                });
             });
 
             const deleteAccountBtn = document.getElementById('delete-account-btn');
@@ -12691,25 +12952,7 @@ const paginationContainers = {
                 // 检查当前用户是否被禁用，并获取最新用户信息
                 const user = allUsers.find(u => u.account === currentUser.account);
                 if (user && user.status === 'banned') {
-                    // 用户已被禁用，强制登出
-                    currentUser = null;
-                    localStorage.removeItem('currentUser');
-                    showNotification('您的账号已被禁用，已自动退出登录', 'error');
-
-                    loginLink.style.display = 'inline';
-                    registerLink.style.display = 'inline';
-                    logoutLink.style.display = 'none';
-                    userCenterLink.style.display = 'none';
-                    if (myOrdersLink) myOrdersLink.style.display = 'none';
-                    adminLink.style.display = 'none';
-                    usernameDisplay.textContent = '用户名';
-                    if (userPointsBadge) userPointsBadge.style.display = 'none';
-                    if (adminBottomNavBtn) adminBottomNavBtn.style.display = 'none';
-
-                    // 返回首页
-                    document.getElementById('home-page').style.display = 'block';
-                    document.getElementById('user-center').style.display = 'none';
-                    document.getElementById('admin-panel').style.display = 'none';
+                    handleForcedLogout('banned').catch(err => console.error('处理禁用账号登出失败:', err));
                     return;
                 }
 
@@ -14347,10 +14590,7 @@ const paginationContainers = {
 
                     // 如果被禁用的用户正在登录，强制其退出
                     if (currentUser && currentUser.account === account) {
-                        currentUser = null;
-                        localStorage.removeItem('currentUser');
-                        updateUserInterface();
-                        showNotification('该账号已被禁用并已退出登录', 'warning');
+                        handleForcedLogout('banned').catch(err => console.error('强制退出被禁用账号失败:', err));
                     }
                 }
             }
@@ -14450,7 +14690,16 @@ const paginationContainers = {
             // 云端删除
             if (cloudSync && cloudSync.isInitialized) {
                 try {
-                    await cloudSync.deleteUserAccount(account);
+                    const cloudTasks = [];
+                    if (typeof cloudSync.deleteUserAccount === 'function') {
+                        cloudTasks.push(cloudSync.deleteUserAccount(account));
+                    }
+                    if (typeof cloudSync.removeAccountFromAllUsers === 'function') {
+                        cloudTasks.push(cloudSync.removeAccountFromAllUsers(account));
+                    }
+                    if (cloudTasks.length > 0) {
+                        await Promise.all(cloudTasks);
+                    }
                 } catch (error) {
                     console.error('删除云端用户数据失败:', error);
                 }
@@ -14515,17 +14764,7 @@ const paginationContainers = {
 
                 // 10. 如果被删除的用户正在登录，强制其退出
                 if (currentUser && currentUser.account === account) {
-                    currentUser = null;
-                    localStorage.removeItem('currentUser');
-                    if (cloudSync && cloudSync.isInitialized) {
-                        await cloudSync.handleUserSessionChange();
-                    }
-                    updateUserInterface();
-                    showNotification(t('accountDeletedByAdmin'), 'error');
-                    // 跳转到首页
-                    document.getElementById('home-page').style.display = 'block';
-                    document.getElementById('user-center').style.display = 'none';
-                    document.getElementById('admin-panel').style.display = 'none';
+                    await handleForcedLogout('deleted', { message: t('accountDeletedByAdmin') });
                 }
 
             } catch (error) {
@@ -14580,15 +14819,11 @@ const paginationContainers = {
 
             try {
                 await removeAccountData(account);
-                currentUser = null;
-                localStorage.removeItem('currentUser');
-
-                if (cloudSync && cloudSync.isInitialized) {
-                    await cloudSync.handleUserSessionChange();
-                }
-
-                updateUserInterface();
-                showHomePage();
+                await finalizeLogout({
+                    clearLocalData: true,
+                    releaseSession: true,
+                    reason: 'self-delete'
+                });
                 showNotification(t('accountDeletedSuccess'), 'success');
             } catch (error) {
                 console.error('注销账号失败:', error);
