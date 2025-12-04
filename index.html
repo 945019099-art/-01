@@ -400,6 +400,91 @@
             box-shadow: 0 0 0 1px var(--primary);
         }
 
+        /* 电话输入样式（带+1前缀） */
+        .phone-input-wrapper {
+            display: flex;
+            align-items: center;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            overflow: hidden;
+            background: #fff;
+            transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+        }
+
+        .phone-input-wrapper:focus-within {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 1px var(--primary);
+        }
+
+        .phone-prefix {
+            padding: 10px 12px;
+            background: #f3f2f1;
+            border-right: 1px solid #ddd;
+            font-weight: 600;
+            color: var(--dark);
+            letter-spacing: 0.05em;
+        }
+
+        .phone-input-wrapper .phone-input {
+            border: none;
+            flex: 1;
+            padding: 10px 12px;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .phone-input-wrapper.error {
+            border-color: #d32f2f;
+            box-shadow: 0 0 0 1px rgba(211, 47, 47, 0.3);
+        }
+
+        .phone-input-hint {
+            font-size: 12px;
+            color: #6b6a69;
+            margin-top: 6px;
+        }
+
+        .admin-pagination {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 16px;
+            padding-top: 8px;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        .admin-pagination .pagination-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .admin-pagination button {
+            padding: 6px 14px;
+            border-radius: 4px;
+            border: 1px solid #d1d5db;
+            background: #fff;
+            color: #4b5563;
+            cursor: pointer;
+            transition: background var(--transition-fast), color var(--transition-fast);
+        }
+
+        .admin-pagination button:hover:not(:disabled) {
+            background: var(--primary-light);
+            color: var(--primary);
+        }
+
+        .admin-pagination button:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .admin-pagination .pagination-info {
+            font-size: 13px;
+            color: #6b7280;
+        }
+
         .search-bar input {
             flex: 1;
             padding: 10px 16px;
@@ -2444,6 +2529,35 @@
             display: flex;
             gap: 15px;
             margin-bottom: 20px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .admin-search {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 10px;
+            border: 1px solid var(--border-subtle);
+            border-radius: 4px;
+            background: #fff;
+            min-width: 260px;
+            box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04);
+        }
+
+        .admin-search i {
+            color: var(--gray-light);
+        }
+
+        .admin-search-input {
+            border: none;
+            outline: none;
+            flex: 1;
+            font-size: 14px;
+        }
+
+        .admin-search-input::placeholder {
+            color: var(--gray-light);
         }
 
         .admin-content {
@@ -4055,7 +4169,11 @@
                         </div>
                         <div class="form-group">
                             <label for="profile-phone" data-i18n="phone">${t('phone') || '手机号'}</label>
-                            <input type="tel" id="profile-phone" class="form-control" data-i18n-placeholder="enterPhone" placeholder="${t('enterPhone') || '请输入手机号'}">
+                            <div class="phone-input-wrapper">
+                                <span class="phone-prefix">+1</span>
+                                <input type="tel" id="profile-phone" class="phone-input" maxlength="10" data-i18n-placeholder="enterPhone" placeholder="${t('enterPhone') || '请输入手机号'}">
+                            </div>
+                            <small class="phone-input-hint" data-i18n="usPhoneHint">${t('usPhoneHint') || '请输入美国手机号（+1开头的10位数字）'}</small>
                         </div>
                         <div class="form-group">
                             <label for="profile-email" data-i18n="email">${t('email') || '邮箱'}</label>
@@ -4187,6 +4305,11 @@
                         <i class="fas fa-database"></i> 加载演示数据
                     </button>
                     <div style="flex: 1;"></div>
+                    <div class="admin-search">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="admin-product-search" class="admin-search-input"
+                            placeholder="搜索产品名称/分类/ID">
+                    </div>
                     <label style="margin-right: 15px; display: flex; align-items: center; gap: 5px;">
                         <input type="checkbox" id="select-all-products"
                             style="width: 18px; height: 18px; cursor: pointer;">
@@ -4209,6 +4332,7 @@
                     <div class="products-grid" id="admin-products-grid">
                         <!-- 产品管理卡片将通过JavaScript动态生成 -->
                     </div>
+                    <div class="admin-pagination" id="admin-products-pagination"></div>
                 </div>
             </div>
 
@@ -4276,6 +4400,7 @@
                             </tbody>
                         </table>
                     </div>
+                    <div class="admin-pagination" id="admin-users-pagination"></div>
                 </div>
             </div>
 
@@ -4302,8 +4427,7 @@
                             <option value="all">全部字段</option>
                             <option value="id">订单ID</option>
                             <option value="productName">产品名称</option>
-                            <option value="customerName">客户姓名</option>
-                            <option value="customerPhone">客户电话</option>
+                            <option value="username">用户名</option>
                         </select>
                         <input type="text" id="order-search" class="form-control" placeholder="搜索订单...">
                     </div>
@@ -4315,8 +4439,7 @@
                                     <th style="width:50px; text-align:center;"><input type="checkbox" id="select-all-orders"></th>
                                     <th>订单ID</th>
                                     <th>产品名称</th>
-                                    <th>客户姓名</th>
-                                    <th>客户电话</th>
+                                    <th>用户名</th>
                                     <th>订单状态</th>
                                     <th>快递单号</th>
                                     <th>下单时间</th>
@@ -4328,6 +4451,7 @@
                             </tbody>
                         </table>
                     </div>
+                    <div class="admin-pagination" id="admin-orders-pagination"></div>
                 </div>
             </div>
 
@@ -4356,6 +4480,7 @@
                             </tbody>
                         </table>
                     </div>
+                    <div class="admin-pagination" id="admin-reviews-pagination"></div>
                 </div>
             </div>
 
@@ -4638,16 +4763,6 @@
                         <label id="signup-product-label">报名产品</label>
                         <input type="text" id="signup-product-name" name="产品名称" class="form-control" readonly>
                     </div>
-                    <div class="form-row" style="display: flex; gap: 15px;">
-                        <div class="form-group" style="flex: 1;">
-                            <label for="signup-name" id="signup-name-label">姓名</label>
-                            <input type="text" id="signup-name" name="姓名" class="form-control" required>
-                        </div>
-                        <div class="form-group" style="flex: 1;">
-                            <label for="signup-phone" id="signup-phone-label">电话</label>
-                            <input type="tel" id="signup-phone" name="电话" class="form-control" required>
-                        </div>
-                    </div>
                     <div class="form-group">
                         <label for="signup-email" id="signup-email-label">邮箱</label>
                         <input type="email" id="signup-email" name="邮箱" class="form-control" required>
@@ -4856,8 +4971,11 @@
 
                     <!-- 电话号码 -->
                     <div class="form-group" style="margin-bottom: 20px;">
-                        <label for="address-phone" style="display: block; font-weight: 600; margin-bottom: 8px; font-size: 14px;">Phone number</label>
-                        <input type="tel" id="address-phone" class="form-control" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                        <label for="address-phone" data-i18n="phone" style="display: block; font-weight: 600; margin-bottom: 8px; font-size: 14px;">Phone number</label>
+                        <div class="phone-input-wrapper">
+                            <span class="phone-prefix">+1</span>
+                            <input type="tel" id="address-phone" class="phone-input" required maxlength="10" placeholder="1234567890" style="font-size: 14px;">
+                        </div>
                         <small style="color: #666; font-size: 12px; margin-top: 4px; display: block;">May be used to assist delivery</small>
                     </div>
 
@@ -5092,6 +5210,80 @@
             return callback(null);
         }
 
+        function resetPagination(key) {
+            if (paginationState[key]) {
+                paginationState[key].page = 1;
+            }
+        }
+
+        function getPaginatedItems(items = [], key) {
+            const state = paginationState[key];
+            if (!state) {
+                return { items, totalItems: items.length, totalPages: 1 };
+            }
+
+            const totalItems = items.length;
+            const totalPages = totalItems === 0 ? 1 : Math.ceil(totalItems / state.pageSize);
+
+            if (totalItems === 0) {
+                state.page = 1;
+                return { items: [], totalItems, totalPages };
+            }
+
+            if (state.page > totalPages) {
+                state.page = totalPages;
+            }
+            if (state.page < 1) {
+                state.page = 1;
+            }
+
+            const startIndex = (state.page - 1) * state.pageSize;
+            const paginatedItems = items.slice(startIndex, startIndex + state.pageSize);
+            return { items: paginatedItems, totalItems, totalPages };
+        }
+
+        function updatePaginationControls(key, totalItems, onPageChange) {
+            const containerId = paginationContainers[key];
+            const container = containerId ? document.getElementById(containerId) : null;
+            const state = paginationState[key];
+
+            if (!container || !state) return;
+
+            const totalPages = totalItems === 0 ? 1 : Math.ceil(totalItems / state.pageSize);
+            if (totalItems === 0) {
+                state.page = 1;
+            } else if (state.page > totalPages) {
+                state.page = totalPages;
+            }
+
+            container.innerHTML = `
+                <div class="pagination-info">
+                    ${totalItems === 0 ? '暂无数据' : `共 ${totalItems} 条 · 第 ${state.page} / ${totalPages} 页`}
+                </div>
+                <div class="pagination-actions">
+                    <button type="button" data-direction="prev" ${state.page <= 1 || totalItems === 0 ? 'disabled' : ''}>上一页</button>
+                    <button type="button" data-direction="next" ${state.page >= totalPages || totalItems === 0 ? 'disabled' : ''}>下一页</button>
+                </div>
+            `;
+
+            container.querySelectorAll('button').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const direction = btn.getAttribute('data-direction');
+                    if (direction === 'prev' && state.page > 1) {
+                        state.page--;
+                    } else if (direction === 'next' && state.page < totalPages) {
+                        state.page++;
+                    } else {
+                        return;
+                    }
+
+                    if (typeof onPageChange === 'function') {
+                        onPageChange();
+                    }
+                });
+            });
+        }
+
         // ========== 数据存储 - 始终从云端加载最新数据 ==========
         // 注意:不再从localStorage初始化数据,而是在登录后从云端同步
         // 这确保用户始终获取最新的云端数据,避免本地缓存过期问题
@@ -5116,6 +5308,19 @@ let userFilterRole = '';
 let userFilterStatus = '';
 let userDeviceFilter = '';
 let userSearchTerm = '';
+let adminProductSearchTerm = '';
+const paginationState = {
+    products: { page: 1, pageSize: 30 },
+    users: { page: 1, pageSize: 10 },
+    orders: { page: 1, pageSize: 10 },
+    reviews: { page: 1, pageSize: 10 }
+};
+const paginationContainers = {
+    products: 'admin-products-pagination',
+    users: 'admin-users-pagination',
+    orders: 'admin-orders-pagination',
+    reviews: 'admin-reviews-pagination'
+};
         
         // 判断当前用户是否为管理员
         function isCurrentUserAdmin() {
@@ -5259,6 +5464,7 @@ let userSearchTerm = '';
                 'nickname': '昵称',
                 'enterNickname': '请输入昵称',
                 'enterPhone': '请输入手机号',
+                'usPhoneHint': '请输入美国手机号（+1开头的10位数字）',
                 'email': '邮箱',
                 'enterEmail': '请输入邮箱',
                 'birthday': '生日',
@@ -5339,7 +5545,7 @@ let userSearchTerm = '';
                 'confirmTitle': '确认',
                 'profileSaveSuccess': '个人信息保存成功！',
                 'pleaseUploadExcel': '请上传Excel文件（.xlsx 或 .xls 格式）',
-                'invalidPhoneFormat': '请输入正确的手机号格式',
+                'invalidPhoneFormat': '请输入正确的美国手机号（+1开头的10位数字）',
                 'invalidEmailFormat': '请输入正确的邮箱格式',
                 'importDataSaveError': '❌ 导入失败：数据保存出错',
                 'confirmLoadDemo': '确定要加载演示产品数据吗？这将添加6个演示产品。',
@@ -5619,6 +5825,7 @@ let userSearchTerm = '';
                 'nickname': 'Nickname',
                 'enterNickname': 'Please enter nickname',
                 'enterPhone': 'Please enter phone number',
+                'usPhoneHint': 'US number only (+1 followed by 10 digits)',
                 'email': 'Email',
                 'enterEmail': 'Please enter email',
                 'birthday': 'Birthday',
@@ -5699,7 +5906,7 @@ let userSearchTerm = '';
                 'confirmTitle': 'Confirm',
                 'profileSaveSuccess': 'Profile saved successfully!',
                 'pleaseUploadExcel': 'Please upload an Excel file (.xlsx or .xls)',
-                'invalidPhoneFormat': 'Please enter a valid phone number',
+                'invalidPhoneFormat': 'Please enter a valid US phone number (+1 followed by 10 digits)',
                 'invalidEmailFormat': 'Please enter a valid email address',
                 'importDataSaveError': '❌ Import failed: error while saving data',
                 'confirmLoadDemo': 'Are you sure you want to load demo product data? This will add 6 demo products.',
@@ -5874,7 +6081,12 @@ let userSearchTerm = '';
         
         // 获取翻译文本
         function t(key) {
-            return translations[currentLanguage][key] || translations['zh'][key] || key;
+            if (!translations || !key) return key;
+            const lang = translations[currentLanguage];
+            if (lang && lang[key]) return lang[key];
+            const zhLang = translations['zh'];
+            if (zhLang && zhLang[key]) return zhLang[key];
+            return key;
         }
         
         // 格式化货币
@@ -6202,6 +6414,9 @@ let userSearchTerm = '';
                 if (registerConfirmInput) registerConfirmInput.placeholder = t('enterPasswordAgain');
                 if (registerSubmitBtn) registerSubmitBtn.textContent = t('register');
             }
+
+            attachUSPhoneInputBehavior('profile-phone');
+            attachUSPhoneInputBehavior('address-phone');
             
             // 更新产品报名模态框
             const signupModalTitle = document.getElementById('signup-modal-title');
@@ -7016,9 +7231,10 @@ let userSearchTerm = '';
                     const cloudProducts = snapshot.val();
 
                     if (cloudProducts && Array.isArray(cloudProducts) && cloudProducts.length > 0) {
-                        products = cloudProducts;
+                        // 过滤掉无效的产品（null、undefined 或缺少必要属性）
+                        products = cloudProducts.filter(p => p && typeof p === 'object' && p.id && p.name);
                         localStorage.setItem('products', JSON.stringify(products));
-                        console.log('✅ 已从云端加载产品数据');
+                        console.log('✅ 已从云端加载产品数据，有效产品数量:', products.length);
                         return true;
                     }
                 } catch (error) {
@@ -7522,7 +7738,8 @@ let userSearchTerm = '';
                 productsRef.on('value', (snapshot) => {
                     const cloudProducts = snapshot.val();
                     if (cloudProducts && Array.isArray(cloudProducts) && !this.syncInProgress) {
-                        products = cloudProducts;
+                        // 过滤掉无效的产品（null、undefined 或缺少必要属性）
+                        products = cloudProducts.filter(p => p && typeof p === 'object' && p.id && p.name);
                         localStorage.setItem('products', JSON.stringify(products));
 
                         // 刷新产品显示
@@ -10607,8 +10824,6 @@ let userSearchTerm = '';
 
                 // 获取表单数据
                 const productName = document.getElementById('signup-product-name').value;
-                const name = document.getElementById('signup-name').value;
-                const phone = document.getElementById('signup-phone').value;
                 const email = document.getElementById('signup-email').value;
                 // 从隐藏字段获取地址（由地址选择器填充）
                 const addressInput = document.getElementById('signup-address-hidden');
@@ -10665,18 +10880,57 @@ let userSearchTerm = '';
 
                 // 确定使用的地址：优先使用表单中的地址，否则使用保存的默认地址，再否则使用第一个保存的地址
                 let finalAddress = '';
+                let finalAddressDetail = null; // 保存详细地址信息（包含联系人）
+                
                 if (hasFormAddress) {
-                    finalAddress = address;
+                    // 尝试解析地址JSON对象
+                    try {
+                        const addressObj = JSON.parse(address);
+                        if (addressObj && typeof addressObj === 'object' && addressObj.address) {
+                            finalAddress = addressObj.address;
+                            finalAddressDetail = addressObj; // 保存详细地址对象（包含姓名、电话）
+                        } else {
+                            finalAddress = address;
+                        }
+                    } catch (e) {
+                        // 如果不是JSON，直接使用字符串
+                        finalAddress = address;
+                    }
                 } else if (hasSavedAddress) {
                     // 优先使用默认地址
                     const defaultAddress = userSavedAddresses.find(addr => addr.isDefault === true);
-                    if (defaultAddress) {
+                    const selectedAddr = defaultAddress || userSavedAddresses[0];
+                    
+                    if (selectedAddr) {
                         // 格式化地址字符串
-                        finalAddress = `${defaultAddress.street}${defaultAddress.unit ? ', ' + defaultAddress.unit : ''}, ${defaultAddress.city}, ${defaultAddress.state} ${defaultAddress.postal}`;
-                    } else {
-                        // 使用第一个地址
-                        const firstAddr = userSavedAddresses[0];
-                        finalAddress = `${firstAddr.street}${firstAddr.unit ? ', ' + firstAddr.unit : ''}, ${firstAddr.city}, ${firstAddr.state} ${firstAddr.postal}`;
+                        if (selectedAddr.state) {
+                            finalAddress = [
+                                selectedAddr.detail || selectedAddr.street,
+                                selectedAddr.unit,
+                                selectedAddr.city,
+                                selectedAddr.state,
+                                selectedAddr.postal || selectedAddr.zip
+                            ].filter(Boolean).join(', ');
+                        } else {
+                            finalAddress = [
+                                selectedAddr.province || '',
+                                selectedAddr.city || '',
+                                selectedAddr.district || '',
+                                selectedAddr.detail || selectedAddr.street || ''
+                            ].filter(Boolean).join(' ');
+                        }
+                        
+                        // 保存详细地址信息
+                        finalAddressDetail = {
+                            name: selectedAddr.name || '',
+                            phone: selectedAddr.phone || '',
+                            detail: selectedAddr.detail || selectedAddr.street || '',
+                            unit: selectedAddr.unit || '',
+                            city: selectedAddr.city || '',
+                            state: selectedAddr.state || '',
+                            postal: selectedAddr.postal || selectedAddr.zip || '',
+                            country: selectedAddr.country || 'US'
+                        };
                     }
                 }
 
@@ -10729,6 +10983,14 @@ let userSearchTerm = '';
                     }
                 }
 
+                // 联系人信息优先来自地址，其次来自用户资料
+                const latestUserData = allUsers.find(u => u.account === currentUser.account);
+                let customerName = finalAddressDetail?.name || latestUserData?.username || currentUser.username || '';
+                let customerPhone = finalAddressDetail?.phone || '';
+                if (!customerPhone && currentUser.account && !currentUser.account.includes('@')) {
+                    customerPhone = currentUser.account;
+                }
+
                 // 创建新订单（本地存储）
                 const newOrder = {
                     id: Date.now(),
@@ -10741,10 +11003,23 @@ let userSearchTerm = '';
                     status: 'review',
                     date: Date.now(), // 保存完整时间戳，确保时间准确
                     customerInfo: { 
-                        name, 
-                        phone, 
+                        name: customerName, 
+                        phone: customerPhone, 
                         email, 
-                        address: finalAddress, 
+                        address: finalAddress, // 完整地址字符串（兼容旧代码）
+                        // 详细地址字段
+                        addressDetail: finalAddressDetail?.detail || '',
+                        addressUnit: finalAddressDetail?.unit || '',
+                        addressCity: finalAddressDetail?.city || '',
+                        addressState: finalAddressDetail?.state || '',
+                        addressPostal: finalAddressDetail?.postal || '',
+                        addressCountry: finalAddressDetail?.country || 'US',
+                        // 兼容旧字段名
+                        detail: finalAddressDetail?.detail || '',
+                        unit: finalAddressDetail?.unit || '',
+                        city: finalAddressDetail?.city || '',
+                        state: finalAddressDetail?.state || '',
+                        postal: finalAddressDetail?.postal || '',
                         notes 
                     },
                     account: currentUser ? currentUser.account : null // 添加用户标识
@@ -10755,7 +11030,7 @@ let userSearchTerm = '';
 
                 // 发送给客服（如果addMessage函数存在）
                 try {
-                    const customerMessage = `新的产品报名：\n产品：${productName}\n姓名：${name}\n电话：${phone}\n邮箱：${email}\n地址：${newOrder.customerInfo.address}\n备注：${notes}`;
+                    const customerMessage = `新的产品报名：\n产品：${productName}\n姓名：${customerName}\n电话：${customerPhone}\n邮箱：${email}\n地址：${newOrder.customerInfo.address}\n备注：${notes}`;
                     if (typeof addMessage === 'function') {
                         addMessage(customerMessage, 'service');
                     }
@@ -10850,6 +11125,7 @@ let userSearchTerm = '';
             if (userRoleFilterEl) {
                 userRoleFilterEl.addEventListener('change', (e) => {
                     userFilterRole = e.target.value;
+                    resetPagination('users');
                     renderUsersTable();
                 });
             }
@@ -10858,6 +11134,7 @@ let userSearchTerm = '';
             if (userStatusFilterEl) {
                 userStatusFilterEl.addEventListener('change', (e) => {
                     userFilterStatus = e.target.value;
+                    resetPagination('users');
                     renderUsersTable();
                 });
             }
@@ -10866,6 +11143,7 @@ let userSearchTerm = '';
             if (userDeviceFilterEl) {
                 userDeviceFilterEl.addEventListener('input', (e) => {
                     userDeviceFilter = e.target.value.trim();
+                    resetPagination('users');
                     renderUsersTable();
                 });
             }
@@ -10874,7 +11152,21 @@ let userSearchTerm = '';
             if (userSearchInputEl) {
                 userSearchInputEl.addEventListener('input', (e) => {
                     userSearchTerm = e.target.value.trim();
+                    resetPagination('users');
                     renderUsersTable();
+                });
+            }
+
+            const adminProductSearchInput = document.getElementById('admin-product-search');
+            if (adminProductSearchInput) {
+                const handleProductSearch = debounce((value) => {
+                    adminProductSearchTerm = value.trim().toLowerCase();
+                    resetPagination('products');
+                    renderAdminProducts();
+                }, 300);
+
+                adminProductSearchInput.addEventListener('input', (e) => {
+                    handleProductSearch(e.target.value);
                 });
             }
 
@@ -11188,16 +11480,19 @@ let userSearchTerm = '';
 
             // 订单筛选
             document.getElementById('order-status-filter').addEventListener('change', () => {
+                resetPagination('orders');
                 renderOrdersTable();
             });
 
             document.getElementById('order-search').addEventListener('input', debounce(() => {
+                resetPagination('orders');
                 renderOrdersTable();
             }, 300));
 
             const orderSearchField = document.getElementById('order-search-field');
             if (orderSearchField) {
                 orderSearchField.addEventListener('change', () => {
+                    resetPagination('orders');
                     renderOrdersTable();
                 });
             }
@@ -12485,29 +12780,41 @@ let userSearchTerm = '';
             productDetail.style.display = 'none';
             productsGrid.style.display = 'grid';
 
-            if (productsToRender.length === 0) {
+            if (!productsToRender || productsToRender.length === 0) {
                 productsGrid.innerHTML = `<div class="no-products">${t('noProducts')}</div>`;
                 return;
             }
 
-            productsGrid.innerHTML = productsToRender.map(product => {
+            // 过滤掉无效的产品（undefined、null 或缺少必要属性）
+            const validProducts = productsToRender.filter(product => 
+                product && typeof product === 'object' && product.id && product.name
+            );
+
+            if (validProducts.length === 0) {
+                productsGrid.innerHTML = `<div class="no-products">${t('noProducts')}</div>`;
+                return;
+            }
+
+            productsGrid.innerHTML = validProducts.map(product => {
+                if (!product) return ''; // 额外安全检查
                 const categoryLabel = getCategoryLabel(product.category);
                 const oldPrice = formatCurrency(product.price);
                 const newPrice = formatCurrency(product.newPrice !== undefined ? product.newPrice : 0);
+                const stock = (product && typeof product.stock !== 'undefined') ? product.stock : 0;
                 return `
                     <article class="home-feature-card" data-product-id="${product.id}">
                         <div class="home-feature-image">
-                            <img src="${getPrimaryProductImage(product)}" alt="${product.name}">
+                            <img src="${getPrimaryProductImage(product)}" alt="${product.name || ''}">
                             <span class="home-feature-tag">${categoryLabel}</span>
                         </div>
                         <div class="home-feature-body">
                             <div>
-                                <h3>${product.name}</h3>
+                                <h3>${product.name || ''}</h3>
                                 <div class="home-feature-price">
                                     <span style="text-decoration: line-through; color: #999; margin-right: 10px;">${oldPrice}</span>
                                     <span style="color: #e74c3c; font-weight: bold; font-size: 1.2em;">${newPrice}</span>
                                 </div>
-                                <div class="home-feature-stock">${t('stock')} ${product.stock || 0} ${t('pieces')}</div>
+                                <div class="home-feature-stock">${t('stock')} ${stock} ${t('pieces')}</div>
                             </div>
                             <div class="home-feature-actions">
                                 <button class="btn btn-primary view-detail">${t('viewDetail')}</button>
@@ -12609,8 +12916,8 @@ let userSearchTerm = '';
                             <span style="color: #e74c3c; font-weight: bold; font-size: 1.3em;">${newPrice}</span>
                         </div>
                         <div class="product-detail-description">
-                            <p>${product.description}</p>
-                            <p>${t('stock')}: ${product.stock} ${t('pieces')}</p>
+                            <p>${product.description || ''}</p>
+                            <p>${t('stock')}: ${(product && typeof product.stock !== 'undefined') ? product.stock : 0} ${t('pieces')}</p>
                         </div>
                         <div class="product-detail-actions">
                             <button class="btn btn-primary signup-now">${t('registerNow')}</button>
@@ -12874,8 +13181,6 @@ let userSearchTerm = '';
             if (!form) return null;
 
             return {
-                name: document.getElementById('signup-name')?.value || '',
-                phone: document.getElementById('signup-phone')?.value || '',
                 email: document.getElementById('signup-email')?.value || '',
                 notes: document.getElementById('signup-notes')?.value || '',
                 address: document.getElementById('signup-address-hidden')?.value || ''
@@ -12885,14 +13190,10 @@ let userSearchTerm = '';
         function restoreSignupFormData() {
             if (!pendingSignupFormData) return;
 
-            const { name, phone, email, notes } = pendingSignupFormData;
-            const nameInput = document.getElementById('signup-name');
-            const phoneInput = document.getElementById('signup-phone');
+            const { email, notes } = pendingSignupFormData;
             const emailInput = document.getElementById('signup-email');
             const notesInput = document.getElementById('signup-notes');
 
-            if (nameInput) nameInput.value = name || '';
-            if (phoneInput) phoneInput.value = phone || '';
             if (emailInput) emailInput.value = email || '';
             if (notesInput) notesInput.value = notes || '';
 
@@ -12981,13 +13282,10 @@ let userSearchTerm = '';
 
             // 如果用户已登录，预填用户信息
             if (currentUser) {
-                // 从allUsers数组中获取最新的用户名
-                const latestUserData = allUsers.find(u => u.account === currentUser.account);
-                const username = latestUserData ? latestUserData.username : currentUser.username;
-
-                document.getElementById('signup-name').value = username || '';
-                document.getElementById('signup-email').value = currentUser.account.includes('@') ? currentUser.account : '';
-                document.getElementById('signup-phone').value = !currentUser.account.includes('@') ? currentUser.account : '';
+                const emailInput = document.getElementById('signup-email');
+                if (emailInput) {
+                    emailInput.value = currentUser.account.includes('@') ? currentUser.account : '';
+                }
             }
 
             // 更新地址选择器
@@ -13040,7 +13338,7 @@ let userSearchTerm = '';
                 addressBtn.style.display = 'none';
 
                 // 填充地址选项
-                addresses.forEach((address, index) => {
+                addresses.forEach((address) => {
                     // 构建完整地址字符串
                     const fullAddress = address.state 
                         ? [
@@ -13059,29 +13357,37 @@ let userSearchTerm = '';
 
                     const addressText = `${address.name} - ${address.phone} - ${fullAddress}${address.isDefault ? ' (默认)' : ''}`;
                     const option = document.createElement('option');
-                    option.value = JSON.stringify({
+                    const payload = JSON.stringify({
                         name: address.name,
                         phone: address.phone,
                         address: fullAddress,
+                        detail: address.detail || address.street || '',
+                        unit: address.unit || '',
+                        city: address.city || '',
+                        state: address.state || '',
+                        postal: address.postal || address.zip || '',
+                        country: address.country || 'US',
                         full: addressText
                     });
+                    option.value = payload;
                     option.textContent = addressText;
                     if (address.isDefault) {
                         option.selected = true;
-                        addressHidden.value = fullAddress;
+                        addressHidden.value = payload;
                     }
                     addressSelect.appendChild(option);
                 });
 
+                // 如果没有默认地址，默认选中第一个有效地址
+                if (!addressHidden.value && addressSelect.options.length > 1) {
+                    addressSelect.options[1].selected = true;
+                    addressHidden.value = addressSelect.options[1].value;
+                }
+
                 // 监听地址选择变化
                 addressSelect.onchange = function() {
                     if (this.value) {
-                        try {
-                            const addressData = JSON.parse(this.value);
-                            addressHidden.value = addressData.address;
-                        } catch (e) {
-                            addressHidden.value = this.value;
-                        }
+                        addressHidden.value = this.value;
                     } else {
                         addressHidden.value = '';
                     }
@@ -13468,10 +13774,13 @@ let userSearchTerm = '';
 
             if (filteredUsers.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 40px;">未找到符合条件的用户</td></tr>';
+                updatePaginationControls('users', 0);
                 return;
             }
 
-            tbody.innerHTML = filteredUsers.map(user => {
+            const { items: paginatedUsers } = getPaginatedItems(filteredUsers, 'users');
+
+            tbody.innerHTML = paginatedUsers.map(user => {
                 // 获取用户密码
                 let userPassword = '******';
                 if (user.role === 'admin') {
@@ -13556,6 +13865,7 @@ let userSearchTerm = '';
             });
 
             refreshUserSelectionUI();
+            updatePaginationControls('users', filteredUsers.length, renderUsersTable);
         }
 
         function refreshUserSelectionUI() {
@@ -13638,25 +13948,21 @@ let userSearchTerm = '';
                 filteredOrders = filteredOrders.filter(order => {
                     const idStr = String(order.id || '').toLowerCase();
                     const productName = (order.productName || '').toLowerCase();
-                    const customerName = (order.customerInfo?.name || '').toLowerCase();
-                    const customerPhone = (order.customerInfo?.phone || '').toLowerCase();
+                    const usernameValue = (order.account || order.customerInfo?.account || order.customerInfo?.name || order.customerInfo?.email || '').toLowerCase();
 
                     switch (searchField) {
                         case 'id':
                             return idStr.includes(searchTerm);
                         case 'productName':
                             return productName.includes(searchTerm);
-                        case 'customerName':
-                            return customerName.includes(searchTerm);
-                        case 'customerPhone':
-                            return customerPhone.includes(searchTerm);
+                        case 'username':
+                            return usernameValue.includes(searchTerm);
                         case 'all':
                         default:
                             return (
                                 idStr.includes(searchTerm) ||
                                 productName.includes(searchTerm) ||
-                                customerName.includes(searchTerm) ||
-                                customerPhone.includes(searchTerm)
+                                usernameValue.includes(searchTerm)
                             );
                     }
                 });
@@ -13672,11 +13978,15 @@ let userSearchTerm = '';
             if (filteredOrders.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 40px;">暂无订单数据</td></tr>';
                 refreshOrderSelectionUI();
+                updatePaginationControls('orders', 0);
                 return;
             }
 
-            tbody.innerHTML = filteredOrders.map(order => {
+            const { items: paginatedOrders } = getPaginatedItems(filteredOrders, 'orders');
+
+            tbody.innerHTML = paginatedOrders.map(order => {
                 const customerInfo = order.customerInfo || {};
+                const usernameValue = order.account || customerInfo.account || customerInfo.name || customerInfo.email || '';
                 const customerName = customerInfo.name || '';
                 const customerPhone = customerInfo.phone || '';
                 const customerEmail = customerInfo.email || '';
@@ -13694,8 +14004,7 @@ let userSearchTerm = '';
                     </td>
                     <td>${orderIdStr}</td>
                     <td>${productName}</td>
-                    <td><a href="#" class="customer-name-link" data-customer-name="${customerName}" data-customer-phone="${customerPhone}" data-customer-email="${customerEmail}" style="color: var(--primary); text-decoration: underline; cursor: pointer;">${customerName || '-'}</a></td>
-                    <td>${customerPhone || '-'}</td>
+                    <td><a href="#" class="order-username-link" data-username="${usernameValue}" data-customer-name="${customerName}" data-customer-phone="${customerPhone}" data-customer-email="${customerEmail}" style="color: var(--primary); text-decoration: underline; cursor: pointer;">${usernameValue || '-'}</a></td>
                     <td><span class="status-badge status-${order.status || 'pending'}">${getStatusText(order.status || 'pending')}</span></td>
                     <td>
                         <span class="tracking-number-display" data-order-id="${orderIdStr}">${order.trackingNumber || t('notFilled')}</span>
@@ -13714,7 +14023,7 @@ let userSearchTerm = '';
             }).join('');
 
             // 为客户姓名链接添加点击事件
-            document.querySelectorAll('.customer-name-link').forEach(link => {
+            document.querySelectorAll('.order-username-link').forEach(link => {
                 link.addEventListener('click', (e) => {
                     e.preventDefault();
                     const customerName = link.getAttribute('data-customer-name');
@@ -13738,6 +14047,9 @@ let userSearchTerm = '';
                     });
                 });
             }
+
+            refreshOrderSelectionUI();
+            updatePaginationControls('orders', filteredOrders.length, renderOrdersTable);
         }
 
         function collectAllReviews() {
@@ -13790,10 +14102,13 @@ let userSearchTerm = '';
             const reviews = collectAllReviews();
             if (reviews.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:40px;">暂无评价数据</td></tr>';
+                updatePaginationControls('reviews', 0);
                 return;
             }
 
-            tbody.innerHTML = reviews.map(review => {
+            const { items: paginatedReviews } = getPaginatedItems(reviews, 'reviews');
+
+            tbody.innerHTML = paginatedReviews.map(review => {
                 const createdAt = review.createdAt ? formatDate(review.createdAt) : '-';
                 const ratingStars = Array.from({ length: 5 }, (_, i) =>
                     `<i class="fas fa-star" style="color:${i < (review.rating || 0) ? '#ffc107' : '#ddd'};"></i>`
@@ -13816,6 +14131,8 @@ let userSearchTerm = '';
                     </tr>
                 `;
             }).join('');
+
+            updatePaginationControls('reviews', reviews.length, renderReviewsTable);
         }
 
         // 渲染统计数据
@@ -14497,6 +14814,298 @@ let userSearchTerm = '';
             return null;
         }
 
+        // 格式化订单地址显示
+        function renderOrderContactInfo(order) {
+            const info = order.customerInfo || {};
+            const name = info.name || info.fullName || order.account || t('notFilled');
+            const account = info.account || info.username || order.account || t('notFilled');
+            const email = info.email || t('notFilled');
+            const phone = info.phone || t('notFilled');
+            let street = info.addressDetail || info.detail || info.street || '';
+            let unit = info.addressUnit || info.unit || '';
+            let city = info.addressCity || info.city || '';
+            let state = info.addressState || info.state || '';
+            let postal = info.addressPostal || info.postal || info.zip || '';
+
+            // 如果详细字段缺失，但有整段地址字符串，尝试智能解析
+            if (info.address && (!street || !city || !state || !postal)) {
+                const parsed = parseAddressString(info.address);
+                street = street || parsed.street;
+                unit = unit || parsed.unit;
+                city = city || parsed.city;
+                state = state || parsed.state;
+                postal = postal || parsed.postal;
+            }
+
+            const safeText = (value) => (value ? value : (t('notFilled') || 'N/A'));
+
+            return `
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px;">
+                    <div>
+                        <div style="font-size: 12px; color: #777;">${t('name') || 'Full Name'}</div>
+                        <div style="font-size: 15px; font-weight: 600;">${safeText(name)}</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 12px; color: #777;">${t('account') || 'Account'}</div>
+                        <div style="font-size: 15px; font-weight: 600;">${safeText(account)}</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 12px; color: #777;">${t('email') || 'Email'}</div>
+                        <div style="font-size: 15px; font-weight: 600; word-break: break-all;">${safeText(email)}</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 12px; color: #777;">${t('phone') || 'Phone'}</div>
+                        <div style="font-size: 15px; font-weight: 600;">${safeText(phone)}</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 12px; color: #777;">${t('street') || 'Street'}</div>
+                        <div style="font-size: 15px; font-weight: 600;">${safeText(street)}</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 12px; color: #777;">${t('unit') || 'Unit / Suite'}</div>
+                        <div style="font-size: 15px; font-weight: 600;">${safeText(unit)}</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 12px; color: #777;">${t('city') || 'City'}</div>
+                        <div style="font-size: 15px; font-weight: 600;">${safeText(city)}</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 12px; color: #777;">${t('state') || 'State'}</div>
+                        <div style="font-size: 15px; font-weight: 600;">${safeText(state)}</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 12px; color: #777;">${t('postal') || 'ZIP Code'}</div>
+                        <div style="font-size: 15px; font-weight: 600;">${safeText(postal)}</div>
+                    </div>
+                </div>
+                ${info.notes ? `<div style="margin-top: 12px;"><strong>${t('notes')}：</strong>${info.notes}</div>` : ''}
+            `;
+        }
+
+        function parseAddressString(addressStr) {
+            const result = { street: '', unit: '', city: '', state: '', postal: '' };
+            if (!addressStr || typeof addressStr !== 'string') {
+                return result;
+            }
+
+            const parts = addressStr.split(',').map(p => p.trim()).filter(Boolean);
+            if (parts.length === 0) return result;
+
+            result.street = parts[0] || '';
+
+            if (parts.length >= 5) {
+                result.unit = parts[1] || '';
+                result.city = parts[2] || '';
+                result.state = parts[parts.length - 2] || '';
+                result.postal = parts[parts.length - 1] || '';
+            } else if (parts.length === 4) {
+                result.unit = parts[1] || '';
+                result.city = parts[2] || '';
+                result.state = parts[3] || '';
+            } else if (parts.length === 3) {
+                result.city = parts[1] || '';
+                if (/^\d{5}(-\d{4})?$/.test(parts[2])) {
+                    result.postal = parts[2];
+                } else if (/^[A-Za-z]{2,3}$/.test(parts[2])) {
+                    result.state = parts[2];
+                } else {
+                    result.city = `${result.city ? result.city + ', ' : ''}${parts[2]}`;
+                }
+            } else if (parts.length === 2) {
+                result.city = parts[1] || '';
+            }
+
+            // 如果仍未识别出州/邮编，尝试从最后两个字段推断
+            if (!result.postal && parts.length >= 2 && /^\d{5}(-\d{4})?$/.test(parts[parts.length - 1])) {
+                result.postal = parts[parts.length - 1];
+            }
+            if (!result.state && parts.length >= 2 && /^[A-Za-z]{2,3}$/.test(parts[parts.length - 2])) {
+                result.state = parts[parts.length - 2];
+            }
+
+            return result;
+        }
+
+        function formatOrderAddress(customerInfo) {
+            if (!customerInfo) return t('notFilled') || '未填写';
+            
+            // 如果地址有详细字段，格式化显示
+            if (customerInfo.addressDetail || customerInfo.detail || customerInfo.street) {
+                const addressParts = [];
+                
+                // 街道地址
+                const street = customerInfo.addressDetail || customerInfo.detail || customerInfo.street || '';
+                if (street) addressParts.push(street);
+                
+                // 单元/套房号
+                const unit = customerInfo.addressUnit || customerInfo.unit || '';
+                if (unit) addressParts.push(unit);
+                
+                // 城市
+                const city = customerInfo.addressCity || customerInfo.city || '';
+                if (city) addressParts.push(city);
+                
+                // 州/省
+                const state = customerInfo.addressState || customerInfo.state || '';
+                
+                // 邮编
+                const postal = customerInfo.addressPostal || customerInfo.postal || customerInfo.zip || '';
+                
+                // 构建格式化地址
+                let formattedAddress = '';
+                if (addressParts.length > 0) {
+                    formattedAddress = addressParts.join(', ');
+                }
+                
+                if (state && postal) {
+                    formattedAddress += (formattedAddress ? ', ' : '') + `${state} ${postal}`;
+                } else if (state) {
+                    formattedAddress += (formattedAddress ? ', ' : '') + state;
+                } else if (postal) {
+                    formattedAddress += (formattedAddress ? ', ' : '') + postal;
+                }
+                
+                if (formattedAddress) {
+                    return `<div style="margin-top: 5px; line-height: 1.6;">
+                        ${street ? `<div><strong>${currentLanguage === 'zh' ? '街道地址' : 'Street'}:</strong> ${street}</div>` : ''}
+                        ${unit ? `<div><strong>${currentLanguage === 'zh' ? '单元/套房' : 'Unit/Suite'}:</strong> ${unit}</div>` : ''}
+                        ${city ? `<div><strong>${currentLanguage === 'zh' ? '城市' : 'City'}:</strong> ${city}</div>` : ''}
+                        ${state ? `<div><strong>${currentLanguage === 'zh' ? '州/省' : 'State'}:</strong> ${state}</div>` : ''}
+                        ${postal ? `<div><strong>${currentLanguage === 'zh' ? '邮编' : 'ZIP Code'}:</strong> ${postal}</div>` : ''}
+                    </div>`;
+                }
+            }
+            
+            // 如果只有字符串地址，尝试解析并格式化
+            if (customerInfo.address) {
+                const addressStr = customerInfo.address;
+                
+                // 尝试解析格式：detail, unit, city, state, postal
+                const parts = addressStr.split(',').map(p => p.trim()).filter(p => p);
+                
+                if (parts.length >= 3) {
+                    // 智能识别：最后一个可能是邮编（纯数字），倒数第二个可能是州（2-3个字母）
+                    let street = parts[0] || '';
+                    let unit = '';
+                    let city = '';
+                    let state = '';
+                    let postal = '';
+                    
+                    // 检查最后一个是否是邮编（5位数字）
+                    const lastPart = parts[parts.length - 1];
+                    if (/^\d{5}(-\d{4})?$/.test(lastPart)) {
+                        postal = lastPart;
+                        // 倒数第二个可能是州（2-3个大写字母）
+                        if (parts.length >= 2 && /^[A-Z]{2,3}$/.test(parts[parts.length - 2])) {
+                            state = parts[parts.length - 2];
+                            city = parts.length >= 3 ? parts[parts.length - 3] : '';
+                            unit = parts.length >= 4 ? parts[1] : '';
+                        } else {
+                            // 没有明确的州，最后一个可能是城市
+                            city = parts.length >= 2 ? parts[parts.length - 2] : '';
+                            unit = parts.length >= 3 ? parts[1] : '';
+                        }
+                    } else if (parts.length === 3) {
+                        // 3个部分：街道, 城市, 州/邮编
+                        city = parts[1] || '';
+                        // 检查第三个是否是邮编或州
+                        if (/^\d{5}(-\d{4})?$/.test(parts[2])) {
+                            postal = parts[2];
+                        } else if (/^[A-Z]{2,3}$/.test(parts[2])) {
+                            state = parts[2];
+                        }
+                    } else if (parts.length >= 4) {
+                        // 4个或更多部分：街道, 单元, 城市, 州, 邮编
+                        unit = parts[1] || '';
+                        city = parts[2] || '';
+                        if (parts.length >= 4) {
+                            // 检查倒数第二个是否是州
+                            if (/^[A-Z]{2,3}$/.test(parts[parts.length - 2])) {
+                                state = parts[parts.length - 2];
+                                postal = parts[parts.length - 1] || '';
+                            } else {
+                                state = parts[3] || '';
+                                postal = parts.length >= 5 ? parts[4] : '';
+                            }
+                        }
+                    }
+                    
+                    return `<div style="margin-top: 5px; line-height: 1.6;">
+                        ${street ? `<div><strong>${currentLanguage === 'zh' ? '街道地址' : 'Street'}:</strong> ${street}</div>` : ''}
+                        ${unit ? `<div><strong>${currentLanguage === 'zh' ? '单元/套房' : 'Unit/Suite'}:</strong> ${unit}</div>` : ''}
+                        ${city ? `<div><strong>${currentLanguage === 'zh' ? '城市' : 'City'}:</strong> ${city}</div>` : ''}
+                        ${state ? `<div><strong>${currentLanguage === 'zh' ? '州/省' : 'State'}:</strong> ${state}</div>` : ''}
+                        ${postal ? `<div><strong>${currentLanguage === 'zh' ? '邮编' : 'ZIP Code'}:</strong> ${postal}</div>` : ''}
+                    </div>`;
+                } else {
+                    // 如果无法解析，直接显示原地址
+                    return `<div style="margin-top: 5px; white-space: pre-wrap; line-height: 1.6;">${addressStr}</div>`;
+                }
+            }
+            
+            return t('notFilled') || '未填写';
+        }
+
+        function normalizeUSPhone(value) {
+            if (!value) return '';
+            const digits = value.replace(/\D/g, '');
+            let core = digits;
+            if (core.length === 11 && core.startsWith('1')) {
+                core = core.slice(1);
+            }
+            if (core.length !== 10) return null;
+            return '+1' + core;
+        }
+
+        function extractUSPhoneDigits(value) {
+            if (!value) return '';
+            const digits = value.replace(/\D/g, '');
+            if (digits.length === 11 && digits.startsWith('1')) {
+                return digits.slice(1, 11);
+            }
+            if (digits.length >= 10) {
+                return digits.slice(-10);
+            }
+            return digits;
+        }
+
+        function attachUSPhoneInputBehavior(inputId) {
+            const input = document.getElementById(inputId);
+            if (!input || input.dataset.usPhoneBound === 'true') return;
+            input.dataset.usPhoneBound = 'true';
+
+            const wrapper = input.closest('.phone-input-wrapper');
+
+            input.addEventListener('input', function () {
+                const digitsOnly = this.value.replace(/\D/g, '').slice(0, 10);
+                this.value = digitsOnly;
+                this.setCustomValidity('');
+                if (wrapper) wrapper.classList.remove('error');
+            });
+
+            input.addEventListener('blur', function () {
+                if (!this.value) {
+                    this.setCustomValidity('');
+                    if (wrapper) wrapper.classList.remove('error');
+                    return;
+                }
+                const normalized = normalizeUSPhone(this.value);
+                if (!normalized) {
+                    const message = t('invalidPhoneFormat') || 'Invalid phone number format';
+                    this.setCustomValidity(message);
+                    if (wrapper) wrapper.classList.add('error');
+                    if (typeof this.reportValidity === 'function') {
+                        this.reportValidity();
+                    } else {
+                        customAlert(message, t('infoTitle') || '提示');
+                    }
+                } else {
+                    this.setCustomValidity('');
+                    if (wrapper) wrapper.classList.remove('error');
+                }
+            });
+        }
+
         // 显示订单详情模态框（包含产品信息和快递单号）
         function showOrderDetailsModal(orderId) {
             const order = findOrderById(orderId);
@@ -14604,15 +15213,7 @@ let userSearchTerm = '';
                             <h4 style="margin-top: 0; margin-bottom: 15px; color: var(--primary);">
                                 <i class="fas fa-user" style="margin-right: 8px;"></i>${t('customerInfo')}
                             </h4>
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                                <p style="margin: 5px 0;"><strong>${t('name')}：</strong>${order.customerInfo.name || t('notFilled')}</p>
-                                <p style="margin: 5px 0;"><strong>${t('phone')}：</strong>${order.customerInfo.phone || t('notFilled')}</p>
-                                <p style="margin: 5px 0; grid-column: 1 / -1;"><strong>${t('email')}：</strong>${order.customerInfo.email || t('notFilled')}</p>
-                                <p style="margin: 5px 0; grid-column: 1 / -1;"><strong>${t('address')}：</strong>${order.customerInfo.address || t('notFilled')}</p>
-                                ${order.customerInfo.notes ? `
-                                    <p style="margin: 5px 0; grid-column: 1 / -1;"><strong>${t('notes')}：</strong>${order.customerInfo.notes}</p>
-                                ` : ''}
-                            </div>
+                            ${renderOrderContactInfo(order)}
                         </div>
                         
                         ${order.status === 'completed' && currentUser && !currentUser.role && !(order.hasReview === true) ? `
@@ -15993,13 +16594,38 @@ let userSearchTerm = '';
         // 渲染后台管理产品
         function renderAdminProducts() {
             const adminProductsGrid = document.getElementById('admin-products-grid');
+            const searchTerm = (adminProductSearchTerm || '').trim();
+            const normalizedTerm = searchTerm.toLowerCase();
+            const filteredProducts = normalizedTerm
+                ? products.filter(product => {
+                    if (!product) return false;
+                    const searchFields = [
+                        product.name,
+                        product.category,
+                        product.description,
+                        product.id,
+                        product.sku,
+                        Array.isArray(product.tags) ? product.tags.join(' ') : ''
+                    ];
+                    return searchFields.some(field => {
+                        if (field === undefined || field === null) return false;
+                        return field.toString().toLowerCase().includes(normalizedTerm);
+                    });
+                })
+                : [...products];
 
-            if (products.length === 0) {
-                adminProductsGrid.innerHTML = '<div class="no-products">暂无商品，请添加或导入商品</div>';
+            if (filteredProducts.length === 0) {
+                const emptyMessage = searchTerm
+                    ? '未找到匹配的产品，请尝试其他关键词'
+                    : t('noProductsAddOrImport');
+                adminProductsGrid.innerHTML = `<div class="no-products">${emptyMessage}</div>`;
+                updatePaginationControls('products', 0);
                 return;
             }
 
-            adminProductsGrid.innerHTML = products.map(product => `
+            const { items: paginatedProducts } = getPaginatedItems(filteredProducts, 'products');
+
+            adminProductsGrid.innerHTML = paginatedProducts.map(product => `
                 <div class="product-card" data-product-id="${product.id}">
                     <div style="position: absolute; top: 10px; left: 10px; z-index: 10;">
                         <input type="checkbox" class="product-checkbox" data-product-id="${product.id}" 
@@ -16078,6 +16704,8 @@ let userSearchTerm = '';
             document.querySelectorAll('.product-checkbox').forEach(checkbox => {
                 checkbox.addEventListener('change', updateBatchButtons);
             });
+
+            updatePaginationControls('products', filteredProducts.length, renderAdminProducts);
         }
 
         // 打开编辑产品模态框
@@ -16624,7 +17252,7 @@ let userSearchTerm = '';
             document.getElementById('profile-username').value = username || '';
             document.getElementById('profile-account').value = currentUser.account || '';
             document.getElementById('profile-nickname').value = profile.nickname || '';
-            document.getElementById('profile-phone').value = profile.phone || '';
+            document.getElementById('profile-phone').value = extractUSPhoneDigits(profile.phone);
             document.getElementById('profile-email').value = profile.email || '';
             document.getElementById('profile-birthday').value = profile.birthday || '';
             document.getElementById('profile-gender').value = profile.gender || '';
@@ -16634,19 +17262,23 @@ let userSearchTerm = '';
         function saveProfile() {
             if (!currentUser) return;
 
+            const rawPhone = document.getElementById('profile-phone').value.trim();
+            const normalizedPhone = rawPhone ? normalizeUSPhone(rawPhone) : '';
+
+            if (rawPhone && !normalizedPhone) {
+                customAlert(t('invalidPhoneFormat'), t('infoTitle'));
+                const wrapper = document.getElementById('profile-phone')?.closest('.phone-input-wrapper');
+                if (wrapper) wrapper.classList.add('error');
+                return;
+            }
+
             const profile = {
                 nickname: document.getElementById('profile-nickname').value.trim(),
-                phone: document.getElementById('profile-phone').value.trim(),
+                phone: normalizedPhone,
                 email: document.getElementById('profile-email').value.trim(),
                 birthday: document.getElementById('profile-birthday').value,
                 gender: document.getElementById('profile-gender').value
             };
-
-            // 验证手机号
-            if (profile.phone && !/^1[3-9]\d{9}$/.test(profile.phone)) {
-                customAlert(t('invalidPhoneFormat'), t('infoTitle'));
-                return;
-            }
 
             // 验证邮箱
             if (profile.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(profile.email)) {
@@ -16752,7 +17384,7 @@ let userSearchTerm = '';
                 title.textContent = 'Edit address';
                 document.getElementById('address-id').value = address.id;
                 document.getElementById('address-name').value = address.name || '';
-                document.getElementById('address-phone').value = address.phone || '';
+                document.getElementById('address-phone').value = extractUSPhoneDigits(address.phone);
                 document.getElementById('address-country').value = 'US';
                 document.getElementById('address-detail').value = address.detail || '';
                 document.getElementById('address-unit').value = address.unit || '';
@@ -16796,8 +17428,11 @@ let userSearchTerm = '';
             }
 
             // 验证电话号码（美国格式）
-            if (!/^[\d\s\-\(\)]+$/.test(phone)) {
-                customAlert(t('pleaseEnterValidPhone'), t('infoTitle'));
+            const normalizedPhone = normalizeUSPhone(phone);
+            if (!normalizedPhone) {
+                customAlert(t('invalidPhoneFormat'), t('infoTitle'));
+                const phoneWrapper = document.getElementById('address-phone')?.closest('.phone-input-wrapper');
+                if (phoneWrapper) phoneWrapper.classList.add('error');
                 return;
             }
 
@@ -16819,7 +17454,7 @@ let userSearchTerm = '';
             const address = {
                 id: addressId,
                 name,
-                phone,
+                phone: normalizedPhone,
                 country: country || 'US',
                 detail,
                 unit,
