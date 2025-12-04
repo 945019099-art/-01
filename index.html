@@ -8631,12 +8631,16 @@ const paginationContainers = {
                         break;
 
                     case 'updateOrder':
-                        const orderIndex = userOrders.findIndex(o => o.id === item.data.id);
-                        if (orderIndex !== -1) {
-                            userOrders[orderIndex] = item.data;
-                            localStorage.setItem('userOrders', JSON.stringify(userOrders));
-                            if (cloudSync && cloudSync.isInitialized) {
-                                await cloudSync.syncOrders();
+                        // 使用规范化ID，防止字符串/数字不一致导致更新失败
+                        {
+                            const targetId = normalizeOrderId(item.data.id);
+                            const orderIndex = userOrders.findIndex(o => normalizeOrderId(o.id) === targetId);
+                            if (orderIndex !== -1) {
+                                userOrders[orderIndex] = item.data;
+                                localStorage.setItem('userOrders', JSON.stringify(userOrders));
+                                if (cloudSync && cloudSync.isInitialized) {
+                                    await cloudSync.syncOrders();
+                                }
                             }
                         }
                         break;
@@ -9000,8 +9004,13 @@ const paginationContainers = {
                     const localTime = localOrder.updatedAt || localOrder.date || 0;
                     const cloudTime = cloudOrder.updatedAt || cloudOrder.date || 0;
                     
-                    // 确保关键字段不丢失
-                    const mergedOrder = cloudTime >= localTime ? { ...cloudOrder } : { ...localOrder };
+                    // 对于管理员已经在云端更新过的订单（updatedAt 明显更大），必须以云端为准，强制覆盖本地
+                    let mergedOrder;
+                    if (cloudTime > localTime) {
+                        mergedOrder = { ...cloudOrder };
+                    } else {
+                        mergedOrder = { ...localOrder };
+                    }
                     
                     // 确保date字段存在（订单创建时间，不能丢失）
                     if (!mergedOrder.date) {
@@ -9106,8 +9115,13 @@ const paginationContainers = {
                     const localTime = localOrder.updatedAt || localOrder.date || 0;
                     const cloudTime = cloudOrder.updatedAt || cloudOrder.date || 0;
                     
-                    // 确保关键字段不丢失
-                    const mergedOrder = cloudTime >= localTime ? { ...cloudOrder } : { ...localOrder };
+                    // 对于管理员已经在云端更新过的订单（updatedAt 明显更大），必须以云端为准，强制覆盖本地
+                    let mergedOrder;
+                    if (cloudTime > localTime) {
+                        mergedOrder = { ...cloudOrder };
+                    } else {
+                        mergedOrder = { ...localOrder };
+                    }
                     
                     // 确保date字段存在（订单创建时间）
                     if (!mergedOrder.date) {
@@ -15184,7 +15198,9 @@ const paginationContainers = {
                     return false;
                 }
 
-                const orderIndex = cloudUserOrders.findIndex(o => o && o.id === order.id);
+                // 使用与本地一致的ID规范化规则，避免字符串/数字不一致导致匹配失败
+                const targetId = normalizeOrderId(order.id);
+                const orderIndex = cloudUserOrders.findIndex(o => o && normalizeOrderId(o.id) === targetId);
                 if (orderIndex === -1) {
                     console.warn('adminUpdateOrderStatusOnCloud: 云端未找到该订单，使用本地更新逻辑');
                     return false;
@@ -15193,13 +15209,36 @@ const paginationContainers = {
                 const updateTimestamp = Date.now();
                 const original = cloudUserOrders[orderIndex] || {};
 
+                // 提高管理员更新的“权重”：使用略微靠后的时间戳，确保在任何合并逻辑里都以云端为准
+                const strongUpdateTimestamp = Date.now() + 10 * 1000; // 比当前时间晚10秒
                 cloudUserOrders[orderIndex] = {
                     ...original,
                     status: newStatus,
-                    updatedAt: updateTimestamp
+                    updatedAt: strongUpdateTimestamp
                 };
 
                 await userOrdersRef.set(cloudUserOrders);
+
+                // 同步更新当前页面内存中的 userOrders / allOrders，避免等待云端回传时界面显示旧状态
+                try {
+                    const targetId = normalizeOrderId(order.id);
+                    if (Array.isArray(userOrders)) {
+                        const localUserOrder = userOrders.find(o => o && normalizeOrderId(o.id) === targetId);
+                        if (localUserOrder) {
+                            localUserOrder.status = newStatus;
+                            localUserOrder.updatedAt = strongUpdateTimestamp;
+                        }
+                    }
+                    if (Array.isArray(allOrders)) {
+                        const localAllOrder = allOrders.find(o => o && normalizeOrderId(o.id) === targetId);
+                        if (localAllOrder) {
+                            localAllOrder.status = newStatus;
+                            localAllOrder.updatedAt = strongUpdateTimestamp;
+                        }
+                    }
+                } catch (localUpdateErr) {
+                    console.warn('adminUpdateOrderStatusOnCloud: 本地内存订单更新失败（可忽略）:', localUpdateErr);
+                }
 
                 console.log('✅ 管理员已在云端更新订单状态:', {
                     orderId: order.id,
@@ -15941,31 +15980,30 @@ const paginationContainers = {
 
                             // ===== 云端不可用或订单找不到时，回退为原有的本地 + 云端混合更新逻辑 =====
 
-                            // 更新订单状态（本地对象）
+                            // 使用规范化ID，避免字符串/数字不一致导致找不到订单
+                            const targetId = normalizeOrderId(order.id);
+                            // 记录该订单是否存在于全局和用户订单数组中，避免 isInAllOrders 未定义导致报错
+                            const isInAllOrders = Array.isArray(allOrders) && allOrders.some(o => o && normalizeOrderId(o.id) === targetId);
+                            const isInUserOrders = Array.isArray(userOrders) && userOrders.some(o => o && normalizeOrderId(o.id) === targetId);
+
+                            // 更新订单状态（本地对象本身）
                             order.status = newStatus;
                             order.updatedAt = Date.now();
                             
                             // 如果订单在allOrders中，也需要更新
-                            const isInAllOrders = allOrders.some(o => o.id === order.id);
-                            const isInUserOrders = userOrders.some(o => o.id === order.id);
-                            
-                            if (isInAllOrders) {
-                                const allOrder = allOrders.find(o => o.id === order.id);
-                                if (allOrder) {
-                                    allOrder.status = newStatus;
-                                    allOrder.updatedAt = Date.now();
-                                    localStorage.setItem('allOrders', JSON.stringify(allOrders));
-                                }
+                            const allOrder = allOrders.find(o => normalizeOrderId(o.id) === targetId);
+                            if (allOrder) {
+                                allOrder.status = newStatus;
+                                allOrder.updatedAt = Date.now();
+                                localStorage.setItem('allOrders', JSON.stringify(allOrders));
                             }
                             
                             // 如果订单在userOrders中，保存并同步
-                            if (isInUserOrders) {
+                            const userOrder = userOrders.find(o => normalizeOrderId(o.id) === targetId);
+                            if (userOrder) {
                                 // 先更新本地
-                                const userOrder = userOrders.find(o => o.id === order.id);
-                                if (userOrder) {
-                                    userOrder.status = newStatus;
-                                    userOrder.updatedAt = Date.now();
-                                }
+                                userOrder.status = newStatus;
+                                userOrder.updatedAt = Date.now();
                                 // 立即保存到本地存储
                                 if (currentUser && currentUser.account) {
                                     const userOrdersKey = `userOrders_${currentUser.account}`;
