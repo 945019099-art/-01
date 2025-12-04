@@ -124,6 +124,70 @@
         });
     </script>
 
+    <!-- 首次进入页面时清空本地数据（仅当前浏览器会话执行一次，避免刷新后重复清空导致重新登录） -->
+    <script>
+        (function () {
+            try {
+                const FLAG_KEY = 'initialClearDone';
+
+                // 使用 sessionStorage 作为“本会话已清理”的标记
+                if (!sessionStorage.getItem(FLAG_KEY)) {
+                    console.log('🧹 首次进入页面，开始清空本地所有数据（localStorage / IndexedDB / Cache）...');
+
+                    // 1. 清空 localStorage
+                    try {
+                        localStorage.clear();
+                        console.log('✅ localStorage 已清空');
+                    } catch (e) {
+                        console.warn('清空 localStorage 时出错:', e);
+                    }
+
+                    // 2. 尝试清空 IndexedDB
+                    try {
+                        if ('indexedDB' in window && indexedDB.databases) {
+                            indexedDB.databases().then(databases => {
+                                databases.forEach(db => {
+                                    if (db.name) {
+                                        indexedDB.deleteDatabase(db.name);
+                                        console.log(`✅ 已清除 IndexedDB: ${db.name}`);
+                                    }
+                                });
+                            }).catch(e => {
+                                console.warn('清除 IndexedDB 时出错:', e);
+                            });
+                        }
+                    } catch (e) {
+                        console.warn('访问 IndexedDB 时出错:', e);
+                    }
+
+                    // 3. 尝试清空 Service Worker 缓存
+                    try {
+                        if ('caches' in window) {
+                            caches.keys().then(names => {
+                                names.forEach(name => {
+                                    caches.delete(name);
+                                    console.log(`✅ 已清除 Service Worker 缓存: ${name}`);
+                                });
+                            }).catch(e => {
+                                console.warn('清除 Service Worker 缓存时出错:', e);
+                            });
+                        }
+                    } catch (e) {
+                        console.warn('访问 Service Worker 缓存时出错:', e);
+                    }
+
+                    // 重要：不清空 sessionStorage，以便本次会话后续刷新不再重复清理
+                    sessionStorage.setItem(FLAG_KEY, '1');
+                    console.log('✅ 初次进入页面的本地数据清理已完成，本会话后续不再重复执行');
+                } else {
+                    console.log('ℹ️ 本浏览器会话已完成过初始清理，不再重复清空本地数据');
+                }
+            } catch (e) {
+                console.warn('初始化本地数据清理逻辑时出错:', e);
+            }
+        })();
+    </script>
+
     <style>
         :root {
             /* 微软风格配色系统 */
@@ -7538,10 +7602,10 @@ const paginationContainers = {
                     this.syncInProgress = true;
 
                     if (isCurrentUserAdmin()) {
-                        // 管理员：仅从云端拉取并与本地合并，**不再把合并结果写回云端**，
-                        // 避免把已经在 Firebase 控制台或其他设备上“删除/修改”的用户又写回去。
-                        // 管理员对单个用户的操作（禁用/解禁/删除）已经在对应功能中即时写入云端，这里只做读 + 本地合并。
-                        console.log('🔄 管理员正在同步所有用户数据（仅拉取并合并，不覆盖云端）...');
+                        // 管理员：从云端拉取并与本地合并，然后将合并后的结果写回云端，
+                        // 确保「禁用/解禁」等管理操作会成为云端的最终状态，
+                        // 避免被普通用户后续操作“洗白”。
+                        console.log('🔄 管理员正在同步所有用户数据（拉取 + 合并 + 写回云端）...');
                         const snapshot = await usersRef.once('value');
                         const cloudUsers = Array.isArray(snapshot.val()) ? snapshot.val() : [];
 
@@ -7549,7 +7613,12 @@ const paginationContainers = {
                         allUsers = mergedUsers;
                         localStorage.setItem('allUsers', JSON.stringify(allUsers));
 
-                        console.log('✅ 所有用户数据已同步到本地（以云端为主，合并本地更改，但不覆盖云端）');
+                        try {
+                            await usersRef.set(allUsers);
+                            console.log('✅ 所有用户数据（含禁用状态）已写回云端');
+                        } catch (writeErr) {
+                            console.error('❌ 将合并后的所有用户数据写回云端失败:', writeErr);
+                        }
                     } else {
                         // 非管理员：只将自己添加到云端的 allUsers 数组
                         let targetAccount = null;
@@ -8723,93 +8792,14 @@ const paginationContainers = {
             });
         }
 
-        // 小工具：显示通知（恢复为页面右上角可见的提示气泡）
+        // 小工具：显示通知（已改为仅输出到控制台，不再在右上角弹出提示气泡）
         function showNotification(message, type = 'info') {
             try {
                 console.log('[Notification]', type, message);
             } catch (e) {
                 // 忽略控制台错误
             }
-
-            try {
-                // 创建/获取通知容器
-                let container = document.getElementById('notification-container');
-                if (!container) {
-                    container = document.createElement('div');
-                    container.id = 'notification-container';
-                    container.style.position = 'fixed';
-                    container.style.top = '20px';
-                    container.style.right = '20px';
-                    container.style.zIndex = '2500';
-                    container.style.display = 'flex';
-                    container.style.flexDirection = 'column';
-                    container.style.gap = '8px';
-                    container.style.alignItems = 'flex-end';
-                    document.body.appendChild(container);
-                }
-
-                // 创建单条通知
-                const notify = document.createElement('div');
-                notify.className = 'notification';
-                notify.textContent = message;
-
-                // 基础样式
-                notify.style.minWidth = '220px';
-                notify.style.maxWidth = '320px';
-                notify.style.borderRadius = '6px';
-                notify.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
-                notify.style.color = '#fff';
-                notify.style.padding = '10px 14px';
-                notify.style.display = 'flex';
-                notify.style.alignItems = 'center';
-                notify.style.fontSize = '14px';
-                notify.style.opacity = '0';
-                notify.style.transform = 'translateY(-10px)';
-                notify.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
-
-                // 按类型设定背景色
-                switch (type) {
-                    case 'success':
-                        notify.style.backgroundColor = '#16a34a'; // 绿色
-                        break;
-                    case 'error':
-                        notify.style.backgroundColor = '#dc2626'; // 红色
-                        break;
-                    case 'warning':
-                        notify.style.backgroundColor = '#f97316'; // 橙色
-                        break;
-                    default:
-                        notify.style.backgroundColor = '#2563eb'; // 蓝色
-                        break;
-                }
-
-                container.appendChild(notify);
-
-                // 触发展示动画
-                requestAnimationFrame(() => {
-                    notify.style.opacity = '1';
-                    notify.style.transform = 'translateY(0)';
-                });
-
-                // 一段时间后自动关闭（默认 3 秒）
-                const timeout = type === 'error' ? 5000 : 3000;
-                setTimeout(() => {
-                    notify.style.opacity = '0';
-                    notify.style.transform = 'translateY(-10px)';
-                    setTimeout(() => {
-                        if (notify.parentNode) {
-                            notify.parentNode.removeChild(notify);
-                        }
-                        // 如果容器中已经没有通知，移除容器
-                        if (container && container.children.length === 0 && container.parentNode) {
-                            container.parentNode.removeChild(container);
-                        }
-                    }, 200);
-                }, timeout);
-            } catch (e) {
-                // 如果 DOM 操作失败，不影响主流程
-                console.warn('showNotification DOM 失败:', e);
-            }
+            // 按你的要求，所有右上角的视觉提示已关闭，这里不再创建任何 DOM。
         }
 
         // ========== 初始化数据 - 完全移除本地演示数据 ==========
@@ -12889,25 +12879,66 @@ const paginationContainers = {
                 // 检查当前用户是否被禁用，并获取最新用户信息
                 const user = allUsers.find(u => u.account === currentUser.account);
                 if (user && user.status === 'banned') {
-                    // 用户已被禁用，强制登出
-                    currentUser = null;
-                    localStorage.removeItem('currentUser');
-                    showNotification('您的账号已被禁用，已自动退出登录', 'error');
+                    // 用户已被禁用：先将本地数据安全同步到云端，然后清空本地数据并强制登出
+                    (async () => {
+                        try {
+                            if (cloudSync && cloudSync.isInitialized) {
+                                console.log('⚠️ 检测到账号被禁用，开始在退出前同步数据到云端...');
+                                try {
+                                    await cloudSync.syncOrders();
+                                } catch (orderSyncError) {
+                                    console.error('禁用登出前同步订单到云端失败:', orderSyncError);
+                                }
+                                try {
+                                    await cloudSync.syncAddresses();
+                                } catch (addressSyncError) {
+                                    console.error('禁用登出前同步地址到云端失败:', addressSyncError);
+                                }
+                            } else {
+                                console.warn('cloudSync 未初始化，无法在禁用登出前执行云端同步');
+                            }
+                        } catch (syncError) {
+                            console.error('处理禁用登出前云端同步时出错:', syncError);
+                        }
 
-                    loginLink.style.display = 'inline';
-                    registerLink.style.display = 'inline';
-                    logoutLink.style.display = 'none';
-                    userCenterLink.style.display = 'none';
-                    if (myOrdersLink) myOrdersLink.style.display = 'none';
-                    adminLink.style.display = 'none';
-                    usernameDisplay.textContent = '用户名';
-                    if (userPointsBadge) userPointsBadge.style.display = 'none';
-                    if (adminBottomNavBtn) adminBottomNavBtn.style.display = 'none';
+                        // 在数据上传尝试完成后，清空本地所有数据
+                        try {
+                            if (typeof clearAllLocalDataOnLogout === 'function') {
+                                clearAllLocalDataOnLogout();
+                            } else {
+                                console.warn('clearAllLocalDataOnLogout 未定义，跳过本地数据清理');
+                            }
+                        } catch (clearError) {
+                            console.error('禁用登出时清空本地数据出错:', clearError);
+                        }
 
-                    // 返回首页
-                    document.getElementById('home-page').style.display = 'block';
-                    document.getElementById('user-center').style.display = 'none';
-                    document.getElementById('admin-panel').style.display = 'none';
+                        // 最后更新当前用户状态并刷新界面为“未登录”
+                        currentUser = null;
+                        try {
+                            localStorage.removeItem('currentUser');
+                        } catch (e) {
+                            console.warn('移除 localStorage[currentUser] 时出错:', e);
+                        }
+
+                        loginLink.style.display = 'inline';
+                        registerLink.style.display = 'inline';
+                        logoutLink.style.display = 'none';
+                        userCenterLink.style.display = 'none';
+                        if (myOrdersLink) myOrdersLink.style.display = 'none';
+                        adminLink.style.display = 'none';
+                        usernameDisplay.textContent = '用户名';
+                        if (userPointsBadge) userPointsBadge.style.display = 'none';
+                        if (adminBottomNavBtn) adminBottomNavBtn.style.display = 'none';
+
+                        // 返回首页
+                        document.getElementById('home-page').style.display = 'block';
+                        document.getElementById('user-center').style.display = 'none';
+                        document.getElementById('admin-panel').style.display = 'none';
+
+                        showNotification('您的账号已被禁用，正在完成数据同步并已自动退出登录', 'error');
+                    })();
+
+                    // 立即返回，避免继续按照“已登录状态”更新界面
                     return;
                 }
 
