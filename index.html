@@ -6234,9 +6234,6 @@ const paginationContainers = {
             currentLanguage = lang;
             Storage.set('language', lang);
             applyLanguage();
-            if (cloudSync && cloudSync.isInitialized) {
-                cloudSync.syncHomepageSettings();
-            }
         }
         
         // 应用语言设置
@@ -7254,7 +7251,6 @@ const paginationContainers = {
                         // 管理员：以上传本地为准，覆盖云端
                         await this.syncProducts();
                         await this.syncAllUsers();
-                        await this.syncHomepageSettings();
                     } else {
                         // 普通用户：只从云端拉取最新数据，不上传覆盖
                         await this.loadProducts();
@@ -10906,7 +10902,6 @@ const paginationContainers = {
                                 localStorage.removeItem('userOrders');
                                 localStorage.removeItem('allOrders');
                                 localStorage.removeItem('allUsers');
-                                localStorage.removeItem('homepageSettings');
                                 localStorage.removeItem('userAddresses');
                                 
                                 // 清除所有用户相关的缓存
@@ -10928,7 +10923,6 @@ const paginationContainers = {
                                     localStorage.setItem('allOrders', JSON.stringify([]));
                                 }
                                 localStorage.setItem('allUsers', JSON.stringify(backupData.data.allUsers));
-                                localStorage.setItem('homepageSettings', JSON.stringify(backupData.data.homepageSettings));
                                 
                                 if (backupData.data.currentUser && backupData.data.currentUser !== 'null') {
                                     localStorage.setItem('currentUser', JSON.stringify(backupData.data.currentUser));
@@ -10945,7 +10939,6 @@ const paginationContainers = {
                                 userOrders = backupData.data.userOrders || [];
                                 allOrders = backupData.data.allOrders || [];
                                 allUsers = backupData.data.allUsers || [];
-                                homepageSettings = backupData.data.homepageSettings || {};
                                 currentUser = backupData.data.currentUser || null;
 
                                 // 重新渲染页面
