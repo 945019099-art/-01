@@ -5624,6 +5624,7 @@ const paginationContainers = {
                 'userDeletedSuccess': '✅ 用户账号 "{account}" 及所有相关数据已彻底删除\n删除了 {orders} 个订单和 {addresses} 个地址',
                 'deleteUserFailed': '删除用户失败',
                 'accountDeletedByAdmin': '您的账号已被管理员删除',
+                'loggedOutByOtherDevice': '你的账号已在其他设备登录，本设备的数据已同步至云端并自动退出。',
                 'pleaseSelectAccountsToDelete': '请先勾选要删除的账号',
                 'confirmDeleteSelectedAccounts': '确定要删除选中的 {count} 个账号吗？此操作不可撤销。',
                 'deletingAccounts': '正在批量删除账号，请稍候...',
@@ -5976,6 +5977,7 @@ const paginationContainers = {
                 'userDeletedSuccess': '✅ User account "{account}" and all related data have been permanently deleted\nDeleted {orders} orders and {addresses} addresses',
                 'deleteUserFailed': 'Failed to delete user',
                 'accountDeletedByAdmin': 'Your account has been deleted by the administrator',
+                'loggedOutByOtherDevice': 'Your account has been logged in on another device. This device has synced data to the cloud and logged out automatically.',
                 'pleaseSelectAccountsToDelete': 'Please select accounts to delete first',
                 'confirmDeleteSelectedAccounts': 'Are you sure you want to delete the selected {count} accounts? This operation cannot be undone.',
                 'deletingAccounts': 'Deleting accounts in batch, please wait...',
@@ -6491,6 +6493,8 @@ const paginationContainers = {
                 this.pendingAddressUpdate = null;
                 this.addressUpdateTimer = null;
                 this.allOrdersRef = null;
+                this.sessionRef = null;
+                this.currentSessionId = null;
 
                 // ========== Firebase 配置 ==========
                 // 
@@ -7679,6 +7683,58 @@ const paginationContainers = {
                 return false;
             }
 
+            // 通用下载接口：根据类型从云端读取数据，给登录流程 & 测试工具复用
+            async downloadData(type) {
+                if (!this.isInitialized) {
+                    throw new Error('CloudSyncManager 未初始化，无法下载数据');
+                }
+
+                let path = null;
+                switch (type) {
+                    case 'products':
+                        path = 'products';
+                        break;
+                    case 'users':
+                        // 用户列表统一使用 allUsers 节点
+                        path = 'allUsers';
+                        break;
+                    case 'orders':
+                        // 订单在 users 节点下按用户分散存储，这里复用 loadAllOrders 的逻辑
+                        // 为保持返回结构简单，直接聚合成数组返回
+                        const usersRef = this.db.ref('users');
+                        const snapshot = await usersRef.once('value');
+                        const usersData = snapshot.val();
+                        if (!usersData) return [];
+
+                        const collectedOrders = [];
+                        for (const userId in usersData) {
+                            const userData = usersData[userId];
+                            if (userData && Array.isArray(userData.orders)) {
+                                userData.orders.forEach(order => {
+                                    if (!order.account) {
+                                        order.account = userId;
+                                    }
+                                    collectedOrders.push(order);
+                                });
+                            }
+                        }
+                        return collectedOrders;
+                    default:
+                        throw new Error(`不支持的下载类型: ${type}`);
+                }
+
+                const ref = this.db.ref(path);
+                const snapshot = await ref.once('value');
+                const data = snapshot.val();
+
+                // products / allUsers 都是数组形式，保持一致
+                if (Array.isArray(data)) {
+                    return data;
+                }
+                // 其它情况直接返回原始对象（调用方自己处理）
+                return data || [];
+            }
+
             // 同步主页设置
             async syncHomepageSettings() {
                 // 主页设置仅管理员可上传
@@ -8021,6 +8077,14 @@ const paginationContainers = {
                 }
             }
 
+            // 移除会话监听器
+            detachSessionListener() {
+                if (this.sessionRef) {
+                    this.sessionRef.off();
+                    this.sessionRef = null;
+                }
+            }
+
             // 处理用户登录/退出后的数据和监听器
             async handleUserSessionChange() {
                 if (!this.isInitialized) return;
@@ -8029,12 +8093,14 @@ const paginationContainers = {
                 this.detachUserOrdersListener();
                 this.detachUserAddressesListener();
                 this.detachAllOrdersListener();
+                this.detachSessionListener();
 
                 if (!currentUser) {
                     userOrders = [];
                     userAddresses = [];
                     localStorage.removeItem('userOrders');
                     localStorage.removeItem('userAddresses');
+                    this.currentSessionId = null;
                     return;
                 }
 
@@ -8071,6 +8137,85 @@ const paginationContainers = {
                 if (currentUser.role === 'admin') {
                     await this.loadAllOrders();
                     this.setupAllOrdersListener();
+                }
+
+                // 设置当前账号的会话跟踪（多设备登录控制）
+                await this.setupSessionTracking();
+            }
+
+            // 为当前登录账号生成会话ID，并监听是否被其他设备抢登
+            async setupSessionTracking() {
+                if (!this.isInitialized || !currentUser || !currentUser.account) return;
+
+                try {
+                    // 先移除旧监听
+                    this.detachSessionListener();
+
+                    const userPath = this.getUserPath(currentUser.account);
+                    this.sessionRef = this.db.ref(`${userPath}/activeSessionId`);
+
+                    // 为本设备生成新的会话ID
+                    this.currentSessionId = `${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
+
+                    // 写入云端，声明“当前会话”
+                    await this.sessionRef.set({
+                        id: this.currentSessionId,
+                        updatedAt: Date.now(),
+                        ua: navigator.userAgent || ''
+                    });
+
+                    // 监听会话变化：如果 activeSessionId.id 被改成别的值，说明有其他设备登录
+                    this.sessionRef.on('value', async (snapshot) => {
+                        const data = snapshot.val();
+                        if (!data || !data.id || !this.currentSessionId) return;
+
+                        if (data.id !== this.currentSessionId) {
+                            console.warn('检测到同一账号在其他设备登录，准备同步并自动登出本设备');
+
+                            try {
+                                // 尽量在退出前把本地最新数据同步到云端
+                                await this.syncAllData();
+                            } catch (syncError) {
+                                console.error('远程登出前同步数据失败:', syncError);
+                            }
+
+                            // 执行远程登出（如果全局有专门函数则调用，没有就用兜底逻辑）
+                            if (typeof handleRemoteLogout === 'function') {
+                                handleRemoteLogout();
+                            } else {
+                                try {
+                                    currentUser = null;
+                                    localStorage.removeItem('currentUser');
+
+                                    if (typeof clearAllLocalDataOnLogout === 'function') {
+                                        clearAllLocalDataOnLogout();
+                                    } else {
+                                        // 兜底清理关键信息
+                                        localStorage.removeItem('userOrders');
+                                        localStorage.removeItem('userAddresses');
+                                    }
+
+                                    if (typeof updateUserInterface === 'function') {
+                                        updateUserInterface();
+                                    }
+                                    if (typeof showHomePage === 'function') {
+                                        showHomePage();
+                                    }
+                                    if (typeof showNotification === 'function') {
+                                        showNotification(t('loggedOutByOtherDevice'), 'warning');
+                                    }
+                                } catch (e) {
+                                    console.error('处理远程登出过程中的错误:', e);
+                                }
+                            }
+
+                            // 避免重复触发
+                            this.detachSessionListener();
+                            this.currentSessionId = null;
+                        }
+                    });
+                } catch (error) {
+                    console.error('设置会话跟踪失败:', error);
                 }
             }
 
@@ -10384,6 +10529,37 @@ const paginationContainers = {
                 updateUserInterface();
                 showHomePage();
             });
+
+            // 远程登录强制当前设备退出（多设备登录控制用）
+            window.handleRemoteLogout = async function () {
+                try {
+                    currentUser = null;
+                    localStorage.removeItem('currentUser');
+
+                    if (cloudSync && cloudSync.isInitialized) {
+                        await cloudSync.handleUserSessionChange();
+                    } else {
+                        userOrders = [];
+                        userAddresses = [];
+                    }
+
+                    if (typeof clearAllLocalDataOnLogout === 'function') {
+                        clearAllLocalDataOnLogout();
+                    }
+
+                    if (typeof updateUserInterface === 'function') {
+                        updateUserInterface();
+                    }
+                    if (typeof showHomePage === 'function') {
+                        showHomePage();
+                    }
+                    if (typeof showNotification === 'function') {
+                        showNotification(t('loggedOutByOtherDevice'), 'warning');
+                    }
+                } catch (e) {
+                    console.error('handleRemoteLogout 执行失败:', e);
+                }
+            };
 
             const deleteAccountBtn = document.getElementById('delete-account-btn');
             if (deleteAccountBtn) {
@@ -14447,9 +14623,18 @@ const paginationContainers = {
             // 更新多选状态
             selectedUserAccounts.delete(account);
 
-            // 云端删除
+            // ========= 同步云端用户数据（allUsers + users/<id>）确保删除持久化 =========
             if (cloudSync && cloudSync.isInitialized) {
                 try {
+                    // 1) 从 allUsers 列表中删除该账号并写回云端
+                    const usersRef = cloudSync.db.ref('allUsers');
+                    const snapshot = await usersRef.once('value');
+                    const cloudUsers = Array.isArray(snapshot.val()) ? snapshot.val() : [];
+                    const updatedUsers = cloudUsers.filter(u => u && u.account !== account);
+                    await usersRef.set(updatedUsers);
+                    console.log(`✅ 已从 allUsers 列表中删除账号 ${account}`);
+
+                    // 2) 删除 users/<id> 节点下的用户私有数据
                     await cloudSync.deleteUserAccount(account);
                 } catch (error) {
                     console.error('删除云端用户数据失败:', error);
