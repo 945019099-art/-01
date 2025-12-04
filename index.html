@@ -11250,8 +11250,12 @@ const paginationContainers = {
                 }
 
                 // 创建新订单（本地存储）
-                // 使用时间戳+随机数字确保订单号唯一性（纯数字格式），避免并发下单时订单号重复
-                const orderId = Date.now() + Math.floor(Math.random() * 1000000);
+                // 使用短格式时间戳+随机数字确保订单号唯一性（纯数字格式，约12-14位），避免并发下单时订单号重复
+                // 格式：时间戳后10位 + 4位随机数 = 14位数字
+                const timestamp = Date.now().toString();
+                const shortTimestamp = timestamp.slice(-10); // 取时间戳后10位
+                const randomNum = Math.floor(Math.random() * 10000).toString().padStart(4, '0'); // 4位随机数，不足补0
+                const orderId = parseInt(shortTimestamp + randomNum);
                 const newOrder = {
                     id: orderId,
                     productId: currentProduct.id,
@@ -15214,7 +15218,7 @@ const paginationContainers = {
                 const original = cloudUserOrders[orderIndex] || {};
 
                 // 提高管理员更新的“权重”：使用略微靠后的时间戳，确保在任何合并逻辑里都以云端为准
-                const strongUpdateTimestamp = Date.now() + 10 * 1000; // 比当前时间晚10秒
+                const strongUpdateTimestamp = Date.now() + 30 * 1000; // 比当前时间晚30秒
                 cloudUserOrders[orderIndex] = {
                     ...original,
                     status: newStatus,
