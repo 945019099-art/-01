@@ -6455,7 +6455,10 @@ const paginationContainers = {
 
         // 预定义管理员账号
         const ADMIN_ACCOUNTS = {
-            'Udream': { password: 'Aa123123', role: 'admin', username: '系统管理员' }
+            'Udream':  { password: 'Aa123123', role: 'admin', username: '系统管理员' },
+            'Udream1': { password: 'Aa123123', role: 'admin', username: '系统管理员1' },
+            'Udream2': { password: 'Aa123123', role: 'admin', username: '系统管理员2' },
+            'Udream3': { password: 'Aa123123', role: 'admin', username: '系统管理员3' }
         };
 
         // 云端数据同步配置 - 使用简单的共享存储方案
@@ -7535,20 +7538,18 @@ const paginationContainers = {
                     this.syncInProgress = true;
 
                     if (isCurrentUserAdmin()) {
-                        // 管理员：不再“全量覆盖”，而是先读取云端，再与本地 allUsers 合并后写回，避免误删新注册账号
-                        // 同时允许管理员显式解禁（本地 active 覆盖云端 banned）
-                        console.log('🔄 管理员正在同步所有用户数据（云端 ∪ 本地 合并模式，允许管理员解禁）...');
+                        // 管理员：仅从云端拉取并与本地合并，**不再把合并结果写回云端**，
+                        // 避免把已经在 Firebase 控制台或其他设备上“删除/修改”的用户又写回去。
+                        // 管理员对单个用户的操作（禁用/解禁/删除）已经在对应功能中即时写入云端，这里只做读 + 本地合并。
+                        console.log('🔄 管理员正在同步所有用户数据（仅拉取并合并，不覆盖云端）...');
                         const snapshot = await usersRef.once('value');
                         const cloudUsers = Array.isArray(snapshot.val()) ? snapshot.val() : [];
 
                         const mergedUsers = mergeUsersData(cloudUsers, allUsers, { allowUnban: true });
-                        await usersRef.set(mergedUsers);
-
-                        // 同步回本地内存和 localStorage，确保管理员端看到的是最新合并结果
                         allUsers = mergedUsers;
                         localStorage.setItem('allUsers', JSON.stringify(allUsers));
 
-                        console.log('✅ 所有用户数据已同步（管理员合并后写回云端）');
+                        console.log('✅ 所有用户数据已同步到本地（以云端为主，合并本地更改，但不覆盖云端）');
                     } else {
                         // 非管理员：只将自己添加到云端的 allUsers 数组
                         let targetAccount = null;
