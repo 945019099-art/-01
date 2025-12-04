@@ -10166,7 +10166,7 @@ const paginationContainers = {
 
             // 统一的点击外部关闭逻辑在底部注册
 
-            // 登录表单 - 优化:登录后从云端加载最新数据
+            // 登录表单 - 优化:登录前先清理本地缓存，登录后从云端加载最新数据
             document.getElementById('login-form').addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const account = document.getElementById('login-account').value;
@@ -10184,10 +10184,31 @@ const paginationContainers = {
                     return;
                 }
 
-                // ========== 登录前清除本地缓存，防止旧数据干扰 ==========
-                console.log('🧹 登录前清除本地缓存...');
+                // ========== 登录前清除本地缓存和登录状态，防止旧数据/旧会话干扰 ==========
+                console.log('🧹 登录前清除本地缓存和旧的登录状态...');
                 try {
-                    // 清除用户相关的本地缓存
+                    // 1. 先清除当前内存中的登录状态
+                    currentUser = null;
+
+                    // 2. 清除本地存储中的登录状态（但保留设备限制等重要信息）
+                    try {
+                        // 使用封装的 Storage 工具（如果可用）
+                        if (typeof Storage !== 'undefined' && Storage.remove) {
+                            Storage.remove('currentUser');
+                        } else {
+                            localStorage.removeItem('currentUser');
+                        }
+                    } catch (e1) {
+                        console.warn('⚠️ 清除 currentUser 本地记录时出错:', e1);
+                        // 兜底再直接操作 localStorage
+                        try {
+                            localStorage.removeItem('currentUser');
+                        } catch (e2) {
+                            console.warn('⚠️ 直接操作 localStorage 清除 currentUser 失败:', e2);
+                        }
+                    }
+
+                    // 3. 清除用户相关的业务缓存（订单、地址等）
                     localStorage.removeItem('userOrders');
                     localStorage.removeItem('userAddresses');
                     
@@ -10205,14 +10226,14 @@ const paginationContainers = {
                         console.log('🗑️ 已清除缓存:', key);
                     });
                     
-                    // 清空内存中的旧数据
+                    // 4. 清空内存中的旧数据
                     userOrders = [];
                     userAddresses = [];
                     userProfile = {};
                     
-                    console.log('✅ 本地缓存已清除');
+                    console.log('✅ 登录相关本地缓存和旧会话已清除');
                 } catch (error) {
-                    console.warn('⚠️ 清除缓存时出现错误:', error);
+                    console.warn('⚠️ 清除登录缓存/旧会话时出现错误:', error);
                 }
 
                 const authResult = authenticateUser(account, password);
@@ -13878,19 +13899,8 @@ const paginationContainers = {
         function renderUsersTable() {
             const tbody = document.getElementById('users-table-body');
 
-            // 合并管理员和普通用户
-            const allUsersList = [
-                ...Object.entries(ADMIN_ACCOUNTS).map(([account, info]) => ({
-                    id: account,
-                    username: info.username,
-                    account: account,
-                    role: 'admin',
-                    registerTime: '系统预设',
-                    status: 'active',
-                    deviceId: null
-                })),
-                ...allUsers
-            ];
+            // 只展示普通用户（内置管理员账号不在列表中显示）
+            const allUsersList = [...allUsers];
 
             // 统计每个设备ID注册的账号数量（仅普通用户）
             const deviceUserCountMap = {};
