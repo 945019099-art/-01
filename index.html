@@ -11250,8 +11250,8 @@ const paginationContainers = {
                 }
 
                 // 创建新订单（本地存储）
-                // 使用时间戳+随机字符串确保订单号唯一性，避免并发下单时订单号重复
-                const orderId = Date.now() + '_' + Math.random().toString(36).substr(2, 9) + '_' + Math.random().toString(36).substr(2, 5);
+                // 使用时间戳+随机数字确保订单号唯一性（纯数字格式），避免并发下单时订单号重复
+                const orderId = Date.now() + Math.floor(Math.random() * 1000000);
                 const newOrder = {
                     id: orderId,
                     productId: currentProduct.id,
