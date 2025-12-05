@@ -6565,7 +6565,14 @@ const paginationContainers = {
             constructor() {
                 this.db = null;
                 this.isInitialized = false;
-                this.syncInProgress = false;
+                // 兼容旧代码，但实际使用 _syncState.inProgress
+                Object.defineProperty(this, 'syncInProgress', {
+                    get: () => this._syncState?.inProgress || false,
+                    set: (value) => {
+                        if (!this._syncState) this._syncState = { inProgress: false, queue: [], lastSyncTime: null, errorCount: 0 };
+                        this._syncState.inProgress = value;
+                    }
+                });
                 this.lastSyncTime = null;
                 this.syncInterval = null;
                 this.listeners = [];
@@ -6791,17 +6798,16 @@ const paginationContainers = {
                     // 跳过首次同步以加快速度（数据已从云端加载）
                     console.log('ℹ️ 跳过首次同步（数据已从云端加载）');
 
-                    // 定期同步（每5秒检查一次，减少频率以提升性能）
-                    // 定期同步（每30秒检查一次，减少频率以提升性能，避免影响用户体验）
+                    // 定期同步（每2秒检查一次）
                     this.syncInterval = setInterval(() => {
                         // 只在用户不在操作时同步
-                        if (!this.syncInProgress && document.visibilityState === 'visible') {
+                        if (!this._syncState.inProgress && document.visibilityState === 'visible') {
                             this.syncAllData().catch(err => {
                                 console.warn('⚠️ 定期同步失败:', err.message);
                             });
                         }
-                    }, 1000); 
-                    console.log('⏰ 已设置定期同步 (每30秒)');
+                    }, 2000); 
+                    console.log('⏰ 已设置定期同步 (每2秒)');
 
                     // 更新UI状态指示器
                     this.updateSyncStatusUI(true);
@@ -7237,11 +7243,37 @@ const paginationContainers = {
                 }
             }
 
-            // 同步所有数据
-            async syncAllData() {
-                if (!this.isInitialized || this.syncInProgress) return;
+            // ========== 统一数据同步管理器 ==========
+            // 同步状态管理
+            _syncState = {
+                inProgress: false,
+                queue: [],
+                lastSyncTime: null,
+                errorCount: 0
+            };
 
-                this.syncInProgress = true;
+            // 统一同步入口：自动管理同步状态，避免重复同步
+            async syncAllData() {
+                if (!this.isInitialized) {
+                    console.warn('⚠️ 云端同步未初始化，跳过同步');
+                    return;
+                }
+
+                // 如果正在同步，将请求加入队列
+                if (this._syncState.inProgress) {
+                    console.log('⏳ 同步进行中，请求已加入队列');
+                    return new Promise((resolve) => {
+                        this._syncState.queue.push(resolve);
+                    });
+                }
+
+                return this._executeSync();
+            }
+
+            // 执行同步（内部方法）
+            async _executeSync() {
+                this._syncState.inProgress = true;
+                this._syncState.errorCount = 0;
 
                 try {
                     console.log('🔄 开始云端同步...');
@@ -7249,31 +7281,64 @@ const paginationContainers = {
                     // 同步全局共享数据
                     if (isCurrentUserAdmin()) {
                         // 管理员：以上传本地为准，覆盖云端
-                        await this.syncProducts();
-                        await this.syncAllUsers();
+                        await this._safeSync('products', () => this.syncProducts());
+                        await this._safeSync('users', () => this.syncAllUsers());
                     } else {
                         // 普通用户：只从云端拉取最新数据，不上传覆盖
-                        await this.loadProducts();
-                        await this.loadAllUsers();
-                        await this.loadHomepageSettings();
+                        await this._safeSync('products', () => this.loadProducts());
+                        await this._safeSync('users', () => this.loadAllUsers());
+                        await this._safeSync('settings', () => this.loadHomepageSettings());
                     }
 
                     // 同步用户订单和地址
                     if (currentUser) {
-                        await this.syncUserData();
-                        await this.syncOrders();
-                        await this.syncAddresses();
+                        await this._safeSync('profile', () => this.syncUserData());
+                        await this._safeSync('orders', () => this.syncOrders());
+                        await this._safeSync('addresses', () => this.syncAddresses());
                     }
 
-                    this.lastSyncTime = new Date();
+                    this._syncState.lastSyncTime = new Date();
+                    this._syncState.errorCount = 0;
                     console.log('✅ 云端同步完成');
 
                 } catch (error) {
+                    this._syncState.errorCount++;
                     console.error('云端同步失败:', error);
-                    showNotification('云端同步失败', 'error');
+                    if (this._syncState.errorCount <= 3) {
+                        showNotification('云端同步失败，将自动重试', 'warning');
+                    } else {
+                        showNotification('云端同步多次失败，请检查网络连接', 'error');
+                    }
                 } finally {
-                    this.syncInProgress = false;
+                    this._syncState.inProgress = false;
+                    // 处理队列中的等待请求
+                    if (this._syncState.queue.length > 0) {
+                        const nextResolve = this._syncState.queue.shift();
+                        this._executeSync().then(() => nextResolve()).catch(() => nextResolve());
+                    }
                 }
+            }
+
+            // 安全同步包装器：统一错误处理和重试逻辑
+            async _safeSync(type, syncFn) {
+                const maxRetries = 2;
+                let lastError = null;
+
+                for (let attempt = 0; attempt <= maxRetries; attempt++) {
+                    try {
+                        await syncFn();
+                        return;
+                    } catch (error) {
+                        lastError = error;
+                        if (attempt < maxRetries) {
+                            console.warn(`⚠️ ${type} 同步失败，${1000 * (attempt + 1)}ms 后重试...`, error.message);
+                            await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1)));
+                        }
+                    }
+                }
+
+                console.error(`❌ ${type} 同步最终失败:`, lastError);
+                throw lastError;
             }
 
             // 同步产品数据
@@ -7283,29 +7348,11 @@ const paginationContainers = {
                     console.log('ℹ️ 当前用户不是管理员，跳过产品上传同步');
                     return;
                 }
-                try {
-                    // 设置同步标志，防止实时监听器覆盖本地修改
-                    this.syncInProgress = true;
-                    
-                    const productsRef = this.db.ref('products');
-
-                    // 上传本地产品到云端
-                    await productsRef.set(products);
-
-                    console.log('✅ 产品数据已同步到云端');
-                    console.log('📦 同步的产品数量:', products.length);
-                    console.log('📦 同步的产品数据示例:', JSON.stringify(products[0], null, 2));
-                    
-                    // 延迟清除标志，确保实时监听器不会立即覆盖
-                    setTimeout(() => {
-                        this.syncInProgress = false;
-                        console.log('🔄 同步标志已清除');
-                    }, 1000);
-                } catch (error) {
-                    console.error('产品同步失败:', error);
-                    this.syncInProgress = false;
-                    throw error;
-                }
+                
+                const productsRef = this.db.ref('products');
+                // 上传本地产品到云端
+                await productsRef.set(products);
+                console.log('✅ 产品数据已同步到云端，数量:', products.length);
             }
 
             // 从云端加载产品数据
@@ -7368,32 +7415,18 @@ const paginationContainers = {
                     return;
                 }
 
-                try {
-                    // 设置同步标志，防止实时监听器覆盖
-                    this.syncInProgress = true;
-                    
-                    const userPath = this.getUserPath();
-                    const ordersRef = this.db.ref(`${userPath}/orders`);
+                const userPath = this.getUserPath();
+                const ordersRef = this.db.ref(`${userPath}/orders`);
 
-                    // 为每个订单添加更新时间戳
-                    const ordersToSync = userOrders.map(order => ({
-                        ...order,
-                        updatedAt: order.updatedAt || Date.now()
-                    }));
+                // 为每个订单添加更新时间戳
+                const ordersToSync = userOrders.map(order => ({
+                    ...order,
+                    updatedAt: order.updatedAt || Date.now(),
+                    account: order.account || currentUser.account
+                }));
 
-                    await ordersRef.set(ordersToSync);
-
-                    console.log('✅ 订单数据已同步到云端');
-                    
-                    // 延迟清除标志，确保实时监听器不会立即覆盖
-                    setTimeout(() => {
-                        this.syncInProgress = false;
-                    }, 2000);
-                } catch (error) {
-                    console.error('订单同步失败:', error);
-                    this.syncInProgress = false;
-                    throw error;
-                }
+                await ordersRef.set(ordersToSync);
+                console.log('✅ 订单数据已同步到云端，数量:', ordersToSync.length);
             }
 
             // 从云端加载订单数据（更安全：优先保护本地数据，不轻易清空）
@@ -7437,23 +7470,47 @@ const paginationContainers = {
                     } else {
                         // ℹ️ 云端没有订单
                         if (Array.isArray(userOrders) && userOrders.length > 0) {
-                            // ✅ 本地有订单，但云端为空：保护本地数据，提示并尝试向云端同步
-                            console.warn('⚠️ 云端暂无订单数据，但本地存在', userOrders.length, '个订单，将保留本地数据并尝试同步到云端');
-                            if (typeof showNotification === 'function') {
-                                showNotification('检测到本地有未同步的订单，正在尝试同步到云端…', 'warning');
-                            }
-
-                            // 尝试把本地订单同步到云端（不会清空云端现有数据，因为此时云端本来就是空的）
-                            try {
-                                if (typeof this.syncOrders === 'function') {
-                                    await this.syncOrders();
+                            // ✅ 本地有订单，但云端为空：检查是否是最近创建的订单
+                            // 时间阈值：只保留最近30天内创建的订单
+                            const RECENT_ORDER_THRESHOLD = 30 * 24 * 60 * 60 * 1000; // 30天
+                            const now = Date.now();
+                            const recentOrders = userOrders.filter(order => {
+                                if (!order || !order.id) return false;
+                                const orderTime = order.date || order.updatedAt || 0;
+                                return (now - orderTime) < RECENT_ORDER_THRESHOLD;
+                            });
+                            
+                            if (recentOrders.length > 0) {
+                                // 只保留最近创建的订单，避免历史数据重现
+                                userOrders = recentOrders;
+                                const userOrdersKey = `userOrders_${currentUser.account || 'guest'}`;
+                                localStorage.setItem(userOrdersKey, JSON.stringify(userOrders));
+                                localStorage.setItem('userOrders', JSON.stringify(userOrders));
+                                
+                                console.warn(`⚠️ 云端暂无订单数据，但本地存在 ${userOrders.length} 个最近订单，将保留并尝试同步到云端`);
+                                if (typeof showNotification === 'function') {
+                                    showNotification('检测到本地有未同步的订单，正在尝试同步到云端…', 'warning');
                                 }
-                            } catch (syncError) {
-                                console.error('尝试将本地订单同步到云端失败:', syncError);
-                            }
 
-                            // 不清空本地订单，只是记录日志
-                            return true;
+                                // 尝试把本地订单同步到云端
+                                try {
+                                    if (typeof this.syncOrders === 'function') {
+                                        await this.syncOrders();
+                                    }
+                                } catch (syncError) {
+                                    console.error('尝试将本地订单同步到云端失败:', syncError);
+                                }
+
+                                return true;
+                            } else {
+                                // 本地订单都是旧的，清空本地数据，避免历史数据重现
+                                console.log('ℹ️ 本地订单都是旧的（超过30天），清空本地数据，避免历史数据重现');
+                                userOrders = [];
+                                const userOrdersKey = `userOrders_${currentUser.account || 'guest'}`;
+                                localStorage.setItem(userOrdersKey, JSON.stringify(userOrders));
+                                localStorage.setItem('userOrders', JSON.stringify(userOrders));
+                                return false;
+                            }
                         } else {
                             // 云端和本地都没有订单，确保本地是空数组即可
                             userOrders = [];
@@ -7505,11 +7562,16 @@ const paginationContainers = {
                     }
                     
                     if (collectedOrders.length > 0) {
+                        // 合并前先清空本地旧数据，避免历史数据重现
+                        // 以云端数据为准，避免本地旧数据干扰
                         mergeAllOrdersData(collectedOrders);
                         console.log('✅ 已从云端加载所有订单数据:', allOrders.length, '个订单');
                         return true;
                     } else {
-                        console.log('ℹ️ 云端暂无订单数据');
+                        // 云端没有订单数据，清空本地数据，避免历史数据重现
+                        console.log('ℹ️ 云端暂无订单数据，清空本地数据');
+                        allOrders = [];
+                        localStorage.setItem('allOrders', JSON.stringify(allOrders));
                         return false;
                     }
                 } catch (error) {
@@ -7528,17 +7590,10 @@ const paginationContainers = {
                     return;
                 }
 
-                try {
-                    const userPath = this.getUserPath();
-                    const addressesRef = this.db.ref(`${userPath}/addresses`);
-
-                    await addressesRef.set(userAddresses);
-
-                    console.log('✅ 地址数据已同步');
-                } catch (error) {
-                    console.error('地址同步失败:', error);
-                    throw error;
-                }
+                const userPath = this.getUserPath();
+                const addressesRef = this.db.ref(`${userPath}/addresses`);
+                await addressesRef.set(userAddresses);
+                console.log('✅ 地址数据已同步到云端，数量:', userAddresses.length);
             }
 
             // 从云端加载地址数据（更安全：优先保护本地数据，不轻易清空）
@@ -7612,83 +7667,61 @@ const paginationContainers = {
 
             // 同步所有用户数据（全局共享）
             async syncAllUsers() {
-                try {
-                    const usersRef = this.db.ref('allUsers');
-                    this.syncInProgress = true;
+                const usersRef = this.db.ref('allUsers');
 
-                    if (isCurrentUserAdmin()) {
-                        // 管理员：从云端拉取并与本地合并，然后将合并后的结果写回云端，
-                        // 确保「禁用/解禁」等管理操作会成为云端的最终状态，
-                        // 避免被普通用户后续操作“洗白”。
-                        console.log('🔄 管理员正在同步所有用户数据（拉取 + 合并 + 写回云端）...');
-                        const snapshot = await usersRef.once('value');
-                        const cloudUsers = Array.isArray(snapshot.val()) ? snapshot.val() : [];
+                if (isCurrentUserAdmin()) {
+                    // 管理员：从云端拉取并与本地合并，然后将合并后的结果写回云端
+                    console.log('🔄 管理员正在同步所有用户数据（拉取 + 合并 + 写回云端）...');
+                    const snapshot = await usersRef.once('value');
+                    const cloudUsers = Array.isArray(snapshot.val()) ? snapshot.val() : [];
 
-                        const mergedUsers = mergeUsersData(cloudUsers, allUsers, { allowUnban: true });
-                        allUsers = mergedUsers;
-                        localStorage.setItem('allUsers', JSON.stringify(allUsers));
+                    const mergedUsers = mergeUsersData(cloudUsers, allUsers, { allowUnban: true });
+                    allUsers = mergedUsers;
+                    localStorage.setItem('allUsers', JSON.stringify(allUsers));
 
-                        try {
-                            await usersRef.set(allUsers);
-                            console.log('✅ 所有用户数据（含禁用状态）已写回云端');
-                        } catch (writeErr) {
-                            console.error('❌ 将合并后的所有用户数据写回云端失败:', writeErr);
-                        }
-                    } else {
-                        // 非管理员：只将自己添加到云端的 allUsers 数组
-                        let targetAccount = null;
-                        let targetUserData = null;
-                        
-                        // 优先使用 currentUser.account，如果没有则查找 allUsers 中最新的用户（用于注册时的情况）
-                        if (currentUser && currentUser.account) {
-                            targetAccount = currentUser.account;
-                            targetUserData = allUsers.find(u => u.account === targetAccount);
-                        } else if (allUsers.length > 0) {
-                            // 如果没有 currentUser，使用 allUsers 中最新注册的用户（按 id 或 registerTime 排序）
-                            const sortedUsers = [...allUsers].sort((a, b) => {
-                                const aId = a.id || (a.registerTime ? new Date(a.registerTime).getTime() : 0);
-                                const bId = b.id || (b.registerTime ? new Date(b.registerTime).getTime() : 0);
-                                return bId - aId; // 降序，最新的在前
-                            });
-                            targetUserData = sortedUsers[0];
-                            targetAccount = targetUserData.account;
-                            console.log('ℹ️ 未登录状态，同步最新注册的用户:', targetAccount);
-                        }
-                        
-                        if (targetAccount && targetUserData) {
-                            console.log('ℹ️ 非管理员用户，只同步用户到云端 allUsers:', targetAccount);
-                            
-                            // 使用事务原子地更新 allUsers，避免并发写导致的丢失
-                            await usersRef.transaction((current) => {
-                                let list = Array.isArray(current) ? current.slice() : [];
-                                const idx = list.findIndex(u => u && u.account === targetAccount);
-                                if (idx >= 0) {
-                                    const existing = list[idx];
-
-                                    // ❗ 安全规则：如果云端该账号已被禁用，则普通用户不能再把它改回正常
-                                    if (existing && existing.status === 'banned' && targetUserData.status !== 'banned') {
-                                        return list; // 保持云端禁用状态不变
-                                    }
-
-                                    // 普通用户只能更新自己的基础信息，不得解除禁用
-                                    list[idx] = {
-                                        ...existing,
-                                        ...targetUserData,
-                                        status: existing.status === 'banned' ? 'banned' : (targetUserData.status || existing.status),
-                                    };
-                                } else {
-                                    list.push(targetUserData);
-                                }
-                                return list;
-                            });
-                            console.log('✅ 通过事务已写入云端 allUsers:', targetAccount);
-                        } else {
-                            console.log('ℹ️ 未找到可同步的用户数据，跳过同步');
-                        }
+                    await usersRef.set(allUsers);
+                    console.log('✅ 所有用户数据（含禁用状态）已写回云端');
+                } else {
+                    // 非管理员：只将自己添加到云端的 allUsers 数组
+                    let targetAccount = null;
+                    let targetUserData = null;
+                    
+                    if (currentUser && currentUser.account) {
+                        targetAccount = currentUser.account;
+                        targetUserData = allUsers.find(u => u.account === targetAccount);
+                    } else if (allUsers.length > 0) {
+                        const sortedUsers = [...allUsers].sort((a, b) => {
+                            const aId = a.id || (a.registerTime ? new Date(a.registerTime).getTime() : 0);
+                            const bId = b.id || (b.registerTime ? new Date(b.registerTime).getTime() : 0);
+                            return bId - aId;
+                        });
+                        targetUserData = sortedUsers[0];
+                        targetAccount = targetUserData.account;
                     }
-                } catch (error) {
-                    console.error('用户数据同步失败:', error);
-                    throw error;
+                    
+                    if (targetAccount && targetUserData) {
+                        // 使用事务原子地更新 allUsers，避免并发写导致的丢失
+                        await usersRef.transaction((current) => {
+                            let list = Array.isArray(current) ? current.slice() : [];
+                            const idx = list.findIndex(u => u && u.account === targetAccount);
+                            if (idx >= 0) {
+                                const existing = list[idx];
+                                // 安全规则：如果云端该账号已被禁用，则普通用户不能再把它改回正常
+                                if (existing && existing.status === 'banned' && targetUserData.status !== 'banned') {
+                                    return list;
+                                }
+                                list[idx] = {
+                                    ...existing,
+                                    ...targetUserData,
+                                    status: existing.status === 'banned' ? 'banned' : (targetUserData.status || existing.status),
+                                };
+                            } else {
+                                list.push(targetUserData);
+                            }
+                            return list;
+                        });
+                        console.log('✅ 通过事务已写入云端 allUsers:', targetAccount);
+                    }
                 }
             }
 
@@ -7750,8 +7783,11 @@ const paginationContainers = {
                     const cloudUsers = snapshot.val();
 
                     if (cloudUsers && Array.isArray(cloudUsers) && cloudUsers.length > 0) {
+                        // 以云端数据为准，直接替换本地数据，避免历史用户重现
                         allUsers = cloudUsers;
                         localStorage.setItem('allUsers', JSON.stringify(allUsers));
+                        
+                        console.log(`🔄 用户数据已从云端更新: ${cloudUsers.length} 个用户（已替换本地数据）`);
 
                         // 如果当前用户已登录，刷新currentUser对象
                         if (currentUser && currentUser.account) {
@@ -7874,13 +7910,20 @@ const paginationContainers = {
             setupRealtimeListeners() {
                 if (!this.isInitialized) return;
 
-                // 监听产品数据变化
+                // 监听产品数据变化（公共数据：所有用户都能看到）
                 const productsRef = this.db.ref('products');
                 productsRef.on('value', (snapshot) => {
                     const cloudProducts = snapshot.val();
-                    if (cloudProducts && Array.isArray(cloudProducts) && !this.syncInProgress) {
+                    if (cloudProducts && Array.isArray(cloudProducts) && !this._syncState.inProgress) {
                         // 过滤掉无效的产品（null、undefined 或缺少必要属性）
-                        products = cloudProducts.filter(p => p && typeof p === 'object' && p.id && p.name);
+                        const validProducts = cloudProducts.filter(p => p && typeof p === 'object' && p.id && p.name);
+                        
+                        // 检测产品数量变化
+                        const productCountChanged = products.length !== validProducts.length;
+                        const productIdsChanged = products.length === validProducts.length && 
+                            products.some((p, i) => p.id !== validProducts[i]?.id);
+                        
+                        products = validProducts;
                         localStorage.setItem('products', JSON.stringify(products));
 
                         // 刷新产品显示
@@ -7889,23 +7932,35 @@ const paginationContainers = {
 
                         if (homePage && homePage.style.display !== 'none') {
                             renderProducts(products);
+                            if (productCountChanged || productIdsChanged) {
+                                showNotification('产品列表已更新', 'info');
+                            }
                         }
                         if (adminPanel && adminPanel.style.display !== 'none') {
                             renderAdminProducts();
                         }
 
-                        console.log('🔄 产品数据已从云端更新');
+                        console.log(`🔄 产品数据已从云端更新: ${validProducts.length} 个产品`);
+                    } else if (cloudProducts === null) {
+                        console.log('ℹ️ 云端产品数据为空');
+                        products = [];
+                        localStorage.setItem('products', JSON.stringify(products));
+                        renderProducts(products);
                     }
+                }, (error) => {
+                    console.error('❌ 产品监听器错误:', error);
                 });
 
-                // 监听所有用户数据变化
+                // 监听所有用户数据变化（公共数据：所有用户都能看到）
                 const allUsersRef = this.db.ref('allUsers');
                 allUsersRef.on('value', (snapshot) => {
                     const cloudUsers = snapshot.val();
-                    if (cloudUsers && Array.isArray(cloudUsers) && !this.syncInProgress) {
+                    if (cloudUsers && Array.isArray(cloudUsers) && !this._syncState.inProgress) {
                         const previousAllUsers = JSON.parse(JSON.stringify(allUsers)); // 保存之前的数据用于对比
                         allUsers = cloudUsers;
                         localStorage.setItem('allUsers', JSON.stringify(allUsers));
+                        
+                        console.log(`🔄 用户数据已从云端更新: ${cloudUsers.length} 个用户`);
 
                         // 如果当前用户已登录，刷新currentUser对象
                         if (currentUser && currentUser.account) {
@@ -8016,18 +8071,64 @@ const paginationContainers = {
                 }
             }
 
-            // 处理云端订单更新
+            // 处理云端订单更新（优化版：确保数据合并正确且不互相覆盖）
             processUserOrderUpdate(cloudOrders, immediate = false) {
-                if (!currentUser || !Array.isArray(cloudOrders)) return;
-
-                const beforeStatus = userOrders.find(o => cloudOrders.some(co => co.id === o.id))?.status;
-                mergeOrdersData(cloudOrders, currentUser.account);
-                const afterStatus = userOrders.find(o => cloudOrders.some(co => co.id === o.id))?.status;
-
-                if (beforeStatus !== afterStatus) {
-                    console.log('🔄 检测到订单状态变化，刷新显示');
+                if (!currentUser || !Array.isArray(cloudOrders)) {
+                    console.warn('⚠️ processUserOrderUpdate: 参数无效');
+                    return;
                 }
 
+                // 记录更新前的订单状态，用于检测变化
+                const orderStatusMap = new Map();
+                userOrders.forEach(order => {
+                    if (order && order.id) {
+                        orderStatusMap.set(String(order.id), order.status);
+                    }
+                });
+
+                // 智能合并订单数据（确保数据隔离：只合并属于当前用户的订单）
+                const validCloudOrders = cloudOrders.filter(order => {
+                    if (!order || !order.id) return false;
+                    // 确保订单属于当前用户
+                    const orderAccount = order.account || '';
+                    const currentAccount = currentUser.account || '';
+                    if (orderAccount !== currentAccount) {
+                        console.warn(`⚠️ 检测到不属于当前用户的订单，已过滤: ${order.id} (订单账户: ${orderAccount}, 当前账户: ${currentAccount})`);
+                        return false;
+                    }
+                    return true;
+                });
+
+                if (validCloudOrders.length === 0 && cloudOrders.length > 0) {
+                    console.warn('⚠️ 所有云端订单都不属于当前用户，跳过更新');
+                    return;
+                }
+
+                // 执行合并（mergeOrdersData会确保数据正确合并）
+                mergeOrdersData(validCloudOrders, currentUser.account);
+
+                // 检测订单状态变化
+                let hasStatusChange = false;
+                userOrders.forEach(order => {
+                    if (order && order.id) {
+                        const oldStatus = orderStatusMap.get(String(order.id));
+                        if (oldStatus && oldStatus !== order.status) {
+                            hasStatusChange = true;
+                            console.log(`🔄 订单 ${order.id} 状态变化: ${oldStatus} -> ${order.status}`);
+                        }
+                    }
+                });
+
+                if (hasStatusChange) {
+                    console.log('🔄 检测到订单状态变化，刷新显示');
+                    // 显示通知（仅在用户中心页面时）
+                    const userCenter = document.getElementById('user-center');
+                    if (userCenter && userCenter.style.display !== 'none') {
+                        showNotification('您的订单状态已更新', 'info');
+                    }
+                }
+
+                // 刷新UI
                 this.refreshOrderUI(immediate);
             }
 
@@ -8057,22 +8158,56 @@ const paginationContainers = {
                 this.pendingAddressUpdate = null;
             }
 
-            // 监听用户订单变化
+            // 监听用户订单变化（优化版：确保实时同步且数据隔离）
             attachUserOrdersListener() {
-                if (!this.isInitialized || !currentUser) return;
+                if (!this.isInitialized || !currentUser) {
+                    console.warn('⚠️ 无法设置订单监听器：云端未初始化或用户未登录');
+                    return;
+                }
 
+                // 先移除旧的监听器，避免重复监听
                 this.detachUserOrdersListener();
 
                 const userPath = this.getUserPath();
+                if (!userPath || userPath === 'users/guest') {
+                    console.warn('⚠️ 无法设置订单监听器：用户路径无效');
+                    return;
+                }
+
                 const ordersRef = this.db.ref(`${userPath}/orders`);
                 this.userOrdersRef = ordersRef;
 
+                console.log(`🔔 开始监听用户订单变化: ${userPath}/orders`);
+
                 ordersRef.on('value', (snapshot) => {
                     const cloudOrders = snapshot.val();
+                    
+                    // 处理空数据情况（云端订单被清空）
+                    if (cloudOrders === null) {
+                        console.log('ℹ️ 云端订单数据为空，清空本地订单');
+                        if (currentUser && currentUser.account) {
+                            userOrders = [];
+                            const userOrdersKey = `userOrders_${currentUser.account}`;
+                            localStorage.setItem(userOrdersKey, JSON.stringify(userOrders));
+                            localStorage.setItem('userOrders', JSON.stringify(userOrders));
+                            this.refreshOrderUI(true);
+                        }
+                        return;
+                    }
+
                     if (cloudOrders && Array.isArray(cloudOrders)) {
-                        if (this.syncInProgress) {
+                        // 确保订单数据属于当前用户（数据隔离保护）
+                        const filteredOrders = cloudOrders.filter(order => {
+                            if (!order) return false;
+                            // 确保订单属于当前用户
+                            const orderAccount = order.account || '';
+                            const currentAccount = currentUser.account || '';
+                            return orderAccount === currentAccount;
+                        });
+
+                        if (this._syncState.inProgress) {
                             console.log('⏳ 同步进行中，延迟处理云端订单更新...');
-                            this.pendingOrderUpdate = cloudOrders;
+                            this.pendingOrderUpdate = filteredOrders;
                             if (this.orderUpdateTimer) clearTimeout(this.orderUpdateTimer);
                             this.orderUpdateTimer = setTimeout(() => {
                                 if (this.pendingOrderUpdate) {
@@ -8082,9 +8217,14 @@ const paginationContainers = {
                                 }
                             }, 1500);
                         } else {
-                            this.processUserOrderUpdate(cloudOrders, false);
+                            console.log(`✅ 收到云端订单更新: ${filteredOrders.length} 个订单`);
+                            this.processUserOrderUpdate(filteredOrders, false);
                         }
+                    } else {
+                        console.warn('⚠️ 云端订单数据格式异常:', typeof cloudOrders);
                     }
+                }, (error) => {
+                    console.error('❌ 订单监听器错误:', error);
                 });
             }
 
@@ -8101,7 +8241,7 @@ const paginationContainers = {
                 addressesRef.on('value', (snapshot) => {
                     const cloudAddresses = snapshot.val();
                     if (cloudAddresses && Array.isArray(cloudAddresses)) {
-                        if (this.syncInProgress) {
+                        if (this._syncState.inProgress) {
                             console.log('⏳ 同步进行中，延迟处理云端地址更新...');
                             this.pendingAddressUpdate = cloudAddresses;
                             if (this.addressUpdateTimer) clearTimeout(this.addressUpdateTimer);
@@ -8315,39 +8455,57 @@ const paginationContainers = {
                     // 监听所有用户的订单
                     this.allOrdersRef = this.db.ref('users');
                     this.allOrdersRef.on('value', async (snapshot) => {
-                        if (this.syncInProgress) return;
+                        if (this._syncState.inProgress) {
+                            console.log('⏳ 同步进行中，跳过管理员订单监听更新');
+                            return;
+                        }
                         
                         const usersData = snapshot.val();
-                        if (!usersData) return;
+                        if (!usersData) {
+                            console.log('ℹ️ 云端用户数据为空');
+                            return;
+                        }
                         
-                        // 收集所有用户的订单
+                        // 收集所有用户的订单（确保数据完整性）
                         const collectedOrders = [];
                         for (const userId in usersData) {
                             const userData = usersData[userId];
-                            if (userData.orders && Array.isArray(userData.orders)) {
+                            if (userData && userData.orders && Array.isArray(userData.orders)) {
                                 userData.orders.forEach(order => {
-                                    // 确保订单有account字段
-                                    if (!order.account) {
-                                        order.account = userId;
+                                    if (order && order.id) {
+                                        // 确保订单有account字段（用于数据隔离）
+                                        if (!order.account) {
+                                            order.account = userId.replace(/_/g, '.'); // 还原账号格式
+                                        }
+                                        // 确保订单有updatedAt字段（用于合并逻辑）
+                                        if (!order.updatedAt && order.date) {
+                                            order.updatedAt = typeof order.date === 'number' ? order.date : Date.now();
+                                        }
+                                        collectedOrders.push(order);
                                     }
-                                    collectedOrders.push(order);
                                 });
                             }
                         }
                         
-                        // 智能合并所有订单
-                        mergeAllOrdersData(collectedOrders);
-                        
-                        // 刷新后台管理订单表格
-                        const adminPanel = document.getElementById('admin-panel');
-                        if (adminPanel && adminPanel.style.display !== 'none') {
-                            const adminOrders = document.getElementById('admin-orders');
-                            if (adminOrders && adminOrders.classList.contains('active')) {
-                                renderOrdersTable();
+                        if (collectedOrders.length > 0) {
+                            // 智能合并所有订单（确保数据正确）
+                            mergeAllOrdersData(collectedOrders);
+                            
+                            // 刷新后台管理订单表格
+                            const adminPanel = document.getElementById('admin-panel');
+                            if (adminPanel && adminPanel.style.display !== 'none') {
+                                const adminOrders = document.getElementById('admin-orders');
+                                if (adminOrders && adminOrders.classList.contains('active')) {
+                                    renderOrdersTable();
+                                }
                             }
+                            
+                            console.log(`🔄 所有订单数据已从云端更新（后台管理）: ${collectedOrders.length} 个订单`);
+                        } else {
+                            console.log('ℹ️ 云端暂无订单数据');
                         }
-                        
-                        console.log('🔄 所有订单数据已从云端更新（后台管理）');
+                    }, (error) => {
+                        console.error('❌ 管理员订单监听器错误:', error);
                     });
                 } catch (error) {
                     console.error('设置所有订单监听器失败:', error);
@@ -9047,12 +9205,27 @@ const paginationContainers = {
                 }
             });
             
-            // 添加本地有但云端没有的订单（可能是新创建的，还未同步）
+            // 添加本地有但云端没有的订单（只保留最近创建的订单，避免历史数据重现）
+            // 时间阈值：只保留最近30天内创建的订单，避免旧数据重现
+            const RECENT_ORDER_THRESHOLD = 30 * 24 * 60 * 60 * 1000; // 30天
+            const now = Date.now();
+            
             localOrdersMap.forEach((localOrder, id) => {
                 if (!processedIds.has(id)) {
                     // 只保留属于当前用户的订单
                     if (localOrder.account === userAccount || !localOrder.account) {
-                        mergedOrders.push(localOrder);
+                        // 检查订单是否是新创建的（最近30天内）
+                        const orderTime = localOrder.date || localOrder.updatedAt || 0;
+                        const isRecentOrder = (now - orderTime) < RECENT_ORDER_THRESHOLD;
+                        
+                        if (isRecentOrder) {
+                            // 只添加最近创建的订单，避免历史数据重现
+                            mergedOrders.push(localOrder);
+                            console.log(`✅ 保留本地新订单: ${id} (创建时间: ${new Date(orderTime).toLocaleString()})`);
+                        } else {
+                            // 忽略旧订单，避免历史数据重现
+                            console.log(`⚠️ 忽略本地旧订单: ${id} (创建时间: ${new Date(orderTime).toLocaleString()}, 已超过30天)`);
+                        }
                     }
                 }
             });
@@ -9151,10 +9324,25 @@ const paginationContainers = {
                 }
             });
             
-            // 添加本地有但云端没有的订单（可能是新创建的）
+            // 添加本地有但云端没有的订单（只保留最近创建的订单，避免历史数据重现）
+            // 时间阈值：只保留最近30天内创建的订单，避免旧数据重现
+            const RECENT_ORDER_THRESHOLD = 30 * 24 * 60 * 60 * 1000; // 30天
+            const now = Date.now();
+            
             localOrdersMap.forEach((localOrder, id) => {
                 if (!processedIds.has(id)) {
-                    mergedOrders.push(localOrder);
+                    // 检查订单是否是新创建的（最近30天内）
+                    const orderTime = localOrder.date || localOrder.updatedAt || 0;
+                    const isRecentOrder = (now - orderTime) < RECENT_ORDER_THRESHOLD;
+                    
+                    if (isRecentOrder) {
+                        // 只添加最近创建的订单，避免历史数据重现
+                        mergedOrders.push(localOrder);
+                        console.log(`✅ 保留本地新订单: ${id} (创建时间: ${new Date(orderTime).toLocaleString()})`);
+                    } else {
+                        // 忽略旧订单，避免历史数据重现
+                        console.log(`⚠️ 忽略本地旧订单: ${id} (创建时间: ${new Date(orderTime).toLocaleString()}, 已超过30天)`);
+                    }
                 }
             });
             
@@ -9172,6 +9360,7 @@ const paginationContainers = {
             console.log(`✅ 所有订单数据已智能合并: ${mergedOrders.length} 个订单`);
         }
 
+        // ========== 统一的数据保存和同步接口 ==========
         function saveUserOrders() {
             // 为每个订单添加更新时间戳和账户信息
             const now = Date.now();
@@ -9185,41 +9374,23 @@ const paginationContainers = {
                 }
             });
             
-            // 使用用户特定的localStorage key
+            // 保存到本地存储
             if (currentUser && currentUser.account) {
                 const userOrdersKey = `userOrders_${currentUser.account}`;
                 Storage.set(userOrdersKey, userOrders);
             }
-            // 兼容旧代码
-            Storage.set('userOrders', userOrders);
+            Storage.set('userOrders', userOrders); // 兼容旧代码
             
             // 更新全局订单数组（如果当前用户是管理员）
             if (currentUser && currentUser.role === 'admin') {
                 updateAllOrdersFromUserOrders();
             }
             
-            // 同步到云端（使用CloudSyncManager）
+            // 同步到云端（使用统一同步接口）
             if (cloudSync && cloudSync.isInitialized) {
-                // 设置同步标志，防止实时监听器覆盖
-                cloudSync.syncInProgress = true;
-                cloudSync.syncOrders().then(() => {
-                    console.log('✅ 订单已同步到云端');
-                    // 延迟清除标志，确保实时监听器不会立即覆盖
-                    setTimeout(() => {
-                        cloudSync.syncInProgress = false;
-                        console.log('🔄 同步标志已清除');
-                    }, 2000);
-                }).catch(err => {
+                cloudSync.syncOrders().catch(err => {
                     console.error('订单云端同步失败:', err);
-                    cloudSync.syncInProgress = false;
-                    // 如果云端同步失败，尝试使用旧的同步方式作为备用
-                    if (CLOUD_STORAGE.enabled) {
-                        syncToCloud('orders', userOrders);
-                    }
                 });
-            } else if (CLOUD_STORAGE.enabled) {
-                // 如果CloudSyncManager未初始化，使用旧的同步方式
-                syncToCloud('orders', userOrders);
             }
         }
         
@@ -9273,8 +9444,23 @@ const paginationContainers = {
                     const cloudUser = resultMap.get(account);
 
                     if (!cloudUser) {
-                        // 云端没有这个账号，本地是新增用户，直接加入
-                        resultMap.set(account, user);
+                        // 云端没有这个账号，检查是否是最近注册的用户（避免历史用户重现）
+                        // 时间阈值：只保留最近90天内注册的用户，避免旧数据重现
+                        const RECENT_USER_THRESHOLD = 90 * 24 * 60 * 60 * 1000; // 90天
+                        const now = Date.now();
+                        const registerTime = user.registerTime 
+                            ? (typeof user.registerTime === 'string' ? new Date(user.registerTime).getTime() : user.registerTime)
+                            : (user.updatedAt || 0);
+                        const isRecentUser = (now - registerTime) < RECENT_USER_THRESHOLD;
+                        
+                        if (isRecentUser) {
+                            // 只添加最近注册的用户，避免历史用户重现
+                            resultMap.set(account, user);
+                            console.log(`✅ 保留本地新用户: ${account} (注册时间: ${new Date(registerTime).toLocaleString()})`);
+                        } else {
+                            // 忽略旧用户，避免历史用户重现
+                            console.log(`⚠️ 忽略本地旧用户: ${account} (注册时间: ${new Date(registerTime).toLocaleString()}, 已超过90天)`);
+                        }
                     } else {
                         // 同一账号同时存在于云端和本地，按时间戳/注册时间决定是否覆盖
                         const cloudTime = cloudUser.updatedAt
@@ -9322,15 +9508,14 @@ const paginationContainers = {
         }
 
         function saveUserAddresses() {
-            // 使用用户特定的localStorage key
+            // 保存到本地存储
             if (currentUser && currentUser.account) {
                 const userAddressesKey = `userAddresses_${currentUser.account}`;
                 Storage.set(userAddressesKey, userAddresses);
             }
-            // 兼容旧代码
-            Storage.set('userAddresses', userAddresses);
+            Storage.set('userAddresses', userAddresses); // 兼容旧代码
             
-            // 同步到云端（使用CloudSyncManager）
+            // 同步到云端（使用统一同步接口）
             if (cloudSync && cloudSync.isInitialized) {
                 cloudSync.syncAddresses().catch(err => {
                     console.error('地址数据云端同步失败:', err);
@@ -9448,7 +9633,7 @@ const paginationContainers = {
 
             // 管理员 + 云端可用：使用安全模式，防止监听器用旧数据覆盖
             try {
-                cloudSync.syncInProgress = true;
+                cloudSync._syncState.inProgress = true;
 
                 if (typeof writeFn === 'function') {
                     await writeFn();
@@ -9461,7 +9646,7 @@ const paginationContainers = {
             } finally {
                 setTimeout(() => {
                     if (cloudSync) {
-                        cloudSync.syncInProgress = false;
+                        cloudSync._syncState.inProgress = false;
                     }
                 }, 500);
             }
@@ -15197,7 +15382,7 @@ const paginationContainers = {
                 });
 
                 // 在更新期间暂时阻止实时监听覆盖本地数据
-                cloudSync.syncInProgress = true;
+                cloudSync._syncState.inProgress = true;
 
                 const snapshot = await userOrdersRef.once('value');
                 let cloudUserOrders = snapshot.val() || [];
@@ -15217,15 +15402,29 @@ const paginationContainers = {
                 const updateTimestamp = Date.now();
                 const original = cloudUserOrders[orderIndex] || {};
 
-                // 提高管理员更新的“权重”：使用略微靠后的时间戳，确保在任何合并逻辑里都以云端为准
+                // 提高管理员更新的"权重"：使用略微靠后的时间戳，确保在任何合并逻辑里都以云端为准
                 const strongUpdateTimestamp = Date.now() + 30 * 1000; // 比当前时间晚30秒
+                
+                // 保留订单的所有重要字段，确保数据完整性
                 cloudUserOrders[orderIndex] = {
                     ...original,
                     status: newStatus,
-                    updatedAt: strongUpdateTimestamp
+                    updatedAt: strongUpdateTimestamp,
+                    // 确保保留所有必要字段
+                    account: original.account || order.account,
+                    productId: original.productId || order.productId,
+                    productName: original.productName || order.productName,
+                    price: original.price !== undefined ? original.price : order.price,
+                    image: original.image || order.image,
+                    customerInfo: original.customerInfo || order.customerInfo,
+                    date: original.date || order.date || Date.now(),
+                    trackingNumber: original.trackingNumber || order.trackingNumber
                 };
 
+                // 使用 set 方法更新，这会触发所有客户端的实时监听器
                 await userOrdersRef.set(cloudUserOrders);
+                
+                console.log('📤 订单更新已写入云端，实时监听器将自动同步到所有客户端');
 
                 console.log('✅ 管理员已在云端更新订单状态:', {
                     orderId: order.id,
@@ -15251,7 +15450,7 @@ const paginationContainers = {
                 // 稍微延迟清理标记，避免监听器立刻覆盖
                 if (cloudSync) {
                     setTimeout(() => {
-                        cloudSync.syncInProgress = false;
+                        cloudSync._syncState.inProgress = false;
                     }, 500);
                 }
             }
@@ -16001,7 +16200,7 @@ const paginationContainers = {
                                 // 立即同步到云端
                                 if (cloudSync && cloudSync.isInitialized) {
                                     try {
-                                        cloudSync.syncInProgress = true;
+                                        cloudSync._syncState.inProgress = true;
                                         await cloudSync.syncOrders();
                                         console.log('✅ 订单状态已同步到云端（回退逻辑）');
                                         showNotification(`订单状态已更新为"${statusText}"，已同步到云端！`, 'success');
@@ -16010,7 +16209,7 @@ const paginationContainers = {
                                         showNotification(`订单状态已更新为"${statusText}"，但云端同步失败，请稍后重试`, 'warning');
                                     } finally {
                                         setTimeout(() => {
-                                            cloudSync.syncInProgress = false;
+                                            cloudSync._syncState.inProgress = false;
                                         }, 2000);
                                     }
                                 } else {
@@ -18738,8 +18937,8 @@ const paginationContainers = {
             } else {
                 console.log('   ✅ CloudSync 管理器已创建');
                 console.log('   📊 初始化状态:', cloudSync.isInitialized ? '✅ 已初始化' : '❌ 未初始化');
-                console.log('   📊 同步进行中:', cloudSync.syncInProgress ? '是' : '否');
-                console.log('   📊 最后同步时间:', cloudSync.lastSyncTime || '从未同步');
+                console.log('   📊 同步进行中:', cloudSync._syncState?.inProgress ? '是' : '否');
+                console.log('   📊 最后同步时间:', cloudSync._syncState?.lastSyncTime || cloudSync.lastSyncTime || '从未同步');
             }
             console.log('');
 
@@ -19015,8 +19214,8 @@ const paginationContainers = {
             console.log('CloudSyncManager:');
             console.log('  - 已初始化:', cloudSync?.isInitialized ? '✅ 是' : '❌ 否');
             console.log('  - 数据库实例:', cloudSync?.db ? '✅ 存在' : '❌ 不存在');
-            console.log('  - 同步进行中:', cloudSync?.syncInProgress ? '是' : '否');
-            console.log('  - 上次同步:', cloudSync?.lastSyncTime ? new Date(cloudSync.lastSyncTime).toLocaleString() : '从未同步');
+            console.log('  - 同步进行中:', cloudSync?._syncState?.inProgress ? '是' : '否');
+            console.log('  - 上次同步:', cloudSync?._syncState?.lastSyncTime ? new Date(cloudSync._syncState.lastSyncTime).toLocaleString() : (cloudSync?.lastSyncTime ? new Date(cloudSync.lastSyncTime).toLocaleString() : '从未同步'));
             console.log('  - 监听器数量:', cloudSync?.listeners?.length || 0);
             console.log('');
 
