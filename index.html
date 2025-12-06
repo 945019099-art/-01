@@ -616,7 +616,8 @@
         /* 轮播图样式 */
         .carousel {
             position: relative;
-            height: 450px;
+            width: 100%;
+            aspect-ratio: 21 / 9;
             overflow: hidden;
             border-radius: var(--radius-lg);
             margin: 32px 0 48px;
@@ -3334,8 +3335,9 @@
         /* 轮播图移动端优化 */
         @media (max-width: 768px) {
             .carousel {
-                height: 250px;
-                /* 减小高度 */
+                width: 100%;
+                aspect-ratio: 21 / 9;
+                /* 移动端也使用21:9比例 */
                 margin: 15px 0;
             }
 
@@ -4097,7 +4099,7 @@
             <div class="carousel">
                 <div class="carousel-arrow prev">&#10094;</div>
                 <div class="carousel-slide active"
-                    style="background-image: url('https://images.unsplash.com/photo-1607082350899-7e105aa886ae?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80')">
+                    style="background-image: url('https://d92ap0lo8fr10.cloudfront.net/A14TLSYJXI3UM6_74a4f2a269eeee0e43f867fff8416a45_ProductImage_MAIN')">
                     <div class="carousel-content">
                         <h2>New Arrivals</h2>
                         <p>Explore our latest product series and enjoy limited-time offers</p>
@@ -4105,7 +4107,7 @@
                     </div>
                 </div>
                 <div class="carousel-slide"
-                    style="background-image: url('https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80')">
+                    style="background-image: url('https://d92ap0lo8fr10.cloudfront.net/A14TLSYJXI3UM6_0c7821e20b2ca904579150a5c33caa82_ProductImage_PT01')">
                     <div class="carousel-content">
                         <h2>Limited Time Offer</h2>
                         <p>Selected items up to 50% off, don't miss out</p>
@@ -10095,101 +10097,8 @@ const paginationContainers = {
                 loader.remove();
             }
 
-            // 轮播图功能
-            const carouselContainer = document.querySelector('.carousel');
-            const slides = document.querySelectorAll('.carousel-slide');
-            const indicators = document.querySelectorAll('.indicator');
-            const prevArrow = document.querySelector('.carousel-arrow.prev');
-            const nextArrow = document.querySelector('.carousel-arrow.next');
-            let currentSlide = 0;
-
-            function showSlide(n) {
-                slides.forEach(slide => slide.classList.remove('active'));
-                indicators.forEach(indicator => indicator.classList.remove('active'));
-
-                currentSlide = (n + slides.length) % slides.length;
-
-                slides[currentSlide].classList.add('active');
-                indicators[currentSlide].classList.add('active');
-            }
-
-            // 自动轮播
-            const carouselInterval = setInterval(() => {
-                showSlide(currentSlide + 1);
-            }, 5000);
-
-            // 指示点点击切换
-            indicators.forEach((indicator, index) => {
-                indicator.addEventListener('click', () => {
-                    clearInterval(carouselInterval);
-                    showSlide(index);
-                });
-            });
-
-            // 左右按钮点击切换
-            if (prevArrow) {
-                prevArrow.addEventListener('click', () => {
-                    clearInterval(carouselInterval);
-                    showSlide(currentSlide - 1);
-                });
-            }
-
-            if (nextArrow) {
-                nextArrow.addEventListener('click', () => {
-                    clearInterval(carouselInterval);
-                    showSlide(currentSlide + 1);
-                });
-            }
-
-            // 鼠标拖拽 / 触摸滑动切换
-            let dragStartX = null;
-            let isDragging = false;
-
-            function getClientX(event) {
-                if (event.touches && event.touches.length) {
-                    return event.touches[0].clientX;
-                }
-                if (event.changedTouches && event.changedTouches.length) {
-                    return event.changedTouches[0].clientX;
-                }
-                return event.clientX;
-            }
-
-            function handleDragStart(event) {
-                isDragging = true;
-                dragStartX = getClientX(event);
-            }
-
-            function handleDragEnd(event) {
-                if (!isDragging || dragStartX === null) return;
-                const endX = getClientX(event);
-                const deltaX = endX - dragStartX;
-                const threshold = 50; // 超过 50px 判定为滑动
-
-                if (Math.abs(deltaX) > threshold) {
-                    clearInterval(carouselInterval);
-                    if (deltaX < 0) {
-                        // 向左拖：下一张
-                        showSlide(currentSlide + 1);
-                    } else {
-                        // 向右拖：上一张
-                        showSlide(currentSlide - 1);
-                    }
-                }
-
-                isDragging = false;
-                dragStartX = null;
-            }
-
-            if (carouselContainer) {
-                // 鼠标事件
-                carouselContainer.addEventListener('mousedown', handleDragStart);
-                window.addEventListener('mouseup', handleDragEnd);
-
-                // 触摸事件（移动端）
-                carouselContainer.addEventListener('touchstart', handleDragStart, { passive: true });
-                carouselContainer.addEventListener('touchend', handleDragEnd);
-            }
+            // 轮播图功能 - 使用统一的初始化函数
+            initCarousel();
 
             // 搜索功能
             const searchInput = document.getElementById('search-input');
@@ -16920,7 +16829,7 @@ const paginationContainers = {
             desktopCarousel: [
                 {
                     id: 1,
-                    image: 'https://images.unsplash.com/photo-1607082350899-7e105aa886ae?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80',
+                    image: 'https://d92ap0lo8fr10.cloudfront.net/A14TLSYJXI3UM6_74a4f2a269eeee0e43f867fff8416a45_ProductImage_MAIN',
                     title: '新品上市',
                     description: '探索我们最新的产品系列，享受限时优惠',
                     buttonText: '立即购买',
@@ -16928,7 +16837,7 @@ const paginationContainers = {
                 },
                 {
                     id: 2,
-                    image: 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80',
+                    image: 'https://d92ap0lo8fr10.cloudfront.net/A14TLSYJXI3UM6_0c7821e20b2ca904579150a5c33caa82_ProductImage_PT01',
                     title: '限时特惠',
                     description: '精选商品低至5折，错过再等一年',
                     buttonText: '查看详情',
@@ -16938,7 +16847,7 @@ const paginationContainers = {
             mobileCarousel: [
                 {
                     id: 101,
-                    image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+                    image: 'https://d92ap0lo8fr10.cloudfront.net/A14TLSYJXI3UM6_74a4f2a269eeee0e43f867fff8416a45_ProductImage_MAIN',
                     title: '移动端专享',
                     description: '专为手机屏幕裁切的视觉体验',
                     buttonText: '立即查看',
@@ -16946,7 +16855,7 @@ const paginationContainers = {
                 },
                 {
                     id: 102,
-                    image: 'https://images.unsplash.com/photo-1503602642458-232111445657?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+                    image: 'https://d92ap0lo8fr10.cloudfront.net/A14TLSYJXI3UM6_0c7821e20b2ca904579150a5c33caa82_ProductImage_PT01',
                     title: '口碑好物',
                     description: '真实用户反馈，放心体验',
                     buttonText: '查看更多',
@@ -17197,7 +17106,13 @@ const paginationContainers = {
                 <div class="indicator ${index === 0 ? 'active' : ''}"></div>
             `).join('');
 
-            carousel.innerHTML = slidesHTML + `<div class="carousel-indicators">${indicatorsHTML}</div>`;
+            carousel.innerHTML = `<div class="carousel-arrow prev">&#10094;</div>` + 
+                                 slidesHTML + 
+                                 `<div class="carousel-arrow next">&#10095;</div>` +
+                                 `<div class="carousel-indicators">${indicatorsHTML}</div>`;
+            
+            // 重新初始化轮播图功能
+            initCarousel();
         }
 
         function getSlidesForViewport() {
@@ -17211,6 +17126,150 @@ const paginationContainers = {
         window.addEventListener('resize', debounce(() => {
             updateCarousel();
         }, 200));
+
+        // 轮播图自动切换定时器（全局变量，用于清除）
+        let carouselInterval = null;
+
+        // 初始化轮播图功能
+        function initCarousel() {
+            const carouselContainer = document.querySelector('.carousel');
+            if (!carouselContainer) return;
+
+            // 清除之前的定时器
+            if (carouselInterval) {
+                clearInterval(carouselInterval);
+                carouselInterval = null;
+            }
+
+            const slides = document.querySelectorAll('.carousel-slide');
+            const indicators = document.querySelectorAll('.indicator');
+            const prevArrow = document.querySelector('.carousel-arrow.prev');
+            const nextArrow = document.querySelector('.carousel-arrow.next');
+            
+            if (slides.length === 0) return;
+
+            let currentSlide = 0;
+            
+            // 找到当前激活的slide
+            slides.forEach((slide, index) => {
+                if (slide.classList.contains('active')) {
+                    currentSlide = index;
+                }
+            });
+
+            // 定义showSlide函数
+            function showSlide(n) {
+                slides.forEach(slide => slide.classList.remove('active'));
+                indicators.forEach(indicator => indicator.classList.remove('active'));
+
+                currentSlide = (n + slides.length) % slides.length;
+
+                if (slides[currentSlide]) {
+                    slides[currentSlide].classList.add('active');
+                }
+                if (indicators[currentSlide]) {
+                    indicators[currentSlide].classList.add('active');
+                }
+            }
+
+            // 自动轮播
+            carouselInterval = setInterval(() => {
+                showSlide(currentSlide + 1);
+            }, 5000);
+
+            // 指示点点击切换
+            indicators.forEach((indicator, index) => {
+                indicator.addEventListener('click', () => {
+                    if (carouselInterval) {
+                        clearInterval(carouselInterval);
+                    }
+                    showSlide(index);
+                    carouselInterval = setInterval(() => {
+                        showSlide(currentSlide + 1);
+                    }, 5000);
+                });
+            });
+
+            // 左右按钮点击切换
+            if (prevArrow) {
+                prevArrow.addEventListener('click', () => {
+                    if (carouselInterval) {
+                        clearInterval(carouselInterval);
+                    }
+                    showSlide(currentSlide - 1);
+                    carouselInterval = setInterval(() => {
+                        showSlide(currentSlide + 1);
+                    }, 5000);
+                });
+            }
+
+            if (nextArrow) {
+                nextArrow.addEventListener('click', () => {
+                    if (carouselInterval) {
+                        clearInterval(carouselInterval);
+                    }
+                    showSlide(currentSlide + 1);
+                    carouselInterval = setInterval(() => {
+                        showSlide(currentSlide + 1);
+                    }, 5000);
+                });
+            }
+
+            // 鼠标拖拽 / 触摸滑动切换
+            let dragStartX = null;
+            let isDragging = false;
+
+            function getClientX(event) {
+                if (event.touches && event.touches.length) {
+                    return event.touches[0].clientX;
+                }
+                if (event.changedTouches && event.changedTouches.length) {
+                    return event.changedTouches[0].clientX;
+                }
+                return event.clientX;
+            }
+
+            function handleDragStart(event) {
+                isDragging = true;
+                dragStartX = getClientX(event);
+            }
+
+            function handleDragEnd(event) {
+                if (!isDragging || dragStartX === null) return;
+                const endX = getClientX(event);
+                const deltaX = endX - dragStartX;
+                const threshold = 50; // 超过 50px 判定为滑动
+
+                if (Math.abs(deltaX) > threshold) {
+                    if (carouselInterval) {
+                        clearInterval(carouselInterval);
+                    }
+                    if (deltaX < 0) {
+                        // 向左拖：下一张
+                        showSlide(currentSlide + 1);
+                    } else {
+                        // 向右拖：上一张
+                        showSlide(currentSlide - 1);
+                    }
+                    carouselInterval = setInterval(() => {
+                        showSlide(currentSlide + 1);
+                    }, 5000);
+                }
+
+                isDragging = false;
+                dragStartX = null;
+            }
+
+            if (carouselContainer) {
+                // 鼠标事件
+                carouselContainer.addEventListener('mousedown', handleDragStart);
+                window.addEventListener('mouseup', handleDragEnd);
+
+                // 触摸事件（移动端）
+                carouselContainer.addEventListener('touchstart', handleDragStart, { passive: true });
+                carouselContainer.addEventListener('touchend', handleDragEnd);
+            }
+        }
 
         // 重置主页设置
         function resetHomepageSettings() {
@@ -17228,7 +17287,7 @@ const paginationContainers = {
                     desktopCarousel: [
                         {
                             id: 1,
-                            image: 'https://images.unsplash.com/photo-1607082350899-7e105aa886ae?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80',
+                            image: 'https://d92ap0lo8fr10.cloudfront.net/A14TLSYJXI3UM6_74a4f2a269eeee0e43f867fff8416a45_ProductImage_MAIN',
                             title: '新品上市',
                             description: '探索我们最新的产品系列，享受限时优惠',
                             buttonText: '立即购买',
@@ -17236,7 +17295,7 @@ const paginationContainers = {
                         },
                         {
                             id: 2,
-                            image: 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80',
+                            image: 'https://d92ap0lo8fr10.cloudfront.net/A14TLSYJXI3UM6_0c7821e20b2ca904579150a5c33caa82_ProductImage_PT01',
                             title: '限时特惠',
                             description: '精选商品低至5折，错过再等一年',
                             buttonText: '查看详情',
@@ -17246,7 +17305,7 @@ const paginationContainers = {
                     mobileCarousel: [
                         {
                             id: 101,
-                            image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+                            image: 'https://d92ap0lo8fr10.cloudfront.net/A14TLSYJXI3UM6_74a4f2a269eeee0e43f867fff8416a45_ProductImage_MAIN',
                             title: '移动端专享',
                             description: '专为手机屏幕裁切的视觉体验',
                             buttonText: '立即查看',
@@ -17254,7 +17313,7 @@ const paginationContainers = {
                         },
                         {
                             id: 102,
-                            image: 'https://images.unsplash.com/photo-1503602642458-232111445657?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+                            image: 'https://d92ap0lo8fr10.cloudfront.net/A14TLSYJXI3UM6_0c7821e20b2ca904579150a5c33caa82_ProductImage_PT01',
                             title: '口碑好物',
                             description: '真实用户反馈，放心体验',
                             buttonText: '查看更多',
