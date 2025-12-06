@@ -3336,9 +3336,10 @@
         @media (max-width: 768px) {
             .carousel {
                 width: 100%;
-                aspect-ratio: 21 / 9;
-                /* 移动端也使用21:9比例 */
+                aspect-ratio: 21 / 9 !important;
+                /* 移动端使用21:9比例 */
                 margin: 15px 0;
+                height: auto;
             }
 
             .carousel-content {
@@ -3372,6 +3373,22 @@
 
             .indicator {
                 display: none; /* 移动端隐藏轮播点 */
+            }
+
+            /* 移动端箭头缩小 */
+            .carousel-arrow {
+                width: 36px !important;
+                height: 36px !important;
+                font-size: 18px !important;
+                border: 1.5px solid rgba(255, 255, 255, 0.9) !important;
+            }
+
+            .carousel-arrow.prev {
+                left: 10px !important;
+            }
+
+            .carousel-arrow.next {
+                right: 10px !important;
             }
         }
 
