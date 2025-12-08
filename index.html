@@ -5514,6 +5514,7 @@ const paginationContainers = {
                 'noRejectedOrders': '暂无已驳回订单',
                 'noCancelledOrders': '暂无已取消订单',
                 'cancelOrder': '取消订单',
+                'confirmOrderAgain': '再次确认订单',
                 'confirmCancelOrder': '确定要取消这个订单吗？',
                 'orderCancelled': '订单已取消',
                 // 订单详情
@@ -5876,6 +5877,7 @@ const paginationContainers = {
                 'noRejectedOrders': 'No rejected orders',
                 'noCancelledOrders': 'No cancelled orders',
                 'cancelOrder': 'Cancel Order',
+                'confirmOrderAgain': 'Confirm the order again',
                 'confirmCancelOrder': 'Are you sure you want to cancel this order?',
                 'orderCancelled': 'Order cancelled',
                 // 订单详情
@@ -13990,6 +13992,12 @@ const paginationContainers = {
                                             onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(231,76,60,0.2)';">
                                         <i class="fas fa-times-circle" style="margin-right: 6px;"></i>${t('cancelOrder')}
                                     </button>
+                                    <button class="btn btn-success btn-sm" onclick="event.stopPropagation(); confirmOrderAgain(${order.id});"
+                                            style="padding: 8px 16px; font-size: 13px; border-radius: 6px; font-weight: 500; box-shadow: 0 2px 4px rgba(16,124,16,0.2); transition: all 0.3s;"
+                                            onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 8px rgba(16,124,16,0.3)';"
+                                            onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(16,124,16,0.2)';">
+                                        <i class="fas fa-check-circle" style="margin-right: 6px;"></i>${t('confirmOrderAgain')}
+                                    </button>
                                 ` : ''}
                                 ${showReviewBtn ? `
                                     <button class="btn btn-primary btn-sm" onclick="event.stopPropagation(); openReviewModal(${order.id});" 
@@ -17866,6 +17874,20 @@ const paginationContainers = {
                 showNotification('复制失败，请手动复制', 'error');
             }
             document.body.removeChild(textArea);
+        }
+
+        // 再次确认订单：跳转至 WhatsApp 并预填消息
+        function confirmOrderAgain(orderId) {
+            const order = userOrders.find(o => o.id === orderId);
+            if (!order) {
+                showNotification(t('orderNotFound') || '未找到订单信息', 'error');
+                return;
+            }
+
+            const orderIdText = String(order.id || orderId);
+            const message = `Please confirm my Beefreebies order #${orderIdText}`;
+            const url = `https://wa.me/+17077902826?text=${encodeURIComponent(message)}`;
+            window.open(url, '_blank');
         }
 
         // 取消订单
