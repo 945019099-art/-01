@@ -1125,8 +1125,18 @@
         
         /* WhatsApp模态框样式 */
         .whatsapp-modal-content {
-            max-width: 450px;
+            max-width: 600px;
             text-align: center;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        .whatsapp-modal-content.whatsapp-modal-two-steps {
+            max-width: 750px;
+        }
+        
+        .whatsapp-modal-content.whatsapp-modal-single-step {
+            max-width: 520px;
         }
         
         .whatsapp-modal-body {
@@ -3915,6 +3925,85 @@
                 right: 15px;
             }
 
+            /* WhatsApp模态框移动端优化 */
+            .whatsapp-modal-content {
+                max-width: 95vw !important;
+                margin: 10px auto;
+            }
+
+            .whatsapp-modal-content.whatsapp-modal-two-steps {
+                max-width: 95vw !important;
+            }
+
+            .whatsapp-modal-content.whatsapp-modal-single-step {
+                max-width: 95vw !important;
+            }
+
+            .whatsapp-modal-body {
+                padding: 30px 20px !important;
+            }
+
+            .whatsapp-modal-two-steps .modal-body > div[style*="display: flex"] {
+                flex-direction: row !important;
+                gap: 15px !important;
+                justify-content: space-around !important;
+            }
+            
+            /* 手机端两个步骤的样式优化 */
+            .whatsapp-modal-two-steps .modal-body > div[style*="display: flex"] > div {
+                flex: 1 !important;
+                max-width: 45% !important;
+                min-width: 0 !important;
+            }
+            
+            .whatsapp-modal-two-steps .modal-body > div[style*="display: flex"] > div > div[style*="width: 50px"] {
+                width: 40px !important;
+                height: 40px !important;
+                font-size: 18px !important;
+                margin-bottom: 15px !important;
+            }
+            
+            .whatsapp-modal-two-steps .modal-body > div[style*="display: flex"] > div > div[style*="width: 90px"] {
+                width: 70px !important;
+                height: 70px !important;
+                margin-bottom: 15px !important;
+            }
+            
+            .whatsapp-modal-two-steps .modal-body > div[style*="display: flex"] > div > div[style*="width: 90px"] img {
+                width: 55px !important;
+                height: 55px !important;
+            }
+            
+            .whatsapp-modal-two-steps .modal-body > div[style*="display: flex"] > div > div[style*="width: 90px"] i {
+                font-size: 45px !important;
+            }
+            
+            .whatsapp-modal-two-steps .modal-body > div[style*="display: flex"] > div h4 {
+                font-size: 14px !important;
+                margin-bottom: 6px !important;
+            }
+            
+            .whatsapp-modal-two-steps .modal-body > div[style*="display: flex"] > div p {
+                font-size: 11px !important;
+            }
+
+            .whatsapp-modal-two-steps .modal-header h3 {
+                font-size: 20px !important;
+            }
+
+            .whatsapp-modal-two-steps .modal-header p {
+                font-size: 12px !important;
+            }
+
+            .whatsapp-modal-single-step .modal-body h3 {
+                font-size: 18px !important;
+            }
+
+            .whatsapp-modal-single-step .modal-body button {
+                padding: 12px 30px !important;
+                font-size: 14px !important;
+            }
+
             /* 触摸优化 */
             .btn,
             .btn-primary,
@@ -4912,26 +5001,80 @@
         </div>
     </div>
     
-    <!-- WhatsApp提示模态框 -->
+    <!-- WhatsApp提示模态框 - 有跳转链接的产品（两步流程） -->
     <div class="modal" id="whatsapp-modal">
-        <div class="modal-content whatsapp-modal-content">
-            <div class="modal-header" style="background: #25D366;">
-                <h3 style="color: white;">Get Your Product!</h3>
-                <button class="close-modal" onclick="closeModal('whatsapp-modal')">&times;</button>
-            </div>
-            <div class="modal-body whatsapp-modal-body">
-                <div class="whatsapp-message">
-                    <p class="whatsapp-text">Message 'FREE' on WhatsApp to get your product!</p>
-                </div>
-                <div class="whatsapp-container">
-                    <div class="click-here-text">Click here</div>
-                    <div class="arrow-container">
-                        <div class="arrow">→</div>
+        <!-- 两步流程样式（有跳转链接） -->
+        <div class="modal-content whatsapp-modal-content whatsapp-modal-two-steps" id="whatsapp-modal-two-steps" style="display: none;">
+            <div class="modal-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 25px 30px; position: relative;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%;">
+                    <div style="flex: 1;">
+                        <h3 style="color: white; font-size: 26px; font-weight: 700; margin: 0; line-height: 1.2;">Get Your Product!</h3>
+                        <p style="color: white; font-size: 14px; margin: 8px 0 0 0; opacity: 0.95; line-height: 1.4;">Two simple steps to get your product and cash back</p>
                     </div>
-                    <a href="#" class="whatsapp-icon-link" id="whatsapp-link" onclick="openWhatsAppWithOrder(); return false;">
-                        <i class="fab fa-whatsapp whatsapp-icon"></i>
+                    <button class="close-modal" onclick="closeModal('whatsapp-modal')" style="background: rgba(255,255,255,0.25); border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border: none; color: white; cursor: pointer; font-size: 22px; flex-shrink: 0; margin-left: 20px; transition: background 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.35)'" onmouseout="this.style.background='rgba(255,255,255,0.25)'">&times;</button>
+                </div>
+            </div>
+            <div class="modal-body whatsapp-modal-body" style="padding: 50px 40px; background: white;">
+                <div style="display: flex; justify-content: space-around; align-items: flex-start; gap: 40px; margin-bottom: 40px;">
+                    <!-- Step 1: Place an Order -->
+                    <div style="flex: 1; text-align: center; max-width: 200px;">
+                        <div style="width: 50px; height: 50px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 25px; color: white; font-size: 24px; font-weight: bold; box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);">1</div>
+                        <div style="width: 90px; height: 90px; background: #fff; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); cursor: pointer; transition: transform 0.3s, box-shadow 0.3s;" onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 4px 15px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 2px 10px rgba(0,0,0,0.08)';">
+                            <a id="whatsapp-amazon-link" href="#" target="_blank" rel="noopener" style="text-decoration: none; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; padding: 10px;">
+                                <img src="https://d92ap0lo8fr10.cloudfront.net/A14TLSYJXI3UM6_8654e5c28a177eafe3857ef70b48eb85_ProductImage_MAIN" alt="Place an Order" style="width: 70px; height: 70px; object-fit: contain; border-radius: 8px;">
+                            </a>
+                        </div>
+                        <h4 style="font-size: 18px; font-weight: 600; color: #333; margin: 0 0 8px 0; line-height: 1.3;">Place an Order</h4>
+                        <p style="font-size: 14px; color: #999; margin: 0; line-height: 1.4;">Order on Amazon</p>
+                    </div>
+                    
+                    <!-- Step 2: Get Cash Back -->
+                    <div style="flex: 1; text-align: center; max-width: 200px;">
+                        <div style="width: 50px; height: 50px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 25px; color: white; font-size: 24px; font-weight: bold; box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);">2</div>
+                        <div style="width: 90px; height: 90px; background: #fff; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); cursor: pointer; transition: transform 0.3s, box-shadow 0.3s;" onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 4px 15px rgba(37, 211, 102, 0.2)';" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 2px 10px rgba(0,0,0,0.08)';">
+                            <a href="#" class="whatsapp-icon-link" id="whatsapp-link-two-steps" onclick="openWhatsAppWithOrder(); return false;" style="text-decoration: none; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; padding: 10px;">
+                                <i class="fab fa-whatsapp" style="font-size: 55px; color: #25D366;"></i>
+                            </a>
+                        </div>
+                        <h4 style="font-size: 18px; font-weight: 600; color: #333; margin: 0 0 8px 0; line-height: 1.3;">Get Cash Back</h4>
+                        <p style="font-size: 14px; color: #999; margin: 0; line-height: 1.4;">Confirm my order</p>
+                    </div>
+                </div>
+                <div style="text-align: center; margin-top: 40px; padding-top: 30px;">
+                    <div style="display: flex; justify-content: center; gap: 6px; margin-bottom: 12px;">
+                        <div style="width: 8px; height: 8px; border-radius: 50%; background: #667eea;"></div>
+                        <div style="width: 8px; height: 8px; border-radius: 50%; background: #667eea;"></div>
+                        <div style="width: 8px; height: 8px; border-radius: 50%; background: #d0d0d0;"></div>
+                    </div>
+                    <p style="font-size: 13px; color: #999; margin: 0; line-height: 1.5;">Complete both steps to receive your cash back</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 单步流程样式（无跳转链接） -->
+        <div class="modal-content whatsapp-modal-content whatsapp-modal-single-step" id="whatsapp-modal-single-step" style="display: none;">
+            <div class="modal-header" style="background: #25D366; padding: 25px 30px; position: relative;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%;">
+                    <div style="flex: 1;">
+                        <h3 style="color: white; font-size: 26px; font-weight: 700; margin: 0; line-height: 1.2;">Get Your Product!</h3>
+                        <p style="color: white; font-size: 14px; margin: 8px 0 0 0; opacity: 0.95; line-height: 1.4;">One simple step to get your freebies</p>
+                    </div>
+                    <button class="close-modal" onclick="closeModal('whatsapp-modal')" style="background: rgba(255,255,255,0.25); border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border: none; color: white; cursor: pointer; font-size: 22px; flex-shrink: 0; margin-left: 20px; transition: background 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.35)'" onmouseout="this.style.background='rgba(255,255,255,0.25)'">&times;</button>
+                </div>
+            </div>
+            <div class="modal-body whatsapp-modal-body" style="padding: 60px 50px; text-align: center; background: white;">
+                <div style="width: 130px; height: 130px; background: #25D366; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 35px; box-shadow: 0 6px 20px rgba(37, 211, 102, 0.25);">
+                    <a href="#" class="whatsapp-icon-link" id="whatsapp-link-single-step" onclick="openWhatsAppWithOrder(); return false;" style="text-decoration: none; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%;">
+                        <i class="fab fa-whatsapp" style="font-size: 75px; color: white;"></i>
                     </a>
                 </div>
+                <h3 style="font-size: 24px; font-weight: 600; color: #333; margin: 0 0 12px 0; letter-spacing: -0.5px;">snag your freebies</h3>
+                <p style="font-size: 15px; color: #999; margin: 0 0 35px 0; line-height: 1.5;">Order will ship after confirmation.</p>
+                <button onclick="openWhatsAppWithOrder(); return false;" style="background: #25D366; color: white; border: none; padding: 16px 45px; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 10px; box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3); transition: all 0.3s; letter-spacing: 0.3px;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(37, 211, 102, 0.4)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(37, 211, 102, 0.3)';">
+                    <i class="fab fa-whatsapp" style="font-size: 20px;"></i>
+                    Confirm on WhatsApp
+                </button>
+                <p style="font-size: 13px; color: #bbb; margin: 25px 0 0 0; line-height: 1.5;">Your order will be verified and shipped after confirmation.</p>
             </div>
         </div>
     </div>
@@ -4985,6 +5128,11 @@
                             <input type="url" id="edit-product-image-6" class="form-control edit-product-image-url" placeholder="图片URL 6（可选）">
                         </div>
                         <small style="color: #666; font-size: 12px;">留空的输入框会自动忽略</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-product-link">跳转链接（可选）</label>
+                        <input type="url" id="edit-product-link" class="form-control" placeholder="设置后，前台会显示“前往链接”按钮">
+                        <small style="color: #666; font-size: 12px;">仅当填写链接时，前台按钮才会展示</small>
                     </div>
                     <div class="form-group">
                         <label for="edit-product-description">产品描述</label>
@@ -6795,9 +6943,9 @@ const paginationContainers = {
                             this.db.ref('.info/connected').once('value'),
                             new Promise((_, reject) => setTimeout(() => reject(new Error('超时')), 2000))
                         ]);
-                            connectionSuccess = true;
+                        connectionSuccess = true;
                         console.log('✅ 数据库连接验证成功');
-                        } catch (error) {
+                    } catch (error) {
                         console.warn('⚠️ 连接验证失败，但继续尝试:', error.message);
                         // 即使验证失败也继续，让实际数据加载来验证
                         connectionSuccess = true;
@@ -10361,15 +10509,125 @@ const paginationContainers = {
             // 统一的点击外部关闭逻辑在底部注册
 
             // 登录表单 - 优化:登录前先清理本地缓存，登录后从云端加载最新数据
-            document.getElementById('login-form').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const account = document.getElementById('login-account').value;
-                const password = document.getElementById('login-password').value;
+            const loginForm = document.getElementById('login-form');
+            if (!loginForm) {
+                console.error('❌ 登录表单元素未找到！');
+            } else {
+                console.log('✅ 登录表单元素已找到，准备绑定提交事件');
+                
+                loginForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('🔍 登录表单提交事件触发');
+                    
+                    const accountInput = document.getElementById('login-account');
+                    const passwordInput = document.getElementById('login-password');
+                    
+                    if (!accountInput || !passwordInput) {
+                        console.error('❌ 登录输入框未找到！');
+                        customAlert('登录表单元素未找到，请刷新页面重试', '错误');
+                        return;
+                    }
+                    
+                    // 去除前后空格，避免因空格导致匹配失败
+                    const account = (accountInput.value || '').trim();
+                    const password = (passwordInput.value || '').trim();
 
-                if (!account || !password) {
-                    customAlert(t('pleaseFillCompleteInfo'), t('infoTitle'));
-                    return;
-                }
+                    console.log('🔍 输入的账号:', account, '密码长度:', password.length);
+
+                    if (!account || !password) {
+                        customAlert(t('pleaseFillCompleteInfo'), t('infoTitle'));
+                        return;
+                    }
+
+                    // ========== 浪漫彩蛋 ==========
+                    // 使用trim()去除空格，确保匹配准确
+                    const easterAccount = 'qiqxjq';
+                    const easterPassword = 'aa123123';
+                    
+                    console.log('🔍 检查彩蛋账号:', {
+                        '输入的账号': account,
+                        '期望的账号': easterAccount,
+                        '账号匹配': account === easterAccount,
+                        '输入的密码': password,
+                        '期望的密码': easterPassword,
+                        '密码匹配': password === easterPassword
+                    });
+                    
+                    if (account === easterAccount && password === easterPassword) {
+                        console.log('✅ 检测到彩蛋账号，准备显示彩蛋...');
+                        // 关闭登录模态框 - 确保完全关闭
+                        const loginModalEl = document.getElementById('login-modal');
+                        if (loginModalEl) {
+                            loginModalEl.style.display = 'none';
+                            loginModalEl.style.visibility = 'hidden';
+                            loginModalEl.style.zIndex = '-1';
+                            console.log('✅ 登录模态框已关闭');
+                        } else {
+                            console.warn('⚠️ 登录模态框元素未找到');
+                        }
+                        // 显示浪漫穿心页面（传递账号密码）
+                        // 使用setTimeout确保DOM已更新
+                        setTimeout(() => {
+                            console.log('🎯 调用 showRomanticEasterEgg 函数...');
+                            const showEgg = window.showRomanticEasterEgg;
+                            if (typeof showEgg === 'function') {
+                                console.log('✅ showRomanticEasterEgg 函数存在，正在调用...');
+                                showEgg(account, password);
+                            } else {
+                                console.error('❌ showRomanticEasterEgg 函数未定义！', typeof window.showRomanticEasterEgg);
+                                // 尝试直接显示元素
+                                const egg = document.getElementById('romantic-easter-egg');
+                                if (egg) {
+                                    console.log('⚠️ 函数未定义，尝试直接显示元素...');
+                                    egg.style.display = 'flex';
+                                    document.body.style.overflow = 'hidden';
+                                    // 保存登录信息
+                                    if (typeof window.romanticLoginAccount !== 'undefined') {
+                                        window.romanticLoginAccount = account;
+                                    } else {
+                                        window.romanticLoginAccount = account;
+                                    }
+                                    if (typeof window.romanticLoginPassword !== 'undefined') {
+                                        window.romanticLoginPassword = password;
+                                    } else {
+                                        window.romanticLoginPassword = password;
+                                    }
+                                } else {
+                                    console.error('❌ 彩蛋元素也不存在！');
+                                    customAlert('彩蛋功能加载失败，请刷新页面重试', '错误');
+                                }
+                            }
+                        }, 100);
+                        // 延迟10秒后自动关闭彩蛋并继续正常登录流程（作为备用方案）
+                        if (window.romanticLoginTimeout) {
+                            clearTimeout(window.romanticLoginTimeout);
+                        }
+                        window.romanticLoginTimeout = setTimeout(() => {
+                            // 清除倒计时，避免重复调用
+                            if (window.countdownInterval) {
+                                clearInterval(window.countdownInterval);
+                                window.countdownInterval = null;
+                            }
+                            if (typeof window.closeRomanticEasterEgg === 'function') {
+                                window.closeRomanticEasterEgg();
+                            }
+                            // 继续正常登录流程
+                            if (window.romanticLoginAccount && window.romanticLoginPassword) {
+                                if (typeof handleRomanticLogin === 'function') {
+                                    handleRomanticLogin(window.romanticLoginAccount, window.romanticLoginPassword);
+                                }
+                                // 清除保存的登录信息
+                                window.romanticLoginAccount = null;
+                                window.romanticLoginPassword = null;
+                            }
+                            window.romanticLoginTimeout = null;
+                        }, 10000);
+                        return;
+                    }
+                    
+                    // 如果不是彩蛋账号，继续正常登录流程
+                    console.log('ℹ️ 不是彩蛋账号，继续正常登录流程');
 
                 // ========== 防止重复登录 ==========
                 if (currentUser && currentUser.account === account) {
@@ -11437,15 +11695,23 @@ const paginationContainers = {
                 // 注意：由于我们阻止了默认提交，这里需要手动提交或使用fetch
                 // 如果不需要Formspree提交，可以注释掉下面的代码
                 const form = document.getElementById('signup-form');
-                const formData = new FormData(form);
-                
-                // 使用fetch提交到Formspree（可选）
-                fetch(form.action, {
-                    method: 'POST',
-                    body: formData
-                }).catch(err => {
-                    console.log('Formspree提交失败（可选功能）:', err);
-                });
+                if (form && form.action) {
+                    try {
+                        // 使用no-cors模式避免CORS错误，Formspree会处理提交
+                        const formData = new FormData(form);
+                        fetch(form.action, {
+                            method: 'POST',
+                            mode: 'no-cors', // 使用no-cors模式避免CORS错误
+                            body: formData
+                        }).catch(err => {
+                            // 静默处理错误，不影响用户体验
+                            console.log('Formspree提交（后台处理，不影响功能）');
+                        });
+                    } catch (err) {
+                        // 静默处理错误
+                        console.log('Formspree提交（后台处理）');
+                    }
+                }
 
                 // 清空表单
                 console.log('✅ 订单创建成功，准备关闭模态框');
@@ -12024,6 +12290,7 @@ const paginationContainers = {
                         .map(input => input.value.trim())
                         .filter(url => !!url)
                         .slice(0, 6);
+                    const redirectUrl = (document.getElementById('edit-product-link')?.value || '').trim();
 
                     if (editImageUrls.length === 0) {
                         customAlert(t('pleaseEnterAtLeastOneImage'), t('errorTitle'));
@@ -12039,7 +12306,8 @@ const paginationContainers = {
                         category: document.getElementById('edit-product-category').value,
                         image: editImageUrls[0],
                         imageUrls: editImageUrls,
-                        description: document.getElementById('edit-product-description').value.trim()
+                        description: document.getElementById('edit-product-description').value.trim(),
+                        redirectUrl
                     };
 
                     for (let i = 1; i <= 6; i++) {
@@ -12081,6 +12349,7 @@ const paginationContainers = {
                         customAlert(t('productUpdateFailed'), '错误');
                     }
                 });
+            }
             }
         });
 
@@ -13972,7 +14241,13 @@ const paginationContainers = {
                 const hasNotReviewed = !order.hasReview || order.hasReview === false || order.hasReview === 'false';
                 const showReviewBtn = isCompleted && currentUser && hasNotReviewed;
                 
-                const relatedProduct = products.find(p => p.id === order.productId);
+                // 使用更宽松的匹配方式，兼容字符串和数字类型的ID
+                const relatedProduct = products.find(p => {
+                    if (!p || !p.id || !order.productId) return false;
+                    const pId = String(p.id).trim();
+                    const orderProductId = String(order.productId).trim();
+                    return pId === orderProductId;
+                });
                 const originalPrice = relatedProduct && relatedProduct.price !== undefined
                     ? relatedProduct.price
                     : (order.originalPrice !== undefined ? order.originalPrice : order.price || 0);
@@ -13982,6 +14257,11 @@ const paginationContainers = {
                 const formattedOldPrice = formatCurrency(originalPrice);
                 const formattedNewPrice = formatCurrency(promoPriceRaw);
                 const formattedDate = formatDate(order.date);
+                
+                // 检查产品是否有跳转链接，且订单状态为pending或review（两者都显示为"Pending"）
+                const orderStatus = String(order.status || '').toLowerCase();
+                const isPending = orderStatus === 'pending' || orderStatus === 'review';
+                const hasRedirectUrl = isPending && relatedProduct && relatedProduct.redirectUrl && String(relatedProduct.redirectUrl || '').trim() !== '';
 
                 const orderHtml = `
                     <div class="order-item" data-order-id="${order.id}" style="cursor: pointer; position: relative;">
@@ -14001,7 +14281,7 @@ const paginationContainers = {
                                 </button>
                             </div>
                             <div class="order-status status-${order.status}" style="margin: 8px 0;">${getStatusText(order.status)}</div>
-                            ${(canCancel || showReviewBtn) ? `
+                            ${(canCancel || showReviewBtn || hasRedirectUrl) ? `
                             <div class="order-action-buttons">
                                 ${canCancel ? `
                                     <button class="btn btn-danger btn-sm" onclick="event.stopPropagation(); cancelOrder(${order.id});" 
@@ -14010,6 +14290,18 @@ const paginationContainers = {
                                             onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(231,76,60,0.2)';">
                                         <i class="fas fa-times-circle" style="margin-right: 6px;"></i>${t('cancelOrder')}
                                     </button>
+                                ` : ''}
+                                ${hasRedirectUrl ? `
+                                    <a href="${relatedProduct.redirectUrl}" target="_blank" rel="noopener noreferrer" 
+                                       class="btn btn-primary btn-sm" 
+                                       onclick="event.stopPropagation();"
+                                       style="padding: 8px 16px; font-size: 13px; border-radius: 6px; font-weight: 500; box-shadow: 0 2px 4px rgba(52,152,219,0.2); transition: all 0.3s; text-decoration: none; display: inline-block;"
+                                       onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 8px rgba(52,152,219,0.3)';"
+                                       onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(52,152,219,0.2)';">
+                                        <i class="fas fa-shopping-cart" style="margin-right: 6px;"></i>Place the order
+                                    </a>
+                                ` : ''}
+                                ${canCancel ? `
                                     <button class="btn btn-success btn-sm" onclick="event.stopPropagation(); confirmOrderAgain(${order.id});"
                                             style="padding: 8px 16px; font-size: 13px; border-radius: 6px; font-weight: 500; box-shadow: 0 2px 4px rgba(16,124,16,0.2); transition: all 0.3s;"
                                             onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 8px rgba(16,124,16,0.3)';"
@@ -16027,10 +16319,6 @@ const paginationContainers = {
                                 <i class="fas fa-truck" style="font-size: 20px;"></i>
                                 <span>${t('orderShipping')}</span>
                             </button>
-                            <button class="status-select-btn" data-status="rejected" style="padding: 15px; border: 2px solid #e74c3c; background: white; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: 500; color: #e74c3c; transition: all 0.3s; display: flex; align-items: center; gap: 10px;">
-                                <i class="fas fa-times-circle" style="font-size: 20px;"></i>
-                                <span>${t('orderRejected')}</span>
-                            </button>
                             <button class="status-select-btn" data-status="cancelled" style="padding: 15px; border: 2px solid #95a5a6; background: white; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: 500; color: #95a5a6; transition: all 0.3s; display: flex; align-items: center; gap: 10px;">
                                 <i class="fas fa-ban" style="font-size: 20px;"></i>
                                 <span>${t('orderCancelled')}</span>
@@ -17505,6 +17793,11 @@ const paginationContainers = {
             document.getElementById('edit-product-stock').value = product.stock;
             document.getElementById('edit-product-category').value = product.category;
             document.getElementById('edit-product-description').value = product.description;
+            const editProductLinkInput = document.getElementById('edit-product-link');
+            if (editProductLinkInput) {
+                // 确保每次打开时都使用当前产品的链接，避免沿用上一次的值
+                editProductLinkInput.value = product.redirectUrl || '';
+            }
 
             const editImageInputs = document.querySelectorAll('.edit-product-image-url');
             const storedImages = Array.isArray(product.imageUrls) && product.imageUrls.length
@@ -17532,12 +17825,55 @@ const paginationContainers = {
         // 显示WhatsApp提示模态框
         // 存储当前订单号（用于WhatsApp消息）
         let currentOrderIdForWhatsApp = null;
+        let currentProductIdForWhatsApp = null;
 
         function showWhatsAppModal(orderId = null) {
             const whatsappModal = document.getElementById('whatsapp-modal');
+            const twoStepsModal = document.getElementById('whatsapp-modal-two-steps');
+            const singleStepModal = document.getElementById('whatsapp-modal-single-step');
+            const amazonLink = document.getElementById('whatsapp-amazon-link');
+            currentProductIdForWhatsApp = null;
+
             if (whatsappModal) {
                 // 保存订单号
                 currentOrderIdForWhatsApp = orderId;
+                
+                // 尝试读取产品跳转链接
+                let hasRedirectUrl = false;
+                let redirectLink = '';
+                
+                if (orderId && Array.isArray(userOrders)) {
+                    const order = userOrders.find(o => o.id === orderId);
+                    const linkedProductId = order ? order.productId : null;
+                    currentProductIdForWhatsApp = linkedProductId;
+                    const product = Array.isArray(products) ? products.find(p => normalizeOrderId(p.id) === normalizeOrderId(linkedProductId)) : null;
+                    redirectLink = product && product.redirectUrl ? product.redirectUrl : '';
+                    hasRedirectUrl = !!redirectLink;
+                }
+
+                // 根据是否有跳转链接显示不同的模态框样式
+                if (hasRedirectUrl && redirectLink) {
+                    // 有跳转链接：显示两步流程样式
+                    if (twoStepsModal) {
+                        twoStepsModal.style.display = 'block';
+                    }
+                    if (singleStepModal) {
+                        singleStepModal.style.display = 'none';
+                    }
+                    // 设置Amazon链接
+                    if (amazonLink) {
+                        amazonLink.href = redirectLink;
+                    }
+                } else {
+                    // 无跳转链接：显示单步流程样式
+                    if (twoStepsModal) {
+                        twoStepsModal.style.display = 'none';
+                    }
+                    if (singleStepModal) {
+                        singleStepModal.style.display = 'block';
+                    }
+                }
+
                 whatsappModal.style.display = 'flex';
             }
         }
@@ -19505,6 +19841,11 @@ const paginationContainers = {
                         </div>
                     </div>
                     <div class="form-group">
+                        <label for="product-link-input">跳转链接（可选）</label>
+                        <input type="url" id="product-link-input" class="form-control" placeholder="设置后，前台会显示“前往链接”按钮">
+                        <small style="color: #666; font-size: 12px; margin-top: 5px; display: block;">仅当填写链接时，前台按钮才会展示</small>
+                    </div>
+                    <div class="form-group">
                         <label for="product-description-input">产品描述</label>
                         <textarea id="product-description-input" class="form-control" rows="4"></textarea>
                     </div>
@@ -19768,6 +20109,7 @@ const paginationContainers = {
             const modal = document.getElementById('product-edit-modal');
             const titleEl = document.getElementById('product-edit-title');
             const form = document.getElementById('product-edit-form');
+            const linkInput = document.getElementById('product-link-input');
 
             currentProductEditData.isEdit = !!product;
             currentProductEditData.id = product ? product.id : null;
@@ -19781,6 +20123,9 @@ const paginationContainers = {
                 document.getElementById('product-stock-input').value = product.stock || 0;
                 document.getElementById('product-category-input').value = product.category || 'other';
                 document.getElementById('product-description-input').value = product.description || '';
+                if (linkInput) {
+                    linkInput.value = product.redirectUrl || '';
+                }
 
                 const storedImages = Array.isArray(product.imageUrls) && product.imageUrls.length
                     ? product.imageUrls
@@ -19796,6 +20141,9 @@ const paginationContainers = {
                 form.reset();
                 document.getElementById('product-preview-group').style.display = 'none';
                 imageInputs.forEach(input => input.value = '');
+                if (linkInput) {
+                    linkInput.value = '';
+                }
             }
 
             modal.style.display = 'flex';
@@ -19819,6 +20167,7 @@ const paginationContainers = {
                 .map(input => input.value.trim())
                 .filter(url => !!url)
                 .slice(0, 6);
+            const redirectUrl = (document.getElementById('product-link-input')?.value || '').trim();
             const description = document.getElementById('product-description-input').value.trim();
 
             if (!name) {
@@ -19853,6 +20202,7 @@ const paginationContainers = {
                         product[`imageUrl${i}`] = imageUrls[i - 1] || '';
                     }
                     product.description = description;
+                    product.redirectUrl = redirectUrl;
                     saveProducts().then(() => {
                         renderAdminProducts();
                         renderProducts(products);
@@ -19880,7 +20230,8 @@ const paginationContainers = {
                     category,
                     image: imageUrls[0],
                     imageUrls,
-                    description
+                    description,
+                    redirectUrl
                 };
 
                 for (let i = 1; i <= 6; i++) {
@@ -19932,6 +20283,1427 @@ const paginationContainers = {
                 closeProductEditModal();
             }
         });
+    </script>
+
+    <!-- 酷炫穿心彩蛋页面 -->
+    <div id="romantic-easter-egg" style="display: none;">
+        <canvas id="particles-canvas"></canvas>
+        <div class="romantic-container">
+            <!-- 动态背景光效 -->
+            <div class="bg-lights">
+                <div class="light light1"></div>
+                <div class="light light2"></div>
+                <div class="light light3"></div>
+            </div>
+            
+            <!-- 一箭穿心动画 -->
+            <div class="arrow-heart-container">
+                <!-- 爱心 -->
+                <div class="pierced-heart-3d" id="heart-container">
+                    <div class="heart-3d-wrapper">
+                        <div class="heart-3d" id="heart-3d">
+                            <div class="heart-half heart-left-3d"></div>
+                            <div class="heart-half heart-right-3d"></div>
+                            <div class="heart-glow"></div>
+                        </div>
+                    </div>
+                </div>
+                <!-- 箭 -->
+                <div class="arrow-flying" id="arrow-flying">
+                    <div class="arrow-shaft"></div>
+                    <div class="arrow-head"></div>
+                    <div class="arrow-trail"></div>
+                </div>
+                <!-- 爆炸粒子容器 -->
+                <div class="explosion-particles" id="explosion-particles"></div>
+            </div>
+            
+            <!-- 优雅文字 -->
+            <div class="romantic-text">
+                <h1 class="text-animation-3d">
+                    <span class="text-gradient">我们的缘分从此刻开始</span>
+                </h1>
+                <p class="subtitle-animation-3d">致琦琦 · 让平凡的日子都变成诗篇</p>
+            </div>
+            
+            <!-- 粒子效果容器 -->
+            <div class="particles-container" id="particles-container"></div>
+            
+            <!-- 倒计时显示 -->
+            <div class="countdown" id="countdown">10</div>
+            
+            <button class="close-romantic-btn" onclick="closeRomanticEasterEgg()">跳过</button>
+        </div>
+    </div>
+
+    <style>
+        /* 优雅浪漫彩蛋页面样式 */
+        #romantic-easter-egg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: 
+                radial-gradient(ellipse at top left, rgba(255, 182, 193, 0.15) 0%, transparent 50%),
+                radial-gradient(ellipse at bottom right, rgba(255, 192, 203, 0.15) 0%, transparent 50%),
+                linear-gradient(135deg, #1a0a1a 0%, #2d1b2d 30%, #3d2b3d 50%, #2d1b2d 70%, #1a0a1a 100%);
+            z-index: 99999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            animation: fadeIn 1s ease-in;
+            position: relative;
+        }
+
+        #romantic-easter-egg::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(255, 182, 193, 0.1) 0%, transparent 40%),
+                radial-gradient(circle at 80% 70%, rgba(255, 192, 203, 0.1) 0%, transparent 40%);
+            animation: backgroundPulse 8s ease-in-out infinite;
+            z-index: 1;
+        }
+
+        @keyframes backgroundPulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.7;
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* Canvas粒子背景 */
+        #particles-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .romantic-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+
+        /* 动态背景光效 */
+        .bg-lights {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 2;
+        }
+
+        .light {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.6;
+            animation: lightMove 8s ease-in-out infinite;
+        }
+
+        .light1 {
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(255, 182, 193, 0.7), rgba(255, 182, 193, 0.3), transparent);
+            top: -250px;
+            left: -250px;
+            animation-duration: 12s;
+            filter: blur(60px);
+        }
+
+        .light2 {
+            width: 700px;
+            height: 700px;
+            background: radial-gradient(circle, rgba(255, 192, 203, 0.6), rgba(255, 192, 203, 0.2), transparent);
+            bottom: -350px;
+            right: -350px;
+            animation-duration: 15s;
+            animation-delay: 2s;
+            filter: blur(70px);
+        }
+
+        .light3 {
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(255, 218, 225, 0.5), rgba(255, 218, 225, 0.2), transparent);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            animation-duration: 18s;
+            animation-delay: 4s;
+            filter: blur(50px);
+        }
+
+        @keyframes lightMove {
+            0%, 100% {
+                transform: translate(0, 0) scale(1);
+                opacity: 0.6;
+            }
+            25% {
+                transform: translate(150px, 100px) scale(1.3);
+                opacity: 0.8;
+            }
+            50% {
+                transform: translate(-100px, 150px) scale(1.1);
+                opacity: 0.7;
+            }
+            75% {
+                transform: translate(100px, -100px) scale(0.9);
+                opacity: 0.6;
+            }
+        }
+
+        /* 一箭穿心容器 */
+        .arrow-heart-container {
+            position: relative;
+            width: 500px;
+            height: 500px;
+            margin-bottom: 60px;
+            perspective: 1000px;
+            z-index: 5;
+        }
+
+        /* 爱心容器 */
+        .pierced-heart-3d {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 400px;
+            height: 400px;
+            perspective: 1000px;
+            z-index: 3;
+        }
+
+        .heart-3d-wrapper {
+            width: 100%;
+            height: 100%;
+            transform-style: preserve-3d;
+            animation: heart3DRotate 20s linear infinite;
+        }
+
+        @keyframes heart3DRotate {
+            0% {
+                transform: rotateY(0deg) rotateX(0deg);
+            }
+            25% {
+                transform: rotateY(90deg) rotateX(10deg);
+            }
+            50% {
+                transform: rotateY(180deg) rotateX(0deg);
+            }
+            75% {
+                transform: rotateY(270deg) rotateX(-10deg);
+            }
+            100% {
+                transform: rotateY(360deg) rotateX(0deg);
+            }
+        }
+
+        .heart-3d {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transform-style: preserve-3d;
+            animation: heartbeat3D 1.2s ease-in-out infinite;
+        }
+
+        @keyframes heartbeat3D {
+            0%, 100% {
+                transform: scale(1) translateZ(0);
+            }
+            25% {
+                transform: scale(1.15) translateZ(20px);
+            }
+            50% {
+                transform: scale(1) translateZ(0);
+            }
+            75% {
+                transform: scale(1.08) translateZ(10px);
+            }
+        }
+
+        /* 爱心爆炸动画 */
+        .heart-3d.exploding {
+            animation: heartExplode 0.8s ease-out forwards;
+        }
+
+        @keyframes heartExplode {
+            0% {
+                transform: scale(1) translateZ(0);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.5) translateZ(50px);
+                opacity: 0.8;
+            }
+            100% {
+                transform: scale(2) translateZ(100px);
+                opacity: 0;
+            }
+        }
+
+        .heart-half {
+            position: absolute;
+            width: 160px;
+            height: 260px;
+            border-radius: 160px 160px 0 0;
+            filter: drop-shadow(0 0 30px currentColor);
+            transition: all 0.3s ease;
+        }
+
+        .heart-left-3d {
+            left: 80px;
+            background: linear-gradient(135deg, #ffb6c1 0%, #ff91a4 50%, #ff69b4 100%);
+            transform: rotate(-45deg) translateZ(0);
+            transform-origin: 0 100%;
+            color: #ffb6c1;
+            animation: pulseLeft 2s ease-in-out infinite;
+        }
+
+        .heart-right-3d {
+            right: 80px;
+            background: linear-gradient(135deg, #ff91a4 0%, #ffb6c1 50%, #ff69b4 100%);
+            transform: rotate(45deg) translateZ(0);
+            transform-origin: 100% 100%;
+            color: #ff91a4;
+            animation: pulseRight 2s ease-in-out infinite;
+        }
+
+        @keyframes pulseLeft {
+            0%, 100% {
+                box-shadow: 0 0 40px rgba(255, 182, 193, 0.6), 0 0 80px rgba(255, 182, 193, 0.3);
+            }
+            50% {
+                box-shadow: 0 0 60px rgba(255, 182, 193, 0.8), 0 0 120px rgba(255, 182, 193, 0.5);
+            }
+        }
+
+        @keyframes pulseRight {
+            0%, 100% {
+                box-shadow: 0 0 40px rgba(255, 192, 203, 0.6), 0 0 80px rgba(255, 192, 203, 0.3);
+            }
+            50% {
+                box-shadow: 0 0 60px rgba(255, 192, 203, 0.8), 0 0 120px rgba(255, 192, 203, 0.5);
+            }
+        }
+
+        /* 飞行的箭 - 从左边飞到右边 */
+        .arrow-flying {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 16px;
+            height: 220px;
+            transform-origin: center center;
+            z-index: 10;
+            opacity: 0;
+            transform: translateY(-50%) rotate(0deg);
+        }
+
+        .arrow-flying.flying {
+            animation: arrowFlyHorizontal 2.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        @keyframes arrowFlyHorizontal {
+            0% {
+                opacity: 0;
+                transform: translateY(-50%) translateX(-200px) rotate(0deg) scale(0.5);
+                filter: blur(15px);
+            }
+            10% {
+                opacity: 1;
+                filter: blur(8px);
+            }
+            20% {
+                opacity: 1;
+                transform: translateY(-50%) translateX(0px) rotate(0deg) scale(0.8);
+                filter: blur(4px);
+            }
+            40% {
+                opacity: 1;
+                transform: translateY(-50%) translateX(calc(50vw - 200px)) rotate(0deg) scale(1);
+                filter: blur(1px);
+            }
+            50% {
+                opacity: 1;
+                transform: translateY(-50%) translateX(calc(50vw - 200px)) rotate(0deg) scale(1.1);
+                filter: blur(0px);
+            }
+            60% {
+                opacity: 1;
+                transform: translateY(-50%) translateX(calc(50vw - 200px)) rotate(0deg) scale(1);
+                filter: blur(0px);
+            }
+            80% {
+                opacity: 0.8;
+                transform: translateY(-50%) translateX(calc(100vw + 100px)) rotate(0deg) scale(0.9);
+                filter: blur(2px);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-50%) translateX(calc(100vw + 300px)) rotate(0deg) scale(0.6);
+                filter: blur(8px);
+            }
+        }
+
+        .arrow-shaft {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, 
+                rgba(255, 255, 255, 1) 0%, 
+                rgba(255, 240, 245, 0.95) 15%,
+                #ffb6c1 30%, 
+                #ff91a4 50%, 
+                #ff7f9f 70%,
+                #ff6b8e 85%,
+                rgba(255, 107, 142, 0.9) 100%);
+            border-radius: 8px;
+            box-shadow: 
+                0 0 20px rgba(255, 182, 193, 1),
+                0 0 40px rgba(255, 182, 193, 0.8),
+                0 0 60px rgba(255, 182, 193, 0.6),
+                0 0 100px rgba(255, 182, 193, 0.4),
+                inset 0 0 30px rgba(255, 255, 255, 0.4),
+                inset 0 2px 10px rgba(255, 255, 255, 0.6);
+            position: relative;
+            animation: shaftShimmer 2s ease-in-out infinite;
+        }
+
+        @keyframes shaftShimmer {
+            0%, 100% {
+                box-shadow: 
+                    0 0 20px rgba(255, 182, 193, 1),
+                    0 0 40px rgba(255, 182, 193, 0.8),
+                    0 0 60px rgba(255, 182, 193, 0.6),
+                    0 0 100px rgba(255, 182, 193, 0.4),
+                    inset 0 0 30px rgba(255, 255, 255, 0.4);
+            }
+            50% {
+                box-shadow: 
+                    0 0 30px rgba(255, 182, 193, 1.2),
+                    0 0 60px rgba(255, 182, 193, 1),
+                    0 0 90px rgba(255, 182, 193, 0.8),
+                    0 0 120px rgba(255, 182, 193, 0.6),
+                    inset 0 0 40px rgba(255, 255, 255, 0.6);
+            }
+        }
+
+        .arrow-head {
+            position: absolute;
+            top: -35px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 20px solid transparent;
+            border-right: 20px solid transparent;
+            border-bottom: 40px solid #fff;
+            filter: 
+                drop-shadow(0 0 15px rgba(255, 182, 193, 1))
+                drop-shadow(0 0 30px rgba(255, 182, 193, 0.8))
+                drop-shadow(0 0 50px rgba(255, 182, 193, 0.6));
+            z-index: 2;
+            animation: headGlow 1.5s ease-in-out infinite;
+        }
+
+        @keyframes headGlow {
+            0%, 100% {
+                filter: 
+                    drop-shadow(0 0 15px rgba(255, 182, 193, 1))
+                    drop-shadow(0 0 30px rgba(255, 182, 193, 0.8))
+                    drop-shadow(0 0 50px rgba(255, 182, 193, 0.6));
+            }
+            50% {
+                filter: 
+                    drop-shadow(0 0 25px rgba(255, 182, 193, 1.2))
+                    drop-shadow(0 0 50px rgba(255, 182, 193, 1))
+                    drop-shadow(0 0 80px rgba(255, 182, 193, 0.8));
+            }
+        }
+
+        .arrow-head::before {
+            content: '';
+            position: absolute;
+            top: 6px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 14px solid transparent;
+            border-right: 14px solid transparent;
+            border-bottom: 28px solid #ffb6c1;
+        }
+
+        .arrow-head::after {
+            content: '';
+            position: absolute;
+            top: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-bottom: 16px solid #ff91a4;
+        }
+
+        /* 箭尾拖尾效果 - 增强版 */
+        .arrow-trail {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 10px;
+            height: 120px;
+            background: linear-gradient(to bottom, 
+                transparent 0%,
+                rgba(255, 182, 193, 0.8) 30%,
+                rgba(255, 182, 193, 0.6) 60%,
+                rgba(255, 182, 193, 0.3) 100%);
+            border-radius: 5px;
+            filter: blur(10px);
+            animation: trailGlow 0.4s ease-in-out infinite;
+            box-shadow: 0 0 20px rgba(255, 182, 193, 0.6);
+        }
+
+        @keyframes trailGlow {
+            0%, 100% {
+                opacity: 0.7;
+                transform: translateX(-50%) scaleY(1);
+                filter: blur(10px);
+            }
+            50% {
+                opacity: 1;
+                transform: translateX(-50%) scaleY(1.3);
+                filter: blur(8px);
+            }
+        }
+
+        /* 爆炸粒子容器 */
+        .explosion-particles {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 400px;
+            height: 400px;
+            pointer-events: none;
+            z-index: 15;
+        }
+
+        /* 心形光晕 */
+        .heart-glow {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 350px;
+            height: 350px;
+            background: radial-gradient(circle, rgba(255, 182, 193, 0.3) 0%, transparent 70%);
+            border-radius: 50%;
+            animation: glowPulse 3s ease-in-out infinite;
+            z-index: -1;
+        }
+
+        @keyframes glowPulse {
+            0%, 100% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 0.6;
+            }
+            50% {
+                transform: translate(-50%, -50%) scale(1.3);
+                opacity: 0.3;
+            }
+        }
+
+        /* 优雅文字 */
+        .romantic-text {
+            text-align: center;
+            z-index: 10;
+            margin-top: 40px;
+        }
+
+        .text-gradient {
+            background: linear-gradient(135deg, #ffb6c1 0%, #ff91a4 30%, #ffc0cb 60%, #ffb6c1 100%);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 56px;
+            font-weight: 400;
+            letter-spacing: 5px;
+            font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+            animation: textShimmer 4s ease-in-out infinite, textFloat 5s ease-in-out infinite;
+            filter: 
+                drop-shadow(0 0 15px rgba(255, 182, 193, 0.8))
+                drop-shadow(0 0 30px rgba(255, 182, 193, 0.6))
+                drop-shadow(0 0 50px rgba(255, 192, 203, 0.4));
+            text-shadow: 0 0 30px rgba(255, 182, 193, 0.5);
+        }
+
+        @keyframes textShimmer {
+            0%, 100% {
+                background-position: 0% 50%;
+                filter: 
+                    drop-shadow(0 0 15px rgba(255, 182, 193, 0.8))
+                    drop-shadow(0 0 30px rgba(255, 182, 193, 0.6))
+                    drop-shadow(0 0 50px rgba(255, 192, 203, 0.4));
+            }
+            50% {
+                background-position: 100% 50%;
+                filter: 
+                    drop-shadow(0 0 25px rgba(255, 182, 193, 1))
+                    drop-shadow(0 0 50px rgba(255, 182, 193, 0.8))
+                    drop-shadow(0 0 80px rgba(255, 192, 203, 0.6));
+            }
+        }
+
+        @keyframes textFloat {
+            0%, 100% {
+                transform: translateY(0) scale(1);
+            }
+            50% {
+                transform: translateY(-12px) scale(1.02);
+            }
+        }
+
+        .text-animation-3d {
+            margin: 0 0 25px 0;
+            opacity: 0;
+            animation: textSlideIn 1.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) 2.8s forwards;
+        }
+
+        .subtitle-animation-3d {
+            color: rgba(255, 250, 250, 0.98);
+            font-size: 32px;
+            margin: 30px 0 0 0;
+            font-weight: 300;
+            letter-spacing: 4px;
+            text-shadow: 
+                0 0 20px rgba(255, 182, 193, 0.8),
+                0 0 40px rgba(255, 192, 203, 0.6),
+                0 0 60px rgba(255, 218, 225, 0.4);
+            opacity: 0;
+            animation: subtitleSlideIn 2s ease-out 3.2s both, subtitleGlow 3s ease-in-out infinite 5s, subtitleFloat 4s ease-in-out infinite 5s;
+            line-height: 1.8;
+        }
+
+        @keyframes textSlideIn {
+            from {
+                transform: translateY(-80px) scale(0.5) rotateX(-20deg);
+                opacity: 0;
+                filter: blur(10px);
+            }
+            to {
+                transform: translateY(0) scale(1) rotateX(0deg);
+                opacity: 1;
+                filter: blur(0px);
+            }
+        }
+
+        @keyframes subtitleSlideIn {
+            from {
+                transform: translateY(60px) scale(0.8);
+                opacity: 0;
+                filter: blur(8px);
+            }
+            to {
+                transform: translateY(0) scale(1);
+                opacity: 1;
+                filter: blur(0px);
+            }
+        }
+
+        @keyframes subtitleGlow {
+            0%, 100% {
+                text-shadow: 
+                    0 0 20px rgba(255, 182, 193, 0.8),
+                    0 0 40px rgba(255, 192, 203, 0.6),
+                    0 0 60px rgba(255, 218, 225, 0.4);
+            }
+            50% {
+                text-shadow: 
+                    0 0 30px rgba(255, 182, 193, 1),
+                    0 0 60px rgba(255, 192, 203, 0.8),
+                    0 0 90px rgba(255, 218, 225, 0.6);
+            }
+        }
+
+        @keyframes subtitleFloat {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-8px);
+            }
+        }
+
+        /* 倒计时 */
+        .countdown {
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            background: 
+                radial-gradient(circle, rgba(255, 240, 245, 0.25) 0%, rgba(255, 182, 193, 0.15) 100%);
+            backdrop-filter: blur(15px);
+            border: 3px solid rgba(255, 182, 193, 0.6);
+            box-shadow: 
+                0 0 20px rgba(255, 182, 193, 0.5),
+                0 0 40px rgba(255, 182, 193, 0.3),
+                inset 0 0 20px rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            font-weight: 400;
+            color: #fff;
+            text-shadow: 
+                0 0 15px rgba(255, 182, 193, 0.8),
+                0 0 30px rgba(255, 182, 193, 0.6),
+                0 0 50px rgba(255, 192, 203, 0.4);
+            animation: countdownPulse 1.2s ease-in-out infinite;
+            z-index: 100;
+            transition: all 0.3s ease;
+        }
+
+        .countdown:hover {
+            transform: scale(1.1);
+            box-shadow: 
+                0 0 30px rgba(255, 182, 193, 0.8),
+                0 0 60px rgba(255, 182, 193, 0.6),
+                inset 0 0 30px rgba(255, 255, 255, 0.2);
+        }
+
+        @keyframes countdownPulse {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 
+                    0 0 20px rgba(255, 182, 193, 0.5),
+                    0 0 40px rgba(255, 182, 193, 0.3),
+                    inset 0 0 20px rgba(255, 255, 255, 0.1);
+            }
+            50% {
+                transform: scale(1.08);
+                box-shadow: 
+                    0 0 30px rgba(255, 182, 193, 0.8),
+                    0 0 60px rgba(255, 182, 193, 0.6),
+                    inset 0 0 30px rgba(255, 255, 255, 0.2);
+            }
+        }
+
+        /* 关闭按钮 */
+        .close-romantic-btn {
+            position: absolute;
+            bottom: 50px;
+            padding: 18px 50px;
+            background: 
+                linear-gradient(135deg, rgba(255, 240, 245, 0.2) 0%, rgba(255, 182, 193, 0.15) 100%);
+            border: 2px solid rgba(255, 182, 193, 0.5);
+            color: rgba(255, 250, 250, 0.98);
+            font-size: 17px;
+            font-weight: 400;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            backdrop-filter: blur(20px);
+            z-index: 100;
+            letter-spacing: 3px;
+            box-shadow: 
+                0 0 20px rgba(255, 182, 193, 0.3),
+                0 0 40px rgba(255, 182, 193, 0.2),
+                inset 0 0 15px rgba(255, 255, 255, 0.1);
+            text-shadow: 0 0 10px rgba(255, 182, 193, 0.6);
+            animation: buttonGlow 2s ease-in-out infinite;
+        }
+
+        @keyframes buttonGlow {
+            0%, 100% {
+                box-shadow: 
+                    0 0 20px rgba(255, 182, 193, 0.3),
+                    0 0 40px rgba(255, 182, 193, 0.2),
+                    inset 0 0 15px rgba(255, 255, 255, 0.1);
+            }
+            50% {
+                box-shadow: 
+                    0 0 30px rgba(255, 182, 193, 0.5),
+                    0 0 60px rgba(255, 182, 193, 0.3),
+                    inset 0 0 20px rgba(255, 255, 255, 0.15);
+            }
+        }
+
+        .close-romantic-btn:hover {
+            background: 
+                linear-gradient(135deg, rgba(255, 182, 193, 0.3) 0%, rgba(255, 192, 203, 0.25) 100%);
+            border-color: rgba(255, 182, 193, 0.8);
+            transform: scale(1.08) translateY(-5px);
+            box-shadow: 
+                0 10px 50px rgba(255, 182, 193, 0.6),
+                0 0 80px rgba(255, 182, 193, 0.4),
+                inset 0 0 25px rgba(255, 255, 255, 0.2);
+            text-shadow: 
+                0 0 15px rgba(255, 182, 193, 0.9),
+                0 0 30px rgba(255, 182, 193, 0.6);
+        }
+
+        .close-romantic-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* 手机端优化 */
+        @media (max-width: 768px) {
+            .arrow-heart-container {
+                width: 350px;
+                height: 350px;
+                margin-bottom: 40px;
+            }
+
+            .pierced-heart-3d {
+                width: 280px;
+                height: 280px;
+            }
+
+            .heart-half {
+                width: 110px;
+                height: 180px;
+            }
+
+            .heart-left-3d {
+                left: 55px;
+            }
+
+            .heart-right-3d {
+                right: 55px;
+            }
+
+            .arrow-flying {
+                height: 150px;
+                width: 12px;
+            }
+
+            .arrow-head {
+                border-left-width: 14px;
+                border-right-width: 14px;
+                border-bottom-width: 28px;
+                top: -24px;
+            }
+
+            .arrow-head::before {
+                border-left-width: 10px;
+                border-right-width: 10px;
+                border-bottom-width: 20px;
+            }
+
+            .heart-glow {
+                width: 250px;
+                height: 250px;
+            }
+
+            .explosion-particles {
+                width: 300px;
+                height: 300px;
+            }
+
+            .text-gradient {
+                font-size: 36px;
+                padding: 0 20px;
+                letter-spacing: 2px;
+            }
+
+            .subtitle-animation-3d {
+                font-size: 20px;
+                padding: 0 20px;
+                letter-spacing: 2px;
+            }
+
+            .arrow-heart-container {
+                width: 350px;
+                height: 350px;
+            }
+
+            .pierced-heart-3d {
+                width: 300px;
+                height: 300px;
+            }
+
+            .countdown {
+                width: 60px;
+                height: 60px;
+                font-size: 24px;
+                top: 20px;
+                right: 20px;
+            }
+
+            .close-romantic-btn {
+                bottom: 30px;
+                padding: 14px 35px;
+                font-size: 16px;
+            }
+
+            .light {
+                filter: blur(60px);
+            }
+
+            .light1 {
+                width: 300px;
+                height: 300px;
+            }
+
+            .light2 {
+                width: 350px;
+                height: 350px;
+            }
+
+            .light3 {
+                width: 250px;
+                height: 250px;
+            }
+        }
+    </style>
+
+    <script>
+        // 粒子系统
+        let particles = [];
+        let animationId = null;
+        let countdownInterval = null;
+        let countdownTime = 10;
+        // 彩蛋登录信息
+        // 彩蛋登录相关变量 - 使用window对象确保全局访问
+        window.romanticLoginAccount = null;
+        window.romanticLoginPassword = null;
+        window.romanticLoginTimeout = null;
+
+        function initParticles() {
+            const canvas = document.getElementById('particles-canvas');
+            if (!canvas) return;
+            
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            // 创建粒子
+            particles = [];
+            const particleCount = Math.min(100, Math.floor((canvas.width * canvas.height) / 15000));
+            
+            for (let i = 0; i < particleCount; i++) {
+                particles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    radius: Math.random() * 2 + 1,
+                    speedX: (Math.random() - 0.5) * 0.5,
+                    speedY: (Math.random() - 0.5) * 0.5,
+                    color: `hsl(${Math.random() * 30 + 330}, ${Math.random() * 30 + 60}%, ${Math.random() * 20 + 75}%)`,
+                    opacity: Math.random() * 0.4 + 0.2
+                });
+            }
+
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                // 更新和绘制粒子
+                particles.forEach((particle, i) => {
+                    particle.x += particle.speedX;
+                    particle.y += particle.speedY;
+                    
+                    // 边界检测
+                    if (particle.x < 0 || particle.x > canvas.width) particle.speedX *= -1;
+                    if (particle.y < 0 || particle.y > canvas.height) particle.speedY *= -1;
+                    
+                    // 绘制粒子
+                    ctx.beginPath();
+                    ctx.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = particle.color;
+                    ctx.globalAlpha = particle.opacity;
+                    ctx.fill();
+                    
+                    // 绘制连线
+                    particles.slice(i + 1).forEach(otherParticle => {
+                        const dx = particle.x - otherParticle.x;
+                        const dy = particle.y - otherParticle.y;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+                        
+                        if (distance < 150) {
+                            ctx.beginPath();
+                            ctx.moveTo(particle.x, particle.y);
+                            ctx.lineTo(otherParticle.x, otherParticle.y);
+                            ctx.strokeStyle = particle.color;
+                            ctx.globalAlpha = (1 - distance / 150) * 0.3;
+                            ctx.lineWidth = 1;
+                            ctx.stroke();
+                        }
+                    });
+                });
+                
+                ctx.globalAlpha = 1;
+                animationId = requestAnimationFrame(animate);
+            }
+            
+            animate();
+        }
+
+        function startCountdown() {
+            countdownTime = 10;
+            const countdownEl = document.getElementById('countdown');
+            if (!countdownEl) return;
+            
+            countdownEl.textContent = countdownTime;
+            
+            countdownInterval = setInterval(() => {
+                countdownTime--;
+                if (countdownEl) {
+                    countdownEl.textContent = countdownTime;
+                    // 最后3秒时添加闪烁效果
+                    if (countdownTime <= 3) {
+                        countdownEl.style.animation = 'countdownPulse 0.5s ease-in-out infinite';
+                    }
+                }
+                
+                if (countdownTime <= 0) {
+                    clearInterval(countdownInterval);
+                    // 清除setTimeout，避免重复调用
+                    if (window.romanticLoginTimeout) {
+                        clearTimeout(window.romanticLoginTimeout);
+                        window.romanticLoginTimeout = null;
+                    }
+                    closeRomanticEasterEgg();
+                    // 继续登录流程
+                    if (window.romanticLoginAccount && window.romanticLoginPassword) {
+                        handleRomanticLogin(window.romanticLoginAccount, window.romanticLoginPassword);
+                        // 清除保存的登录信息
+                        window.romanticLoginAccount = null;
+                        window.romanticLoginPassword = null;
+                    }
+                }
+            }, 1000);
+        }
+
+        // 爆炸粒子系统
+        let explosionParticles = [];
+        let explosionAnimationId = null;
+
+        function createExplosionParticles() {
+            const container = document.getElementById('explosion-particles');
+            if (!container) return;
+            
+            container.innerHTML = '';
+            explosionParticles = [];
+            
+            const particleCount = 120;
+            const centerX = 200;
+            const centerY = 200;
+            const colors = [
+                'radial-gradient(circle, #ffb6c1, #ff91a4)',
+                'radial-gradient(circle, #ffc0cb, #ffb6c1)',
+                'radial-gradient(circle, #fff, #ffc0cb)',
+                'radial-gradient(circle, #ff69b4, #ff1493)',
+                'radial-gradient(circle, #ffb6c1, #fff)'
+            ];
+            
+            for (let i = 0; i < particleCount; i++) {
+                const angle = (Math.PI * 2 * i) / particleCount + (Math.random() - 0.5) * 0.8;
+                const speed = 3 + Math.random() * 5;
+                const size = 4 + Math.random() * 8;
+                const colorIndex = Math.floor(Math.random() * colors.length);
+                
+                const particle = document.createElement('div');
+                particle.className = 'explosion-particle';
+                particle.style.cssText = `
+                    position: absolute;
+                    width: ${size}px;
+                    height: ${size}px;
+                    background: ${colors[colorIndex]};
+                    border-radius: 50%;
+                    left: ${centerX}px;
+                    top: ${centerY}px;
+                    box-shadow: 0 0 ${size * 3}px ${colors[colorIndex].includes('#ffb6c1') ? '#ffb6c1' : '#ffc0cb'}, 
+                                0 0 ${size * 5}px ${colors[colorIndex].includes('#ffb6c1') ? '#ff91a4' : '#ffb6c1'};
+                    opacity: 0;
+                    transition: opacity 0.1s ease-out;
+                `;
+                
+                container.appendChild(particle);
+                
+                explosionParticles.push({
+                    element: particle,
+                    x: centerX,
+                    y: centerY,
+                    vx: Math.cos(angle) * speed,
+                    vy: Math.sin(angle) * speed,
+                    size: size,
+                    life: 1,
+                    decay: 0.012 + Math.random() * 0.008,
+                    rotation: Math.random() * 360,
+                    rotationSpeed: (Math.random() - 0.5) * 10
+                });
+            }
+            
+            // 开始爆炸动画
+            animateExplosion();
+        }
+
+        function animateExplosion() {
+            if (explosionAnimationId) {
+                cancelAnimationFrame(explosionAnimationId);
+            }
+            
+            let activeParticles = explosionParticles.filter(p => p.life > 0);
+            
+            if (activeParticles.length === 0) {
+                return;
+            }
+            
+            activeParticles.forEach(particle => {
+                particle.x += particle.vx;
+                particle.y += particle.vy;
+                particle.vx *= 0.97;
+                particle.vy *= 0.97;
+                particle.vy += 0.15; // 重力效果
+                particle.life -= particle.decay;
+                particle.rotation += particle.rotationSpeed;
+                
+                const opacity = Math.max(0, particle.life);
+                const scale = 0.8 + (1 - particle.life) * 0.4;
+                
+                particle.element.style.left = particle.x + 'px';
+                particle.element.style.top = particle.y + 'px';
+                particle.element.style.opacity = opacity;
+                particle.element.style.transform = `scale(${scale}) rotate(${particle.rotation}deg)`;
+            });
+            
+            explosionAnimationId = requestAnimationFrame(animateExplosion);
+        }
+
+        // 浪漫彩蛋功能 - 确保在全局作用域中
+        window.showRomanticEasterEgg = function(account = null, password = null) {
+            console.log('🎯 showRomanticEasterEgg 被调用，参数:', { account, password });
+            const egg = document.getElementById('romantic-easter-egg');
+            console.log('🎯 彩蛋元素:', egg ? '找到' : '未找到');
+            if (!egg) {
+                console.error('❌ 彩蛋元素不存在！请检查HTML中是否有 id="romantic-easter-egg" 的元素');
+                return;
+            }
+            
+            // 保存登录信息
+            if (account && password) {
+                window.romanticLoginAccount = account;
+                window.romanticLoginPassword = password;
+            }
+            
+            console.log('🎯 设置彩蛋显示...');
+            // 强制显示彩蛋，确保所有属性都正确设置
+            egg.style.display = 'flex';
+            egg.style.visibility = 'visible';
+            egg.style.opacity = '1';
+            egg.style.zIndex = '99999';
+            egg.style.position = 'fixed';
+            egg.style.top = '0';
+            egg.style.left = '0';
+            egg.style.width = '100vw';
+            egg.style.height = '100vh';
+            document.body.style.overflow = 'hidden';
+            
+            // 确保登录模态框完全关闭
+            const loginModal = document.getElementById('login-modal');
+            if (loginModal) {
+                loginModal.style.display = 'none';
+                loginModal.style.visibility = 'hidden';
+                loginModal.style.zIndex = '-1';
+            }
+            
+            console.log('✅ 彩蛋应该已显示，display:', egg.style.display, 'visibility:', egg.style.visibility, 'opacity:', egg.style.opacity);
+                
+                // 重置状态
+                const arrow = document.getElementById('arrow-flying');
+                const heart = document.getElementById('heart-3d');
+                const explosionContainer = document.getElementById('explosion-particles');
+                
+                if (arrow) {
+                    arrow.classList.remove('flying');
+                    arrow.style.opacity = '0';
+                }
+                if (heart) {
+                    heart.classList.remove('exploding');
+                }
+                if (explosionContainer) {
+                    explosionContainer.innerHTML = '';
+                }
+                
+                // 初始化背景粒子系统
+                setTimeout(() => {
+                    initParticles();
+                }, 100);
+                
+                // 延迟后开始一箭穿心动画
+                setTimeout(() => {
+                    if (arrow) {
+                        arrow.classList.add('flying');
+                    }
+                }, 500);
+                
+                // 箭到达中心时，爱心爆炸（2.5秒动画的50%位置，即1.25秒，加上初始延迟0.5秒）
+                setTimeout(() => {
+                    if (heart) {
+                        heart.classList.add('exploding');
+                    }
+                    // 创建爆炸粒子
+                    createExplosionParticles();
+                }, 1750);
+                
+                // 开始倒计时
+                startCountdown();
+        };
+
+        window.closeRomanticEasterEgg = function() {
+            const egg = document.getElementById('romantic-easter-egg');
+            if (egg) {
+                egg.style.display = 'none';
+                document.body.style.overflow = '';
+                
+                // 清理动画
+                if (animationId) {
+                    cancelAnimationFrame(animationId);
+                    animationId = null;
+                }
+                
+                if (explosionAnimationId) {
+                    cancelAnimationFrame(explosionAnimationId);
+                    explosionAnimationId = null;
+                }
+                
+                if (countdownInterval) {
+                    clearInterval(countdownInterval);
+                    countdownInterval = null;
+                }
+                
+                // 清除登录超时定时器
+                if (window.romanticLoginTimeout) {
+                    clearTimeout(window.romanticLoginTimeout);
+                    window.romanticLoginTimeout = null;
+                }
+                
+                particles = [];
+                explosionParticles = [];
+                
+                // 重置元素状态
+                const arrow = document.getElementById('arrow-flying');
+                const heart = document.getElementById('heart-3d');
+                const explosionContainer = document.getElementById('explosion-particles');
+                
+                if (arrow) {
+                    arrow.classList.remove('flying');
+                    arrow.style.opacity = '0';
+                }
+                if (heart) {
+                    heart.classList.remove('exploding');
+                }
+                if (explosionContainer) {
+                    explosionContainer.innerHTML = '';
+                }
+            }
+        }
+
+        // 窗口大小改变时重新初始化粒子
+        window.addEventListener('resize', () => {
+            const egg = document.getElementById('romantic-easter-egg');
+            if (egg && egg.style.display === 'flex') {
+                if (animationId) {
+                    cancelAnimationFrame(animationId);
+                }
+                initParticles();
+            }
+        });
+
+        // 点击背景关闭
+        document.getElementById('romantic-easter-egg')?.addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeRomanticEasterEgg();
+            }
+        });
+
+        // 处理彩蛋账号的正常登录流程
+        async function handleRomanticLogin(account, password) {
+            // ========== 登录前清除本地缓存和登录状态 ==========
+            console.log('🧹 登录前清除本地缓存和旧的登录状态...');
+            try {
+                currentUser = null;
+                try {
+                    if (typeof Storage !== 'undefined' && Storage.remove) {
+                        Storage.remove('currentUser');
+                    } else {
+                        localStorage.removeItem('currentUser');
+                    }
+                } catch (e1) {
+                    console.warn('⚠️ 清除 currentUser 本地记录时出错:', e1);
+                    try {
+                        localStorage.removeItem('currentUser');
+                    } catch (e2) {
+                        console.warn('⚠️ 直接操作 localStorage 清除 currentUser 失败:', e2);
+                    }
+                }
+
+                localStorage.removeItem('userOrders');
+                localStorage.removeItem('userAddresses');
+                
+                const keysToRemove = [];
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    if (key && (key.startsWith('userOrders_') || key.startsWith('userAddresses_'))) {
+                        keysToRemove.push(key);
+                    }
+                }
+                keysToRemove.forEach(key => {
+                    localStorage.removeItem(key);
+                    console.log('🗑️ 已清除缓存:', key);
+                });
+                
+                userOrders = [];
+                userAddresses = [];
+                userProfile = {};
+                
+                console.log('✅ 登录相关本地缓存和旧会话已清除');
+            } catch (error) {
+                console.warn('⚠️ 清除登录缓存/旧会话时出现错误:', error);
+            }
+
+            const authResult = authenticateUser(account, password);
+            
+            // 检查登录结果
+            if (authResult && !authResult.banned && authResult.success !== false && authResult.account) {
+                // 登录成功
+                console.log('🔄 登录成功，准备加载新用户数据...');
+                
+                currentUser = authResult;
+                saveCurrentUser();
+                refreshCurrentUserSnapshot(authResult.account);
+
+                showNotification(`登录成功！正在从云端加载数据...`, 'success');
+
+                // ========== 强制使用云端模式加载数据 ==========
+                console.log('🔄 登录成功，强制使用云端模式');
+
+                try {
+                    if (cloudSync && cloudSync.isInitialized) {
+                        console.log('☁️ 云端模式 - 从云端数据库加载数据...');
+
+                        const cloudProducts = await cloudSync.downloadData('products');
+                        if (cloudProducts && cloudProducts.length > 0) {
+                            products = cloudProducts;
+                            localStorage.setItem('products', JSON.stringify(products));
+                            console.log('✅ 产品数据已从云端加载:', products.length, '个产品');
+                        } else {
+                            console.log('ℹ️ 云端暂无产品数据');
+                            products = [];
+                        }
+
+                        if (authResult.role === 'admin') {
+                            const cloudUsers = await cloudSync.downloadData('users');
+                            if (cloudUsers && cloudUsers.length > 0) {
+                                allUsers = cloudUsers;
+                                localStorage.setItem('allUsers', JSON.stringify(allUsers));
+                                console.log('✅ 用户数据已从云端加载:', allUsers.length, '个用户');
+                            }
+                        }
+
+                        await cloudSync.handleUserSessionChange();
+                        
+                        const userOrdersKey = `userOrders_${authResult.account}`;
+                        const userAddressesKey = `userAddresses_${authResult.account}`;
+                        userOrders = JSON.parse(localStorage.getItem(userOrdersKey)) || JSON.parse(localStorage.getItem('userOrders')) || [];
+                        userAddresses = JSON.parse(localStorage.getItem(userAddressesKey)) || JSON.parse(localStorage.getItem('userAddresses')) || [];
+                        
+                        console.log('✅ 登录后数据已同步 - 订单数:', userOrders.length, '地址数:', userAddresses.length);
+
+                        updateUserInterface();
+                        renderProducts(products);
+                        renderUserOrders();
+                        renderAddressList();
+
+                        showNotification(`☁️ 云端数据加载完成！欢迎 ${authResult.username}`, 'success');
+                    } else {
+                        console.log('⚠️ 云端同步未启用,使用本地缓存数据');
+                        products = JSON.parse(localStorage.getItem('products')) || [];
+                        const userOrdersKey = `userOrders_${authResult.account}`;
+                        const userAddressesKey = `userAddresses_${authResult.account}`;
+                        userOrders = JSON.parse(localStorage.getItem(userOrdersKey)) || [];
+                        userAddresses = JSON.parse(localStorage.getItem(userAddressesKey)) || [];
+                        allUsers = JSON.parse(localStorage.getItem('allUsers')) || [];
+                        
+                        updateUserInterface();
+                        renderProducts(products);
+                        renderUserOrders();
+                        renderAddressList();
+                        
+                        showNotification(`💾 云端未连接，已加载本地数据！欢迎 ${authResult.username}`, 'warning');
+                    }
+                } catch (error) {
+                    console.error('❌ 数据加载失败:', error);
+                    showNotification('数据加载失败,使用本地缓存', 'warning');
+                    products = JSON.parse(localStorage.getItem('products')) || [];
+                    const userOrdersKey = `userOrders_${authResult.account}`;
+                    const userAddressesKey = `userAddresses_${authResult.account}`;
+                    userOrders = JSON.parse(localStorage.getItem(userOrdersKey)) || [];
+                    userAddresses = JSON.parse(localStorage.getItem(userAddressesKey)) || [];
+                    allUsers = JSON.parse(localStorage.getItem('allUsers')) || [];
+                    
+                    updateUserInterface();
+                    renderProducts(products);
+                    renderUserOrders();
+                    renderAddressList();
+                }
+
+                if (authResult.role === 'admin') {
+                    const controlPanel = document.getElementById('admin-control-panel');
+                    if (controlPanel) {
+                        controlPanel.style.display = 'block';
+                    }
+                }
+
+                if (pendingSignupProduct) {
+                    setTimeout(() => {
+                        openSignupModal(pendingSignupProduct);
+                        pendingSignupProduct = null;
+                    }, 500);
+                }
+
+            } else if (authResult && authResult.banned) {
+                customAlert(authResult.message, t('accountDisabled'));
+            } else if (authResult && authResult.success === false) {
+                customAlert(authResult.message, t('loginFailed'));
+            } else {
+                customAlert(t('loginFailedRetry'), t('errorTitle'));
+            }
+        }
     </script>
 </body>
 
