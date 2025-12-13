@@ -2239,6 +2239,28 @@
             width: 140px;
             min-width: 140px;
         }
+        
+        /* 在线状态指示器样式 */
+        .online-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background-color: #28a745;
+            border-radius: 50%;
+            margin-right: 6px;
+            vertical-align: middle;
+            box-shadow: 0 0 3px rgba(40, 167, 69, 0.5);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.6;
+            }
+        }
 
         #users-table th:nth-child(4),
         #users-table td:nth-child(4) {
@@ -4721,6 +4743,11 @@
                             <option value="active">正常</option>
                             <option value="banned">已禁用</option>
                         </select>
+                        <select id="user-online-filter" class="form-control">
+                            <option value="">全部用户</option>
+                            <option value="online">在线用户</option>
+                            <option value="offline">离线用户</option>
+                        </select>
                         <input type="date" id="user-register-date-start" class="form-control" placeholder="注册日期起">
                         <input type="date" id="user-register-date-end" class="form-control" placeholder="注册日期止">
                         <input type="text" id="user-device-filter" class="form-control" placeholder="按设备号/标记筛选">
@@ -5973,10 +6000,12 @@ let userDeviceFilter = '';
 let userSearchTerm = '';
 let userFilterRegisterDateStart = '';
 let userFilterRegisterDateEnd = '';
+let userFilterOnline = ''; // 在线状态筛选：'online' | 'offline' | ''
 let orderFilterRegisterDateStart = '';
 let orderFilterRegisterDateEnd = '';
 let adminProductSearchTerm = '';
 let reviewSearchTerm = '';
+let userOnlineStatus = {}; // 存储用户在线状态：{ account: true/false }
 let reviewSearchCategory = 'all';
 const paginationState = {
     products: { page: 1, pageSize: 30 },
@@ -10433,6 +10462,64 @@ const paginationContainers = {
         }
 
         /**
+         * 检查用户是否在线（通过检查 Firebase 中的 activeSessionId）
+         * @param {string} account - 用户账号
+         * @returns {Promise<boolean>} - 用户是否在线
+         */
+        async function checkUserOnlineStatus(account) {
+            if (!account || !cloudSync || !cloudSync.isInitialized) {
+                return false;
+            }
+            
+            try {
+                const userPath = cloudSync.getUserPath(account);
+                const sessionRef = cloudSync.db.ref(`${userPath}/activeSessionId`);
+                const snapshot = await sessionRef.once('value');
+                const sessionData = snapshot.val();
+                
+                // 如果 activeSessionId 存在且有 id 字段，且更新时间在最近5分钟内，认为用户在线
+                if (sessionData && sessionData.id) {
+                    const updatedAt = sessionData.updatedAt || 0;
+                    const now = Date.now();
+                    const fiveMinutes = 5 * 60 * 1000; // 5分钟
+                    return (now - updatedAt) < fiveMinutes;
+                }
+                return false;
+            } catch (error) {
+                console.warn(`检查用户 ${account} 在线状态失败:`, error);
+                return false;
+            }
+        }
+
+        /**
+         * 批量检查所有用户的在线状态
+         */
+        async function updateAllUsersOnlineStatus() {
+            if (!cloudSync || !cloudSync.isInitialized) {
+                userOnlineStatus = {};
+                return;
+            }
+
+            try {
+                const statusPromises = allUsers.map(async (user) => {
+                    const isOnline = await checkUserOnlineStatus(user.account);
+                    return { account: user.account, isOnline };
+                });
+                
+                const results = await Promise.all(statusPromises);
+                userOnlineStatus = {};
+                results.forEach(({ account, isOnline }) => {
+                    userOnlineStatus[account] = isOnline;
+                });
+                
+                console.log('✅ 用户在线状态已更新:', Object.keys(userOnlineStatus).filter(acc => userOnlineStatus[acc]).length, '个用户在线');
+            } catch (error) {
+                console.error('更新用户在线状态失败:', error);
+                userOnlineStatus = {};
+            }
+        }
+
+        /**
          * 根据规范化的账户名查找用户（不区分大小写）
          */
         function findUserByAccount(account) {
@@ -11328,7 +11415,8 @@ const paginationContainers = {
                     console.log('ℹ️ 不是彩蛋账号，继续正常登录流程');
 
                 // ========== 防止重复登录 ==========
-                if (currentUser && currentUser.account === account) {
+                // 使用规范化比较，支持大小写不敏感
+                if (currentUser && normalizeAccount(currentUser.account) === normalizeAccount(account)) {
                     showNotification('该账号已在其他设备登录', 'warning');
                     loginModal.style.display = 'none';
                     return;
@@ -12510,6 +12598,15 @@ const paginationContainers = {
                 });
             }
 
+            const userOnlineFilterEl = document.getElementById('user-online-filter');
+            if (userOnlineFilterEl) {
+                userOnlineFilterEl.addEventListener('change', (e) => {
+                    userFilterOnline = e.target.value;
+                    resetPagination('users');
+                    renderUsersTable();
+                });
+            }
+
             const userDeviceFilterEl = document.getElementById('user-device-filter');
             if (userDeviceFilterEl) {
                 userDeviceFilterEl.addEventListener('input', (e) => {
@@ -12690,8 +12787,10 @@ const paginationContainers = {
             });
 
             // 后台管理按钮事件
-            document.getElementById('refresh-users-btn').addEventListener('click', () => {
-                showButtonFeedback('refresh-users-btn', () => {
+            document.getElementById('refresh-users-btn').addEventListener('click', async () => {
+                showButtonFeedback('refresh-users-btn', async () => {
+                    // 更新用户在线状态
+                    await updateAllUsersOnlineStatus();
                     renderUsersTable();
                 });
             });
@@ -15240,7 +15339,12 @@ const paginationContainers = {
                     break;
                 case 'users':
                     document.getElementById('admin-users').classList.add('active');
-                    renderUsersTable();
+                    // 更新用户在线状态
+                    updateAllUsersOnlineStatus().then(() => {
+                        renderUsersTable();
+                    }).catch(() => {
+                        renderUsersTable(); // 即使更新失败也渲染表格
+                    });
                     // 如果设备限制列表已展开，更新显示
                     const deviceLimitsList = document.getElementById('device-limits-list');
                     if (deviceLimitsList && deviceLimitsList.style.display !== 'none') {
@@ -15338,6 +15442,17 @@ const paginationContainers = {
 
                 if (userFilterStatus && userStatus !== userFilterStatus) {
                     return false;
+                }
+
+                // 在线状态筛选
+                if (userFilterOnline) {
+                    const isOnline = userOnlineStatus[user.account] === true;
+                    if (userFilterOnline === 'online' && !isOnline) {
+                        return false;
+                    }
+                    if (userFilterOnline === 'offline' && isOnline) {
+                        return false;
+                    }
                 }
 
                 // 注册日期筛选
@@ -15442,13 +15557,19 @@ const paginationContainers = {
                 const selectable = user.role !== 'admin';
                 const isChecked = selectable && selectedUserAccounts.has(user.account);
 
+                // 检查用户是否在线
+                const isOnline = userOnlineStatus[user.account] === true;
+                const onlineIndicator = isOnline 
+                    ? '<span class="online-indicator" title="用户在线" style="display: inline-block; width: 8px; height: 8px; background-color: #28a745; border-radius: 50%; margin-right: 6px; vertical-align: middle;"></span>' 
+                    : '';
+
                 return `
                     <tr ${rowStyle}>
                         <td class="select-col">
                             ${selectable ? `<input type="checkbox" class="user-select-checkbox" data-account="${user.account}" ${isChecked ? 'checked' : ''}>` : ''}
                         </td>
                         <td>${user.id}</td>
-                        <td>${user.username || ''}${user.registerTime ? `<span style="color: #666; font-size: 0.9em; margin-left: 5px;">(注册${getRegisterDays(user.registerTime)}天)</span>` : ''}${suspiciousBadge}</td>
+                        <td>${onlineIndicator}${user.username || ''}${user.registerTime ? `<span style="color: #666; font-size: 0.9em; margin-left: 5px;">(注册${getRegisterDays(user.registerTime)}天)</span>` : ''}${suspiciousBadge}</td>
                         <td>${user.account}</td>
                         <td>${userPassword}</td>
                         <td><span class="status-badge ${user.role === 'admin' ? 'status-active' : 'status-inactive'}">${user.role === 'admin' ? '管理员' : '普通用户'}</span></td>
@@ -16802,7 +16923,8 @@ const paginationContainers = {
             user.updatedAt = Date.now();
 
             // 如果当前登录用户就是被修改的账号，及时刷新 currentUser 与 UI
-            if (currentUser && currentUser.account === account) {
+            // 使用规范化比较，支持大小写不敏感
+            if (currentUser && normalizeAccount(currentUser.account) === normalizeAccount(account)) {
                 currentUser.points = value;
                 localStorage.setItem('currentUser', JSON.stringify(currentUser));
                 updateUserInterface();
@@ -16893,7 +17015,8 @@ const paginationContainers = {
         async function removeAccountData(account) {
             if (!account) throw new Error('账号无效');
 
-            const isCurrent = currentUser && currentUser.account === account;
+            // 使用规范化比较，支持大小写不敏感
+            const isCurrent = currentUser && normalizeAccount(currentUser.account) === normalizeAccount(account);
             const result = { orders: 0, addresses: 0 };
 
             // 移除用户列表（使用规范化格式查找）
@@ -17039,7 +17162,8 @@ const paginationContainers = {
                 console.log('🎉 用户账号删除完成');
 
                 // 10. 如果被删除的用户正在登录，强制其退出
-                if (currentUser && currentUser.account === account) {
+                // 使用规范化比较，支持大小写不敏感
+                if (currentUser && normalizeAccount(currentUser.account) === normalizeAccount(account)) {
                     currentUser = null;
                     localStorage.removeItem('currentUser');
                     if (cloudSync && cloudSync.isInitialized) {
