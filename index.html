@@ -6000,7 +6000,7 @@ const paginationContainers = {
             if (!currentUser || currentUser.role === 'admin') return;
             const account = targetAccount || currentUser.account;
             if (!account || !Array.isArray(allUsers) || allUsers.length === 0) return;
-            const latestUser = allUsers.find(u => u.account === account);
+            const latestUser = findUserByAccount(account); // 使用规范化格式查找
             if (!latestUser) return;
             
             // 保存更新前的状态用于对比
@@ -8278,7 +8278,7 @@ const paginationContainers = {
                     
                     if (currentUser && currentUser.account) {
                         targetAccount = currentUser.account;
-                        targetUserData = allUsers.find(u => u.account === targetAccount);
+                        targetUserData = findUserByAccount(targetAccount);
                     } else if (allUsers.length > 0) {
                         const sortedUsers = [...allUsers].sort((a, b) => {
                             const aId = a.id || (a.registerTime ? new Date(a.registerTime).getTime() : 0);
@@ -8293,7 +8293,14 @@ const paginationContainers = {
                         // 使用事务原子地更新 allUsers，避免并发写导致的丢失
                         await usersRef.transaction((current) => {
                             let list = Array.isArray(current) ? current.slice() : [];
-                            const idx = list.findIndex(u => u && u.account === targetAccount);
+                            const normalizedTargetAccount = normalizeAccount(targetAccount);
+                            const idx = list.findIndex(u => {
+                                if (!u) return false;
+                                if (u.accountCanonical) {
+                                    return u.accountCanonical === normalizedTargetAccount;
+                                }
+                                return normalizeAccount(u.account) === normalizedTargetAccount;
+                            });
                             if (idx >= 0) {
                                 const existing = list[idx];
                                 // 安全规则：如果云端该账号已被禁用，则普通用户不能再把它改回正常
@@ -8375,6 +8382,10 @@ const paginationContainers = {
                     if (cloudUsers && Array.isArray(cloudUsers) && cloudUsers.length > 0) {
                         // 以云端数据为准，直接替换本地数据，避免历史用户重现
                         allUsers = cloudUsers;
+                        
+                        // 数据迁移：为现有用户数据添加规范化字段
+                        migrateUserDataToCanonical();
+                        
                         localStorage.setItem('allUsers', JSON.stringify(allUsers));
                         
                         console.log(`🔄 用户数据已从云端更新: ${cloudUsers.length} 个用户（已替换本地数据）`);
@@ -8548,14 +8559,24 @@ const paginationContainers = {
                     if (cloudUsers && Array.isArray(cloudUsers) && !this._syncState.inProgress) {
                         const previousAllUsers = JSON.parse(JSON.stringify(allUsers)); // 保存之前的数据用于对比
                         allUsers = cloudUsers;
+                        
+                        // 数据迁移：为现有用户数据添加规范化字段
+                        migrateUserDataToCanonical();
+                        
                         localStorage.setItem('allUsers', JSON.stringify(allUsers));
                         
                         console.log(`🔄 用户数据已从云端更新: ${cloudUsers.length} 个用户`);
 
                         // 如果当前用户已登录，刷新currentUser对象
                         if (currentUser && currentUser.account) {
-                            const previousUser = previousAllUsers.find(u => u.account === currentUser.account);
-                            const currentUserData = allUsers.find(u => u.account === currentUser.account);
+                            const normalizedCurrentAccount = normalizeAccount(currentUser.account);
+                            const previousUser = previousAllUsers.find(u => {
+                                if (u.accountCanonical) {
+                                    return u.accountCanonical === normalizedCurrentAccount;
+                                }
+                                return normalizeAccount(u.account) === normalizedCurrentAccount;
+                            });
+                            const currentUserData = findUserByAccount(currentUser.account);
                             
                             // 检查用户数据是否有变化
                             const hasChanges = !previousUser || 
@@ -10401,14 +10422,73 @@ const paginationContainers = {
             return currentUser !== null;
         }
 
+        // ========== 账户规范化工具函数 ==========
+        /**
+         * 将账户名转换为规范格式（全小写），用于唯一性检查和查找
+         * 例如：Goo@qq.com -> goo@qq.com
+         */
+        function normalizeAccount(account) {
+            if (!account || typeof account !== 'string') return '';
+            return account.toLowerCase().trim();
+        }
+
+        /**
+         * 根据规范化的账户名查找用户（不区分大小写）
+         */
+        function findUserByAccount(account) {
+            if (!account) return null;
+            const normalizedAccount = normalizeAccount(account);
+            return allUsers.find(u => {
+                // 如果用户已有规范化字段，使用规范化字段比较
+                if (u.accountCanonical) {
+                    return u.accountCanonical === normalizedAccount;
+                }
+                // 兼容旧数据：如果没有规范化字段，使用原账户名规范化后比较
+                return normalizeAccount(u.account) === normalizedAccount;
+            });
+        }
+
+        /**
+         * 检查管理员账号（不区分大小写）
+         */
+        function findAdminAccount(account) {
+            if (!account) return null;
+            const normalizedAccount = normalizeAccount(account);
+            // 遍历管理员账号，使用规范化格式比较
+            for (const [adminAccount, adminData] of Object.entries(ADMIN_ACCOUNTS)) {
+                if (normalizeAccount(adminAccount) === normalizedAccount) {
+                    return { account: adminAccount, data: adminData };
+                }
+            }
+            return null;
+        }
+
+        /**
+         * 数据迁移：为现有用户数据添加规范化字段
+         */
+        function migrateUserDataToCanonical() {
+            let migrated = false;
+            allUsers.forEach(user => {
+                if (!user.accountCanonical && user.account) {
+                    user.accountCanonical = normalizeAccount(user.account);
+                    migrated = true;
+                }
+            });
+            if (migrated) {
+                console.log('🔄 已为现有用户数据添加规范化字段');
+                saveAllUsers();
+            }
+        }
+
         // 用户认证
         function authenticateUser(account, password) {
-            // 检查管理员账号
-            if (ADMIN_ACCOUNTS[account]) {
-                if (ADMIN_ACCOUNTS[account].password === password) {
+            // 检查管理员账号（使用规范化格式）
+            const adminAccount = findAdminAccount(account);
+            if (adminAccount) {
+                if (adminAccount.data.password === password) {
                     return {
-                        account: account,
-                        username: ADMIN_ACCOUNTS[account].username,
+                        account: adminAccount.account, // 返回原始格式用于显示
+                        username: adminAccount.data.username,
                         role: 'admin',
                         status: 'active'
                     };
@@ -10422,8 +10502,8 @@ const paginationContainers = {
                 }
             }
 
-            // 检查普通用户
-            const user = allUsers.find(u => u.account === account);
+            // 检查普通用户（使用规范化格式查找）
+            const user = findUserByAccount(account);
             if (user) {
                 // 检查用户是否被禁用
                 if (user.status === 'banned') {
@@ -10436,7 +10516,7 @@ const paginationContainers = {
                 // 检查密码是否正确
                 if (user.password === password) {
                     return {
-                        account: user.account,
+                        account: user.account, // 返回原始格式用于显示
                         username: user.username,
                         role: 'user',
                         status: user.status || 'active',
@@ -10462,9 +10542,17 @@ const paginationContainers = {
 
         // 注册用户
         function registerUser(account, password, username) {
-            // 检查账号是否已存在
-            if (ADMIN_ACCOUNTS[account] || allUsers.find(u => u.account === account)) {
-                return { success: false, message: t('accountExists') };
+            // 规范化账户名用于唯一性检查
+            const normalizedAccount = normalizeAccount(account);
+            
+            // 检查管理员账号是否已存在（使用规范化格式）
+            if (findAdminAccount(account)) {
+                return { success: false, message: t('accountExists') || '该账号已被使用' };
+            }
+            
+            // 检查普通用户是否已存在（使用规范化格式）
+            if (findUserByAccount(account)) {
+                return { success: false, message: t('accountExists') || '该账号已被使用' };
             }
 
             // 检查设备注册限制（可配置）
@@ -10484,7 +10572,8 @@ const paginationContainers = {
             const now = Date.now();
             const newUser = {
                 id: now,
-                account: account,
+                account: account, // 保存原始格式用于显示
+                accountCanonical: normalizedAccount, // 保存规范化格式用于查找和唯一性检查
                 password: password,
                 username: username,
                 role: 'user',
@@ -10764,8 +10853,9 @@ const paginationContainers = {
                             userAddresses = JSON.parse(localStorage.getItem(userAddressesKey)) || JSON.parse(localStorage.getItem('userAddresses')) || [];
                             
                             // 过滤掉不属于当前用户的订单和地址（兼容旧数据）
-                            userOrders = userOrders.filter(order => !order.account || order.account === currentUser.account);
-                            userAddresses = userAddresses.filter(addr => !addr.account || addr.account === currentUser.account);
+                            const normalizedCurrentAccount = normalizeAccount(currentUser.account);
+                            userOrders = userOrders.filter(order => !order.account || normalizeAccount(order.account) === normalizedCurrentAccount);
+                            userAddresses = userAddresses.filter(addr => !addr.account || normalizeAccount(addr.account) === normalizedCurrentAccount);
                             
                             // 如果是管理员，加载所有订单
                             if (currentUser.role === 'admin') {
@@ -11369,6 +11459,9 @@ const paginationContainers = {
                             userAddresses = JSON.parse(localStorage.getItem(userAddressesKey)) || [];
                             allUsers = JSON.parse(localStorage.getItem('allUsers')) || [];
                             
+                            // 数据迁移：为现有用户数据添加规范化字段
+                            migrateUserDataToCanonical();
+                            
                             // 立即更新界面显示
                             updateUserInterface();
                             renderProducts(products);
@@ -11387,6 +11480,9 @@ const paginationContainers = {
                         userOrders = JSON.parse(localStorage.getItem(userOrdersKey)) || [];
                         userAddresses = JSON.parse(localStorage.getItem(userAddressesKey)) || [];
                         allUsers = JSON.parse(localStorage.getItem('allUsers')) || [];
+                        
+                        // 数据迁移：为现有用户数据添加规范化字段
+                        migrateUserDataToCanonical();
                         
                         // 立即更新界面显示
                         updateUserInterface();
@@ -11484,8 +11580,8 @@ const paginationContainers = {
                     userAddresses = [];
                     userProfile = {};
                     
-                    // 从 allUsers 中获取刚注册的完整用户数据
-                    const newUserData = allUsers.find(u => u.account === account);
+                    // 从 allUsers 中获取刚注册的完整用户数据（使用规范化格式查找）
+                    const newUserData = findUserByAccount(account);
                     if (newUserData) {
                         currentUser = {
                             account: newUserData.account,
@@ -12207,7 +12303,7 @@ const paginationContainers = {
 
                     // 蜜罐消耗：每次成功领取前再次确认并扣除 1 个蜜罐
                     try {
-                        const user = allUsers.find(u => u.account === currentUser.account);
+                        const user = findUserByAccount(currentUser.account);
                         const currentPoints = (user && user.points != null && !isNaN(user.points))
                             ? Number(user.points)
                             : 1;
@@ -12239,7 +12335,7 @@ const paginationContainers = {
                 }
 
                 // 联系人信息优先来自地址，其次来自用户资料
-                const latestUserData = allUsers.find(u => u.account === currentUser.account);
+                const latestUserData = findUserByAccount(currentUser.account);
                 let customerName = finalAddressDetail?.name || latestUserData?.username || currentUser.username || '';
                 let customerPhone = finalAddressDetail?.phone || '';
                 if (!customerPhone && currentUser.account && !currentUser.account.includes('@')) {
@@ -14010,7 +14106,7 @@ const paginationContainers = {
 
             if (currentUser) {
                 // 检查当前用户是否被禁用，并获取最新用户信息
-                const user = allUsers.find(u => u.account === currentUser.account);
+                const user = findUserByAccount(currentUser.account);
                 if (user && user.status === 'banned') {
                     // 用户已被禁用：先将本地数据安全同步到云端，然后清空本地数据并强制登出
                     (async () => {
@@ -14090,7 +14186,7 @@ const paginationContainers = {
                 // 显示并更新积分
                 let safePoints = currentUser.points;
                 if ((safePoints == null || isNaN(safePoints)) && currentUser.account) {
-                    const latest = allUsers.find(u => u.account === currentUser.account);
+                    const latest = findUserByAccount(currentUser.account);
                     if (latest && latest.points != null) {
                         safePoints = Number(latest.points);
                     }
@@ -14704,7 +14800,7 @@ const paginationContainers = {
 
             // 💎 领取前检查蜜罐
             try {
-                const user = allUsers.find(u => u.account === currentUser.account);
+                const user = findUserByAccount(currentUser.account);
                 const currentPoints = (user && user.points != null && !isNaN(user.points))
                     ? Number(user.points)
                     : 1;
@@ -14769,13 +14865,15 @@ const paginationContainers = {
             if (currentUser && currentUser.account) {
                 // 优先使用全局变量 userAddresses
                 if (Array.isArray(userAddresses) && userAddresses.length > 0) {
-                    addresses = userAddresses.filter(addr => !addr.account || addr.account === currentUser.account);
+                    const normalizedCurrentAccount = normalizeAccount(currentUser.account);
+                    addresses = userAddresses.filter(addr => !addr.account || normalizeAccount(addr.account) === normalizedCurrentAccount);
                 } else {
                     // 如果全局变量为空，从 localStorage 读取
                     const userAddressesKey = `userAddresses_${currentUser.account}`;
                     addresses = JSON.parse(localStorage.getItem(userAddressesKey)) || JSON.parse(localStorage.getItem('userAddresses')) || [];
                     // 过滤掉不属于当前用户的地址
-                    addresses = addresses.filter(addr => !addr.account || addr.account === currentUser.account);
+                    const normalizedCurrentAccount = normalizeAccount(currentUser.account);
+                    addresses = addresses.filter(addr => !addr.account || normalizeAccount(addr.account) === normalizedCurrentAccount);
                 }
             } else {
                 // 未登录用户，使用全局变量或 localStorage
@@ -15217,9 +15315,16 @@ const paginationContainers = {
                 return;
             }
 
-            // 移除已不存在的选中账号
+            // 移除已不存在的选中账号（使用规范化格式比较）
             selectedUserAccounts.forEach(account => {
-                if (!allUsersList.some(u => u.account === account && u.role !== 'admin')) {
+                const normalizedAccount = normalizeAccount(account);
+                if (!allUsersList.some(u => {
+                    if (u.role === 'admin') return false;
+                    if (u.accountCanonical) {
+                        return u.accountCanonical === normalizedAccount;
+                    }
+                    return normalizeAccount(u.account) === normalizedAccount;
+                })) {
                     selectedUserAccounts.delete(account);
                 }
             });
@@ -15462,7 +15567,7 @@ const paginationContainers = {
                     const orderAccount = order.account || order.customerInfo?.account || '';
                     if (!orderAccount) return true; // 没有账号信息，保留
                     
-                    const user = allUsers.find(u => u.account === orderAccount);
+                    const user = findUserByAccount(orderAccount);
                     if (!user || !user.registerTime) {
                         // 找不到用户或没有注册时间，如果设置了筛选则排除
                         return !(orderFilterRegisterDateStart || orderFilterRegisterDateEnd);
@@ -15539,7 +15644,7 @@ const paginationContainers = {
                 // 获取用户注册天数
                 let registerDaysText = '';
                 if (usernameValue) {
-                    const user = allUsers.find(u => u.account === usernameValue);
+                    const user = findUserByAccount(usernameValue);
                     if (user && user.registerTime) {
                         const days = getRegisterDays(user.registerTime);
                         registerDaysText = `<span style="color: #666; font-size: 0.9em; margin-left: 5px;">(注册${days}天)</span>`;
@@ -16553,8 +16658,8 @@ const paginationContainers = {
 
         // 查看用户详情
         function viewUserDetails(account) {
-            const user = allUsers.find(u => u.account === account) ||
-                Object.entries(ADMIN_ACCOUNTS).find(([acc]) => acc === account);
+            const user = findUserByAccount(account) ||
+                (findAdminAccount(account) ? { account: findAdminAccount(account).account, ...findAdminAccount(account).data } : null);
 
             if (user) {
                 const userInfo = user[1] || user;
@@ -16635,8 +16740,8 @@ const paginationContainers = {
 
         // 切换密码显示
         function togglePassword(account) {
-            const user = allUsers.find(u => u.account === account) ||
-                Object.entries(ADMIN_ACCOUNTS).find(([acc]) => acc === account);
+            const user = findUserByAccount(account) ||
+                (findAdminAccount(account) ? { account: findAdminAccount(account).account, ...findAdminAccount(account).data } : null);
 
             if (user) {
                 const userInfo = user[1] || user;
@@ -16661,7 +16766,7 @@ const paginationContainers = {
                 return;
             }
 
-            const user = allUsers.find(u => u.account === account);
+            const user = findUserByAccount(account);
             if (!user) {
                 showNotification('只能修改普通用户密码', 'error');
                 return;
@@ -16687,7 +16792,7 @@ const paginationContainers = {
                 return;
             }
 
-            const user = allUsers.find(u => u.account === account);
+            const user = findUserByAccount(account);
             if (!user) {
                 showNotification('只能修改普通用户蜜罐', 'error');
                 return;
@@ -16730,7 +16835,7 @@ const paginationContainers = {
         // 禁用用户（管理员操作）
         async function banUser(account) {
             if (confirm(t('confirmBanUser'))) {
-                const user = allUsers.find(u => u.account === account);
+                const user = findUserByAccount(account);
                 if (user) {
                     user.status = 'banned';
                     user.bannedTime = new Date().toISOString();
@@ -16743,8 +16848,8 @@ const paginationContainers = {
                     const modals = document.querySelectorAll('.modal');
                     modals.forEach(modal => modal.remove());
 
-                    // 如果被禁用的用户正在登录，强制其退出
-                    if (currentUser && currentUser.account === account) {
+                    // 如果被禁用的用户正在登录，强制其退出（使用规范化格式比较）
+                    if (currentUser && normalizeAccount(currentUser.account) === normalizeAccount(account)) {
                         currentUser = null;
                         localStorage.removeItem('currentUser');
                         updateUserInterface();
@@ -16757,7 +16862,7 @@ const paginationContainers = {
         // 解禁用户（管理员操作）
         async function unbanUser(account) {
             if (confirm(t('confirmUnbanUser'))) {
-                const user = allUsers.find(u => u.account === account);
+                const user = findUserByAccount(account);
                 if (user) {
                     user.status = 'active';
                     delete user.bannedTime;
@@ -16791,8 +16896,14 @@ const paginationContainers = {
             const isCurrent = currentUser && currentUser.account === account;
             const result = { orders: 0, addresses: 0 };
 
-            // 移除用户列表
-            const userIndex = allUsers.findIndex(u => u.account === account);
+            // 移除用户列表（使用规范化格式查找）
+            const normalizedAccount = normalizeAccount(account);
+            const userIndex = allUsers.findIndex(u => {
+                if (u.accountCanonical) {
+                    return u.accountCanonical === normalizedAccount;
+                }
+                return normalizeAccount(u.account) === normalizedAccount;
+            });
             if (userIndex !== -1) {
                 allUsers.splice(userIndex, 1);
             }
@@ -16852,7 +16963,14 @@ const paginationContainers = {
                     const usersRef = cloudSync.db.ref('allUsers');
                     const snapshot = await usersRef.once('value');
                     const cloudUsers = Array.isArray(snapshot.val()) ? snapshot.val() : [];
-                    const updatedUsers = cloudUsers.filter(u => u && u.account !== account);
+                    const normalizedAccount = normalizeAccount(account);
+                    const updatedUsers = cloudUsers.filter(u => {
+                        if (!u) return true;
+                        if (u.accountCanonical) {
+                            return u.accountCanonical !== normalizedAccount;
+                        }
+                        return normalizeAccount(u.account) !== normalizedAccount;
+                    });
                     await usersRef.set(updatedUsers);
                     console.log(`✅ 已从 allUsers 列表中删除账号 ${account}`);
 
@@ -16869,7 +16987,7 @@ const paginationContainers = {
         // ========== 删除用户账号功能 ==========
         // 彻底删除用户账号及其所有相关数据
         async function deleteUserAccount(account) {
-            const user = allUsers.find(u => u.account === account);
+            const user = findUserByAccount(account);
             if (!user) {
                 showNotification(t('userNotExists'), 'error');
                 return;
@@ -18433,7 +18551,7 @@ const paginationContainers = {
             // 🎁 评价完成，奖励 2 个蜜罐
             try {
                 if (currentUser) {
-                    const user = allUsers.find(u => u.account === currentUser.account);
+                    const user = findUserByAccount(currentUser.account);
                     if (user) {
                         const oldPoints = (user.points == null || isNaN(user.points)) ? 1 : Number(user.points);
                         const newPoints = oldPoints + 2;
@@ -20077,7 +20195,7 @@ const paginationContainers = {
                 if (!isCurrentUserAdmin()) {
                     try {
                         if (currentUser && currentUser.account) {
-                            const user = allUsers.find(u => u.account === currentUser.account);
+                            const user = findUserByAccount(currentUser.account);
                             let currentPoints = (user && typeof user.points === 'number' && !isNaN(user.points))
                                 ? Number(user.points)
                                 : (typeof currentUser.points === 'number' ? Number(currentUser.points) : 0);
@@ -20161,7 +20279,7 @@ const paginationContainers = {
             if (!currentUser) return;
 
             // 从allUsers数组中获取最新的用户信息
-            const latestUserData = allUsers.find(u => u.account === currentUser.account);
+            const latestUserData = findUserByAccount(currentUser.account);
             const username = latestUserData ? latestUserData.username : currentUser.username;
 
             const profile = userProfile[currentUser.account] || {};
@@ -20245,7 +20363,7 @@ const paginationContainers = {
                 actualPassword = ADMIN_ACCOUNTS[currentUser.account].password;
             } else {
                 // 查找普通用户的密码
-                const user = allUsers.find(u => u.account === currentUser.account);
+                const user = findUserByAccount(currentUser.account);
                 if (user) {
                     actualPassword = user.password;
                 }
@@ -20263,7 +20381,7 @@ const paginationContainers = {
                 return;
             } else {
                 // 更新普通用户密码
-                const user = allUsers.find(u => u.account === currentUser.account);
+                const user = findUserByAccount(currentUser.account);
                 if (user) {
                     user.password = newPassword;
                     saveAllUsers();
@@ -22394,27 +22512,46 @@ const paginationContainers = {
             z-index: 10;
             opacity: 0;
             transform: translateY(-50%) translateX(0) rotate(0deg);
+            will-change: transform, opacity, filter;
+            backface-visibility: hidden;
+            perspective: 1000px;
         }
 
         .arrow-flying.flying {
-            animation: arrowFlyHorizontal 1.8s cubic-bezier(0.25, 0.1, 0.3, 1) forwards;
+            animation: arrowFlyHorizontal 1.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+            will-change: transform, opacity, filter;
         }
 
-        /* 从左到右：起步慢 -> 中段加速 -> 穿心平滑 -> 离场减速隐去 */
+        /* 从左到右：流畅的飞行轨迹，使用更平滑的缓动函数 */
         @keyframes arrowFlyHorizontal {
             0% {
                 opacity: 0;
                 transform: translateY(-50%) translateX(-360px) scale(0.8);
                 filter: blur(6px);
             }
-            20% {
-                opacity: 1;
-                transform: translateY(-50%) translateX(-180px) scale(0.9);
-                filter: blur(3px);
+            8% {
+                opacity: 0.6;
+                transform: translateY(-50%) translateX(-280px) scale(0.85);
+                filter: blur(4px);
             }
-            45% {
+            16% {
                 opacity: 1;
-                transform: translateY(-50%) translateX(40px) scale(1);
+                transform: translateY(-50%) translateX(-200px) scale(0.9);
+                filter: blur(2px);
+            }
+            28% {
+                opacity: 1;
+                transform: translateY(-50%) translateX(-100px) scale(0.95);
+                filter: blur(1px);
+            }
+            40% {
+                opacity: 1;
+                transform: translateY(-50%) translateX(0px) scale(1);
+                filter: blur(0px);
+            }
+            52% {
+                opacity: 1;
+                transform: translateY(-50%) translateX(80px) scale(1.01);
                 filter: blur(0px);
             }
             /* 约 65% 在爱心中心位置 */
@@ -22423,10 +22560,20 @@ const paginationContainers = {
                 transform: translateY(-50%) translateX(180px) scale(1.02);
                 filter: blur(0px);
             }
-            80% {
-                opacity: 0.9;
-                transform: translateY(-50%) translateX(340px) scale(0.95);
+            75% {
+                opacity: 1;
+                transform: translateY(-50%) translateX(260px) scale(1);
+                filter: blur(0px);
+            }
+            85% {
+                opacity: 0.95;
+                transform: translateY(-50%) translateX(380px) scale(0.98);
                 filter: blur(1px);
+            }
+            92% {
+                opacity: 0.7;
+                transform: translateY(-50%) translateX(460px) scale(0.92);
+                filter: blur(3px);
             }
             100% {
                 opacity: 0;
