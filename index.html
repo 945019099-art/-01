@@ -2766,7 +2766,31 @@
             gap: 15px;
             margin-bottom: 20px;
             align-items: center;
-            flex-wrap: wrap;
+            flex-wrap: nowrap;
+        }
+        
+        .admin-actions .btn {
+            flex-shrink: 0;
+            white-space: nowrap;
+        }
+        
+        .admin-actions .spacer {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .admin-actions .admin-search {
+            flex-shrink: 0;
+        }
+        
+        @media (max-width: 768px) {
+            .admin-actions {
+                flex-wrap: wrap;
+            }
+            
+            .admin-actions .spacer {
+                display: none;
+            }
         }
 
         .admin-search {
@@ -4672,19 +4696,19 @@
                         style="background: #28a745;">
                         <i class="fas fa-database"></i> 加载演示数据
                     </button>
-                    <div style="flex: 1;"></div>
+                    <div class="spacer"></div>
                     <div class="admin-search">
                         <i class="fas fa-search"></i>
                         <input type="text" id="admin-product-search" class="admin-search-input"
                             placeholder="搜索产品名称/分类/ID">
                     </div>
-                    <label style="margin-right: 15px; display: flex; align-items: center; gap: 5px;">
+                    <label style="display: flex; align-items: center; gap: 5px; flex-shrink: 0;">
                         <input type="checkbox" id="select-all-products"
                             style="width: 18px; height: 18px; cursor: pointer;">
                         <span>全选</span>
                     </label>
-                    <button class="btn btn-warning" id="batch-edit-btn" style="display: none;">批量编辑</button>
-                    <button class="btn btn-danger" id="batch-delete-btn" style="display: none;">批量删除</button>
+                    <button class="btn btn-warning" id="batch-edit-btn" style="display: none; flex-shrink: 0;">批量编辑</button>
+                    <button class="btn btn-danger" id="batch-delete-btn" style="display: none; flex-shrink: 0;">批量删除</button>
                 </div>
 
                 <div class="admin-content">
@@ -4710,7 +4734,8 @@
                     <button class="btn btn-primary" id="refresh-users-btn">刷新用户列表</button>
                     <button class="btn btn-secondary" id="export-users-btn">导出用户数据</button>
                     <button class="btn btn-danger" id="delete-selected-users-btn" style="display: none;">批量删除账号</button>
-                    <button class="btn btn-danger" id="clear-cloud-users-btn" style="margin-left: auto; background-color: #c0392b; border-color: #c0392b;">
+                    <div class="spacer"></div>
+                    <button class="btn btn-danger" id="clear-cloud-users-btn" style="background-color: #c0392b; border-color: #c0392b;">
                         清理users（保留与allUsers一致）
                     </button>
                 </div>
@@ -4785,6 +4810,7 @@
                     <button class="btn btn-primary" id="refresh-orders-btn">刷新订单列表</button>
                     <button class="btn btn-secondary" id="export-orders-btn">导出订单数据</button>
                     <button class="btn btn-danger" id="delete-selected-orders-btn" style="display:none;">批量删除订单</button>
+                    <div class="spacer"></div>
                 </div>
 
                 <div class="admin-content">
@@ -4836,7 +4862,7 @@
             <div class="admin-page" id="admin-reviews">
                 <div class="admin-actions">
                     <button class="btn btn-primary" id="refresh-reviews-btn">刷新评价列表</button>
-                    <div style="flex: 1;"></div>
+                    <div class="spacer"></div>
                     <div class="admin-search">
                         <select id="reviews-filter-category" class="admin-search-input" style="flex: 0 0 120px;">
                             <option value="all">全部字段</option>
@@ -4884,6 +4910,7 @@
                     <button class="btn btn-primary" id="preview-homepage-btn">预览主页</button>
                     <button class="btn btn-secondary" id="reset-homepage-btn">重置主页</button>
                     <button class="btn btn-success" id="save-homepage-btn">保存设置</button>
+                    <div class="spacer"></div>
                 </div>
 
                 <div class="admin-content">
@@ -11099,6 +11126,11 @@ const paginationContainers = {
                 if (topCarousel) topCarousel.style.display = 'block';
                 // 只在首页显示搜索栏
                 if (searchBar) searchBar.style.display = 'flex';
+                // 更新导航栏active状态
+                document.querySelectorAll('.nav-links a').forEach(link => {
+                    link.classList.remove('active');
+                });
+                if (mainHomeLink) mainHomeLink.classList.add('active');
                 renderProducts(products);
             }
 
@@ -11117,6 +11149,12 @@ const paginationContainers = {
                 
                 // 非首页隐藏搜索栏
                 if (searchBar) searchBar.style.display = 'none';
+                
+                // 更新导航栏active状态
+                document.querySelectorAll('.nav-links a').forEach(link => {
+                    link.classList.remove('active');
+                });
+                if (userCenterLink) userCenterLink.classList.add('active');
                 
                 // 显示用户中心
                 userCenter.classList.add('show');
@@ -11141,6 +11179,11 @@ const paginationContainers = {
                 if (topCarousel) topCarousel.style.display = 'none';
                 // 非首页隐藏搜索栏
                 if (searchBar) searchBar.style.display = 'none';
+                // 更新导航栏active状态
+                document.querySelectorAll('.nav-links a').forEach(link => {
+                    link.classList.remove('active');
+                });
+                if (adminLink) adminLink.classList.add('active');
                 renderAdminProducts();
             }
 
@@ -11202,6 +11245,12 @@ const paginationContainers = {
                             userSidebar.style.display = 'none';
                         }
                         userCenter.classList.add('sidebar-hidden');
+                        
+                        // 更新导航栏active状态
+                        document.querySelectorAll('.nav-links a').forEach(link => {
+                            link.classList.remove('active');
+                        });
+                        if (myOrdersLink) myOrdersLink.classList.add('active');
                         
                         // 直接显示订单页面
                         showUserPage('orders');
@@ -12782,7 +12831,9 @@ const paginationContainers = {
             const adminNavBtns = document.querySelectorAll('.admin-nav-btn');
             adminNavBtns.forEach(btn => {
                 btn.addEventListener('click', () => {
+                    // 移除所有active状态
                     adminNavBtns.forEach(b => b.classList.remove('active'));
+                    // 添加当前按钮的active状态
                     btn.classList.add('active');
 
                     const tab = btn.getAttribute('data-tab');
