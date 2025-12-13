@@ -4944,6 +4944,10 @@
                                     <input type="color" id="secondary-color" class="form-control" value="#2ecc71">
                                 </div>
                                 <div class="form-group">
+                                    <label for="getitnow-button-color">Get it now按钮颜色</label>
+                                    <input type="color" id="getitnow-button-color" class="form-control" value="#667eea">
+                                </div>
+                                <div class="form-group">
                                     <label for="font-family">字体</label>
                                     <select id="font-family" class="form-control">
                                         <option value="'Segoe UI', Tahoma, Geneva, Verdana, sans-serif">系统默认</option>
@@ -14372,6 +14376,11 @@ const paginationContainers = {
                 
                 const buttonText = isClaimed ? t('getItNow') : t('claimNow');
                 
+                // 获取Get it now按钮颜色
+                const getItNowButtonColor = (homepageSettings && homepageSettings.getItNowButtonColor) || '#667eea';
+                // 为Get it now按钮应用自定义颜色（仅当按钮文本是"Get it now"时）
+                const buttonStyle = isClaimed ? `style="background: ${getItNowButtonColor}; border-color: ${getItNowButtonColor}; color: white;"` : '';
+                
                 return `
                     <article class="home-feature-card" data-product-id="${product.id}">
                         <div class="home-feature-image">
@@ -14389,7 +14398,7 @@ const paginationContainers = {
                             </div>
                             <div class="home-feature-actions">
                                 <button class="btn btn-primary view-detail">${t('viewDetail')}</button>
-                                <button class="btn btn-secondary signup-btn" data-product-id="${product.id}" data-is-claimed="${isClaimed}">${buttonText}</button>
+                                <button class="btn ${isClaimed ? 'get-it-now-btn' : 'btn-secondary'} signup-btn" data-product-id="${product.id}" data-is-claimed="${isClaimed}" ${buttonStyle}>${buttonText}</button>
                             </div>
                         </div>
                     </article>
@@ -14414,6 +14423,7 @@ const paginationContainers = {
                     if (isClaimed) {
                         // 查找对应的订单
                         let orderId = null;
+                        let orderStatus = null;
                         if (currentUser && currentUser.account && Array.isArray(userOrders)) {
                             const order = userOrders.find(o =>
                                 o &&
@@ -14423,7 +14433,20 @@ const paginationContainers = {
                             );
                             if (order) {
                                 orderId = order.id;
+                                orderStatus = order.status;
                             }
+                        }
+                        
+                        // 检查订单状态：如果是运输中或已完成，显示提示信息
+                        if (orderStatus === 'shipping' || orderStatus === 'completed') {
+                            if (typeof customAlert === 'function') {
+                                customAlert('You have already claimed this product.\n\nPlease select a different item.', 'Information');
+                            } else if (typeof showNotification === 'function') {
+                                showNotification('You have already claimed this product. Please select a different item.', 'warning');
+                            } else {
+                                alert('You have already claimed this product.\n\nPlease select a different item.');
+                            }
+                            return;
                         }
                         
                         // 显示WhatsApp模态框
@@ -14497,6 +14520,11 @@ const paginationContainers = {
             
             const detailButtonText = isClaimed ? t('getItNow') : t('registerNow');
             
+            // 获取Get it now按钮颜色
+            const getItNowButtonColor = (homepageSettings && homepageSettings.getItNowButtonColor) || '#667eea';
+            // 为Get it now按钮应用自定义颜色（仅当按钮文本是"Get it now"时）
+            const detailButtonStyle = isClaimed ? `style="background: ${getItNowButtonColor}; border-color: ${getItNowButtonColor}; color: white;"` : '';
+            
             productDetail.innerHTML = `
                 <div class="product-detail-content">
                     <div class="product-detail-image">
@@ -14538,7 +14566,7 @@ const paginationContainers = {
                             <p>${t('stock')}: ${(product && typeof product.stock !== 'undefined') ? product.stock : 0} ${t('pieces')}</p>
                         </div>
                         <div class="product-detail-actions">
-                            <button class="btn btn-primary signup-now" data-is-claimed="${isClaimed}">${detailButtonText}</button>
+                            <button class="btn ${isClaimed ? 'get-it-now-btn' : 'btn-primary'} signup-now" data-is-claimed="${isClaimed}" ${detailButtonStyle}>${detailButtonText}</button>
                             <button class="btn btn-secondary back-to-list">${t('returnToList')}</button>
                         </div>
                     </div>
@@ -14666,6 +14694,7 @@ const paginationContainers = {
                     if (isClaimed) {
                         // 查找对应的订单
                         let orderId = null;
+                        let orderStatus = null;
                         if (currentUser && currentUser.account && Array.isArray(userOrders)) {
                             const order = userOrders.find(o =>
                                 o &&
@@ -14675,7 +14704,20 @@ const paginationContainers = {
                             );
                             if (order) {
                                 orderId = order.id;
+                                orderStatus = order.status;
                             }
+                        }
+                        
+                        // 检查订单状态：如果是运输中或已完成，显示提示信息
+                        if (orderStatus === 'shipping' || orderStatus === 'completed') {
+                            if (typeof customAlert === 'function') {
+                                customAlert('You have already claimed this product.\n\nPlease select a different item.', 'Information');
+                            } else if (typeof showNotification === 'function') {
+                                showNotification('You have already claimed this product. Please select a different item.', 'warning');
+                            } else {
+                                alert('You have already claimed this product.\n\nPlease select a different item.');
+                            }
+                            return;
                         }
                         
                         // 显示WhatsApp模态框
@@ -17979,12 +18021,28 @@ const paginationContainers = {
                                 // 获取产品信息以检查是否有redirectUrl
                                 const relatedProduct = Array.isArray(products) ? products.find(p => normalizeOrderId(p.id) === normalizeOrderId(order.productId)) : null;
                                 
+                                // 获取Get it now按钮颜色
+                                const buttonColor = (homepageSettings && homepageSettings.getItNowButtonColor) || '#667eea';
+                                
+                                // 将十六进制颜色转换为RGB用于阴影效果
+                                const hexToRgb = (hex) => {
+                                    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+                                    return result ? {
+                                        r: parseInt(result[1], 16),
+                                        g: parseInt(result[2], 16),
+                                        b: parseInt(result[3], 16)
+                                    } : { r: 102, g: 126, b: 234 };
+                                };
+                                const rgb = hexToRgb(buttonColor);
+                                const shadowColor = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.4)`;
+                                const shadowColorHover = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.5)`;
+                                
                                 return `
                                     <div style="margin-top: 20px; text-align: center;">
                                         <button class="btn btn-success" onclick="showWhatsAppModal('${normalizeOrderId(order.id)}'); this.closest('.modal').remove();" 
-                                                style="padding: 12px 30px; font-size: 16px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; font-weight: 600; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4); transition: all 0.3s;"
-                                                onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(102, 126, 234, 0.5)';"
-                                                onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(102, 126, 234, 0.4)';">
+                                                style="padding: 12px 30px; font-size: 16px; background: ${buttonColor}; border: none; font-weight: 600; box-shadow: 0 4px 15px ${shadowColor}; transition: all 0.3s; color: white;"
+                                                onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px ${shadowColorHover}';"
+                                                onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px ${shadowColor}';">
                                             <i class="fab fa-whatsapp" style="margin-right: 8px;"></i>Get it now
                                         </button>
                                     </div>
@@ -19032,6 +19090,7 @@ const paginationContainers = {
             siteLogo: 'https://d92ap0lo8fr10.cloudfront.net/A14TLSYJXI3UM6_acd40833aec9706776e6e1e4432f7198_ProductImage_PT02',
             primaryColor: '#3498db',
             secondaryColor: '#2ecc71',
+            getItNowButtonColor: '#667eea',
             fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
             productsPerRow: 4,
             showCategories: true,
@@ -19105,6 +19164,11 @@ const paginationContainers = {
                 delete normalized.carousel;
             }
 
+            // 确保 getItNowButtonColor 存在
+            if (!normalized.getItNowButtonColor) {
+                normalized.getItNowButtonColor = '#667eea';
+            }
+
             return normalized;
         }
 
@@ -19119,6 +19183,7 @@ const paginationContainers = {
             // 加载主题设置
             document.getElementById('primary-color').value = homepageSettings.primaryColor;
             document.getElementById('secondary-color').value = homepageSettings.secondaryColor;
+            document.getElementById('getitnow-button-color').value = homepageSettings.getItNowButtonColor || '#667eea';
             document.getElementById('font-family').value = homepageSettings.fontFamily;
 
             // 加载布局设置
@@ -19202,6 +19267,7 @@ const paginationContainers = {
             homepageSettings.siteLogo = document.getElementById('site-logo').value;
             homepageSettings.primaryColor = document.getElementById('primary-color').value;
             homepageSettings.secondaryColor = document.getElementById('secondary-color').value;
+            homepageSettings.getItNowButtonColor = document.getElementById('getitnow-button-color').value;
             homepageSettings.fontFamily = document.getElementById('font-family').value;
             homepageSettings.productsPerRow = parseInt(document.getElementById('products-per-row').value);
             homepageSettings.showCategories = document.getElementById('show-categories').checked;
@@ -19236,6 +19302,7 @@ const paginationContainers = {
                     siteLogo: 'https://d92ap0lo8fr10.cloudfront.net/A14TLSYJXI3UM6_acd40833aec9706776e6e1e4432f7198_ProductImage_PT02',
                     primaryColor: '#3498db',
                     secondaryColor: '#2ecc71',
+                    getItNowButtonColor: '#667eea',
                     fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
                     productsPerRow: 4,
                     showCategories: true,
@@ -19272,11 +19339,41 @@ const paginationContainers = {
             document.documentElement.style.setProperty('--primary', homepageSettings.primaryColor);
             document.documentElement.style.setProperty('--secondary', homepageSettings.secondaryColor);
             document.documentElement.style.setProperty('--font-family', homepageSettings.fontFamily);
+            // 设置Get it now按钮颜色CSS变量
+            const getItNowColor = homepageSettings.getItNowButtonColor || '#667eea';
+            document.documentElement.style.setProperty('--get-it-now-color', getItNowColor);
 
             // 更新产品网格布局
             const productsGrid = document.getElementById('products-grid');
             if (productsGrid) {
                 // productsGrid.style.gridTemplateColumns = `repeat(auto-fill, minmax(${300 / homepageSettings.productsPerRow}px, 1fr))`;
+            }
+
+            // 更新所有Get it now按钮的颜色（使用CSS变量）
+            document.querySelectorAll('.signup-btn, .get-it-now-btn, .signup-now').forEach(btn => {
+                const buttonText = btn.textContent.trim();
+                const isClaimed = btn.getAttribute('data-is-claimed') === 'true';
+                if (isClaimed && (buttonText === t('getItNow') || buttonText === 'Get it now' || buttonText.includes('Get it now'))) {
+                    btn.style.background = getItNowColor;
+                    btn.style.borderColor = getItNowColor;
+                    btn.style.color = 'white';
+                }
+            });
+
+            // 重新渲染产品列表以应用新颜色
+            if (typeof renderProducts === 'function' && Array.isArray(products) && products.length > 0) {
+                renderProducts(products);
+            }
+            
+            // 如果产品详情页是打开的，也需要更新那里的按钮
+            const productDetail = document.getElementById('product-detail');
+            if (productDetail && productDetail.style.display !== 'none') {
+                const signupNowBtn = productDetail.querySelector('.signup-now');
+                if (signupNowBtn && signupNowBtn.getAttribute('data-is-claimed') === 'true') {
+                    signupNowBtn.style.background = getItNowColor;
+                    signupNowBtn.style.borderColor = getItNowColor;
+                    signupNowBtn.style.color = 'white';
+                }
             }
 
             // 更新轮播图
@@ -19490,6 +19587,7 @@ const paginationContainers = {
                     siteLogo: 'https://d92ap0lo8fr10.cloudfront.net/A14TLSYJXI3UM6_acd40833aec9706776e6e1e4432f7198_ProductImage_PT02',
                     primaryColor: '#3498db',
                     secondaryColor: '#2ecc71',
+                    getItNowButtonColor: '#667eea',
                     fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
                     productsPerRow: 4,
                     showCategories: true,
@@ -19853,6 +19951,21 @@ const paginationContainers = {
         let currentProductIdForWhatsApp = null;
 
         function showWhatsAppModal(orderId = null) {
+            // 检查订单状态：如果是运输中或已完成，显示提示信息
+            if (orderId) {
+                const order = findOrderById(orderId);
+                if (order && (order.status === 'shipping' || order.status === 'completed')) {
+                    if (typeof customAlert === 'function') {
+                        customAlert('You have already claimed this product.\n\nPlease select a different item.', 'Information');
+                    } else if (typeof showNotification === 'function') {
+                        showNotification('You have already claimed this product. Please select a different item.', 'warning');
+                    } else {
+                        alert('You have already claimed this product.\n\nPlease select a different item.');
+                    }
+                    return;
+                }
+            }
+            
             const whatsappModal = document.getElementById('whatsapp-modal');
             const twoStepsModal = document.getElementById('whatsapp-modal-two-steps');
             const singleStepModal = document.getElementById('whatsapp-modal-single-step');
