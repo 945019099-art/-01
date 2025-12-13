@@ -7,6 +7,7 @@
     <title>BeeFreebies</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
     <!-- 原本这里有“页面加载时清除所有本地缓存”的脚本
          已移除，改为仅在用户主动退出登录时清除本地数据 -->
@@ -783,6 +784,33 @@
         .product-card:hover {
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.16), 0 2px 4px rgba(0, 0, 0, 0.23);
             transform: translateY(-2px);
+        }
+
+        /* 拖放排序相关样式 */
+        .product-card.draggable {
+            cursor: move;
+            user-select: none;
+        }
+
+        .product-card.dragging {
+            opacity: 0.5;
+            transform: scale(0.95);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+        }
+
+        .product-card.drag-over {
+            border: 2px dashed var(--primary, #ffc107);
+            background-color: rgba(255, 193, 7, 0.1);
+            transform: scale(1.02);
+        }
+
+        #admin-products-grid.dragging-active {
+            position: relative;
+        }
+
+        #admin-products-grid.dragging-active .product-card:not(.dragging) {
+            transition: transform 0.2s ease;
         }
 
         .product-image {
@@ -2321,6 +2349,18 @@
             display: flex;
             align-items: center;
             gap: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .stat-card.active {
+            border: 2px solid var(--primary);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
 
         .stat-icon {
@@ -2344,6 +2384,50 @@
         .stat-info p {
             margin: 5px 0 0 0;
             color: var(--gray);
+        }
+
+        /* 统计表格样式 */
+        .stat-table-section {
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .stat-table-section table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .stat-table-section table tbody tr {
+            transition: background-color 0.2s ease;
+        }
+
+        .stat-table-section table tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        /* 筛选输入框样式 */
+        .filter-input {
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .filter-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.1);
+        }
+
+        .orders-filter-section {
+            transition: all 0.3s ease;
         }
 
         .status-badge {
@@ -2371,6 +2455,43 @@
             background: #f8d7da;
             color: #721c24;
             font-weight: 600;
+        }
+
+        /* 订单状态颜色优化 */
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+            font-weight: 500;
+        }
+
+        .status-review {
+            background: #cfe2ff;
+            color: #084298;
+            font-weight: 500;
+        }
+
+        .status-shipping {
+            background: #d1ecf1;
+            color: #0c5460;
+            font-weight: 500;
+        }
+
+        .status-completed {
+            background: #d4edda;
+            color: #155724;
+            font-weight: 500;
+        }
+
+        .status-shipped {
+            background: #d4edda;
+            color: #155724;
+            font-weight: 500;
+        }
+
+        .status-cancelled {
+            background: #f8d7da;
+            color: #721c24;
+            font-weight: 500;
         }
 
         /* 主页管理样式 */
@@ -4095,6 +4216,41 @@
         .modal {
             z-index: 2000;
         }
+
+        /* 图表响应式样式 */
+        .charts-section {
+            overflow-x: auto;
+        }
+
+        @media (max-width: 768px) {
+            .charts-section > div[style*="grid-template-columns"] {
+                grid-template-columns: 1fr !important;
+            }
+
+            .charts-section > div[style*="grid-template-columns"] > div {
+                margin-bottom: 20px;
+            }
+
+            .charts-section canvas {
+                max-width: 100%;
+            }
+
+            /* 日期选择器移动端优化 */
+            .charts-section > div[style*="display: flex"] {
+                flex-direction: column !important;
+                align-items: flex-start !important;
+            }
+
+            .charts-section input[type="date"] {
+                width: 100%;
+                max-width: 200px;
+            }
+
+            .charts-section button {
+                width: 100%;
+                max-width: 200px;
+            }
+        }
     </style>
 </head>
 
@@ -4565,6 +4721,8 @@
                             <option value="active">正常</option>
                             <option value="banned">已禁用</option>
                         </select>
+                        <input type="date" id="user-register-date-start" class="form-control" placeholder="注册日期起">
+                        <input type="date" id="user-register-date-end" class="form-control" placeholder="注册日期止">
                         <input type="text" id="user-device-filter" class="form-control" placeholder="按设备号/标记筛选">
                         <input type="text" id="user-search-input" class="form-control" placeholder="搜索用户名/账号/邮箱/电话">
                     </div>
@@ -4613,6 +4771,8 @@
                             <option value="cancelled">已取消</option>
                             <option value="completed">已完成</option>
                         </select>
+                        <input type="date" id="order-register-date-start" class="form-control" placeholder="用户注册日期起">
+                        <input type="date" id="order-register-date-end" class="form-control" placeholder="用户注册日期止">
                         <select id="order-search-field" class="form-control">
                             <option value="all">全部字段</option>
                             <option value="id">订单ID</option>
@@ -4799,7 +4959,7 @@
             <div class="admin-page" id="admin-statistics">
                 <div class="admin-content">
                     <div class="stats-grid">
-                        <div class="stat-card">
+                        <div class="stat-card" data-stat-type="users" onclick="toggleStatTable('users')">
                             <div class="stat-icon">
                                 <i class="fas fa-users"></i>
                             </div>
@@ -4808,7 +4968,7 @@
                                 <p>总用户数</p>
                             </div>
                         </div>
-                        <div class="stat-card">
+                        <div class="stat-card" data-stat-type="products" onclick="toggleStatTable('products')">
                             <div class="stat-icon">
                                 <i class="fas fa-box"></i>
                             </div>
@@ -4817,7 +4977,7 @@
                                 <p>产品总数</p>
                             </div>
                         </div>
-                        <div class="stat-card">
+                        <div class="stat-card" data-stat-type="orders" onclick="toggleStatTable('orders')">
                             <div class="stat-icon">
                                 <i class="fas fa-shopping-cart"></i>
                             </div>
@@ -4826,13 +4986,250 @@
                                 <p>订单总数</p>
                             </div>
                         </div>
-                        <div class="stat-card">
+                        <div class="stat-card" data-stat-type="pending" onclick="toggleStatTable('pending')">
                             <div class="stat-icon">
                                 <i class="fas fa-clock"></i>
                             </div>
                             <div class="stat-info">
                                 <h3 id="pending-orders">0</h3>
                                 <p>待处理订单</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 统计表格区域 -->
+                    <!-- 用户统计表格 -->
+                    <div id="stat-table-users" class="stat-table-section" style="display: none; margin-top: 30px; background: #ffffff; border-radius: 4px; padding: 32px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24); border: 1px solid rgba(0, 0, 0, 0.08);">
+                        <h3 style="margin: 0 0 24px 0; font-size: 24px; font-weight: 300; color: var(--dark); display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-users" style="color: var(--primary);"></i>
+                            用户列表
+                        </h3>
+                        <div style="overflow-x: auto;">
+                            <table id="users-stat-table" style="width: 100%; border-collapse: collapse;">
+                                <thead>
+                                    <tr style="background: #f8f9fa; border-bottom: 2px solid #dee2e6;">
+                                        <th style="padding: 12px; text-align: left; font-weight: 500; color: var(--dark);">用户名</th>
+                                        <th style="padding: 12px; text-align: left; font-weight: 500; color: var(--dark);">账号</th>
+                                        <th style="padding: 12px; text-align: left; font-weight: 500; color: var(--dark);">角色</th>
+                                        <th style="padding: 12px; text-align: left; font-weight: 500; color: var(--dark);">注册时间</th>
+                                        <th style="padding: 12px; text-align: left; font-weight: 500; color: var(--dark);">状态</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="users-stat-table-body">
+                                    <!-- 动态生成 -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- 产品统计表格（包含产品领取情况） -->
+                    <div id="stat-table-products" class="stat-table-section" style="display: none; margin-top: 30px; background: #ffffff; border-radius: 4px; padding: 32px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24); border: 1px solid rgba(0, 0, 0, 0.08);">
+                        <h3 style="margin: 0 0 24px 0; font-size: 24px; font-weight: 300; color: var(--dark); display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-box" style="color: var(--primary);"></i>
+                            产品领取情况统计
+                        </h3>
+                        <div style="overflow-x: auto;">
+                            <table id="products-stat-table" style="width: 100%; border-collapse: collapse;">
+                                <thead>
+                                    <tr style="background: #f8f9fa; border-bottom: 2px solid #dee2e6;">
+                                        <th style="padding: 12px; text-align: left; font-weight: 500; color: var(--dark);">产品名称</th>
+                                        <th style="padding: 12px; text-align: left; font-weight: 500; color: var(--dark);">产品ID</th>
+                                        <th style="padding: 12px; text-align: center; font-weight: 500; color: var(--dark);">总领取数</th>
+                                        <th style="padding: 12px; text-align: center; font-weight: 500; color: var(--dark);">已完成订单</th>
+                                        <th style="padding: 12px; text-align: center; font-weight: 500; color: var(--dark);">待处理订单</th>
+                                        <th style="padding: 12px; text-align: center; font-weight: 500; color: var(--dark);">已取消订单</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="products-stat-table-body">
+                                    <!-- 动态生成 -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- 订单统计表格 -->
+                    <div id="stat-table-orders" class="stat-table-section" style="display: none; margin-top: 30px; background: #ffffff; border-radius: 4px; padding: 32px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24); border: 1px solid rgba(0, 0, 0, 0.08);">
+                        <h3 style="margin: 0 0 24px 0; font-size: 24px; font-weight: 300; color: var(--dark); display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-shopping-cart" style="color: var(--primary);"></i>
+                            所有订单列表
+                        </h3>
+                        
+                        <!-- 筛选条件区域 -->
+                        <div class="orders-filter-section" style="margin-bottom: 24px; padding: 20px; background: #f8f9fa; border-radius: 8px; border: 1px solid #dee2e6;">
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 16px;">
+                                <!-- 订单状态筛选 -->
+                                <div>
+                                    <label style="display: block; margin-bottom: 8px; font-size: 14px; font-weight: 500; color: var(--dark);">
+                                        <i class="fas fa-filter" style="color: var(--primary); margin-right: 6px;"></i>订单状态
+                                    </label>
+                                    <select id="filter-order-status" class="filter-input" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; background: white;">
+                                        <option value="">全部状态</option>
+                                        <option value="pending">待处理</option>
+                                        <option value="review">审核中</option>
+                                        <option value="shipping">配送中</option>
+                                        <option value="completed">已完成</option>
+                                        <option value="shipped">已发货</option>
+                                        <option value="cancelled">已取消</option>
+                                        <option value="canceled">已取消</option>
+                                    </select>
+                                </div>
+
+                                <!-- 产品筛选 -->
+                                <div>
+                                    <label style="display: block; margin-bottom: 8px; font-size: 14px; font-weight: 500; color: var(--dark);">
+                                        <i class="fas fa-box" style="color: var(--primary); margin-right: 6px;"></i>产品名称
+                                    </label>
+                                    <select id="filter-order-product" class="filter-input" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; background: white;">
+                                        <option value="">全部产品</option>
+                                    </select>
+                                </div>
+
+                                <!-- 日期范围筛选 - 开始日期 -->
+                                <div>
+                                    <label style="display: block; margin-bottom: 8px; font-size: 14px; font-weight: 500; color: var(--dark);">
+                                        <i class="fas fa-calendar-alt" style="color: var(--primary); margin-right: 6px;"></i>开始日期
+                                    </label>
+                                    <input type="date" id="filter-order-start-date" class="filter-input" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; background: white;">
+                                </div>
+
+                                <!-- 日期范围筛选 - 结束日期 -->
+                                <div>
+                                    <label style="display: block; margin-bottom: 8px; font-size: 14px; font-weight: 500; color: var(--dark);">
+                                        <i class="fas fa-calendar-alt" style="color: var(--primary); margin-right: 6px;"></i>结束日期
+                                    </label>
+                                    <input type="date" id="filter-order-end-date" class="filter-input" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; background: white;">
+                                </div>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 16px;">
+                                <!-- 客户姓名搜索 -->
+                                <div>
+                                    <label style="display: block; margin-bottom: 8px; font-size: 14px; font-weight: 500; color: var(--dark);">
+                                        <i class="fas fa-user" style="color: var(--primary); margin-right: 6px;"></i>客户姓名
+                                    </label>
+                                    <input type="text" id="filter-order-customer" class="filter-input" placeholder="输入客户姓名搜索" onkeypress="if(event.key==='Enter') applyOrderFilters()" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; background: white;">
+                                </div>
+
+                                <!-- 订单ID搜索 -->
+                                <div>
+                                    <label style="display: block; margin-bottom: 8px; font-size: 14px; font-weight: 500; color: var(--dark);">
+                                        <i class="fas fa-hashtag" style="color: var(--primary); margin-right: 6px;"></i>订单ID
+                                    </label>
+                                    <input type="text" id="filter-order-id" class="filter-input" placeholder="输入订单ID搜索" onkeypress="if(event.key==='Enter') applyOrderFilters()" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; background: white;">
+                                </div>
+                            </div>
+
+                            <!-- 操作按钮 -->
+                            <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                                <button onclick="applyOrderFilters()" class="btn btn-primary" style="padding: 10px 20px; font-size: 14px;">
+                                    <i class="fas fa-search"></i> 应用筛选
+                                </button>
+                                <button onclick="resetOrderFilters()" class="btn btn-secondary" style="padding: 10px 20px; font-size: 14px;">
+                                    <i class="fas fa-redo"></i> 重置筛选
+                                </button>
+                                <div id="orders-filter-result" style="display: flex; align-items: center; padding: 10px 0; color: var(--gray); font-size: 14px;">
+                                    <!-- 显示筛选结果数量 -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="overflow-x: auto;">
+                            <table id="orders-stat-table" style="width: 100%; border-collapse: collapse;">
+                                <thead>
+                                    <tr style="background: #f8f9fa; border-bottom: 2px solid #dee2e6;">
+                                        <th style="padding: 12px; text-align: left; font-weight: 500; color: var(--dark);">订单ID</th>
+                                        <th style="padding: 12px; text-align: left; font-weight: 500; color: var(--dark);">产品名称</th>
+                                        <th style="padding: 12px; text-align: left; font-weight: 500; color: var(--dark);">客户姓名</th>
+                                        <th style="padding: 12px; text-align: left; font-weight: 500; color: var(--dark);">订单日期</th>
+                                        <th style="padding: 12px; text-align: center; font-weight: 500; color: var(--dark);">状态</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="orders-stat-table-body">
+                                    <!-- 动态生成 -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- 待处理订单表格 -->
+                    <div id="stat-table-pending" class="stat-table-section" style="display: none; margin-top: 30px; background: #ffffff; border-radius: 4px; padding: 32px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24); border: 1px solid rgba(0, 0, 0, 0.08);">
+                        <h3 style="margin: 0 0 24px 0; font-size: 24px; font-weight: 300; color: var(--dark); display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-clock" style="color: var(--primary);"></i>
+                            待处理订单列表
+                        </h3>
+                        <div style="overflow-x: auto;">
+                            <table id="pending-stat-table" style="width: 100%; border-collapse: collapse;">
+                                <thead>
+                                    <tr style="background: #f8f9fa; border-bottom: 2px solid #dee2e6;">
+                                        <th style="padding: 12px; text-align: left; font-weight: 500; color: var(--dark);">订单ID</th>
+                                        <th style="padding: 12px; text-align: left; font-weight: 500; color: var(--dark);">产品名称</th>
+                                        <th style="padding: 12px; text-align: left; font-weight: 500; color: var(--dark);">客户姓名</th>
+                                        <th style="padding: 12px; text-align: left; font-weight: 500; color: var(--dark);">订单日期</th>
+                                        <th style="padding: 12px; text-align: center; font-weight: 500; color: var(--dark);">状态</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="pending-stat-table-body">
+                                    <!-- 动态生成 -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- 数据可视化图表 -->
+                    <div class="charts-section" style="margin-top: 40px; background: #ffffff; border-radius: 4px; padding: 32px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24); border: 1px solid rgba(0, 0, 0, 0.08);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 16px;">
+                            <h3 style="margin: 0; font-size: 24px; font-weight: 300; color: var(--dark);">数据趋势分析</h3>
+                            
+                            <!-- 日期范围选择器 -->
+                            <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                                <label style="display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--dark);">
+                                    <i class="fas fa-calendar-alt" style="color: var(--primary);"></i>
+                                    日期范围：
+                                </label>
+                                <input type="date" id="chart-start-date" style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                                <span style="color: var(--gray);">至</span>
+                                <input type="date" id="chart-end-date" style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                                <button id="apply-date-range" class="btn btn-primary" style="padding: 8px 16px; font-size: 14px;">
+                                    <i class="fas fa-check"></i> 应用
+                                </button>
+                                <button id="reset-date-range" class="btn btn-secondary" style="padding: 8px 16px; font-size: 14px;">
+                                    <i class="fas fa-redo"></i> 重置
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(500px, 1fr)); gap: 24px; margin-bottom: 24px;">
+                            <!-- 每日新注册用户折线图 -->
+                            <div style="background: #f8f9fa; border-radius: 8px; padding: 20px;">
+                                <h4 style="margin: 0 0 16px 0; font-size: 18px; font-weight: 500; color: var(--dark); display: flex; align-items: center; gap: 8px;">
+                                    <i class="fas fa-user-plus" style="color: var(--primary);"></i>
+                                    每日新注册用户数量
+                                </h4>
+                                <div style="position: relative; height: 300px;">
+                                    <canvas id="dailyUsersChart"></canvas>
+                                </div>
+                            </div>
+
+                            <!-- 每日订单数量折线图 -->
+                            <div style="background: #f8f9fa; border-radius: 8px; padding: 20px;">
+                                <h4 style="margin: 0 0 16px 0; font-size: 18px; font-weight: 500; color: var(--dark); display: flex; align-items: center; gap: 8px;">
+                                    <i class="fas fa-shopping-cart" style="color: var(--primary);"></i>
+                                    每日订单数量
+                                </h4>
+                                <div style="position: relative; height: 300px;">
+                                    <canvas id="dailyOrdersChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 用户注册趋势（最近30天） -->
+                        <div style="background: #f8f9fa; border-radius: 8px; padding: 20px; margin-top: 24px;">
+                            <h4 style="margin: 0 0 16px 0; font-size: 18px; font-weight: 500; color: var(--dark); display: flex; align-items: center; gap: 8px;">
+                                <i class="fas fa-chart-line" style="color: var(--primary);"></i>
+                                用户注册趋势（最近30天）
+                            </h4>
+                            <div style="position: relative; height: 350px;">
+                                <canvas id="userTrendChart"></canvas>
                             </div>
                         </div>
                     </div>
@@ -5574,6 +5971,10 @@ let userFilterRole = '';
 let userFilterStatus = '';
 let userDeviceFilter = '';
 let userSearchTerm = '';
+let userFilterRegisterDateStart = '';
+let userFilterRegisterDateEnd = '';
+let orderFilterRegisterDateStart = '';
+let orderFilterRegisterDateEnd = '';
 let adminProductSearchTerm = '';
 let reviewSearchTerm = '';
 let reviewSearchCategory = 'all';
@@ -5655,6 +6056,7 @@ const paginationContainers = {
                 'viewDetails': '查看详情',
                 'viewDetail': '点击详情',
                 'claimNow': '点击领取',
+                'getItNow': '立即获取',
                 'stock': '库存',
                 'pieces': '件',
                 'noProducts': '暂无商品',
@@ -6018,6 +6420,7 @@ const paginationContainers = {
                 'viewDetails': 'View Details',
                 'viewDetail': 'View Details',
                 'claimNow': 'Claim Now',
+                'getItNow': 'Get it now',
                 'stock': 'Stock',
                 'pieces': 'pieces',
                 'noProducts': 'No products available',
@@ -10121,6 +10524,179 @@ const paginationContainers = {
             }
         })();
 
+        // ========== 彩蛋函数定义（必须在DOMContentLoaded之前定义，确保登录表单事件绑定时可访问） ==========
+        // 彩蛋登录相关变量 - 使用window对象确保全局访问
+        window.romanticLoginAccount = null;
+        window.romanticLoginPassword = null;
+        window.romanticLoginTimeout = null;
+
+        // 浪漫彩蛋功能 - 确保在全局作用域中
+        window.showRomanticEasterEgg = function(account = null, password = null) {
+            console.log('🎯 showRomanticEasterEgg 被调用，参数:', { account, password });
+            
+            // 保存登录信息
+            if (account && password) {
+                window.romanticLoginAccount = account;
+                window.romanticLoginPassword = password;
+            }
+            
+            // 查找彩蛋元素，如果不存在则等待
+            const showEggElement = () => {
+                let egg = document.getElementById('romantic-easter-egg');
+                
+                if (!egg) {
+                    console.warn('⚠️ 彩蛋元素未找到，尝试等待DOM加载...');
+                    // 尝试多次查找
+                    let attempts = 0;
+                    const maxAttempts = 50;
+                    const checkInterval = setInterval(() => {
+                        attempts++;
+                        egg = document.getElementById('romantic-easter-egg');
+                        if (egg) {
+                            clearInterval(checkInterval);
+                            console.log('✅ 彩蛋元素已找到');
+                            displayEgg(egg);
+                        } else if (attempts >= maxAttempts) {
+                            clearInterval(checkInterval);
+                            console.error('❌ 彩蛋元素不存在！请检查HTML中是否有 id="romantic-easter-egg" 的元素');
+                            customAlert('彩蛋功能加载失败，请刷新页面重试', '错误');
+                        }
+                    }, 100);
+                    return;
+                }
+                
+                displayEgg(egg);
+            };
+            
+            // 显示彩蛋的函数
+            const displayEgg = (egg) => {
+                if (!egg) {
+                    console.error('❌ 彩蛋元素为空！');
+                    return;
+                }
+                
+                console.log('🎯 设置彩蛋显示...');
+                // 强制设置样式，确保显示
+                egg.style.display = 'flex';
+                egg.style.visibility = 'visible';
+                egg.style.opacity = '1';
+                egg.style.zIndex = '99999';
+                egg.style.position = 'fixed';
+                egg.style.top = '0';
+                egg.style.left = '0';
+                egg.style.width = '100vw';
+                egg.style.height = '100vh';
+                document.body.style.overflow = 'hidden';
+                console.log('✅ 彩蛋应该已显示，display:', egg.style.display, 'z-index:', egg.style.zIndex);
+                
+                // 重置状态
+                const arrow = document.getElementById('arrow-flying');
+                const heart = document.getElementById('heart-3d');
+                const explosionContainer = document.getElementById('explosion-particles');
+                
+                if (arrow) {
+                    arrow.classList.remove('flying');
+                    arrow.style.opacity = '0';
+                }
+                if (heart) {
+                    heart.classList.remove('exploding');
+                }
+                if (explosionContainer) {
+                    explosionContainer.innerHTML = '';
+                }
+                
+                // 初始化背景粒子系统（需要等待DOM加载完成）
+                setTimeout(() => {
+                    const initParticles = window.initParticles;
+                    if (typeof initParticles === 'function') {
+                        initParticles();
+                    }
+                }, 100);
+                
+            // 延迟后开始一箭穿心动画（提前启动，加速进入）
+            setTimeout(() => {
+                if (arrow) {
+                    arrow.classList.add('flying');
+                }
+            }, 300);
+            
+            // 箭穿透爱心后爆炸（与动画 65% 位置对齐，约 1.6s）
+            setTimeout(() => {
+                if (heart) {
+                    heart.classList.add('exploding');
+                }
+                // 创建爆炸粒子
+                const createExplosionParticles = window.createExplosionParticles;
+                if (typeof createExplosionParticles === 'function') {
+                    createExplosionParticles();
+                }
+            }, 1600);
+                
+                // 开始倒计时
+                const startCountdown = window.startCountdown;
+                if (typeof startCountdown === 'function') {
+                    startCountdown();
+                }
+            };
+            
+            // 立即尝试显示
+            showEggElement();
+        };
+
+        window.closeRomanticEasterEgg = function() {
+            const egg = document.getElementById('romantic-easter-egg');
+            if (egg) {
+                egg.style.display = 'none';
+                document.body.style.overflow = '';
+                
+                // 清理动画
+                if (window.animationId) {
+                    cancelAnimationFrame(window.animationId);
+                    window.animationId = null;
+                }
+                
+                if (window.explosionAnimationId) {
+                    cancelAnimationFrame(window.explosionAnimationId);
+                    window.explosionAnimationId = null;
+                }
+                
+                if (window.countdownInterval) {
+                    clearInterval(window.countdownInterval);
+                    window.countdownInterval = null;
+                }
+                
+                // 清除登录超时定时器
+                if (window.romanticLoginTimeout) {
+                    clearTimeout(window.romanticLoginTimeout);
+                    window.romanticLoginTimeout = null;
+                }
+                
+                if (window.particles) {
+                    window.particles = [];
+                }
+                if (window.explosionParticles) {
+                    window.explosionParticles = [];
+                }
+                
+                // 重置元素状态
+                const arrow = document.getElementById('arrow-flying');
+                const heart = document.getElementById('heart-3d');
+                const explosionContainer = document.getElementById('explosion-particles');
+                
+                if (arrow) {
+                    arrow.classList.remove('flying');
+                    arrow.style.opacity = '0';
+                }
+                if (heart) {
+                    heart.classList.remove('exploding');
+                }
+                if (explosionContainer) {
+                    explosionContainer.innerHTML = '';
+                }
+            }
+        };
+        // ========== 彩蛋函数定义结束 ==========
+
         document.addEventListener('DOMContentLoaded', async function () {
             const loader = DOMCache.get('#page-loader');
             const loaderProgress = DOMCache.get('#loader-progress');
@@ -10545,60 +11121,92 @@ const paginationContainers = {
                     const easterAccount = 'qiqxjq';
                     const easterPassword = 'aa123123';
                     
+                    // 确保账号密码都是字符串并去除空格
+                    const cleanAccount = String(account || '').trim();
+                    const cleanPassword = String(password || '').trim();
+                    const cleanEasterAccount = String(easterAccount || '').trim();
+                    const cleanEasterPassword = String(easterPassword || '').trim();
+                    
                     console.log('🔍 检查彩蛋账号:', {
-                        '输入的账号': account,
-                        '期望的账号': easterAccount,
-                        '账号匹配': account === easterAccount,
-                        '输入的密码': password,
-                        '期望的密码': easterPassword,
-                        '密码匹配': password === easterPassword
+                        '输入的账号': cleanAccount,
+                        '账号长度': cleanAccount.length,
+                        '期望的账号': cleanEasterAccount,
+                        '期望账号长度': cleanEasterAccount.length,
+                        '账号匹配': cleanAccount === cleanEasterAccount,
+                        '输入的密码': cleanPassword,
+                        '密码长度': cleanPassword.length,
+                        '期望的密码': cleanEasterPassword,
+                        '期望密码长度': cleanEasterPassword.length,
+                        '密码匹配': cleanPassword === cleanEasterPassword,
+                        '完全匹配': cleanAccount === cleanEasterAccount && cleanPassword === cleanEasterPassword
                     });
                     
-                    if (account === easterAccount && password === easterPassword) {
-                        console.log('✅ 检测到彩蛋账号，准备显示彩蛋...');
-                        // 关闭登录模态框 - 确保完全关闭
+                    // 严格匹配账号和密码
+                    if (cleanAccount === cleanEasterAccount && cleanPassword === cleanEasterPassword) {
+                        console.log('✅✅✅ 检测到彩蛋账号，准备显示彩蛋...');
+                        
+                        // 立即关闭登录模态框
                         const loginModalEl = document.getElementById('login-modal');
                         if (loginModalEl) {
                             loginModalEl.style.display = 'none';
-                            loginModalEl.style.visibility = 'hidden';
-                            loginModalEl.style.zIndex = '-1';
                             console.log('✅ 登录模态框已关闭');
                         } else {
                             console.warn('⚠️ 登录模态框元素未找到');
                         }
+                        
+                        // 关闭其他可能的模态框
+                        const authChoiceModal = document.getElementById('auth-choice-modal');
+                        if (authChoiceModal) {
+                            authChoiceModal.style.display = 'none';
+                        }
+                        
                         // 显示浪漫穿心页面（传递账号密码）
-                        // 使用setTimeout确保DOM已更新
+                        // 使用setTimeout确保DOM已更新，但缩短延迟时间
                         setTimeout(() => {
                             console.log('🎯 调用 showRomanticEasterEgg 函数...');
+                            console.log('🔍 检查函数是否存在:', typeof window.showRomanticEasterEgg);
+                            
                             const showEgg = window.showRomanticEasterEgg;
                             if (typeof showEgg === 'function') {
                                 console.log('✅ showRomanticEasterEgg 函数存在，正在调用...');
-                                showEgg(account, password);
+                                try {
+                                    showEgg(cleanAccount, cleanPassword);
+                                    console.log('✅ showRomanticEasterEgg 函数调用完成');
+                                } catch (error) {
+                                    console.error('❌ showRomanticEasterEgg 函数调用出错:', error);
+                                    // 备用方案：直接显示元素
+                                    const egg = document.getElementById('romantic-easter-egg');
+                                    if (egg) {
+                                        egg.style.display = 'flex';
+                                        egg.style.zIndex = '99999';
+                                        document.body.style.overflow = 'hidden';
+                                        window.romanticLoginAccount = cleanAccount;
+                                        window.romanticLoginPassword = cleanPassword;
+                                    }
+                                }
                             } else {
                                 console.error('❌ showRomanticEasterEgg 函数未定义！', typeof window.showRomanticEasterEgg);
-                                // 尝试直接显示元素
+                                // 备用方案：直接显示元素
                                 const egg = document.getElementById('romantic-easter-egg');
                                 if (egg) {
                                     console.log('⚠️ 函数未定义，尝试直接显示元素...');
                                     egg.style.display = 'flex';
+                                    egg.style.zIndex = '99999';
+                                    egg.style.position = 'fixed';
+                                    egg.style.top = '0';
+                                    egg.style.left = '0';
+                                    egg.style.width = '100vw';
+                                    egg.style.height = '100vh';
                                     document.body.style.overflow = 'hidden';
-                                    // 保存登录信息
-                                    if (typeof window.romanticLoginAccount !== 'undefined') {
-                                        window.romanticLoginAccount = account;
-                                    } else {
-                                        window.romanticLoginAccount = account;
-                                    }
-                                    if (typeof window.romanticLoginPassword !== 'undefined') {
-                                        window.romanticLoginPassword = password;
-                                    } else {
-                                        window.romanticLoginPassword = password;
-                                    }
+                                    window.romanticLoginAccount = cleanAccount;
+                                    window.romanticLoginPassword = cleanPassword;
+                                    console.log('✅ 彩蛋元素已直接显示');
                                 } else {
                                     console.error('❌ 彩蛋元素也不存在！');
                                     customAlert('彩蛋功能加载失败，请刷新页面重试', '错误');
                                 }
                             }
-                        }, 100);
+                        }, 50);
                         // 延迟10秒后自动关闭彩蛋并继续正常登录流程（作为备用方案）
                         if (window.romanticLoginTimeout) {
                             clearTimeout(window.romanticLoginTimeout);
@@ -11732,6 +12340,12 @@ const paginationContainers = {
                         if (userCenter && userCenter.style.display === 'block') {
                             renderUserOrders();
                         }
+                        
+                        // 重新渲染产品列表以更新按钮状态
+                        if (typeof renderProducts === 'function' && Array.isArray(products)) {
+                            renderProducts(products);
+                        }
+                        
                         console.log('✅ 报名流程完成');
                     } catch (err) {
                         console.error('❌ 关闭模态框时出错:', err);
@@ -11815,6 +12429,42 @@ const paginationContainers = {
                     userSearchTerm = e.target.value.trim();
                     resetPagination('users');
                     renderUsersTable();
+                });
+            }
+
+            const userRegisterDateStartEl = document.getElementById('user-register-date-start');
+            if (userRegisterDateStartEl) {
+                userRegisterDateStartEl.addEventListener('change', (e) => {
+                    userFilterRegisterDateStart = e.target.value;
+                    resetPagination('users');
+                    renderUsersTable();
+                });
+            }
+
+            const userRegisterDateEndEl = document.getElementById('user-register-date-end');
+            if (userRegisterDateEndEl) {
+                userRegisterDateEndEl.addEventListener('change', (e) => {
+                    userFilterRegisterDateEnd = e.target.value;
+                    resetPagination('users');
+                    renderUsersTable();
+                });
+            }
+
+            const orderRegisterDateStartEl = document.getElementById('order-register-date-start');
+            if (orderRegisterDateStartEl) {
+                orderRegisterDateStartEl.addEventListener('change', (e) => {
+                    orderFilterRegisterDateStart = e.target.value;
+                    resetPagination('orders');
+                    renderOrdersTable();
+                });
+            }
+
+            const orderRegisterDateEndEl = document.getElementById('order-register-date-end');
+            if (orderRegisterDateEndEl) {
+                orderRegisterDateEndEl.addEventListener('change', (e) => {
+                    orderFilterRegisterDateEnd = e.target.value;
+                    resetPagination('orders');
+                    renderOrdersTable();
                 });
             }
 
@@ -12262,15 +12912,6 @@ const paginationContainers = {
                 });
             }
 
-            // 点击模态框外部关闭（增强版，统一唯一处理）
-            window.addEventListener('click', (e) => {
-                const modals = document.querySelectorAll('.modal');
-                modals.forEach(modal => {
-                    if (e.target === modal) {
-                        closeModal(modal.id);
-                    }
-                });
-            });
 
             // 绑定一次性编辑表单提交事件，避免重复绑定
             const editForm = document.getElementById('edit-product-form');
@@ -12500,12 +13141,6 @@ const paginationContainers = {
             // 添加新对话框
             document.body.insertAdjacentHTML('beforeend', dialogHTML);
 
-            // 点击背景关闭
-            document.getElementById('sync-dialog').addEventListener('click', (e) => {
-                if (e.target.id === 'sync-dialog') {
-                    closeSyncDialog();
-                }
-            });
         }
 
         // 关闭同步状态对话框
@@ -13528,6 +14163,20 @@ const paginationContainers = {
                 const oldPrice = formatCurrency(product.price);
                 const newPrice = formatCurrency(product.newPrice !== undefined ? product.newPrice : 0);
                 const stock = (product && typeof product.stock !== 'undefined') ? product.stock : 0;
+                
+                // 检查用户是否已领取该产品
+                let isClaimed = false;
+                if (currentUser && currentUser.account && Array.isArray(userOrders)) {
+                    isClaimed = userOrders.some(o =>
+                        o &&
+                        o.productId === product.id &&
+                        o.account === currentUser.account &&
+                        o.status !== 'cancelled'
+                    );
+                }
+                
+                const buttonText = isClaimed ? t('getItNow') : t('claimNow');
+                
                 return `
                     <article class="home-feature-card" data-product-id="${product.id}">
                         <div class="home-feature-image">
@@ -13545,7 +14194,7 @@ const paginationContainers = {
                             </div>
                             <div class="home-feature-actions">
                                 <button class="btn btn-primary view-detail">${t('viewDetail')}</button>
-                                <button class="btn btn-secondary signup-btn" data-product-id="${product.id}">${t('claimNow')}</button>
+                                <button class="btn btn-secondary signup-btn" data-product-id="${product.id}" data-is-claimed="${isClaimed}">${buttonText}</button>
                             </div>
                         </div>
                     </article>
@@ -13558,11 +14207,45 @@ const paginationContainers = {
                     e.preventDefault();
                     e.stopPropagation();
                     const productId = parseInt(this.getAttribute('data-product-id'), 10);
+                    const isClaimed = this.getAttribute('data-is-claimed') === 'true';
                     const product = products.find(p => p.id === productId);
-                    if (product) {
-                        openSignupModal(product);
-                    } else {
+                    
+                    if (!product) {
                         alert(t('systemError'));
+                        return;
+                    }
+                    
+                    // 如果已领取，显示WhatsApp模态框
+                    if (isClaimed) {
+                        // 查找对应的订单
+                        let orderId = null;
+                        if (currentUser && currentUser.account && Array.isArray(userOrders)) {
+                            const order = userOrders.find(o =>
+                                o &&
+                                o.productId === productId &&
+                                o.account === currentUser.account &&
+                                o.status !== 'cancelled'
+                            );
+                            if (order) {
+                                orderId = order.id;
+                            }
+                        }
+                        
+                        // 显示WhatsApp模态框
+                        if (typeof showWhatsAppModal === 'function') {
+                            showWhatsAppModal(orderId);
+                        } else {
+                            // 如果没有showWhatsAppModal函数，直接打开WhatsApp链接
+                            const phoneNumber = '+17077902826';
+                            const message = orderId 
+                                ? `Please confirm my Beefreebies order #${orderId}`
+                                : `I want to get my ${product.name}`;
+                            const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+                            window.open(whatsappUrl, '_blank');
+                        }
+                    } else {
+                        // 未领取，打开报名模态框
+                        openSignupModal(product);
                     }
                 });
             });
@@ -13606,6 +14289,19 @@ const paginationContainers = {
             // 获取该产品的评价列表
             const productReviews = (product.reviews || []).sort((a, b) => b.createdAt - a.createdAt);
             
+            // 检查用户是否已领取该产品
+            let isClaimed = false;
+            if (currentUser && currentUser.account && Array.isArray(userOrders)) {
+                isClaimed = userOrders.some(o =>
+                    o &&
+                    o.productId === product.id &&
+                    o.account === currentUser.account &&
+                    o.status !== 'cancelled'
+                );
+            }
+            
+            const detailButtonText = isClaimed ? t('getItNow') : t('registerNow');
+            
             productDetail.innerHTML = `
                 <div class="product-detail-content">
                     <div class="product-detail-image">
@@ -13647,7 +14343,7 @@ const paginationContainers = {
                             <p>${t('stock')}: ${(product && typeof product.stock !== 'undefined') ? product.stock : 0} ${t('pieces')}</p>
                         </div>
                         <div class="product-detail-actions">
-                            <button class="btn btn-primary signup-now">${t('registerNow')}</button>
+                            <button class="btn btn-primary signup-now" data-is-claimed="${isClaimed}">${detailButtonText}</button>
                             <button class="btn btn-secondary back-to-list">${t('returnToList')}</button>
                         </div>
                     </div>
@@ -13769,7 +14465,40 @@ const paginationContainers = {
             const backBtn = document.querySelector('#product-detail .back-to-list');
             if (signupNowBtn) {
                 signupNowBtn.addEventListener('click', function () {
-                    openSignupModal(currentProduct);
+                    const isClaimed = this.getAttribute('data-is-claimed') === 'true';
+                    
+                    // 如果已领取，显示WhatsApp模态框
+                    if (isClaimed) {
+                        // 查找对应的订单
+                        let orderId = null;
+                        if (currentUser && currentUser.account && Array.isArray(userOrders)) {
+                            const order = userOrders.find(o =>
+                                o &&
+                                o.productId === currentProduct.id &&
+                                o.account === currentUser.account &&
+                                o.status !== 'cancelled'
+                            );
+                            if (order) {
+                                orderId = order.id;
+                            }
+                        }
+                        
+                        // 显示WhatsApp模态框
+                        if (typeof showWhatsAppModal === 'function') {
+                            showWhatsAppModal(orderId);
+                        } else {
+                            // 如果没有showWhatsAppModal函数，直接打开WhatsApp链接
+                            const phoneNumber = '+17077902826';
+                            const message = orderId 
+                                ? `Please confirm my Beefreebies order #${orderId}`
+                                : `I want to get my ${currentProduct.name}`;
+                            const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+                            window.open(whatsappUrl, '_blank');
+                        }
+                    } else {
+                        // 未领取，打开报名模态框
+                        openSignupModal(currentProduct);
+                    }
                 });
             }
             if (backBtn) {
@@ -14455,6 +15184,20 @@ const paginationContainers = {
         }
 
         // 渲染用户表格
+        // 计算注册天数
+        function getRegisterDays(registerTime) {
+            if (!registerTime) return 0;
+            try {
+                const registerDate = new Date(registerTime);
+                const now = new Date();
+                const diffTime = now - registerDate;
+                const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+                return diffDays;
+            } catch (e) {
+                return 0;
+            }
+        }
+
         function renderUsersTable() {
             const tbody = document.getElementById('users-table-body');
 
@@ -14490,6 +15233,30 @@ const paginationContainers = {
 
                 if (userFilterStatus && userStatus !== userFilterStatus) {
                     return false;
+                }
+
+                // 注册日期筛选
+                if (userFilterRegisterDateStart || userFilterRegisterDateEnd) {
+                    if (user.registerTime) {
+                        try {
+                            const registerDate = new Date(user.registerTime);
+                            const registerDateStr = registerDate.toISOString().split('T')[0];
+                            
+                            if (userFilterRegisterDateStart && registerDateStr < userFilterRegisterDateStart) {
+                                return false;
+                            }
+                            if (userFilterRegisterDateEnd && registerDateStr > userFilterRegisterDateEnd) {
+                                return false;
+                            }
+                        } catch (e) {
+                            // 日期解析失败，跳过此筛选
+                        }
+                    } else {
+                        // 没有注册时间，如果设置了筛选则排除
+                        if (userFilterRegisterDateStart || userFilterRegisterDateEnd) {
+                            return false;
+                        }
+                    }
                 }
 
                 if (userDeviceFilter) {
@@ -14576,7 +15343,7 @@ const paginationContainers = {
                             ${selectable ? `<input type="checkbox" class="user-select-checkbox" data-account="${user.account}" ${isChecked ? 'checked' : ''}>` : ''}
                         </td>
                         <td>${user.id}</td>
-                        <td>${user.username || ''}${suspiciousBadge}</td>
+                        <td>${user.username || ''}${user.registerTime ? `<span style="color: #666; font-size: 0.9em; margin-left: 5px;">(注册${getRegisterDays(user.registerTime)}天)</span>` : ''}${suspiciousBadge}</td>
                         <td>${user.account}</td>
                         <td>${userPassword}</td>
                         <td><span class="status-badge ${user.role === 'admin' ? 'status-active' : 'status-inactive'}">${user.role === 'admin' ? '管理员' : '普通用户'}</span></td>
@@ -14689,6 +15456,36 @@ const paginationContainers = {
                 filteredOrders = filteredOrders.filter(order => order.status === statusFilter);
             }
 
+            // 注册日期筛选（根据订单关联的用户账号）
+            if (orderFilterRegisterDateStart || orderFilterRegisterDateEnd) {
+                filteredOrders = filteredOrders.filter(order => {
+                    const orderAccount = order.account || order.customerInfo?.account || '';
+                    if (!orderAccount) return true; // 没有账号信息，保留
+                    
+                    const user = allUsers.find(u => u.account === orderAccount);
+                    if (!user || !user.registerTime) {
+                        // 找不到用户或没有注册时间，如果设置了筛选则排除
+                        return !(orderFilterRegisterDateStart || orderFilterRegisterDateEnd);
+                    }
+                    
+                    try {
+                        const registerDate = new Date(user.registerTime);
+                        const registerDateStr = registerDate.toISOString().split('T')[0];
+                        
+                        if (orderFilterRegisterDateStart && registerDateStr < orderFilterRegisterDateStart) {
+                            return false;
+                        }
+                        if (orderFilterRegisterDateEnd && registerDateStr > orderFilterRegisterDateEnd) {
+                            return false;
+                        }
+                        return true;
+                    } catch (e) {
+                        // 日期解析失败，保留
+                        return true;
+                    }
+                });
+            }
+
             // 搜索筛选
             if (searchTerm) {
                 filteredOrders = filteredOrders.filter(order => {
@@ -14739,6 +15536,16 @@ const paginationContainers = {
                 const productName = order.productName || '';
                 const orderIdStr = normalizeOrderId(order.id);
                 
+                // 获取用户注册天数
+                let registerDaysText = '';
+                if (usernameValue) {
+                    const user = allUsers.find(u => u.account === usernameValue);
+                    if (user && user.registerTime) {
+                        const days = getRegisterDays(user.registerTime);
+                        registerDaysText = `<span style="color: #666; font-size: 0.9em; margin-left: 5px;">(注册${days}天)</span>`;
+                    }
+                }
+                
                 const isChecked = currentUser && currentUser.role === 'admin' && selectedOrderIds.has(orderIdStr);
 
                 return `
@@ -14750,7 +15557,7 @@ const paginationContainers = {
                     </td>
                     <td>${orderIdStr}</td>
                     <td>${productName}</td>
-                    <td><a href="#" class="order-username-link" data-username="${usernameValue}" data-customer-name="${customerName}" data-customer-phone="${customerPhone}" data-customer-email="${customerEmail}" style="color: var(--primary); text-decoration: underline; cursor: pointer;">${usernameValue || '-'}</a></td>
+                    <td><a href="#" class="order-username-link" data-username="${usernameValue}" data-customer-name="${customerName}" data-customer-phone="${customerPhone}" data-customer-email="${customerEmail}" style="color: var(--primary); text-decoration: underline; cursor: pointer;">${usernameValue || '-'}</a>${registerDaysText}</td>
                     <td><span class="status-badge status-${order.status || 'pending'}">${getStatusText(order.status || 'pending')}</span></td>
                     <td>
                         <span class="tracking-number-display" data-order-id="${orderIdStr}">${order.trackingNumber || t('notFilled')}</span>
@@ -14924,17 +15731,824 @@ const paginationContainers = {
             updatePaginationControls('reviews', reviews.length, renderReviewsTable);
         }
 
+        // 图表实例存储
+        let dailyUsersChart = null;
+        let dailyOrdersChart = null;
+        let userTrendChart = null;
+
+        // 获取图表日期范围
+        function getChartDateRange() {
+            const startDateInput = document.getElementById('chart-start-date');
+            const endDateInput = document.getElementById('chart-end-date');
+            
+            let startDate, endDate;
+            
+            if (startDateInput && startDateInput.value) {
+                startDate = new Date(startDateInput.value);
+                startDate.setHours(0, 0, 0, 0);
+            } else {
+                // 默认最近30天
+                startDate = new Date();
+                startDate.setDate(startDate.getDate() - 30);
+                startDate.setHours(0, 0, 0, 0);
+            }
+            
+            if (endDateInput && endDateInput.value) {
+                endDate = new Date(endDateInput.value);
+                endDate.setHours(23, 59, 59, 999);
+            } else {
+                endDate = new Date();
+                endDate.setHours(23, 59, 59, 999);
+            }
+            
+            return { startDate, endDate };
+        }
+
+        // 计算每天的新注册用户数量（支持自定义日期范围）
+        function getDailyNewUsers(startDate, endDate) {
+            const dailyCount = {};
+            
+            // 如果没有提供日期范围，使用默认值
+            if (!startDate || !endDate) {
+                const range = getChartDateRange();
+                startDate = range.startDate;
+                endDate = range.endDate;
+            }
+
+            // 计算日期范围内的所有日期
+            const currentDate = new Date(startDate);
+            while (currentDate <= endDate) {
+                const dateKey = currentDate.toISOString().split('T')[0];
+                dailyCount[dateKey] = 0;
+                currentDate.setDate(currentDate.getDate() + 1);
+            }
+
+            // 统计所有用户（排除管理员）
+            allUsers.forEach(user => {
+                if (user.registerTime) {
+                    try {
+                        const registerDate = new Date(user.registerTime);
+                        registerDate.setHours(0, 0, 0, 0);
+                        if (registerDate >= startDate && registerDate <= endDate) {
+                            const dateKey = registerDate.toISOString().split('T')[0];
+                            if (dailyCount.hasOwnProperty(dateKey)) {
+                                dailyCount[dateKey]++;
+                            }
+                        }
+                    } catch (e) {
+                        console.warn('Invalid registerTime:', user.registerTime);
+                    }
+                }
+            });
+
+            return dailyCount;
+        }
+
+        // 计算每天的订单数量（支持自定义日期范围）
+        function getDailyOrders(startDate, endDate) {
+            const dailyCount = {};
+            
+            // 如果没有提供日期范围，使用默认值
+            if (!startDate || !endDate) {
+                const range = getChartDateRange();
+                startDate = range.startDate;
+                endDate = range.endDate;
+            }
+
+            // 计算日期范围内的所有日期
+            const currentDate = new Date(startDate);
+            while (currentDate <= endDate) {
+                const dateKey = currentDate.toISOString().split('T')[0];
+                dailyCount[dateKey] = 0;
+                currentDate.setDate(currentDate.getDate() + 1);
+            }
+
+            // 统计所有订单（使用 allOrders）
+            allOrders.forEach(order => {
+                const orderTime = order.date || order.updatedAt || order.createdAt;
+                if (orderTime) {
+                    try {
+                        const orderDate = new Date(typeof orderTime === 'number' ? orderTime : orderTime);
+                        orderDate.setHours(0, 0, 0, 0);
+                        if (orderDate >= startDate && orderDate <= endDate) {
+                            const dateKey = orderDate.toISOString().split('T')[0];
+                            if (dailyCount.hasOwnProperty(dateKey)) {
+                                dailyCount[dateKey]++;
+                            }
+                        }
+                    } catch (e) {
+                        console.warn('Invalid order time:', orderTime);
+                    }
+                }
+            });
+
+            return dailyCount;
+        }
+
+        // 绘制每日新注册用户折线图
+        function renderDailyUsersChart() {
+            const ctx = document.getElementById('dailyUsersChart');
+            if (!ctx) return;
+
+            const { startDate, endDate } = getChartDateRange();
+            const dailyData = getDailyNewUsers(startDate, endDate);
+            const labels = Object.keys(dailyData).sort().map(date => {
+                const d = new Date(date);
+                return `${d.getMonth() + 1}/${d.getDate()}`;
+            });
+            const data = Object.keys(dailyData).sort().map(date => dailyData[date]);
+
+            if (dailyUsersChart) {
+                dailyUsersChart.destroy();
+            }
+
+            dailyUsersChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: '新注册用户数',
+                        data: data,
+                        borderColor: 'rgb(75, 192, 192)',
+                        backgroundColor: 'rgba(75, 192, 192, 0.1)',
+                        tension: 0.4,
+                        fill: true,
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 绘制每日订单折线图
+        function renderDailyOrdersChart() {
+            const ctx = document.getElementById('dailyOrdersChart');
+            if (!ctx) return;
+
+            const { startDate, endDate } = getChartDateRange();
+            const dailyData = getDailyOrders(startDate, endDate);
+            const labels = Object.keys(dailyData).sort().map(date => {
+                const d = new Date(date);
+                return `${d.getMonth() + 1}/${d.getDate()}`;
+            });
+            const data = Object.keys(dailyData).sort().map(date => dailyData[date]);
+
+            if (dailyOrdersChart) {
+                dailyOrdersChart.destroy();
+            }
+
+            dailyOrdersChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: '订单数量',
+                        data: data,
+                        borderColor: 'rgb(255, 99, 132)',
+                        backgroundColor: 'rgba(255, 99, 132, 0.1)',
+                        tension: 0.4,
+                        fill: true,
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 绘制用户注册趋势图
+        function renderUserTrendChart() {
+            const ctx = document.getElementById('userTrendChart');
+            if (!ctx) return;
+
+            const { startDate, endDate } = getChartDateRange();
+            const dailyData = getDailyNewUsers(startDate, endDate);
+            const labels = Object.keys(dailyData).sort().map(date => {
+                const d = new Date(date);
+                return `${d.getMonth() + 1}/${d.getDate()}`;
+            });
+            const data = Object.keys(dailyData).sort().map(date => dailyData[date]);
+
+            // 计算累计用户数
+            let cumulative = 0;
+            const cumulativeData = data.map(count => {
+                cumulative += count;
+                return cumulative;
+            });
+
+            if (userTrendChart) {
+                userTrendChart.destroy();
+            }
+
+            userTrendChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: '每日新注册',
+                            data: data,
+                            borderColor: 'rgb(54, 162, 235)',
+                            backgroundColor: 'rgba(54, 162, 235, 0.1)',
+                            tension: 0.4,
+                            fill: false,
+                            yAxisID: 'y',
+                            pointRadius: 3
+                        },
+                        {
+                            label: '累计注册',
+                            data: cumulativeData,
+                            borderColor: 'rgb(255, 159, 64)',
+                            backgroundColor: 'rgba(255, 159, 64, 0.1)',
+                            tension: 0.4,
+                            fill: false,
+                            yAxisID: 'y1',
+                            pointRadius: 3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: '每日新注册数'
+                            }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: '累计注册数'
+                            },
+                            grid: {
+                                drawOnChartArea: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 初始化日期选择器
+        function initDateRangePicker() {
+            const startDateInput = document.getElementById('chart-start-date');
+            const endDateInput = document.getElementById('chart-end-date');
+            const applyBtn = document.getElementById('apply-date-range');
+            const resetBtn = document.getElementById('reset-date-range');
+
+            if (!startDateInput || !endDateInput) return;
+
+            // 设置默认值（最近30天）
+            const endDate = new Date();
+            const startDate = new Date();
+            startDate.setDate(startDate.getDate() - 30);
+
+            startDateInput.value = startDate.toISOString().split('T')[0];
+            endDateInput.value = endDate.toISOString().split('T')[0];
+
+            // 应用按钮事件
+            if (applyBtn) {
+                applyBtn.addEventListener('click', () => {
+                    const start = startDateInput.value;
+                    const end = endDateInput.value;
+                    
+                    if (!start || !end) {
+                        customAlert('请选择开始日期和结束日期', '提示');
+                        return;
+                    }
+                    
+                    if (new Date(start) > new Date(end)) {
+                        customAlert('开始日期不能晚于结束日期', '提示');
+                        return;
+                    }
+                    
+                    // 重新绘制所有图表
+                    renderDailyUsersChart();
+                    renderDailyOrdersChart();
+                    renderUserTrendChart();
+                });
+            }
+
+            // 重置按钮事件
+            if (resetBtn) {
+                resetBtn.addEventListener('click', () => {
+                    const endDate = new Date();
+                    const startDate = new Date();
+                    startDate.setDate(startDate.getDate() - 30);
+
+                    startDateInput.value = startDate.toISOString().split('T')[0];
+                    endDateInput.value = endDate.toISOString().split('T')[0];
+                    
+                    // 重新绘制所有图表
+                    renderDailyUsersChart();
+                    renderDailyOrdersChart();
+                    renderUserTrendChart();
+                });
+            }
+        }
+
         // 渲染统计数据
         function renderStatistics() {
             const totalUsers = allUsers.length + Object.keys(ADMIN_ACCOUNTS).length;
             const totalProducts = products.length;
-            const totalOrders = userOrders.length;
-            const pendingOrders = userOrders.filter(order => order.status === 'review').length;
+            // 使用 allOrders 而不是 userOrders，因为这是管理员统计所有订单
+            const totalOrders = allOrders.length;
+            const pendingOrders = allOrders.filter(order => {
+                const status = order.status || '';
+                return status === 'review' || status === 'pending';
+            }).length;
 
             document.getElementById('total-users').textContent = totalUsers;
             document.getElementById('total-products').textContent = totalProducts;
             document.getElementById('total-orders').textContent = totalOrders;
             document.getElementById('pending-orders').textContent = pendingOrders;
+
+            // 初始化日期选择器
+            initDateRangePicker();
+
+            // 绘制图表
+            if (typeof Chart !== 'undefined') {
+                // 延迟绘制，确保DOM已渲染
+                setTimeout(() => {
+                    renderDailyUsersChart();
+                    renderDailyOrdersChart();
+                    renderUserTrendChart();
+                }, 100);
+            }
+        }
+
+        // 切换统计表格显示/隐藏
+        function toggleStatTable(statType) {
+            // 隐藏所有表格
+            const allTables = document.querySelectorAll('.stat-table-section');
+            allTables.forEach(table => {
+                table.style.display = 'none';
+            });
+
+            // 移除所有卡片的active状态
+            const allCards = document.querySelectorAll('.stat-card');
+            allCards.forEach(card => {
+                card.classList.remove('active');
+            });
+
+            // 显示选中的表格
+            const targetTable = document.getElementById(`stat-table-${statType}`);
+            const targetCard = document.querySelector(`[data-stat-type="${statType}"]`);
+            
+            if (targetTable && targetCard) {
+                // 如果表格当前是隐藏的，则显示它并添加active状态
+                if (targetTable.style.display === 'none') {
+                    targetTable.style.display = 'block';
+                    targetCard.classList.add('active');
+                    
+                    // 根据类型渲染对应的表格数据
+                    switch(statType) {
+                        case 'users':
+                            renderUsersStatTable();
+                            break;
+                        case 'products':
+                            renderProductsStatTable();
+                            break;
+                        case 'orders':
+                            initOrderFilters(); // 初始化筛选器
+                            renderOrdersStatTable();
+                            break;
+                        case 'pending':
+                            renderPendingStatTable();
+                            break;
+                    }
+                } else {
+                    // 如果表格当前是显示的，则隐藏它并移除active状态
+                    targetTable.style.display = 'none';
+                    targetCard.classList.remove('active');
+                }
+            }
+        }
+
+        // 渲染用户统计表格
+        function renderUsersStatTable() {
+            const tbody = document.getElementById('users-stat-table-body');
+            if (!tbody) return;
+
+            tbody.innerHTML = '';
+
+            // 添加管理员用户
+            Object.entries(ADMIN_ACCOUNTS).forEach(([account, userInfo]) => {
+                const row = document.createElement('tr');
+                row.style.borderBottom = '1px solid #dee2e6';
+                row.innerHTML = `
+                    <td style="padding: 12px;">${userInfo.username || account}</td>
+                    <td style="padding: 12px;">${account}</td>
+                    <td style="padding: 12px;"><span class="role-badge admin">管理员</span></td>
+                    <td style="padding: 12px;">系统预设</td>
+                    <td style="padding: 12px;"><span class="status-badge status-active">正常</span></td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            // 添加普通用户
+            allUsers.forEach(user => {
+                const row = document.createElement('tr');
+                row.style.borderBottom = '1px solid #dee2e6';
+                const registerTime = user.registerTime ? new Date(user.registerTime).toLocaleString('zh-CN') : '未知';
+                const status = user.status === 'banned' ? '已禁用' : '正常';
+                const statusClass = user.status === 'banned' ? 'status-banned' : 'status-active';
+                row.innerHTML = `
+                    <td style="padding: 12px;">${user.username || user.account}</td>
+                    <td style="padding: 12px;">${user.account}</td>
+                    <td style="padding: 12px;"><span class="role-badge user">普通用户</span></td>
+                    <td style="padding: 12px;">${registerTime}</td>
+                    <td style="padding: 12px;"><span class="status-badge ${statusClass}">${status}</span></td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // 渲染产品领取情况统计表格
+        function renderProductsStatTable() {
+            const tbody = document.getElementById('products-stat-table-body');
+            if (!tbody) return;
+
+            tbody.innerHTML = '';
+
+            // 统计每个产品的订单情况
+            const productStats = {};
+
+            // 初始化所有产品的统计
+            products.forEach(product => {
+                productStats[product.id] = {
+                    productId: product.id,
+                    productName: product.name || product.title || '未知产品',
+                    totalOrders: 0,
+                    completedOrders: 0,
+                    pendingOrders: 0,
+                    cancelledOrders: 0
+                };
+            });
+
+            // 统计订单
+            allOrders.forEach(order => {
+                const productId = order.productId;
+                if (productId && productStats[productId]) {
+                    productStats[productId].totalOrders++;
+                    
+                    const status = order.status || '';
+                    if (status === 'completed' || status === 'shipped') {
+                        productStats[productId].completedOrders++;
+                    } else if (status === 'review' || status === 'pending') {
+                        productStats[productId].pendingOrders++;
+                    } else if (status === 'cancelled' || status === 'canceled') {
+                        productStats[productId].cancelledOrders++;
+                    }
+                }
+            });
+
+            // 渲染表格行
+            Object.values(productStats).forEach(stat => {
+                const row = document.createElement('tr');
+                row.style.borderBottom = '1px solid #dee2e6';
+                row.innerHTML = `
+                    <td style="padding: 12px;">${stat.productName}</td>
+                    <td style="padding: 12px;">${stat.productId}</td>
+                    <td style="padding: 12px; text-align: center; font-weight: 500;">${stat.totalOrders}</td>
+                    <td style="padding: 12px; text-align: center; color: #28a745;">${stat.completedOrders}</td>
+                    <td style="padding: 12px; text-align: center; color: #ffc107;">${stat.pendingOrders}</td>
+                    <td style="padding: 12px; text-align: center; color: #dc3545;">${stat.cancelledOrders}</td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            // 如果没有产品，显示提示
+            if (products.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td colspan="6" style="padding: 24px; text-align: center; color: var(--gray);">
+                        暂无产品数据
+                    </td>
+                `;
+                tbody.appendChild(row);
+            }
+        }
+
+        // 渲染订单统计表格（支持筛选）
+        function renderOrdersStatTable() {
+            const tbody = document.getElementById('orders-stat-table-body');
+            if (!tbody) return;
+
+            tbody.innerHTML = '';
+
+            // 应用筛选条件
+            let filteredOrders = [...allOrders];
+
+            // 状态筛选
+            if (currentOrderFilters.status) {
+                filteredOrders = filteredOrders.filter(order => {
+                    const status = order.status || '';
+                    if (currentOrderFilters.status === 'cancelled' || currentOrderFilters.status === 'canceled') {
+                        return status === 'cancelled' || status === 'canceled';
+                    }
+                    return status === currentOrderFilters.status;
+                });
+            }
+
+            // 产品筛选
+            if (currentOrderFilters.product) {
+                filteredOrders = filteredOrders.filter(order => 
+                    order.productName === currentOrderFilters.product
+                );
+            }
+
+            // 日期范围筛选
+            if (currentOrderFilters.startDate) {
+                const startDate = new Date(currentOrderFilters.startDate);
+                startDate.setHours(0, 0, 0, 0);
+                filteredOrders = filteredOrders.filter(order => {
+                    const orderDate = new Date(order.date || order.createdAt || 0);
+                    orderDate.setHours(0, 0, 0, 0);
+                    return orderDate >= startDate;
+                });
+            }
+
+            if (currentOrderFilters.endDate) {
+                const endDate = new Date(currentOrderFilters.endDate);
+                endDate.setHours(23, 59, 59, 999);
+                filteredOrders = filteredOrders.filter(order => {
+                    const orderDate = new Date(order.date || order.createdAt || 0);
+                    return orderDate <= endDate;
+                });
+            }
+
+            // 客户姓名筛选
+            if (currentOrderFilters.customer) {
+                const customerName = currentOrderFilters.customer.toLowerCase();
+                filteredOrders = filteredOrders.filter(order => {
+                    const name = (order.customerInfo?.name || '').toLowerCase();
+                    return name.includes(customerName);
+                });
+            }
+
+            // 订单ID筛选
+            if (currentOrderFilters.orderId) {
+                const orderId = currentOrderFilters.orderId.toLowerCase();
+                filteredOrders = filteredOrders.filter(order => {
+                    const id = String(order.id || '').toLowerCase();
+                    return id.includes(orderId);
+                });
+            }
+
+            // 按日期排序，最新的在前
+            const sortedOrders = filteredOrders.sort((a, b) => {
+                const dateA = new Date(a.date || a.createdAt || 0);
+                const dateB = new Date(b.date || b.createdAt || 0);
+                return dateB - dateA;
+            });
+
+            // 显示筛选结果数量
+            const resultDiv = document.getElementById('orders-filter-result');
+            if (resultDiv) {
+                if (filteredOrders.length === allOrders.length) {
+                    resultDiv.innerHTML = `<i class="fas fa-info-circle" style="margin-right: 6px;"></i>共 ${allOrders.length} 条订单`;
+                } else {
+                    resultDiv.innerHTML = `<i class="fas fa-filter" style="margin-right: 6px;"></i>显示 ${filteredOrders.length} / ${allOrders.length} 条订单`;
+                }
+            }
+
+            // 渲染订单行
+            sortedOrders.forEach(order => {
+                const row = document.createElement('tr');
+                row.style.borderBottom = '1px solid #dee2e6';
+                const orderDate = order.date ? new Date(order.date).toLocaleString('zh-CN') : '未知';
+                const status = getStatusText(order.status);
+                const statusClass = getOrderStatusClass(order.status);
+                row.innerHTML = `
+                    <td style="padding: 12px;">${order.id || 'N/A'}</td>
+                    <td style="padding: 12px;">${order.productName || '未知产品'}</td>
+                    <td style="padding: 12px;">${order.customerInfo?.name || '未知'}</td>
+                    <td style="padding: 12px;">${orderDate}</td>
+                    <td style="padding: 12px; text-align: center;"><span class="status-badge ${statusClass}">${status}</span></td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            // 如果没有订单，显示提示
+            if (sortedOrders.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td colspan="5" style="padding: 24px; text-align: center; color: var(--gray);">
+                        ${allOrders.length === 0 ? '暂无订单数据' : '没有符合条件的订单'}
+                    </td>
+                `;
+                tbody.appendChild(row);
+            }
+        }
+
+        // 渲染待处理订单表格
+        function renderPendingStatTable() {
+            const tbody = document.getElementById('pending-stat-table-body');
+            if (!tbody) return;
+
+            tbody.innerHTML = '';
+
+            // 筛选待处理订单
+            const pendingOrders = allOrders.filter(order => {
+                const status = order.status || '';
+                return status === 'review' || status === 'pending';
+            });
+
+            // 按日期排序，最新的在前
+            const sortedPending = [...pendingOrders].sort((a, b) => {
+                const dateA = new Date(a.date || a.createdAt || 0);
+                const dateB = new Date(b.date || b.createdAt || 0);
+                return dateB - dateA;
+            });
+
+            sortedPending.forEach(order => {
+                const row = document.createElement('tr');
+                row.style.borderBottom = '1px solid #dee2e6';
+                const orderDate = order.date ? new Date(order.date).toLocaleString('zh-CN') : '未知';
+                const status = getStatusText(order.status);
+                row.innerHTML = `
+                    <td style="padding: 12px;">${order.id || 'N/A'}</td>
+                    <td style="padding: 12px;">${order.productName || '未知产品'}</td>
+                    <td style="padding: 12px;">${order.customerInfo?.name || '未知'}</td>
+                    <td style="padding: 12px;">${orderDate}</td>
+                    <td style="padding: 12px; text-align: center;"><span class="status-badge status-inactive">${status}</span></td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            // 如果没有待处理订单，显示提示
+            if (pendingOrders.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td colspan="5" style="padding: 24px; text-align: center; color: var(--gray);">
+                        暂无待处理订单
+                    </td>
+                `;
+                tbody.appendChild(row);
+            }
+        }
+
+        // 获取订单状态样式类（优化后的颜色）
+        function getOrderStatusClass(status) {
+            const statusMap = {
+                'pending': 'status-pending',
+                'review': 'status-review',
+                'shipping': 'status-shipping',
+                'completed': 'status-completed',
+                'shipped': 'status-shipped',
+                'cancelled': 'status-cancelled',
+                'canceled': 'status-cancelled'
+            };
+            return statusMap[status] || 'status-inactive';
+        }
+
+        // 订单筛选相关变量
+        let currentOrderFilters = {
+            status: '',
+            product: '',
+            startDate: '',
+            endDate: '',
+            customer: '',
+            orderId: ''
+        };
+
+        // 初始化订单筛选（填充产品下拉框）
+        function initOrderFilters() {
+            const productSelect = document.getElementById('filter-order-product');
+            if (!productSelect) return;
+
+            // 获取所有唯一的产品名称
+            const uniqueProducts = [...new Set(allOrders.map(order => order.productName).filter(Boolean))];
+            uniqueProducts.sort();
+
+            // 清空并添加选项
+            productSelect.innerHTML = '<option value="">全部产品</option>';
+            uniqueProducts.forEach(productName => {
+                const option = document.createElement('option');
+                option.value = productName;
+                option.textContent = productName;
+                productSelect.appendChild(option);
+            });
+        }
+
+        // 应用订单筛选
+        function applyOrderFilters() {
+            // 获取筛选条件
+            currentOrderFilters = {
+                status: document.getElementById('filter-order-status')?.value || '',
+                product: document.getElementById('filter-order-product')?.value || '',
+                startDate: document.getElementById('filter-order-start-date')?.value || '',
+                endDate: document.getElementById('filter-order-end-date')?.value || '',
+                customer: document.getElementById('filter-order-customer')?.value.trim() || '',
+                orderId: document.getElementById('filter-order-id')?.value.trim() || ''
+            };
+
+            // 重新渲染表格
+            renderOrdersStatTable();
+        }
+
+        // 重置订单筛选
+        function resetOrderFilters() {
+            // 清空所有筛选条件
+            if (document.getElementById('filter-order-status')) {
+                document.getElementById('filter-order-status').value = '';
+            }
+            if (document.getElementById('filter-order-product')) {
+                document.getElementById('filter-order-product').value = '';
+            }
+            if (document.getElementById('filter-order-start-date')) {
+                document.getElementById('filter-order-start-date').value = '';
+            }
+            if (document.getElementById('filter-order-end-date')) {
+                document.getElementById('filter-order-end-date').value = '';
+            }
+            if (document.getElementById('filter-order-customer')) {
+                document.getElementById('filter-order-customer').value = '';
+            }
+            if (document.getElementById('filter-order-id')) {
+                document.getElementById('filter-order-id').value = '';
+            }
+
+            // 重置筛选对象
+            currentOrderFilters = {
+                status: '',
+                product: '',
+                startDate: '',
+                endDate: '',
+                customer: '',
+                orderId: ''
+            };
+
+            // 重新渲染表格
+            renderOrdersStatTable();
         }
 
         // 查看用户详情
@@ -16113,6 +17727,29 @@ const paginationContainers = {
                             </h4>
                             ${renderOrderContactInfo(order)}
                         </div>
+                        
+                        ${(() => {
+                            // 检查订单状态是否为pending或review
+                            const orderStatus = String(order.status || '').toLowerCase();
+                            const isPending = orderStatus === 'pending' || orderStatus === 'review';
+                            
+                            if (isPending && currentUser && !currentUser.role) {
+                                // 获取产品信息以检查是否有redirectUrl
+                                const relatedProduct = Array.isArray(products) ? products.find(p => normalizeOrderId(p.id) === normalizeOrderId(order.productId)) : null;
+                                
+                                return `
+                                    <div style="margin-top: 20px; text-align: center;">
+                                        <button class="btn btn-success" onclick="showWhatsAppModal('${normalizeOrderId(order.id)}'); this.closest('.modal').remove();" 
+                                                style="padding: 12px 30px; font-size: 16px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; font-weight: 600; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4); transition: all 0.3s;"
+                                                onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(102, 126, 234, 0.5)';"
+                                                onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(102, 126, 234, 0.4)';">
+                                            <i class="fab fa-whatsapp" style="margin-right: 8px;"></i>Get it now
+                                        </button>
+                                    </div>
+                                `;
+                            }
+                            return '';
+                        })()}
                         
                         ${order.status === 'completed' && currentUser && !currentUser.role && !(order.hasReview === true) ? `
                             <div style="margin-top: 20px; text-align: center;">
@@ -17693,12 +19330,19 @@ const paginationContainers = {
 
             const { items: paginatedProducts } = getPaginatedItems(filteredProducts, 'products');
 
-            adminProductsGrid.innerHTML = paginatedProducts.map(product => `
-                <div class="product-card" data-product-id="${product.id}">
+            // 只有在没有搜索过滤时才允许拖放排序
+            const allowDrag = !normalizedTerm;
+
+            adminProductsGrid.innerHTML = paginatedProducts.map((product, index) => `
+                <div class="product-card ${allowDrag ? 'draggable' : ''}" 
+                     data-product-id="${product.id}" 
+                     data-product-index="${index}"
+                     ${allowDrag ? 'draggable="true"' : ''}>
                     <div style="position: absolute; top: 10px; left: 10px; z-index: 10;">
                         <input type="checkbox" class="product-checkbox" data-product-id="${product.id}" 
                                style="width: 20px; height: 20px; cursor: pointer;">
                     </div>
+                    ${allowDrag ? '<div style="position: absolute; top: 10px; right: 10px; z-index: 10; color: #999; font-size: 18px; cursor: move; padding: 5px;" title="拖动以调整顺序"><i class="fas fa-grip-vertical"></i></div>' : ''}
                     <div class="product-image" style="background-image: url('${getPrimaryProductImage(product)}')"></div>
                     <div class="product-info">
                         <h3 class="product-title">${product.name}</h3>
@@ -17715,6 +19359,11 @@ const paginationContainers = {
                     </div>
                 </div>
             `).join('');
+
+            // 添加拖放功能（仅在无搜索过滤时）
+            if (allowDrag) {
+                initDragAndDrop(adminProductsGrid, paginatedProducts);
+            }
 
             // 添加编辑事件
             document.querySelectorAll('.edit-product').forEach(btn => {
@@ -17774,6 +19423,140 @@ const paginationContainers = {
             });
 
             updatePaginationControls('products', filteredProducts.length, renderAdminProducts);
+        }
+
+        // 初始化拖放排序功能
+        function initDragAndDrop(container, paginatedProducts) {
+            let draggedElement = null;
+            let draggedIndex = -1;
+
+            // 为所有可拖拽的产品卡片添加事件监听器
+            container.querySelectorAll('.product-card.draggable').forEach((card, index) => {
+                // 阻止复选框和按钮触发拖拽
+                const checkbox = card.querySelector('.product-checkbox');
+                const buttons = card.querySelectorAll('button');
+                
+                [checkbox, ...buttons].forEach(element => {
+                    if (element) {
+                        element.addEventListener('mousedown', function(e) {
+                            e.stopPropagation();
+                        });
+                    }
+                });
+                
+                // 拖拽开始
+                card.addEventListener('dragstart', function(e) {
+                    // 如果点击的是复选框或按钮，不触发拖拽
+                    if (e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON' || e.target.closest('button') || e.target.closest('input')) {
+                        e.preventDefault();
+                        return false;
+                    }
+                    
+                    draggedElement = this;
+                    draggedIndex = parseInt(this.getAttribute('data-product-index'));
+                    this.classList.add('dragging');
+                    container.classList.add('dragging-active');
+                    
+                    // 设置拖拽数据
+                    e.dataTransfer.effectAllowed = 'move';
+                    e.dataTransfer.setData('text/html', this.outerHTML);
+                    e.dataTransfer.setData('text/plain', draggedIndex.toString());
+                    
+                    // 设置拖拽图像
+                    const dragImage = this.cloneNode(true);
+                    dragImage.style.opacity = '0.8';
+                    dragImage.style.transform = 'rotate(5deg)';
+                    document.body.appendChild(dragImage);
+                    e.dataTransfer.setDragImage(dragImage, e.offsetX, e.offsetY);
+                    setTimeout(() => document.body.removeChild(dragImage), 0);
+                });
+
+                // 拖拽结束
+                card.addEventListener('dragend', function(e) {
+                    this.classList.remove('dragging');
+                    container.classList.remove('dragging-active');
+                    container.querySelectorAll('.product-card').forEach(c => {
+                        c.classList.remove('drag-over');
+                    });
+                    draggedElement = null;
+                    draggedIndex = -1;
+                });
+
+                // 拖拽悬停
+                card.addEventListener('dragover', function(e) {
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = 'move';
+                    
+                    if (this !== draggedElement) {
+                        // 移除其他卡片的 drag-over 类
+                        container.querySelectorAll('.product-card').forEach(c => {
+                            if (c !== draggedElement) {
+                                c.classList.remove('drag-over');
+                            }
+                        });
+                        
+                        // 添加当前卡片的 drag-over 类
+                        this.classList.add('drag-over');
+                    }
+                });
+
+                // 拖拽进入
+                card.addEventListener('dragenter', function(e) {
+                    e.preventDefault();
+                    if (this !== draggedElement) {
+                        this.classList.add('drag-over');
+                    }
+                });
+
+                // 拖拽离开
+                card.addEventListener('dragleave', function(e) {
+                    // 只有当鼠标真正离开元素时才移除样式
+                    if (!this.contains(e.relatedTarget)) {
+                        this.classList.remove('drag-over');
+                    }
+                });
+
+                // 放置
+                card.addEventListener('drop', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    if (draggedElement && draggedElement !== this) {
+                        const dropIndex = parseInt(this.getAttribute('data-product-index'));
+                        
+                        // 获取实际产品ID
+                        const draggedProductId = parseInt(draggedElement.getAttribute('data-product-id'));
+                        const dropProductId = parseInt(this.getAttribute('data-product-id'));
+                        
+                        // 在完整产品数组中找到对应的产品索引
+                        const draggedProductIndex = products.findIndex(p => parseInt(p.id) === draggedProductId);
+                        const dropProductIndex = products.findIndex(p => parseInt(p.id) === dropProductId);
+                        
+                        if (draggedProductIndex !== -1 && dropProductIndex !== -1) {
+                            // 重新排序产品数组
+                            const [movedProduct] = products.splice(draggedProductIndex, 1);
+                            products.splice(dropProductIndex, 0, movedProduct);
+                            
+                            // 保存产品数据
+                            const saveResult = saveProducts();
+                            if (saveResult && typeof saveResult.then === 'function') {
+                                saveResult.then(() => {
+                                    showNotification('产品顺序已更新', 'success');
+                                }).catch(() => {
+                                    showNotification('产品顺序更新失败', 'error');
+                                });
+                            } else {
+                                showNotification('产品顺序已更新', 'success');
+                            }
+                            
+                            // 重新渲染产品列表
+                            renderAdminProducts();
+                        }
+                    }
+                    
+                    this.classList.remove('drag-over');
+                });
+            });
         }
 
         // 打开编辑产品模态框
@@ -17842,13 +19625,16 @@ const paginationContainers = {
                 let hasRedirectUrl = false;
                 let redirectLink = '';
                 
-                if (orderId && Array.isArray(userOrders)) {
-                    const order = userOrders.find(o => o.id === orderId);
-                    const linkedProductId = order ? order.productId : null;
-                    currentProductIdForWhatsApp = linkedProductId;
-                    const product = Array.isArray(products) ? products.find(p => normalizeOrderId(p.id) === normalizeOrderId(linkedProductId)) : null;
-                    redirectLink = product && product.redirectUrl ? product.redirectUrl : '';
-                    hasRedirectUrl = !!redirectLink;
+                if (orderId) {
+                    // 使用findOrderById函数查找订单，这样可以从userOrders或allOrders中查找
+                    const order = findOrderById(orderId);
+                    if (order) {
+                        const linkedProductId = order.productId;
+                        currentProductIdForWhatsApp = linkedProductId;
+                        const product = Array.isArray(products) ? products.find(p => normalizeOrderId(p.id) === normalizeOrderId(linkedProductId)) : null;
+                        redirectLink = product && product.redirectUrl ? product.redirectUrl : '';
+                        hasRedirectUrl = !!redirectLink;
+                    }
                 }
 
                 // 根据是否有跳转链接显示不同的模态框样式
@@ -19960,13 +21746,6 @@ const paginationContainers = {
             messageModalCallback = null;
         }
 
-        // 点击背景关闭
-        document.getElementById('message-modal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeMessageModal();
-            }
-        });
-
             // 替代alert函数（支持多语言标题）
             function customAlert(message, title) {
                 const finalTitle = title || (typeof t === 'function' ? t('infoTitle') : 'Info');
@@ -20095,12 +21874,6 @@ const paginationContainers = {
             updateCarouselPreview(this.value);
         });
 
-        // 点击背景关闭
-        document.getElementById('carousel-edit-modal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeCarouselEditModal();
-            }
-        });
 
         // ========== 产品编辑模态框函数 ==========
         let currentProductEditData = { id: null, isEdit: false };
@@ -20277,12 +22050,6 @@ const paginationContainers = {
             });
         }
 
-        // 点击背景关闭
-        document.getElementById('product-edit-modal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeProductEditModal();
-            }
-        });
     </script>
 
     <!-- 酷炫穿心彩蛋页面 -->
@@ -20323,7 +22090,7 @@ const paginationContainers = {
                 <h1 class="text-animation-3d">
                     <span class="text-gradient">我们的缘分从此刻开始</span>
                 </h1>
-                <p class="subtitle-animation-3d">致琦琦 · 让平凡的日子都变成诗篇</p>
+                <p class="subtitle-animation-3d"致琦琦 让平凡的日子都变成诗篇</p>
             </div>
             
             <!-- 粒子效果容器 -->
@@ -20620,80 +22387,70 @@ const paginationContainers = {
         .arrow-flying {
             position: absolute;
             top: 50%;
-            left: 0;
-            width: 16px;
-            height: 220px;
+            left: -260px; /* 起点更靠左，水平飞行 */
+            width: 240px; /* 横向长度 */
+            height: 16px;  /* 竖向厚度 */
             transform-origin: center center;
             z-index: 10;
             opacity: 0;
-            transform: translateY(-50%) rotate(0deg);
+            transform: translateY(-50%) translateX(0) rotate(0deg);
         }
 
         .arrow-flying.flying {
-            animation: arrowFlyHorizontal 2.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+            animation: arrowFlyHorizontal 1.8s cubic-bezier(0.25, 0.1, 0.3, 1) forwards;
         }
 
+        /* 从左到右：起步慢 -> 中段加速 -> 穿心平滑 -> 离场减速隐去 */
         @keyframes arrowFlyHorizontal {
             0% {
                 opacity: 0;
-                transform: translateY(-50%) translateX(-200px) rotate(0deg) scale(0.5);
-                filter: blur(15px);
-            }
-            10% {
-                opacity: 1;
-                filter: blur(8px);
+                transform: translateY(-50%) translateX(-360px) scale(0.8);
+                filter: blur(6px);
             }
             20% {
                 opacity: 1;
-                transform: translateY(-50%) translateX(0px) rotate(0deg) scale(0.8);
-                filter: blur(4px);
+                transform: translateY(-50%) translateX(-180px) scale(0.9);
+                filter: blur(3px);
             }
-            40% {
+            45% {
                 opacity: 1;
-                transform: translateY(-50%) translateX(calc(50vw - 200px)) rotate(0deg) scale(1);
-                filter: blur(1px);
-            }
-            50% {
-                opacity: 1;
-                transform: translateY(-50%) translateX(calc(50vw - 200px)) rotate(0deg) scale(1.1);
+                transform: translateY(-50%) translateX(40px) scale(1);
                 filter: blur(0px);
             }
-            60% {
+            /* 约 65% 在爱心中心位置 */
+            65% {
                 opacity: 1;
-                transform: translateY(-50%) translateX(calc(50vw - 200px)) rotate(0deg) scale(1);
+                transform: translateY(-50%) translateX(180px) scale(1.02);
                 filter: blur(0px);
             }
             80% {
-                opacity: 0.8;
-                transform: translateY(-50%) translateX(calc(100vw + 100px)) rotate(0deg) scale(0.9);
-                filter: blur(2px);
+                opacity: 0.9;
+                transform: translateY(-50%) translateX(340px) scale(0.95);
+                filter: blur(1px);
             }
             100% {
                 opacity: 0;
-                transform: translateY(-50%) translateX(calc(100vw + 300px)) rotate(0deg) scale(0.6);
-                filter: blur(8px);
+                transform: translateY(-50%) translateX(520px) scale(0.85);
+                filter: blur(6px);
             }
         }
 
         .arrow-shaft {
             width: 100%;
             height: 100%;
-            background: linear-gradient(to bottom, 
+            background: linear-gradient(to right, 
                 rgba(255, 255, 255, 1) 0%, 
-                rgba(255, 240, 245, 0.95) 15%,
+                rgba(255, 240, 245, 0.95) 10%,
                 #ffb6c1 30%, 
-                #ff91a4 50%, 
-                #ff7f9f 70%,
-                #ff6b8e 85%,
+                #ff91a4 55%, 
+                #ff7f9f 75%,
                 rgba(255, 107, 142, 0.9) 100%);
             border-radius: 8px;
             box-shadow: 
-                0 0 20px rgba(255, 182, 193, 1),
-                0 0 40px rgba(255, 182, 193, 0.8),
-                0 0 60px rgba(255, 182, 193, 0.6),
-                0 0 100px rgba(255, 182, 193, 0.4),
-                inset 0 0 30px rgba(255, 255, 255, 0.4),
-                inset 0 2px 10px rgba(255, 255, 255, 0.6);
+                0 0 16px rgba(255, 182, 193, 0.9),
+                0 0 32px rgba(255, 182, 193, 0.7),
+                0 0 56px rgba(255, 182, 193, 0.5),
+                inset 0 0 18px rgba(255, 255, 255, 0.35);
             position: relative;
             animation: shaftShimmer 2s ease-in-out infinite;
         }
@@ -20701,36 +22458,34 @@ const paginationContainers = {
         @keyframes shaftShimmer {
             0%, 100% {
                 box-shadow: 
-                    0 0 20px rgba(255, 182, 193, 1),
-                    0 0 40px rgba(255, 182, 193, 0.8),
-                    0 0 60px rgba(255, 182, 193, 0.6),
-                    0 0 100px rgba(255, 182, 193, 0.4),
-                    inset 0 0 30px rgba(255, 255, 255, 0.4);
+                    0 0 16px rgba(255, 182, 193, 0.9),
+                    0 0 32px rgba(255, 182, 193, 0.7),
+                    0 0 56px rgba(255, 182, 193, 0.5),
+                    inset 0 0 18px rgba(255, 255, 255, 0.35);
             }
             50% {
                 box-shadow: 
-                    0 0 30px rgba(255, 182, 193, 1.2),
-                    0 0 60px rgba(255, 182, 193, 1),
-                    0 0 90px rgba(255, 182, 193, 0.8),
-                    0 0 120px rgba(255, 182, 193, 0.6),
-                    inset 0 0 40px rgba(255, 255, 255, 0.6);
+                    0 0 22px rgba(255, 182, 193, 1),
+                    0 0 42px rgba(255, 182, 193, 0.85),
+                    0 0 70px rgba(255, 182, 193, 0.65),
+                    inset 0 0 26px rgba(255, 255, 255, 0.45);
             }
         }
 
         .arrow-head {
             position: absolute;
-            top: -35px;
-            left: 50%;
-            transform: translateX(-50%);
+            top: 50%;
+            right: -26px;
+            transform: translateY(-50%) rotate(0deg);
             width: 0;
             height: 0;
-            border-left: 20px solid transparent;
-            border-right: 20px solid transparent;
-            border-bottom: 40px solid #fff;
+            border-top: 12px solid transparent;
+            border-bottom: 12px solid transparent;
+            border-left: 28px solid #fff;
             filter: 
-                drop-shadow(0 0 15px rgba(255, 182, 193, 1))
-                drop-shadow(0 0 30px rgba(255, 182, 193, 0.8))
-                drop-shadow(0 0 50px rgba(255, 182, 193, 0.6));
+                drop-shadow(0 0 14px rgba(255, 182, 193, 1))
+                drop-shadow(0 0 28px rgba(255, 182, 193, 0.8))
+                drop-shadow(0 0 44px rgba(255, 182, 193, 0.6));
             z-index: 2;
             animation: headGlow 1.5s ease-in-out infinite;
         }
@@ -20753,58 +22508,56 @@ const paginationContainers = {
         .arrow-head::before {
             content: '';
             position: absolute;
-            top: 6px;
-            left: 50%;
-            transform: translateX(-50%);
+            top: -8px;
+            left: -4px;
             width: 0;
             height: 0;
-            border-left: 14px solid transparent;
-            border-right: 14px solid transparent;
-            border-bottom: 28px solid #ffb6c1;
+            border-top: 10px solid transparent;
+            border-bottom: 10px solid transparent;
+            border-left: 20px solid #ffb6c1;
         }
 
         .arrow-head::after {
             content: '';
             position: absolute;
-            top: 12px;
-            left: 50%;
-            transform: translateX(-50%);
+            top: -4px;
+            left: 0px;
             width: 0;
             height: 0;
-            border-left: 8px solid transparent;
-            border-right: 8px solid transparent;
-            border-bottom: 16px solid #ff91a4;
+            border-top: 8px solid transparent;
+            border-bottom: 8px solid transparent;
+            border-left: 16px solid #ff91a4;
         }
 
         /* 箭尾拖尾效果 - 增强版 */
         .arrow-trail {
             position: absolute;
-            top: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 10px;
-            height: 120px;
-            background: linear-gradient(to bottom, 
-                transparent 0%,
-                rgba(255, 182, 193, 0.8) 30%,
-                rgba(255, 182, 193, 0.6) 60%,
-                rgba(255, 182, 193, 0.3) 100%);
-            border-radius: 5px;
-            filter: blur(10px);
-            animation: trailGlow 0.4s ease-in-out infinite;
-            box-shadow: 0 0 20px rgba(255, 182, 193, 0.6);
+            top: 50%;
+            left: -12px;
+            transform: translateY(-50%);
+            width: 120px;
+            height: 10px;
+            background: linear-gradient(to right, 
+                rgba(255, 182, 193, 0.1) 0%,
+                rgba(255, 182, 193, 0.45) 40%,
+                rgba(255, 182, 193, 0.7) 70%,
+                rgba(255, 182, 193, 0.2) 100%);
+            border-radius: 6px;
+            filter: blur(12px);
+            animation: trailGlow 0.6s ease-in-out infinite;
+            box-shadow: 0 0 18px rgba(255, 182, 193, 0.45);
         }
 
         @keyframes trailGlow {
             0%, 100% {
-                opacity: 0.7;
-                transform: translateX(-50%) scaleY(1);
-                filter: blur(10px);
+                opacity: 0.65;
+                transform: translateY(-50%) scaleX(1);
+                filter: blur(12px);
             }
             50% {
                 opacity: 1;
-                transform: translateX(-50%) scaleY(1.3);
-                filter: blur(8px);
+                transform: translateY(-50%) scaleX(1.15);
+                filter: blur(6px);
             }
         }
 
@@ -21116,7 +22869,9 @@ const paginationContainers = {
                 border-left-width: 14px;
                 border-right-width: 14px;
                 border-bottom-width: 28px;
-                top: -24px;
+                top: 50%;
+                right: -15px;
+                transform: translateY(-50%) rotate(90deg);
             }
 
             .arrow-head::before {
@@ -21194,17 +22949,14 @@ const paginationContainers = {
 
     <script>
         // 粒子系统
-        let particles = [];
-        let animationId = null;
-        let countdownInterval = null;
+        window.particles = [];
+        window.animationId = null;
+        window.countdownInterval = null;
         let countdownTime = 10;
-        // 彩蛋登录信息
-        // 彩蛋登录相关变量 - 使用window对象确保全局访问
-        window.romanticLoginAccount = null;
-        window.romanticLoginPassword = null;
-        window.romanticLoginTimeout = null;
+        // 彩蛋登录信息已在DOMContentLoaded之前定义
 
-        function initParticles() {
+        window.initParticles = function() {
+            let particles = window.particles || [];
             const canvas = document.getElementById('particles-canvas');
             if (!canvas) return;
             
@@ -21214,6 +22966,7 @@ const paginationContainers = {
 
             // 创建粒子
             particles = [];
+            window.particles = particles;
             const particleCount = Math.min(100, Math.floor((canvas.width * canvas.height) / 15000));
             
             for (let i = 0; i < particleCount; i++) {
@@ -21227,6 +22980,7 @@ const paginationContainers = {
                     opacity: Math.random() * 0.4 + 0.2
                 });
             }
+            window.particles = particles;
 
             function animate() {
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -21266,20 +23020,20 @@ const paginationContainers = {
                 });
                 
                 ctx.globalAlpha = 1;
-                animationId = requestAnimationFrame(animate);
+                window.animationId = requestAnimationFrame(animate);
             }
             
             animate();
-        }
+        };
 
-        function startCountdown() {
+        window.startCountdown = function() {
             countdownTime = 10;
             const countdownEl = document.getElementById('countdown');
             if (!countdownEl) return;
             
             countdownEl.textContent = countdownTime;
             
-            countdownInterval = setInterval(() => {
+            window.countdownInterval = setInterval(() => {
                 countdownTime--;
                 if (countdownEl) {
                     countdownEl.textContent = countdownTime;
@@ -21290,34 +23044,39 @@ const paginationContainers = {
                 }
                 
                 if (countdownTime <= 0) {
-                    clearInterval(countdownInterval);
+                    clearInterval(window.countdownInterval);
                     // 清除setTimeout，避免重复调用
                     if (window.romanticLoginTimeout) {
                         clearTimeout(window.romanticLoginTimeout);
                         window.romanticLoginTimeout = null;
                     }
-                    closeRomanticEasterEgg();
+                    if (typeof window.closeRomanticEasterEgg === 'function') {
+                        window.closeRomanticEasterEgg();
+                    }
                     // 继续登录流程
                     if (window.romanticLoginAccount && window.romanticLoginPassword) {
-                        handleRomanticLogin(window.romanticLoginAccount, window.romanticLoginPassword);
+                        if (typeof handleRomanticLogin === 'function') {
+                            handleRomanticLogin(window.romanticLoginAccount, window.romanticLoginPassword);
+                        }
                         // 清除保存的登录信息
                         window.romanticLoginAccount = null;
                         window.romanticLoginPassword = null;
                     }
                 }
             }, 1000);
-        }
+        };
 
         // 爆炸粒子系统
-        let explosionParticles = [];
-        let explosionAnimationId = null;
+        window.explosionParticles = [];
+        window.explosionAnimationId = null;
 
-        function createExplosionParticles() {
+        window.createExplosionParticles = function() {
             const container = document.getElementById('explosion-particles');
             if (!container) return;
             
             container.innerHTML = '';
-            explosionParticles = [];
+            let explosionParticles = [];
+            window.explosionParticles = explosionParticles;
             
             const particleCount = 120;
             const centerX = 200;
@@ -21367,17 +23126,18 @@ const paginationContainers = {
                     rotationSpeed: (Math.random() - 0.5) * 10
                 });
             }
+            window.explosionParticles = explosionParticles;
             
             // 开始爆炸动画
             animateExplosion();
-        }
+        };
 
         function animateExplosion() {
-            if (explosionAnimationId) {
-                cancelAnimationFrame(explosionAnimationId);
+            if (window.explosionAnimationId) {
+                cancelAnimationFrame(window.explosionAnimationId);
             }
             
-            let activeParticles = explosionParticles.filter(p => p.life > 0);
+            let activeParticles = (window.explosionParticles || []).filter(p => p.life > 0);
             
             if (activeParticles.length === 0) {
                 return;
@@ -21401,136 +23161,33 @@ const paginationContainers = {
                 particle.element.style.transform = `scale(${scale}) rotate(${particle.rotation}deg)`;
             });
             
-            explosionAnimationId = requestAnimationFrame(animateExplosion);
-        }
-
-        // 浪漫彩蛋功能 - 确保在全局作用域中
-        window.showRomanticEasterEgg = function(account = null, password = null) {
-            console.log('🎯 showRomanticEasterEgg 被调用，参数:', { account, password });
-            const egg = document.getElementById('romantic-easter-egg');
-            console.log('🎯 彩蛋元素:', egg ? '找到' : '未找到');
-            if (!egg) {
-                console.error('❌ 彩蛋元素不存在！请检查HTML中是否有 id="romantic-easter-egg" 的元素');
-                return;
-            }
-            
-            // 保存登录信息
-            if (account && password) {
-                window.romanticLoginAccount = account;
-                window.romanticLoginPassword = password;
-            }
-            
-            console.log('🎯 设置彩蛋显示...');
-            // 强制显示彩蛋，确保所有属性都正确设置
-            egg.style.display = 'flex';
-            egg.style.visibility = 'visible';
-            egg.style.opacity = '1';
-            egg.style.zIndex = '99999';
-            egg.style.position = 'fixed';
-            egg.style.top = '0';
-            egg.style.left = '0';
-            egg.style.width = '100vw';
-            egg.style.height = '100vh';
-            document.body.style.overflow = 'hidden';
-            
-            // 确保登录模态框完全关闭
-            const loginModal = document.getElementById('login-modal');
-            if (loginModal) {
-                loginModal.style.display = 'none';
-                loginModal.style.visibility = 'hidden';
-                loginModal.style.zIndex = '-1';
-            }
-            
-            console.log('✅ 彩蛋应该已显示，display:', egg.style.display, 'visibility:', egg.style.visibility, 'opacity:', egg.style.opacity);
-                
-                // 重置状态
-                const arrow = document.getElementById('arrow-flying');
-                const heart = document.getElementById('heart-3d');
-                const explosionContainer = document.getElementById('explosion-particles');
-                
-                if (arrow) {
-                    arrow.classList.remove('flying');
-                    arrow.style.opacity = '0';
-                }
-                if (heart) {
-                    heart.classList.remove('exploding');
-                }
-                if (explosionContainer) {
-                    explosionContainer.innerHTML = '';
-                }
-                
-                // 初始化背景粒子系统
-                setTimeout(() => {
-                    initParticles();
-                }, 100);
-                
-                // 延迟后开始一箭穿心动画
-                setTimeout(() => {
-                    if (arrow) {
-                        arrow.classList.add('flying');
-                    }
-                }, 500);
-                
-                // 箭到达中心时，爱心爆炸（2.5秒动画的50%位置，即1.25秒，加上初始延迟0.5秒）
-                setTimeout(() => {
-                    if (heart) {
-                        heart.classList.add('exploding');
-                    }
-                    // 创建爆炸粒子
-                    createExplosionParticles();
-                }, 1750);
-                
-                // 开始倒计时
-                startCountdown();
+            window.explosionAnimationId = requestAnimationFrame(animateExplosion);
         };
 
-        window.closeRomanticEasterEgg = function() {
-            const egg = document.getElementById('romantic-easter-egg');
-            if (egg) {
-                egg.style.display = 'none';
-                document.body.style.overflow = '';
-                
-                // 清理动画
-                if (animationId) {
-                    cancelAnimationFrame(animationId);
-                    animationId = null;
+        // 浪漫彩蛋功能已在DOMContentLoaded之前定义，这里不再重复定义
+        // 如果函数未定义，说明前面的代码有问题，这里提供一个简单的备用方案
+        if (!window.showRomanticEasterEgg) {
+            console.warn('⚠️ showRomanticEasterEgg 函数未定义，使用备用方案');
+            window.showRomanticEasterEgg = function(account = null, password = null) {
+                console.error('❌ 彩蛋函数未正确加载，请刷新页面');
+                const egg = document.getElementById('romantic-easter-egg');
+                if (egg) {
+                    egg.style.display = 'flex';
+                    egg.style.zIndex = '99999';
+                    document.body.style.overflow = 'hidden';
                 }
-                
-                if (explosionAnimationId) {
-                    cancelAnimationFrame(explosionAnimationId);
-                    explosionAnimationId = null;
+            };
+        }
+
+        if (!window.closeRomanticEasterEgg) {
+            console.warn('⚠️ closeRomanticEasterEgg 函数未定义，使用备用方案');
+            window.closeRomanticEasterEgg = function() {
+                const egg = document.getElementById('romantic-easter-egg');
+                if (egg) {
+                    egg.style.display = 'none';
+                    document.body.style.overflow = '';
                 }
-                
-                if (countdownInterval) {
-                    clearInterval(countdownInterval);
-                    countdownInterval = null;
-                }
-                
-                // 清除登录超时定时器
-                if (window.romanticLoginTimeout) {
-                    clearTimeout(window.romanticLoginTimeout);
-                    window.romanticLoginTimeout = null;
-                }
-                
-                particles = [];
-                explosionParticles = [];
-                
-                // 重置元素状态
-                const arrow = document.getElementById('arrow-flying');
-                const heart = document.getElementById('heart-3d');
-                const explosionContainer = document.getElementById('explosion-particles');
-                
-                if (arrow) {
-                    arrow.classList.remove('flying');
-                    arrow.style.opacity = '0';
-                }
-                if (heart) {
-                    heart.classList.remove('exploding');
-                }
-                if (explosionContainer) {
-                    explosionContainer.innerHTML = '';
-                }
-            }
+            };
         }
 
         // 窗口大小改变时重新初始化粒子
@@ -21544,12 +23201,12 @@ const paginationContainers = {
             }
         });
 
-        // 点击背景关闭
-        document.getElementById('romantic-easter-egg')?.addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeRomanticEasterEgg();
-            }
-        });
+        // 点击背景关闭功能已移除 - 只能通过关闭按钮关闭
+        // document.getElementById('romantic-easter-egg')?.addEventListener('click', function(e) {
+        //     if (e.target === this) {
+        //         closeRomanticEasterEgg();
+        //     }
+        // });
 
         // 处理彩蛋账号的正常登录流程
         async function handleRomanticLogin(account, password) {
