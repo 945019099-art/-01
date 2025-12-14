@@ -4809,6 +4809,10 @@
                 <div class="admin-actions">
                     <button class="btn btn-primary" id="refresh-orders-btn">刷新订单列表</button>
                     <button class="btn btn-secondary" id="export-orders-btn">导出订单数据</button>
+                    <button class="btn btn-success" id="upload-orders-btn" style="position: relative; overflow: hidden;">
+                        <i class="fas fa-upload"></i> 上传订单数据
+                        <input type="file" id="upload-orders-file" accept=".xlsx,.xls" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;">
+                    </button>
                     <button class="btn btn-danger" id="delete-selected-orders-btn" style="display:none;">批量删除订单</button>
                     <div class="spacer"></div>
                 </div>
@@ -12997,6 +13001,54 @@ const paginationContainers = {
                 });
             });
 
+            // 上传订单数据文件
+            document.getElementById('upload-orders-file').addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                // 检查文件类型
+                if (!file.name.match(/\.(xlsx|xls)$/i)) {
+                    showNotification('请选择Excel文件（.xlsx或.xls格式）', 'error');
+                    e.target.value = ''; // 清空文件选择
+                    return;
+                }
+
+                // 读取文件
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const data = new Uint8Array(e.target.result);
+                        const workbook = XLSX.read(data, { type: 'array' });
+                        
+                        // 读取第一个工作表
+                        const firstSheetName = workbook.SheetNames[0];
+                        const worksheet = workbook.Sheets[firstSheetName];
+                        
+                        // 转换为JSON
+                        const jsonData = XLSX.utils.sheet_to_json(worksheet);
+                        
+                        if (jsonData.length === 0) {
+                            showNotification('Excel文件中没有数据', 'warning');
+                            return;
+                        }
+
+                        // 批量更新订单
+                        importOrdersData(jsonData);
+                    } catch (error) {
+                        console.error('读取Excel文件失败:', error);
+                        showNotification('读取Excel文件失败: ' + error.message, 'error');
+                    } finally {
+                        // 清空文件选择，允许重复上传同一文件
+                        e.target.value = '';
+                    }
+                };
+                reader.onerror = function() {
+                    showNotification('读取文件失败', 'error');
+                    e.target.value = '';
+                };
+                reader.readAsArrayBuffer(file);
+            });
+
             const deleteSelectedOrdersBtn = document.getElementById('delete-selected-orders-btn');
             if (deleteSelectedOrdersBtn) {
                 deleteSelectedOrdersBtn.addEventListener('click', deleteSelectedOrders);
@@ -19078,21 +19130,436 @@ const paginationContainers = {
             document.body.removeChild(link);
         }
 
-        // 导出订单数据
+        // 导出订单数据（Excel格式）
         function exportOrdersData() {
-            const csvContent = "data:text/csv;charset=utf-8," +
-                "订单ID,产品名称,价格,客户姓名,客户电话,客户邮箱,客户地址,订单状态,快递单号,下单时间\n" +
-                userOrders.map(order =>
-                    `${order.id},${order.productName},${order.price},${order.customerInfo.name},${order.customerInfo.phone},${order.customerInfo.email},${order.customerInfo.address},${getStatusText(order.status)},${order.trackingNumber || ''},${order.date}`
-                ).join("\n");
+            try {
+                // 获取所有订单（管理员显示所有订单，普通用户显示自己的订单）
+                let ordersToExport = [];
+                if (currentUser && currentUser.role === 'admin') {
+                    // 管理员：导出所有订单
+                    if (allOrders.length === 0) {
+                        // 如果全局订单数组为空，尝试从localStorage加载
+                        const savedAllOrders = localStorage.getItem('allOrders');
+                        if (savedAllOrders) {
+                            try {
+                                ordersToExport = JSON.parse(savedAllOrders);
+                            } catch (e) {
+                                console.error('解析保存的所有订单失败:', e);
+                                ordersToExport = userOrders;
+                            }
+                        } else {
+                            ordersToExport = userOrders;
+                        }
+                    } else {
+                        ordersToExport = allOrders;
+                    }
+                } else {
+                    // 普通用户：只导出自己的订单
+                    ordersToExport = userOrders.filter(order => 
+                        !order.account || order.account === currentUser?.account
+                    );
+                }
 
-            const encodedUri = encodeURI(csvContent);
-            const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", "orders_data.csv");
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+                if (ordersToExport.length === 0) {
+                    showNotification('没有订单数据可导出', 'warning');
+                    return;
+                }
+
+                // 准备Excel数据
+                const excelData = ordersToExport.map(order => {
+                    const customerInfo = order.customerInfo || {};
+                    const username = order.account || customerInfo.account || customerInfo.name || '';
+                    const phone = customerInfo.phone || '';
+                    const email = customerInfo.email || '';
+                    const name = customerInfo.name || customerInfo.fullName || '';
+                    const addressDetail = customerInfo.addressDetail || customerInfo.detail || '';
+                    const addressUnit = customerInfo.addressUnit || customerInfo.unit || '';
+                    const city = customerInfo.addressCity || customerInfo.city || '';
+                    const state = customerInfo.addressState || customerInfo.state || '';
+                    const postal = customerInfo.addressPostal || customerInfo.postal || customerInfo.zip || '';
+                    
+                    // 匹配信息：姓名-地址行1-地址行2-城市-州-邮编
+                    const matchingInfo = `${name}-${addressDetail}-${addressUnit}-${city}-${state}-${postal}`;
+                    
+                    // 格式化下单时间
+                    let orderDate = '';
+                    if (order.date) {
+                        try {
+                            const date = new Date(order.date);
+                            orderDate = date.toLocaleString('zh-CN', {
+                                year: 'numeric',
+                                month: '2-digit',
+                                day: '2-digit',
+                                hour: '2-digit',
+                                minute: '2-digit',
+                                second: '2-digit'
+                            });
+                        } catch (e) {
+                            orderDate = String(order.date);
+                        }
+                    }
+
+                    return {
+                        '订单ID': String(order.id || ''),
+                        '产品名称': order.productName || '',
+                        '用户名': username,
+                        '电话号码': phone,
+                        '订单状态': getStatusText(order.status || 'pending'),
+                        '快递单号': order.trackingNumber || '',
+                        '下单时间': orderDate,
+                        '邮箱': email,
+                        '匹配信息': matchingInfo
+                    };
+                });
+
+                // 创建工作簿
+                const wb = XLSX.utils.book_new();
+                const ws = XLSX.utils.json_to_sheet(excelData);
+
+                // 设置列宽
+                const colWidths = [
+                    { wch: 15 }, // 订单ID
+                    { wch: 30 }, // 产品名称
+                    { wch: 20 }, // 用户名
+                    { wch: 15 }, // 电话号码
+                    { wch: 12 }, // 订单状态
+                    { wch: 20 }, // 快递单号
+                    { wch: 20 }, // 下单时间
+                    { wch: 30 }, // 邮箱
+                    { wch: 60 }  // 匹配信息
+                ];
+                ws['!cols'] = colWidths;
+
+                // 启用自动筛选功能（从A1到I1，包含所有列的表头）
+                // 这样在Excel中打开时，每列的表头都会显示筛选下拉箭头
+                const range = XLSX.utils.decode_range(ws['!ref'] || 'A1');
+                // 设置自动筛选范围：从第一行（表头）到数据最后一行，所有列
+                ws['!autofilter'] = {
+                    ref: XLSX.utils.encode_range({
+                        s: { r: 0, c: 0 }, // 起始位置：第1行第1列（A1）
+                        e: { r: range.e.r, c: range.e.c } // 结束位置：最后一行最后一列
+                    })
+                };
+
+                // 冻结首行，方便查看表头
+                ws['!freeze'] = { xSplit: 0, ySplit: 1, topLeftCell: 'A2', activePane: 'bottomLeft', state: 'frozen' };
+
+                // 设置单元格样式：将"订单ID"列（A列，索引0）设置为灰色背景作为提示
+                // 注意：不启用工作表保护，确保所有单元格都可以自由编辑
+                const cellRange = XLSX.utils.decode_range(ws['!ref'] || 'A1');
+                
+                // 将所有单元格设置为未锁定（可编辑），确保导出后可以自由编辑
+                for (let R = 0; R <= cellRange.e.r; R++) {
+                    for (let C = 0; C <= cellRange.e.c; C++) {
+                        const cellAddress = XLSX.utils.encode_cell({ r: R, c: C });
+                        
+                        // 如果单元格不存在，创建一个
+                        if (!ws[cellAddress]) {
+                            ws[cellAddress] = { t: 's', v: '' };
+                        }
+                        
+                        // 确保单元格有s属性（样式）
+                        if (!ws[cellAddress].s) {
+                            ws[cellAddress].s = {};
+                        }
+                        if (!ws[cellAddress].s.protection) {
+                            ws[cellAddress].s.protection = {};
+                        }
+                        
+                        // 所有单元格都设置为未锁定（可编辑）
+                        ws[cellAddress].s.protection.locked = false;
+                    }
+                }
+                
+                // 为订单ID列（A列，索引0）设置灰色背景作为提示（建议不要修改）
+                for (let R = 0; R <= cellRange.e.r; R++) {
+                    const cellAddress = XLSX.utils.encode_cell({ r: R, c: 0 }); // A列，索引0
+                    
+                    // 确保单元格存在
+                    if (!ws[cellAddress]) {
+                        ws[cellAddress] = { t: 's', v: '' };
+                    }
+                    if (!ws[cellAddress].s) {
+                        ws[cellAddress].s = {};
+                    }
+                    
+                    // 设置订单ID列的样式（灰色背景提示，但不锁定）
+                    if (!ws[cellAddress].s.fill) {
+                        ws[cellAddress].s.fill = {};
+                    }
+                    ws[cellAddress].s.fill.fgColor = { rgb: 'F2F2F2' }; // 浅灰色背景
+                    
+                    // 确保订单ID列也是未锁定的（可编辑）
+                    if (!ws[cellAddress].s.protection) {
+                        ws[cellAddress].s.protection = {};
+                    }
+                    ws[cellAddress].s.protection.locked = false;
+                }
+
+                // 不启用工作表保护，确保所有单元格都可以自由编辑
+                // 如果以后需要保护某些列，用户可以手动在Excel中启用工作表保护
+
+                // 添加工作表到工作簿
+                XLSX.utils.book_append_sheet(wb, ws, '订单数据');
+
+                // 生成文件名（包含时间戳）
+                const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+                const fileName = `订单数据_${timestamp}.xlsx`;
+
+                // 导出文件
+                XLSX.writeFile(wb, fileName);
+                showNotification(`成功导出 ${ordersToExport.length} 条订单数据`, 'success');
+            } catch (error) {
+                console.error('导出订单数据失败:', error);
+                showNotification('导出订单数据失败: ' + error.message, 'error');
+            }
+        }
+
+        // 导入订单数据（从Excel文件批量更新订单）
+        async function importOrdersData(excelData) {
+            try {
+                if (!Array.isArray(excelData) || excelData.length === 0) {
+                    showNotification('Excel文件中没有有效数据', 'warning');
+                    return;
+                }
+
+                // 获取所有订单（用于匹配和更新）
+                let allOrdersToUpdate = [];
+                if (currentUser && currentUser.role === 'admin') {
+                    // 管理员：更新所有订单
+                    if (allOrders.length === 0) {
+                        const savedAllOrders = localStorage.getItem('allOrders');
+                        if (savedAllOrders) {
+                            try {
+                                allOrdersToUpdate = JSON.parse(savedAllOrders);
+                            } catch (e) {
+                                console.error('解析保存的所有订单失败:', e);
+                                allOrdersToUpdate = userOrders;
+                            }
+                        } else {
+                            allOrdersToUpdate = userOrders;
+                        }
+                    } else {
+                        allOrdersToUpdate = allOrders;
+                    }
+                } else {
+                    // 普通用户：只更新自己的订单
+                    allOrdersToUpdate = userOrders.filter(order => 
+                        !order.account || order.account === currentUser?.account
+                    );
+                }
+
+                let updatedCount = 0;
+                let notFoundCount = 0;
+                const errors = [];
+
+                // 状态文本到状态值的映射（支持中英文）
+                const statusMap = {
+                    // 中文状态
+                    '待上传': 'pending',
+                    '审核中': 'review',
+                    '运输中': 'shipping',
+                    '已完成': 'completed',
+                    '已驳回': 'rejected',
+                    '已取消': 'cancelled',
+                    // 英文状态
+                    'Pending': 'pending',
+                    'Review': 'review',
+                    'Shipping': 'shipping',
+                    'Completed': 'completed',
+                    'Rejected': 'rejected',
+                    'Cancelled': 'cancelled',
+                    // 小写英文状态（直接使用）
+                    'pending': 'pending',
+                    'review': 'review',
+                    'shipping': 'shipping',
+                    'completed': 'completed',
+                    'rejected': 'rejected',
+                    'cancelled': 'cancelled'
+                };
+
+                // 遍历Excel数据，更新订单
+                for (const row of excelData) {
+                    const orderId = String(row['订单ID'] || row['订单id'] || row['orderId'] || '').trim();
+                    if (!orderId) {
+                        continue; // 跳过没有订单ID的行
+                    }
+
+                    // 查找对应的订单
+                    const orderIndex = allOrdersToUpdate.findIndex(order => 
+                        String(order.id).trim() === orderId
+                    );
+
+                    if (orderIndex === -1) {
+                        notFoundCount++;
+                        errors.push(`订单ID ${orderId} 未找到`);
+                        continue;
+                    }
+
+                    const order = allOrdersToUpdate[orderIndex];
+                    let hasChanges = false;
+
+                    // 更新订单状态
+                    if (row['订单状态'] || row['订单状态'] === '') {
+                        const statusText = String(row['订单状态'] || '').trim();
+                        const statusValue = statusMap[statusText] || statusText;
+                        if (statusValue && statusValue !== order.status) {
+                            order.status = statusValue;
+                            hasChanges = true;
+                        }
+                    }
+
+                    // 更新快递单号
+                    if (row['快递单号'] !== undefined) {
+                        const trackingNumber = String(row['快递单号'] || '').trim();
+                        if (trackingNumber !== order.trackingNumber) {
+                            order.trackingNumber = trackingNumber;
+                            hasChanges = true;
+                        }
+                    }
+
+                    // 更新客户信息（如果提供了匹配信息）
+                    if (row['匹配信息'] || row['匹配信息'] === '') {
+                        const matchingInfo = String(row['匹配信息'] || '').trim();
+                        if (matchingInfo) {
+                            // 解析匹配信息：姓名-地址行1-地址行2-城市-州-邮编
+                            const parts = matchingInfo.split('-');
+                            if (parts.length >= 6) {
+                                if (!order.customerInfo) {
+                                    order.customerInfo = {};
+                                }
+                                
+                                const name = parts[0] || '';
+                                const addressDetail = parts[1] || '';
+                                const addressUnit = parts[2] || '';
+                                const city = parts[3] || '';
+                                const state = parts[4] || '';
+                                const postal = parts[5] || '';
+
+                                if (name && name !== order.customerInfo.name) {
+                                    order.customerInfo.name = name;
+                                    order.customerInfo.fullName = name;
+                                    hasChanges = true;
+                                }
+                                if (addressDetail && addressDetail !== order.customerInfo.addressDetail) {
+                                    order.customerInfo.addressDetail = addressDetail;
+                                    order.customerInfo.detail = addressDetail;
+                                    hasChanges = true;
+                                }
+                                if (addressUnit !== order.customerInfo.addressUnit) {
+                                    order.customerInfo.addressUnit = addressUnit;
+                                    order.customerInfo.unit = addressUnit;
+                                    hasChanges = true;
+                                }
+                                if (city && city !== order.customerInfo.addressCity) {
+                                    order.customerInfo.addressCity = city;
+                                    order.customerInfo.city = city;
+                                    hasChanges = true;
+                                }
+                                if (state && state !== order.customerInfo.addressState) {
+                                    order.customerInfo.addressState = state;
+                                    order.customerInfo.state = state;
+                                    hasChanges = true;
+                                }
+                                if (postal && postal !== order.customerInfo.addressPostal) {
+                                    order.customerInfo.addressPostal = postal;
+                                    order.customerInfo.postal = postal;
+                                    order.customerInfo.zip = postal;
+                                    hasChanges = true;
+                                }
+                            }
+                        }
+                    }
+
+                    // 更新电话号码
+                    if (row['电话号码'] !== undefined) {
+                        const phone = String(row['电话号码'] || '').trim();
+                        if (!order.customerInfo) {
+                            order.customerInfo = {};
+                        }
+                        if (phone !== order.customerInfo.phone) {
+                            order.customerInfo.phone = phone;
+                            hasChanges = true;
+                        }
+                    }
+
+                    // 更新邮箱
+                    if (row['邮箱'] !== undefined) {
+                        const email = String(row['邮箱'] || '').trim();
+                        if (!order.customerInfo) {
+                            order.customerInfo = {};
+                        }
+                        if (email !== order.customerInfo.email) {
+                            order.customerInfo.email = email;
+                            hasChanges = true;
+                        }
+                    }
+
+                    if (hasChanges) {
+                        updatedCount++;
+                    }
+                }
+
+                // 保存更新后的订单数据
+                if (currentUser && currentUser.role === 'admin') {
+                    // 管理员：更新allOrders和localStorage
+                    allOrders = allOrdersToUpdate;
+                    localStorage.setItem('allOrders', JSON.stringify(allOrders));
+                    
+                    // 同时更新userOrders（如果订单属于当前用户）
+                    userOrders.forEach((userOrder, index) => {
+                        const updatedOrder = allOrdersToUpdate.find(o => 
+                            String(o.id).trim() === String(userOrder.id).trim()
+                        );
+                        if (updatedOrder) {
+                            userOrders[index] = updatedOrder;
+                        }
+                    });
+                } else {
+                    // 普通用户：只更新userOrders
+                    userOrders = allOrdersToUpdate;
+                }
+
+                // 保存到localStorage
+                if (currentUser && currentUser.account) {
+                    const userOrdersKey = `userOrders_${currentUser.account}`;
+                    localStorage.setItem(userOrdersKey, JSON.stringify(userOrders));
+                } else {
+                    localStorage.setItem('userOrders', JSON.stringify(userOrders));
+                }
+
+                // 同步到云端（如果启用）
+                if (cloudSync && cloudSync.isInitialized && currentUser) {
+                    try {
+                        await cloudSync.uploadData('orders', allOrdersToUpdate);
+                        console.log('✅ 订单数据已同步到云端');
+                    } catch (syncError) {
+                        console.error('同步到云端失败:', syncError);
+                    }
+                }
+
+                // 刷新订单列表
+                renderOrdersTable();
+                if (typeof renderUserOrders === 'function') {
+                    renderUserOrders();
+                }
+
+                // 显示结果
+                let message = `成功更新 ${updatedCount} 条订单`;
+                if (notFoundCount > 0) {
+                    message += `，${notFoundCount} 条订单未找到`;
+                }
+                if (errors.length > 0 && errors.length <= 5) {
+                    message += '\n' + errors.slice(0, 5).join('\n');
+                } else if (errors.length > 5) {
+                    message += `\n（还有 ${errors.length - 5} 个错误）`;
+                }
+                showNotification(message, updatedCount > 0 ? 'success' : 'warning');
+
+            } catch (error) {
+                console.error('导入订单数据失败:', error);
+                showNotification('导入订单数据失败: ' + error.message, 'error');
+            }
         }
 
         // 按钮反馈效果
