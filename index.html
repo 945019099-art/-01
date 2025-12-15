@@ -7426,18 +7426,66 @@ const paginationContainers = {
                     this.isInitialized = true;
                     console.log('✅✅✅ Firebase 云端同步已完全启用！');
 
-                    // 首先从云端加载数据
-                    console.log('📥 正在从云端加载数据...');
+                    // 数据加载策略：管理员优先使用本地数据，普通用户从云端加载
+                    console.log('📥 正在处理数据同步...');
                     try {
-                        // 并行加载所有数据，而不是串行
-                        await Promise.all([
-                            this.loadProducts().then(() => console.log('✅ 产品数据加载完成')),
-                            this.loadAllUsers().then(() => console.log('✅ 用户数据加载完成')),
-                            this.loadHomepageSettings().then(() => console.log('✅ 主页设置加载完成'))
-                        ]);
-                        console.log('✅ 所有云端数据加载完成');
+                        // 检查是否是管理员
+                        const isAdmin = isCurrentUserAdmin();
+                        
+                        if (isAdmin) {
+                            // 管理员：优先使用本地数据，先上传本地数据到云端
+                            console.log('👑 管理员模式：优先使用本地数据');
+                            
+                            // 先检查本地是否有产品数据
+                            const localProducts = JSON.parse(localStorage.getItem('products') || '[]');
+                            if (localProducts && localProducts.length > 0) {
+                                console.log(`📤 检测到本地有 ${localProducts.length} 个产品，先上传到云端...`);
+                                // 更新全局products变量
+                                products = localProducts;
+                                // 先上传本地数据到云端
+                                try {
+                                    await this.syncProducts();
+                                    console.log('✅ 本地产品数据已上传到云端');
+                                } catch (syncError) {
+                                    console.warn('⚠️ 上传本地产品数据失败:', syncError.message);
+                                }
+                            } else {
+                                // 本地没有数据，从云端加载（不上传空数据，避免覆盖云端）
+                                console.log('ℹ️ 本地无产品数据，从云端加载（不会上传空数据覆盖云端）...');
+                                await this.loadProducts().then(() => console.log('✅ 产品数据加载完成'));
+                            }
+                            
+                            // 用户数据：管理员也优先使用本地
+                            const localUsers = JSON.parse(localStorage.getItem('allUsers') || '[]');
+                            if (localUsers && localUsers.length > 0) {
+                                console.log(`📤 检测到本地有 ${localUsers.length} 个用户，先上传到云端...`);
+                                allUsers = localUsers;
+                                try {
+                                    await this.syncAllUsers();
+                                    console.log('✅ 本地用户数据已上传到云端');
+                                } catch (syncError) {
+                                    console.warn('⚠️ 上传本地用户数据失败:', syncError.message);
+                                }
+                            } else {
+                                await this.loadAllUsers().then(() => console.log('✅ 用户数据加载完成'));
+                            }
+                            
+                            // 主页设置：总是从云端加载（设置是共享的）
+                            await this.loadHomepageSettings().then(() => console.log('✅ 主页设置加载完成'));
+                            
+                        } else {
+                            // 普通用户：从云端加载数据
+                            console.log('👤 普通用户模式：从云端加载数据');
+                            await Promise.all([
+                                this.loadProducts().then(() => console.log('✅ 产品数据加载完成')),
+                                this.loadAllUsers().then(() => console.log('✅ 用户数据加载完成')),
+                                this.loadHomepageSettings().then(() => console.log('✅ 主页设置加载完成'))
+                            ]);
+                        }
+                        
+                        console.log('✅ 所有数据同步完成');
                     } catch (loadError) {
-                        console.warn('⚠️ 数据加载失败:', loadError.message);
+                        console.warn('⚠️ 数据同步失败:', loadError.message);
                     }
 
                     // 设置实时监听
@@ -7903,7 +7951,13 @@ const paginationContainers = {
                 inProgress: false,
                 queue: [],
                 lastSyncTime: null,
-                errorCount: 0
+                errorCount: 0,
+                // 添加保护机制：跟踪自己触发的更新，避免监听器覆盖
+                lastLocalUpdate: {
+                    products: null,  // 最后本地更新的产品数据时间戳
+                    timestamp: 0     // 最后本地更新的时间戳
+                },
+                protectionPeriod: 3000  // 保护期：同步完成后3秒内忽略监听器更新
             };
 
             // 统一同步入口：自动管理同步状态，避免重复同步
@@ -8003,10 +8057,33 @@ const paginationContainers = {
                     return;
                 }
                 
+                // 防止空数据覆盖云端：如果本地产品数组为空，不执行上传操作
+                // 这可以避免退出后清空本地数据，下次登录时把空数据上传到云端的问题
+                if (!products || products.length === 0) {
+                    console.log('⚠️ 本地产品数据为空，跳过上传（避免覆盖云端数据）');
+                    return;
+                }
+                
+                // 记录本地更新的时间戳和产品数据快照，用于监听器判断是否忽略更新
+                const now = Date.now();
+                this._syncState.lastLocalUpdate.products = JSON.stringify(products);
+                this._syncState.lastLocalUpdate.timestamp = now;
+                
+                console.log('🔄 开始上传产品数据到云端，设置保护期...');
+                
                 const productsRef = this.db.ref('products');
                 // 上传本地产品到云端
                 await productsRef.set(products);
                 console.log('✅ 产品数据已同步到云端，数量:', products.length);
+                
+                // 设置保护期：在保护期内，监听器会忽略来自云端的更新（因为是自己触发的）
+                // 保护期结束后，如果云端数据被其他设备修改，监听器才会应用更新
+                setTimeout(() => {
+                    const elapsed = Date.now() - this._syncState.lastLocalUpdate.timestamp;
+                    if (elapsed >= this._syncState.protectionPeriod) {
+                        console.log('✅ 保护期已结束，监听器现在可以接收云端更新');
+                    }
+                }, this._syncState.protectionPeriod);
             }
 
             // 从云端加载产品数据
@@ -8583,6 +8660,80 @@ const paginationContainers = {
                         // 过滤掉无效的产品（null、undefined 或缺少必要属性）
                         const validProducts = cloudProducts.filter(p => p && typeof p === 'object' && p.id && p.name);
                         
+                        // 🔒 保护机制：检查是否是自己的更新
+                        const now = Date.now();
+                        const timeSinceLastUpdate = now - (this._syncState.lastLocalUpdate.timestamp || 0);
+                        const isInProtectionPeriod = timeSinceLastUpdate < this._syncState.protectionPeriod;
+                        
+                        // 检查云端数据是否与本地最后更新的数据相同
+                        const cloudProductsStr = JSON.stringify(validProducts);
+                        const isOwnUpdate = isInProtectionPeriod && 
+                            this._syncState.lastLocalUpdate.products === cloudProductsStr;
+                        
+                        if (isOwnUpdate) {
+                            console.log('🛡️ 检测到自己的更新，忽略监听器触发（保护期内）');
+                            return; // 忽略自己的更新
+                        }
+                        
+                        // 数据比较：检查本地和云端数据是否真的不同
+                        const localProductsStr = JSON.stringify(products);
+                        if (cloudProductsStr === localProductsStr) {
+                            console.log('ℹ️ 云端数据与本地数据相同，无需更新');
+                            return; // 数据相同，无需更新
+                        }
+                        
+                        // 只有在保护期外且数据确实不同时，才应用云端更新
+                        if (isInProtectionPeriod) {
+                            console.log('🛡️ 保护期内检测到云端数据变化，但可能是自己的更新，延迟处理...');
+                            // 保存当前云端数据，用于延迟处理
+                            const savedCloudProducts = validProducts;
+                            // 延迟处理，等待保护期结束
+                            setTimeout(() => {
+                                // 保护期结束后，重新从 Firebase 读取最新数据进行比较
+                                productsRef.once('value').then((latestSnapshot) => {
+                                    const latestCloudProducts = latestSnapshot.val();
+                                    if (latestCloudProducts && Array.isArray(latestCloudProducts)) {
+                                        const latestValidProducts = latestCloudProducts.filter(p => p && typeof p === 'object' && p.id && p.name);
+                                        const latestCloudStr = JSON.stringify(latestValidProducts);
+                                        const currentLocalStr = JSON.stringify(products);
+                                        
+                                        // 检查保护期是否已过
+                                        const elapsed = Date.now() - (this._syncState.lastLocalUpdate.timestamp || 0);
+                                        if (elapsed >= this._syncState.protectionPeriod && latestCloudStr !== currentLocalStr) {
+                                            console.log('✅ 保护期结束，应用云端更新');
+                                            applyCloudProductsUpdate(latestCloudProducts);
+                                        } else if (latestCloudStr === currentLocalStr) {
+                                            console.log('ℹ️ 保护期结束后，云端数据与本地数据相同，无需更新');
+                                        }
+                                    }
+                                }).catch((error) => {
+                                    console.error('延迟处理时读取云端数据失败:', error);
+                                });
+                            }, this._syncState.protectionPeriod - timeSinceLastUpdate + 100);
+                            return;
+                        }
+                        
+                        // 应用云端更新
+                        applyCloudProductsUpdate(cloudProducts);
+                        
+                    } else if (cloudProducts === null) {
+                        // 只有在保护期外才清空本地数据
+                        const now = Date.now();
+                        const timeSinceLastUpdate = now - (this._syncState.lastLocalUpdate.timestamp || 0);
+                        if (timeSinceLastUpdate >= this._syncState.protectionPeriod) {
+                            console.log('ℹ️ 云端产品数据为空');
+                            products = [];
+                            localStorage.setItem('products', JSON.stringify(products));
+                            renderProducts(products);
+                        } else {
+                            console.log('🛡️ 保护期内检测到云端数据为空，忽略（可能是自己的操作）');
+                        }
+                    }
+                    
+                    // 应用云端产品更新的辅助函数
+                    function applyCloudProductsUpdate(cloudProducts) {
+                        const validProducts = cloudProducts.filter(p => p && typeof p === 'object' && p.id && p.name);
+                        
                         // 检测产品数量变化
                         const productCountChanged = products.length !== validProducts.length;
                         const productIdsChanged = products.length === validProducts.length && 
@@ -8606,11 +8757,6 @@ const paginationContainers = {
                         }
 
                         console.log(`🔄 产品数据已从云端更新: ${validProducts.length} 个产品`);
-                    } else if (cloudProducts === null) {
-                        console.log('ℹ️ 云端产品数据为空');
-                        products = [];
-                        localStorage.setItem('products', JSON.stringify(products));
-                        renderProducts(products);
                     }
                 }, (error) => {
                     console.error('❌ 产品监听器错误:', error);
@@ -9753,7 +9899,7 @@ const paginationContainers = {
         }
 
 
-        function saveProducts() {
+        async function saveProducts() {
             try {
                 console.log('💾 开始保存产品数据...');
                 localStorage.setItem('products', JSON.stringify(products));
@@ -9763,11 +9909,26 @@ const paginationContainers = {
                     console.log('🌐 准备调用 syncToCloud...');
                     syncToCloud('products', products);
                 }
-                // 同时同步到Firebase云端
+                // 同步到Firebase云端
                 if (cloudSync && cloudSync.isInitialized) {
-                    cloudSync.syncProducts().catch(err => {
-                        console.warn('产品数据云端同步失败:', err);
-                    });
+                    const isAdmin = isCurrentUserAdmin();
+                    if (isAdmin) {
+                        // 管理员：等待同步完成，确保数据已上传到云端，避免被后续的loadProducts覆盖
+                        try {
+                            console.log('👑 管理员模式：等待产品数据同步完成...');
+                            await cloudSync.syncProducts();
+                            console.log('✅ 产品数据已成功同步到云端');
+                        } catch (err) {
+                            console.error('❌ 产品数据云端同步失败:', err);
+                            // 同步失败时，记录错误但不阻止保存操作
+                            showNotification('产品已保存，但云端同步失败，请检查网络连接', 'warning');
+                        }
+                    } else {
+                        // 普通用户：异步同步，不等待（普通用户不应该修改产品）
+                        cloudSync.syncProducts().catch(err => {
+                            console.warn('产品数据云端同步失败:', err);
+                        });
+                    }
                 }
                 return true;
             } catch (error) {
@@ -11834,6 +11995,26 @@ const paginationContainers = {
             // 退出登录
             logoutLink.addEventListener('click', async (e) => {
                 e.preventDefault();
+
+                // 如果是管理员，退出前先同步产品数据到云端，避免数据丢失
+                const isAdmin = isCurrentUserAdmin();
+                if (isAdmin && cloudSync && cloudSync.isInitialized) {
+                    try {
+                        console.log('👑 管理员退出前，先同步产品数据到云端...');
+                        // 确保本地产品数据已保存
+                        const localProducts = JSON.parse(localStorage.getItem('products') || '[]');
+                        if (localProducts && localProducts.length > 0) {
+                            products = localProducts;
+                            await cloudSync.syncProducts();
+                            console.log('✅ 管理员退出前，产品数据已同步到云端');
+                        } else {
+                            console.log('ℹ️ 本地无产品数据，跳过同步');
+                        }
+                    } catch (syncError) {
+                        console.error('❌ 管理员退出前同步产品数据失败:', syncError);
+                        // 即使同步失败，也继续退出流程
+                    }
+                }
 
                 // 先处理当前会话和云端状态
                 currentUser = null;
@@ -20253,20 +20434,33 @@ const paginationContainers = {
 
                     if (confirm(t('confirmDeleteProduct').replace('{name}', product.name))) {
                         try {
+                            const productName = product.name; // 保存产品名称，因为后面会从数组中删除
                             products = products.filter(p => parseInt(p.id) !== productId);
-                            saveProducts();
-
+                            
+                            // 立即更新UI（提供即时视觉反馈）
                             productCard.style.transition = 'all 0.3s ease';
                             productCard.style.transform = 'scale(0.8)';
                             productCard.style.opacity = '0';
 
                             setTimeout(() => {
                                 productCard.remove();
-                                if (products.length === 0) {
-                                    adminProductsGrid.innerHTML = `<div class="no-products">${t('noProductsAddOrImport')}</div>`;
-                                }
-                                showNotification(`成功删除产品: ${product.name}`, 'success');
+                                // 重新渲染以确保数据一致性
+                                renderAdminProducts();
                             }, 300);
+                            
+                            // 等待保存和同步完成（管理员需要确保数据已上传到云端）
+                            saveProducts().then(() => {
+                                // 同步完成后，再次渲染以确保数据一致性
+                                // 由于保护机制，监听器不会覆盖自己的更新
+                                setTimeout(() => {
+                                    renderAdminProducts();
+                                    showNotification(`成功删除产品: ${productName}`, 'success');
+                                }, 100);
+                            }).catch((error) => {
+                                console.error('删除产品后同步失败:', error);
+                                // 即使同步失败，也保持UI状态（产品已从UI移除）
+                                showNotification(`产品已删除，但云端同步失败，请检查网络`, 'warning');
+                            });
 
                         } catch (error) {
                             showNotification('删除失败：' + error.message, 'error');
@@ -20395,20 +20589,28 @@ const paginationContainers = {
                             const [movedProduct] = products.splice(draggedProductIndex, 1);
                             products.splice(dropProductIndex, 0, movedProduct);
                             
-                            // 保存产品数据
+                            // 立即更新UI（提供即时视觉反馈）
+                            renderAdminProducts();
+                            
+                            // 保存产品数据并等待同步完成
                             const saveResult = saveProducts();
                             if (saveResult && typeof saveResult.then === 'function') {
                                 saveResult.then(() => {
-                                    showNotification('产品顺序已更新', 'success');
-                                }).catch(() => {
-                                    showNotification('产品顺序更新失败', 'error');
+                                    // 同步完成后，再次渲染以确保数据一致性
+                                    // 由于保护机制，监听器不会覆盖自己的更新
+                                    setTimeout(() => {
+                                        renderAdminProducts();
+                                        showNotification('产品顺序已更新', 'success');
+                                    }, 100);
+                                }).catch((error) => {
+                                    console.error('产品顺序更新失败:', error);
+                                    // 同步失败时，保持当前UI状态（用户已看到移动效果）
+                                    showNotification('产品顺序已更新，但云端同步失败，请检查网络', 'warning');
                                 });
                             } else {
+                                // 如果saveProducts不是Promise，直接显示成功消息
                                 showNotification('产品顺序已更新', 'success');
                             }
-                            
-                            // 重新渲染产品列表
-                            renderAdminProducts();
                         }
                     }
                     
@@ -21654,17 +21856,29 @@ const paginationContainers = {
             }
 
             // 删除产品
+            const deletedCount = selectedIds.length;
             products = products.filter(p => !selectedIds.includes(parseInt(p.id)));
-            saveProducts();
-
-            // 重新渲染产品列表
+            
+            // 立即更新UI（提供即时视觉反馈）
             renderAdminProducts();
-
-            // 取消全选状态
             document.getElementById('select-all-products').checked = false;
             updateBatchButtons();
-
-            showNotification(`成功删除 ${selectedIds.length} 个产品`, 'success');
+            
+            // 等待保存和同步完成（管理员需要确保数据已上传到云端）
+            saveProducts().then(() => {
+                // 同步完成后，再次渲染以确保数据一致性
+                // 由于保护机制，监听器不会覆盖自己的更新
+                setTimeout(() => {
+                    renderAdminProducts();
+                    document.getElementById('select-all-products').checked = false;
+                    updateBatchButtons();
+                    showNotification(`成功删除 ${deletedCount} 个产品`, 'success');
+                }, 100);
+            }).catch((error) => {
+                console.error('批量删除产品后同步失败:', error);
+                // 即使同步失败，也保持UI状态（产品已从UI移除）
+                showNotification(`产品已删除，但云端同步失败，请检查网络`, 'warning');
+            });
         }
 
         // 打开批量编辑模态框
@@ -21752,14 +21966,22 @@ const paginationContainers = {
                 }
             });
 
-            // 保存修改
-            saveProducts();
+            // 保存修改并等待同步完成（管理员需要确保数据已上传到云端）
+            saveProducts().then(() => {
+                // 关闭模态框
+                document.getElementById('batch-edit-modal').style.display = 'none';
 
-            // 关闭模态框
-            document.getElementById('batch-edit-modal').style.display = 'none';
+                // 重新渲染产品列表
+                renderAdminProducts();
 
-            // 重新渲染产品列表
-            renderAdminProducts();
+                showNotification(`成功批量编辑 ${updatedCount} 个产品`, 'success');
+            }).catch((error) => {
+                console.error('批量编辑后同步失败:', error);
+                // 即使同步失败，也更新UI（本地已修改）
+                document.getElementById('batch-edit-modal').style.display = 'none';
+                renderAdminProducts();
+                showNotification(`产品已修改，但云端同步失败，请检查网络`, 'warning');
+            });
 
             // 取消全选状态
             document.getElementById('select-all-products').checked = false;
