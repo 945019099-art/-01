@@ -4550,11 +4550,11 @@
                 </div>
 
                 <div class="category-filter">
-                    <div class="category-item active" data-category="all">全部商品</div>
-                    <div class="category-item" data-category="electronics">电子产品</div>
-                    <div class="category-item" data-category="home">家居用品</div>
-                    <div class="category-item" data-category="clothing">服装鞋帽</div>
-                    <div class="category-item" data-category="beauty">美妆护肤</div>
+                    <div class="category-item active" data-category="all">All Products</div>
+                    <div class="category-item" data-category="electronics">Electronics</div>
+                    <div class="category-item" data-category="home">Home & Living</div>
+                    <div class="category-item" data-category="clothing">Clothing & Shoes</div>
+                    <div class="category-item" data-category="beauty">Beauty & Skincare</div>
                 </div>
 
                 <div id="products-grid">
@@ -5743,10 +5743,10 @@
                     <div class="form-group">
                         <label for="edit-product-category">分类</label>
                         <select id="edit-product-category" class="form-control" required>
-                            <option value="electronics">电子产品</option>
-                            <option value="home">家居用品</option>
-                            <option value="clothing">服装鞋帽</option>
-                            <option value="beauty">美妆护肤</option>
+                            <option value="electronics">Electronics</option>
+                            <option value="home">Home & Living</option>
+                            <option value="clothing">Clothing & Shoes</option>
+                            <option value="beauty">Beauty & Skincare</option>
                             <option value="sports">运动户外</option>
                             <option value="other">其他</option>
                         </select>
@@ -5826,10 +5826,10 @@
                         <label for="batch-edit-category">修改分类</label>
                         <select id="batch-edit-category" class="form-control">
                             <option value="">不修改</option>
-                            <option value="electronics">电子产品</option>
-                            <option value="home">家居用品</option>
-                            <option value="clothing">服装鞋帽</option>
-                            <option value="beauty">美妆护肤</option>
+                            <option value="electronics">Electronics</option>
+                            <option value="home">Home & Living</option>
+                            <option value="clothing">Clothing & Shoes</option>
+                            <option value="beauty">Beauty & Skincare</option>
                             <option value="sports">运动户外</option>
                             <option value="other">其他</option>
                         </select>
@@ -6302,11 +6302,11 @@ const paginationContainers = {
                 'registerNow': '立即报名',
                 'returnToList': '返回列表',
                 // 分类
-                'allProducts': '全部商品',
-                'electronics': '电子产品',
-                'home': '家居用品',
-                'clothing': '服装鞋帽',
-                'beauty': '美妆护肤',
+                'allProducts': 'All Products',
+                'electronics': 'Electronics',
+                'home': 'Home & Living',
+                'clothing': 'Clothing & Shoes',
+                'beauty': 'Beauty & Skincare',
                 // 订单状态
                 'orderAll': '全部订单',
                 'orderReview': '待上传',
@@ -15914,12 +15914,12 @@ const paginationContainers = {
                 return map[category] || 'Featured';
             } else {
             const map = {
-                'electronics': '电子产品',
-                'home': '家居用品',
-                'clothing': '服饰鞋包',
-                'beauty': '美妆护理'
+                'electronics': 'Electronics',
+                'home': 'Home & Living',
+                'clothing': 'Clothing & Shoes',
+                'beauty': 'Beauty & Skincare'
             };
-            return map[category] || '精选好物';
+            return map[category] || 'Featured';
             }
         }
 
@@ -21070,10 +21070,10 @@ const paginationContainers = {
         // 分类名称映射
         function getCategoryName(category) {
             const categoryMap = {
-                'electronics': '电子产品',
-                'home': '家居用品',
-                'clothing': '服装鞋帽',
-                'beauty': '美妆护肤',
+                'electronics': 'Electronics',
+                'home': 'Home & Living',
+                'clothing': 'Clothing & Shoes',
+                'beauty': 'Beauty & Skincare',
                 'sports': '运动户外',
                 'other': '其他'
             };
