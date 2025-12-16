@@ -21054,8 +21054,27 @@ const paginationContainers = {
 
         // 打开 Messenger 预付款聊天
         function openMessengerPrepay() {
-            const messengerUrl = 'https://m.me/beefreebies';
-            window.open(messengerUrl, '_blank');
+            const appLink = 'fb-messenger://user-thread/beefreebies'; // Messenger 深链，优先尝试唤起 App
+            const webLink = 'https://m.me/beefreebies';                // 兜底用网页版
+
+            // 兜底：若未成功唤起 App，则在 1.2s 后跳转到网页版
+            const timer = setTimeout(() => {
+                window.location.href = webLink;
+            }, 1200);
+
+            // 如果用户成功切到后台（被 App 拉起），取消兜底跳转避免双跳
+            const handleVisibility = () => {
+                if (document.hidden) {
+                    clearTimeout(timer);
+                    document.removeEventListener('visibilitychange', handleVisibility);
+                }
+            };
+            document.addEventListener('visibilitychange', handleVisibility);
+
+            // 先尝试拉起 Messenger App
+            window.location.href = appLink;
+
+            // 关闭弹窗以避免返回页面时遮挡
             closeModal('whatsapp-modal');
         }
 
