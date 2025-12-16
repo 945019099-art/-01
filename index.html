@@ -8261,24 +8261,71 @@ const paginationContainers = {
                 }, this._syncState.protectionPeriod);
             }
 
-            // 从云端加载产品数据
-            async loadProducts() {
-                if (!this.isInitialized) return;
-
-                try {
-                    const snapshot = await this.db.ref('products').once('value');
-                    const cloudProducts = snapshot.val();
-
-                    if (cloudProducts && Array.isArray(cloudProducts) && cloudProducts.length > 0) {
-                        // 过滤掉无效的产品（null、undefined 或缺少必要属性）
-                        products = cloudProducts.filter(p => p && typeof p === 'object' && p.id && p.name);
-                        localStorage.setItem('products', JSON.stringify(products));
-                        console.log('✅ 已从云端加载产品数据，有效产品数量:', products.length);
-                        return true;
-                    }
-                } catch (error) {
-                    console.error('加载云端产品失败:', error);
+            // 从云端加载产品数据（仅云端，多次重试）
+            async loadProducts(maxAttempts = 3, retryDelay = 800) {
+                if (!this.isInitialized) {
+                    console.warn('⚠️ Firebase未初始化，无法加载产品');
+                    return false;
                 }
+
+                let lastError = null;
+                for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+                    try {
+                        console.log(`🔄 [产品加载] 第 ${attempt}/${maxAttempts} 次尝试从云端拉取...`);
+                        const snapshot = await this.db.ref('products').once('value');
+                        const cloudProducts = snapshot.val();
+
+                        console.log('📥 云端原始数据:', cloudProducts ? (Array.isArray(cloudProducts) ? `数组，长度: ${cloudProducts.length}` : `对象类型: ${typeof cloudProducts}`) : 'null/undefined');
+
+                        if (cloudProducts && Array.isArray(cloudProducts) && cloudProducts.length > 0) {
+                            // 过滤掉无效的产品（null、undefined 或缺少必要属性）
+                            const beforeFilter = cloudProducts.length;
+                            products = cloudProducts.filter(p => {
+                                const isValid = p && typeof p === 'object' && p.id && p.name;
+                                if (!isValid && p) {
+                                    console.warn('⚠️ 发现无效产品:', p);
+                                }
+                                return isValid;
+                            });
+                            
+                            const filteredOut = beforeFilter - products.length;
+                            if (filteredOut > 0) {
+                                console.warn(`⚠️ 过滤掉了 ${filteredOut} 个无效产品`);
+                            }
+                            
+                            localStorage.setItem('products', JSON.stringify(products));
+                            console.log(`✅ 已从云端加载产品数据，有效产品数量: ${products.length}`);
+                            
+                            // 验证数据是否真的保存成功
+                            const savedProducts = JSON.parse(localStorage.getItem('products') || '[]');
+                            if (savedProducts.length !== products.length) {
+                                console.error('❌ 产品数据保存到localStorage后数量不匹配！');
+                                console.log(`   内存中: ${products.length}, localStorage中: ${savedProducts.length}`);
+                            }
+                            
+                            return true;
+                        } else {
+                            if (!cloudProducts) {
+                                console.warn('⚠️ 云端产品数据为空（null/undefined）');
+                            } else if (!Array.isArray(cloudProducts)) {
+                                console.warn(`⚠️ 云端产品数据格式错误，期望数组，实际: ${typeof cloudProducts}`);
+                            } else if (cloudProducts.length === 0) {
+                                console.warn('⚠️ 云端产品数组为空');
+                            }
+                        }
+                    } catch (error) {
+                        lastError = error;
+                        console.error(`❌ 第 ${attempt} 次加载云端产品失败:`, error);
+                        console.error('   错误详情:', error.message);
+                    }
+
+                    if (attempt < maxAttempts) {
+                        console.log(`⏳ 等待 ${retryDelay}ms 后重试...`);
+                        await new Promise(resolve => setTimeout(resolve, retryDelay));
+                    }
+                }
+
+                console.error('❌ 多次尝试后仍无法从云端获取产品数据', lastError);
                 return false;
             }
 
@@ -11303,6 +11350,37 @@ const paginationContainers = {
                         // 从localStorage读取更新后的数据（云端已加载）
                         products = JSON.parse(localStorage.getItem('products')) || [];
                         homepageSettings = JSON.parse(localStorage.getItem('homepageSettings')) || homepageSettings;
+                        
+                        // 验证产品数据是否真的加载成功
+                        console.log('🔍 验证产品数据加载结果...');
+                        const loadedProducts = JSON.parse(localStorage.getItem('products') || '[]');
+                        const validLoaded = Array.isArray(loadedProducts) 
+                            ? loadedProducts.filter(p => p && typeof p === 'object' && p.id && p.name)
+                            : [];
+                        
+                        if (validLoaded.length > 0) {
+                            products = validLoaded;
+                            console.log(`✅ 产品数据验证通过，共 ${products.length} 个有效产品`);
+                        } else {
+                            console.warn('⚠️ 产品数据加载后验证失败，产品数组为空');
+                            // 尝试重新加载一次
+                            setTimeout(async () => {
+                                const reloaded = await cloudSync.loadProducts();
+                                if (reloaded) {
+                                    const retryProducts = JSON.parse(localStorage.getItem('products') || '[]');
+                                    const validRetry = Array.isArray(retryProducts)
+                                        ? retryProducts.filter(p => p && typeof p === 'object' && p.id && p.name)
+                                        : [];
+                                    if (validRetry.length > 0) {
+                                        products = validRetry;
+                                        console.log(`✅ 重新加载成功，获得 ${products.length} 个产品`);
+                                        if (typeof renderProducts === 'function') {
+                                            renderProducts(products);
+                                        }
+                                    }
+                                }
+                            }, 1000);
+                        }
                         if (currentUser) {
                             // 使用用户特定的localStorage key
                             const userOrdersKey = `userOrders_${currentUser.account}`;
@@ -11350,8 +11428,25 @@ const paginationContainers = {
                 // 更新加载进度
                 loaderProgress.textContent = '渲染页面内容...';
                 
+                // 验证产品数据后再渲染
+                const productsToRender = Array.isArray(products) 
+                    ? products.filter(p => p && typeof p === 'object' && p.id && p.name)
+                    : [];
+                
+                if (productsToRender.length === 0 && products.length > 0) {
+                    console.warn('⚠️ 产品数据无效，已过滤掉所有无效产品');
+                    products = [];
+                    localStorage.setItem('products', JSON.stringify(products));
+                } else if (productsToRender.length !== products.length) {
+                    console.warn(`⚠️ 产品数据验证：${products.length} -> ${productsToRender.length} 个有效产品`);
+                    products = productsToRender;
+                    localStorage.setItem('products', JSON.stringify(products));
+                }
+                
+                console.log(`📦 准备渲染 ${productsToRender.length} 个产品`);
+                
                 // 立即渲染页面内容（不等待）
-            renderProducts(products);
+            renderProducts(productsToRender);
             renderUserOrders();
 
                 // 如果后台管理页面已打开，更新表单
@@ -22558,6 +22653,18 @@ const paginationContainers = {
                 products = [];
                 // 不自动初始化演示数据，保持空数组
                 localStorage.setItem('products', JSON.stringify(products));
+            } else {
+                // 详细检查产品数据质量
+                const validProducts = products.filter(p => p && typeof p === 'object' && p.id && p.name);
+                const invalidCount = products.length - validProducts.length;
+                
+                if (invalidCount > 0) {
+                    console.warn(`⚠️ 发现 ${invalidCount} 个无效产品，正在清理...`);
+                    products = validProducts;
+                    localStorage.setItem('products', JSON.stringify(products));
+                }
+                
+                console.log(`📦 产品数据检查完成：共 ${products.length} 个有效产品`);
             }
 
             // 检查用户数据
@@ -22580,11 +22687,95 @@ const paginationContainers = {
             }
 
             console.log('✅ 数据完整性检查完成');
+            
+            // 返回产品数据状态
+            return {
+                productsValid: Array.isArray(products) && products.length > 0,
+                productsCount: Array.isArray(products) ? products.length : 0,
+                usersValid: Array.isArray(allUsers) && allUsers.length > 0,
+                ordersValid: Array.isArray(userOrders)
+            };
+        }
+        
+        // 验证并重新加载产品数据（如果为空）
+        async function verifyAndReloadProducts() {
+            // 使用内存中的产品数据进行校验，避免依赖本地缓存
+            const validProducts = Array.isArray(products)
+                ? products.filter(p => p && typeof p === 'object' && p.id && p.name)
+                : [];
+            
+            console.log(`🔍 验证产品数据：当前内存有 ${validProducts.length} 个有效产品`);
+            
+            // 如果产品为空且Firebase已初始化，尝试从云端重新加载（多次重试）
+            if (validProducts.length === 0 && cloudSync && cloudSync.isInitialized) {
+                console.log('⚠️ 产品数据为空，尝试从云端重新加载（多次重试）...');
+                try {
+                    const loaded = await cloudSync.loadProducts(4, 1000);
+                    if (loaded) {
+                        const reloadedProducts = JSON.parse(localStorage.getItem('products') || '[]');
+                        const validReloaded = Array.isArray(reloadedProducts)
+                            ? reloadedProducts.filter(p => p && typeof p === 'object' && p.id && p.name)
+                            : [];
+                        
+                        if (validReloaded.length > 0) {
+                            products = validReloaded;
+                            console.log(`✅ 重新加载成功，获得 ${products.length} 个产品`);
+                            
+                            // 重新渲染产品列表
+                            if (typeof renderProducts === 'function') {
+                                renderProducts(products);
+                            }
+                            return true;
+                        } else {
+                            console.warn('⚠️ 重新加载后仍无有效产品');
+                        }
+                    } else {
+                        console.warn('⚠️ 从云端加载产品失败（多次重试后）');
+                    }
+                } catch (error) {
+                    console.error('❌ 重新加载产品时出错:', error);
+                }
+            }
+            
+            return validProducts.length > 0;
         }
 
         // 页面加载时执行数据完整性检查
         window.addEventListener('load', () => {
-            checkDataIntegrity();
+            const integrityResult = checkDataIntegrity();
+            
+            // 延迟验证产品数据（给Firebase加载时间）
+            setTimeout(async () => {
+                console.log('🔍 延迟验证产品数据...');
+                const verified = await verifyAndReloadProducts();
+                
+                if (!verified && cloudSync && cloudSync.isInitialized) {
+                    console.warn('⚠️ 产品数据验证失败，尝试最后一次重新加载...');
+                    // 最后一次尝试（增加重试次数与延迟）
+                    setTimeout(async () => {
+                        try {
+                            const finalLoad = await cloudSync.loadProducts(5, 1200);
+                            if (finalLoad) {
+                                const finalProducts = JSON.parse(localStorage.getItem('products') || '[]');
+                                const validFinal = Array.isArray(finalProducts)
+                                    ? finalProducts.filter(p => p && typeof p === 'object' && p.id && p.name)
+                                    : [];
+                                if (validFinal.length > 0) {
+                                    products = validFinal;
+                                    console.log(`✅ 最终加载成功，获得 ${products.length} 个产品`);
+                                    if (typeof renderProducts === 'function') {
+                                        renderProducts(products);
+                                    }
+                                } else {
+                                    console.error('❌ 最终加载后仍无有效产品');
+                                }
+                            }
+                        } catch (error) {
+                            console.error('❌ 最终加载失败:', error);
+                        }
+                    }, 2000);
+                }
+            }, 2000); // 延迟2秒，确保Firebase已完全加载
         });
 
         // ===================== 性能优化：懒加载图片 =====================
