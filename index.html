@@ -190,29 +190,55 @@
     </script>
 
     <style>
+        /* 现代化配色系统 */
         :root {
-            /* 微软风格配色系统 */
-            --primary: #0078d4;
-            --primary-hover: #106ebe;
-            --primary-light: #deecf9;
-            --primary-soft: rgba(0, 120, 212, 0.1);
-            --secondary: #107c10;
-            --secondary-soft: rgba(16, 124, 16, 0.1);
-            --danger: #d13438;
-            --warning: #ffaa44;
-            --dark: #323130;
-            --dark-soft: rgba(50, 49, 48, 0.06);
-            --light: #faf9f8;
-            --gray: #605e5c;
-            --gray-light: #8a8886;
+            --primary: #4361ee;
+            --primary-light: #4895ef;
+            --primary-dark: #3a0ca3;
+            --primary-hover: #3a0ca3;
+            --secondary: #f72585;
+            --success: #4cc9f0;
+            --warning: #f8961e;
+            --danger: #e63946;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --gray: #6c757d;
+            --gray-light: #adb5bd;
+            --gray-100: #f8f9fa;
+            --gray-200: #e9ecef;
+            --gray-300: #dee2e6;
+            --gray-400: #ced4da;
+            --gray-500: #adb5bd;
+            --gray-600: #6c757d;
+            --gray-700: #495057;
+            --gray-800: #343a40;
+            --gray-900: #212529;
+            
+            /* 兼容性变量 */
+            --primary-soft: rgba(67, 97, 238, 0.1);
+            --secondary-soft: rgba(247, 37, 133, 0.1);
+            --dark-soft: rgba(33, 37, 41, 0.06);
             --border-subtle: rgba(0, 0, 0, 0.1);
+            
+            /* 阴影系统 */
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.12);
+            --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+            --shadow-lg: 0 10px 25px rgba(0,0,0,0.15);
+            --shadow-xl: 0 20px 40px rgba(0,0,0,0.2);
             --shadow-soft: 0 2px 4px rgba(0, 0, 0, 0.1);
             --shadow-medium: 0 4px 8px rgba(0, 0, 0, 0.12);
-            --radius-lg: 4px;
-            --radius-md: 4px;
-            --radius-sm: 2px;
-            --transition-fast: 0.2s ease;
-            --transition-normal: 0.3s ease;
+            
+            /* 圆角系统 */
+            --radius-sm: 4px;
+            --radius-md: 8px;
+            --radius-lg: 16px;
+            --radius-xl: 24px;
+            --radius-full: 9999px;
+            
+            /* 过渡动画 */
+            --transition-fast: 150ms ease;
+            --transition-normal: 300ms ease;
+            --transition-slow: 500ms ease;
         }
 
         /* 订单操作按钮样式 */
@@ -241,11 +267,54 @@
                 'Microsoft Yahei', sans-serif;
         }
 
+        /* 现代化滚动条 */
+        ::-webkit-scrollbar {
+            width: 12px;
+            height: 12px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--gray-100);
+            border-radius: var(--radius-md);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            border-radius: var(--radius-md);
+            border: 2px solid var(--gray-100);
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+        }
+
+        /* 焦点可见性优化 */
+        *:focus-visible {
+            outline: 2px solid var(--primary);
+            outline-offset: 2px;
+        }
+
+        /* 选择文本样式 */
+        ::selection {
+            background: var(--primary-light);
+            color: white;
+        }
+
+        ::-moz-selection {
+            background: var(--primary-light);
+            color: white;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
         body {
-            background: #ffffff;
+            background: linear-gradient(to bottom, #ffffff, var(--gray-100));
             color: var(--dark);
             line-height: 1.6;
             -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
             text-rendering: optimizeLegibility;
         }
 
@@ -273,11 +342,13 @@
         .loader-spinner {
             width: 60px;
             height: 60px;
-            border: 4px solid #f3f3f3;
+            border: 4px solid var(--gray-200);
             border-top: 4px solid var(--primary);
+            border-right: 4px solid var(--primary-light);
             border-radius: 50%;
             animation: spin 1s linear infinite;
             margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(67, 97, 238, 0.2);
         }
 
         /* 产品评价卡片 */
@@ -359,13 +430,26 @@
             max-width: 1600px;
             margin: 0 auto;
             padding: 0 24px 80px;
+            animation: containerFadeIn 0.6s ease-out;
         }
 
-        /* 导航栏样式 - 微软风格 */
+        @keyframes containerFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* 现代化导航栏 */
         .navbar {
-            background: #ffffff;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-            border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            box-shadow: var(--shadow-sm);
             position: sticky;
             top: 0;
             z-index: 1000;
@@ -387,11 +471,17 @@
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: color var(--transition-fast), transform var(--transition-fast);
+            transition: color var(--transition-fast), transform var(--transition-fast), opacity var(--transition-fast);
         }
 
         .bottom-nav-item span {
             pointer-events: none;
+        }
+
+        /* 底部导航交互：点击与当前状态反馈（不改颜色） */
+        .bottom-nav-item:active {
+            transform: scale(0.95);
+            opacity: 0.8;
         }
 
         .nav-container {
@@ -445,58 +535,86 @@
             align-items: center;
             justify-content: center;
             padding: 12px 16px;
-            border-radius: 0;
+            border-radius: var(--radius-md);
             text-decoration: none;
             color: var(--gray);
-            font-weight: 400;
+            font-weight: 500;
             font-size: 15px;
             line-height: 1.4;
             min-height: 48px;
-            transition: color var(--transition-fast), background-color var(--transition-fast);
+            transition: all var(--transition-fast);
+        }
+
+        /* 顶部导航：增加下划线微交互，不改变原有配色 */
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            left: 16px;
+            right: 16px;
+            bottom: 8px;
+            height: 2px;
+            border-radius: var(--radius-full);
+            background: linear-gradient(90deg, #6366f1, #8b5cf6);
+            transform: scaleX(0);
+            transform-origin: center;
+            opacity: 0;
+            transition: transform var(--transition-fast), opacity var(--transition-fast);
         }
 
         .nav-links a:hover {
             color: var(--primary);
-            background: var(--primary-light);
+            background: var(--primary-soft);
+            transform: translateY(-1px);
+        }
+
+        .nav-links a:hover::after {
+            transform: scaleX(1);
+            opacity: 0.9;
         }
 
         .nav-links a.active {
-            color: var(--primary);
-            background: transparent;
-            border-bottom: 2px solid var(--primary);
+            color: white;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+        }
+
+        .nav-links a.active::after {
+            transform: scaleX(1);
+            opacity: 1;
         }
 
         .search-bar {
             display: flex;
             width: 42%;
             max-width: 520px;
-            border-radius: 2px;
+            border-radius: var(--radius-md);
             background: #ffffff;
-            border: 1px solid rgba(0, 0, 0, 0.2);
+            border: 2px solid var(--gray-300);
             overflow: hidden;
-            box-shadow: none;
-            transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+            box-shadow: var(--shadow-sm);
+            transition: all var(--transition-fast);
         }
 
         .search-bar:focus-within {
             border-color: var(--primary);
-            box-shadow: 0 0 0 1px var(--primary);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+            transform: translateY(-1px);
         }
 
         /* 电话输入样式（带+1前缀） */
         .phone-input-wrapper {
             display: flex;
             align-items: center;
-            border: 1px solid #ddd;
-            border-radius: 4px;
+            border: 2px solid var(--gray-300);
+            border-radius: var(--radius-md);
             overflow: hidden;
             background: #fff;
-            transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+            transition: all var(--transition-fast);
         }
 
         .phone-input-wrapper:focus-within {
             border-color: var(--primary);
-            box-shadow: 0 0 0 1px var(--primary);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
         }
 
         .phone-prefix {
@@ -616,23 +734,25 @@
             align-items: center;
             justify-content: center;
             padding: 8px 12px;
-            border-radius: 2px;
-            border: 1px solid rgba(0, 0, 0, 0.2);
+            border-radius: var(--radius-md);
+            border: 2px solid var(--gray-300);
             background: #ffffff;
-            transition: background var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast);
+            transition: all var(--transition-fast);
         }
 
         .user-actions a:hover {
-            background: var(--primary-light);
+            background: var(--primary);
             border-color: var(--primary);
-            color: var(--primary);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(67, 97, 238, 0.3);
         }
 
         .user-actions i {
             font-size: 18px;
         }
 
-        /* 轮播图样式 */
+        /* 现代化轮播图 */
         .carousel {
             position: relative;
             width: 100%;
@@ -640,8 +760,9 @@
             overflow: hidden;
             border-radius: var(--radius-lg);
             margin: 32px 0 48px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
-            border: 1px solid rgba(0, 0, 0, 0.08);
+            box-shadow: var(--shadow-lg);
+            transform: translateZ(0);
+            transition: box-shadow var(--transition-normal), transform var(--transition-normal);
         }
 
         .carousel-slide {
@@ -651,17 +772,26 @@
             width: 100%;
             height: 100%;
             opacity: 0;
-            transition: opacity 1s ease;
+            transition: opacity 0.8s ease, transform 0.8s ease;
             background-size: cover;
             background-position: center;
+            transform: scale(1.02);
         }
 
         .carousel-slide.active {
             opacity: 1;
+            transform: scale(1);
         }
 
         .carousel-content {
             display: none; /* 隐藏轮播图中的文字和按钮 */
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+            padding: 40px;
+            color: white;
         }
 
         .carousel-content h2 {
@@ -694,6 +824,7 @@
             left: 50%;
             transform: translateX(-50%);
             display: flex;
+            gap: 8px;
         }
 
         .indicator {
@@ -701,12 +832,56 @@
             height: 12px;
             border-radius: 50%;
             background: rgba(255, 255, 255, 0.5);
-            margin: 0 5px;
             cursor: pointer;
+            transition: all var(--transition-fast);
+            border: 2px solid rgba(255, 255, 255, 0.8);
+        }
+
+        .indicator:hover {
+            background: rgba(255, 255, 255, 0.8);
+            transform: scale(1.2);
         }
 
         .indicator.active {
             background: white;
+            width: 32px;
+            border-radius: var(--radius-full);
+            transform: scale(1.1);
+        }
+
+        /* 轮播进度条（自动播放视觉提示，不改变任何逻辑） */
+        .carousel::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            height: 3px;
+            background: rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .carousel::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            height: 3px;
+            width: 100%;
+            transform-origin: left;
+            transform: scaleX(0);
+            background: rgba(255, 255, 255, 0.8);
+            animation: carouselProgress 6s linear infinite;
+            pointer-events: none;
+        }
+
+        @keyframes carouselProgress {
+            from {
+                transform: scaleX(0);
+            }
+            to {
+                transform: scaleX(1);
+            }
         }
 
         /* 轮播图左右切换按钮 */
@@ -752,16 +927,31 @@
             margin: 64px 0 32px;
             font-size: 36px;
             color: var(--dark);
-            border-left: 4px solid var(--primary);
+            border-left: 5px solid transparent;
+            border-image: linear-gradient(180deg, #6366f1, #8b5cf6) 1;
             padding-left: 20px;
-            font-weight: 300;
+            font-weight: 600;
             line-height: 1.2;
+            position: relative;
         }
 
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 20px;
+            width: 60px;
+            height: 3px;
+            background: linear-gradient(90deg, #6366f1, #8b5cf6);
+            border-radius: var(--radius-full);
+        }
+
+        /* 网格系统现代化 */
         .products-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
             gap: 24px;
+            padding: 20px 0;
             margin-bottom: 80px;
             max-width: 100%;
             margin-left: auto;
@@ -769,21 +959,61 @@
         }
 
 
+        /* 现代化产品卡片 */
         .product-card {
-            background: #ffffff;
+            background: white;
             border-radius: var(--radius-lg);
             overflow: hidden;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
-            transition: box-shadow var(--transition-normal), transform var(--transition-normal);
+            box-shadow: var(--shadow-md);
+            transition: transform var(--transition-normal), box-shadow var(--transition-normal), border-color var(--transition-normal);
+            border: 1px solid var(--gray-200);
+            position: relative;
             cursor: pointer;
-            border: 1px solid rgba(0, 0, 0, 0.08);
             display: flex;
             flex-direction: column;
+            animation: cardFadeIn 0.5s ease-out backwards;
+        }
+
+        @keyframes cardFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        /* 交错动画效果 */
+        .product-card:nth-child(1) { animation-delay: 0s; }
+        .product-card:nth-child(2) { animation-delay: 0.05s; }
+        .product-card:nth-child(3) { animation-delay: 0.1s; }
+        .product-card:nth-child(4) { animation-delay: 0.15s; }
+        .product-card:nth-child(5) { animation-delay: 0.2s; }
+        .product-card:nth-child(6) { animation-delay: 0.25s; }
+        .product-card:nth-child(n+7) { animation-delay: 0.3s; }
+
+        .product-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #6366f1, #8b5cf6);
+            opacity: 0;
+            transition: opacity var(--transition-normal);
         }
 
         .product-card:hover {
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.16), 0 2px 4px rgba(0, 0, 0, 0.23);
-            transform: translateY(-2px);
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-xl);
+            border-color: var(--primary-light);
+        }
+
+        .product-card:hover::before {
+            opacity: 1;
         }
 
         /* 拖放排序相关样式 */
@@ -819,9 +1049,15 @@
             background-size: contain;
             background-repeat: no-repeat;
             background-position: center;
-            background-color: #faf9f8;
+            background-color: var(--gray-100);
             position: relative;
             padding: 24px;
+            transition: all var(--transition-normal);
+            overflow: hidden;
+        }
+
+        .product-card:hover .product-image {
+            transform: scale(1.03);
         }
 
         .product-info {
@@ -861,7 +1097,7 @@
 
         .product-title {
             font-size: 16px;
-            font-weight: 400;
+            font-weight: 600;
             margin-bottom: 12px;
             color: var(--dark);
             line-height: 1.5;
@@ -871,14 +1107,44 @@
             -webkit-line-clamp: 2;
             line-clamp: 2;
             -webkit-box-orient: vertical;
+            transition: color var(--transition-fast);
+        }
+
+        .product-card:hover .product-title {
+            color: var(--primary);
         }
 
         .product-price {
             font-size: 24px;
-            font-weight: 600;
-            color: var(--dark);
+            font-weight: 700;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
             margin-bottom: 16px;
             margin-top: auto;
+            position: relative;
+            padding-bottom: 4px;
+            overflow: hidden;
+        }
+
+        /* 产品价格轻微下划线动画，增强视觉而不改颜色 */
+        .product-price::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 100%;
+            height: 2px;
+            border-radius: var(--radius-full);
+            background: currentColor;
+            opacity: 0.15;
+            transform: translateX(-100%);
+            transition: transform var(--transition-normal);
+        }
+
+        .product-card:hover .product-price::after {
+            transform: translateX(0);
         }
 
         .product-actions {
@@ -888,22 +1154,44 @@
             margin-top: 6px;
         }
 
+        /* 现代化按钮 */
         .btn {
             padding: 12px 24px;
-            border: none;
-            border-radius: 2px;
-            cursor: pointer;
-            font-weight: 400;
-            letter-spacing: 0;
-            transition: background var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast);
+            border-radius: var(--radius-md);
+            font-weight: 600;
             font-size: 14px;
-            flex: 1;
-            border: 1px solid transparent;
+            border: none;
+            cursor: pointer;
+            transition: all var(--transition-fast);
             display: inline-flex;
             align-items: center;
-            justify-content: center;
             gap: 8px;
+            position: relative;
+            overflow: hidden;
+            flex: 1;
+            justify-content: center;
             min-height: 40px;
+            box-shadow: var(--shadow-sm);
+            transform: translateY(0);
+        }
+
+        /* 按钮：统一悬停与按压反馈（只调整阴影和位移，不改颜色） */
+        .btn:hover:not(:disabled):not(.disabled) {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn:active:not(:disabled):not(.disabled) {
+            transform: translateY(0);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn:disabled,
+        .btn.disabled {
+            cursor: not-allowed;
+            opacity: 0.6;
+            box-shadow: none;
+            transform: none;
         }
 
         .btn-primary {
@@ -936,14 +1224,122 @@
             background: #a4262c;
         }
 
+        /* 现代化标签和徽章 */
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: var(--radius-full);
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-new {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+
+        .badge-sale {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+        }
+
+        .badge-hot {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+        }
+
+        /* 悬停效果集合 */
+        .hover-lift {
+            transition: transform var(--transition-normal);
+        }
+
+        .hover-lift:hover {
+            transform: translateY(-4px);
+        }
+
+        .hover-glow {
+            transition: box-shadow var(--transition-normal);
+        }
+
+        .hover-glow:hover {
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        /* 骨架屏加载效果 */
+        .skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+            border-radius: var(--radius-md);
+        }
+
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* 现代化通知和提示框 */
+        .alert {
+            padding: 16px 20px;
+            border-radius: var(--radius-md);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .alert-success {
+            background: linear-gradient(135deg, rgba(76, 201, 240, 0.1), rgba(76, 201, 240, 0.05));
+            border-left: 4px solid var(--success);
+            color: var(--dark);
+        }
+
+        .alert-warning {
+            background: linear-gradient(135deg, rgba(248, 150, 30, 0.1), rgba(248, 150, 30, 0.05));
+            border-left: 4px solid var(--warning);
+            color: var(--dark);
+        }
+
+        .alert-danger {
+            background: linear-gradient(135deg, rgba(230, 57, 70, 0.1), rgba(230, 57, 70, 0.05));
+            border-left: 4px solid var(--danger);
+            color: var(--dark);
+        }
+
         /* 首页精选展示 */
         .featured-showcase {
             margin-top: 48px;
             background: #ffffff;
             border-radius: var(--radius-lg);
             padding: 48px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
-            border: 1px solid rgba(0, 0, 0, 0.08);
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--gray-200);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .featured-showcase::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #6366f1, #8b5cf6, #10b981);
         }
 
         .featured-head {
@@ -991,14 +1387,14 @@
 
         .category-item {
             padding: 10px 20px;
-            border-radius: 2px;
+            border-radius: var(--radius-full);
             background: #ffffff;
             color: var(--gray);
             font-size: 14px;
+            font-weight: 500;
             cursor: pointer;
             transition: all var(--transition-fast);
-            border: 1px solid rgba(0, 0, 0, 0.15);
-            font-weight: 400;
+            border: 2px solid var(--gray-300);
             min-height: 40px;
             display: inline-flex;
             align-items: center;
@@ -1006,16 +1402,19 @@
         }
 
         .category-item:hover {
-            background: var(--primary-light);
-            border-color: var(--primary);
+            background: var(--primary-soft);
+            border-color: var(--primary-light);
             color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-sm);
         }
 
         .category-item.active {
-            background: var(--primary);
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
             color: #fff;
-            border-color: var(--primary);
-            box-shadow: 0 2px 4px rgba(0, 120, 212, 0.2);
+            border-color: #6366f1;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+            transform: translateY(-2px);
         }
 
         #products-grid {
@@ -1099,6 +1498,7 @@
 
 
         /* 模态框样式 */
+        /* 现代化模态框 */
         .modal {
             display: none;
             position: fixed;
@@ -1107,24 +1507,47 @@
             width: 100%;
             height: 100%;
             background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
             z-index: 2000;
             justify-content: center;
             align-items: center;
+            animation: fadeIn 0.25s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
         }
 
         .modal-content {
             background: white;
             width: 90%;
             max-width: 500px;
-            border-radius: 2px;
+            border-radius: var(--radius-lg);
             overflow: hidden;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-            border: 1px solid var(--border-subtle);
+            box-shadow: var(--shadow-xl);
+            animation: slideUp 0.25s ease;
+            transform-origin: center center;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
         }
 
         .modal-header {
             padding: 20px 24px;
-            background: var(--primary);
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
             color: white;
             display: flex;
             justify-content: space-between;
@@ -1133,16 +1556,28 @@
 
         .modal-header h3 {
             margin: 0;
-            font-weight: 400;
+            font-weight: 600;
             font-size: 20px;
         }
 
         .close-modal {
-            background: none;
+            background: rgba(255, 255, 255, 0.2);
             border: none;
             color: white;
             font-size: 20px;
             cursor: pointer;
+            width: 32px;
+            height: 32px;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all var(--transition-fast);
+        }
+
+        .close-modal:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: rotate(90deg);
         }
 
         .modal-body {
@@ -1263,21 +1698,22 @@
             font-weight: 500;
         }
 
+        /* 现代化表单控件 */
         .form-control {
             width: 100%;
-            padding: 10px 14px;
-            border: 1px solid rgba(0, 0, 0, 0.2);
-            border-radius: 2px;
-            font-size: 15px;
-            background: #ffffff;
-            transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+            padding: 12px 16px;
+            border: 2px solid var(--gray-300);
+            border-radius: var(--radius-md);
+            font-size: 16px;
+            background: white;
+            transition: all var(--transition-fast);
             min-height: 40px;
         }
 
         .form-control:focus {
             outline: none;
             border-color: var(--primary);
-            box-shadow: 0 0 0 1px var(--primary);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
         }
 
         .form-control::placeholder {
@@ -1515,35 +1951,121 @@
             width: 100%;
         }
 
-        /* Messenger 联系按钮样式（沿用类名 whatsapp-button） */
-        .whatsapp-button {
+        /* 客服联系按钮组 */
+        .contact-button {
             position: fixed;
-            bottom: 20px;
-            right: 20px;
+            bottom: 30px;
+            right: 30px;
             z-index: 1000;
-            width: 60px;
-            height: 60px;
-            background: #0084FF; /* Messenger 蓝 */
+        }
+
+        .main-button {
+            width: 70px;
+            height: 70px;
             border-radius: 50%;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(99, 102, 241, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            transition: all 0.3s ease;
+            z-index: 1001;
+        }
+
+        .main-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 25px rgba(99, 102, 241, 0.4);
+        }
+
+        .main-button.active {
+            transform: rotate(45deg);
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+        }
+
+        .contact-options {
+            position: absolute;
+            bottom: 85px;
+            right: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(20px);
+            transition: all 0.4s ease;
+        }
+
+        .contact-options.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .option-button {
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            margin-bottom: 15px;
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
-            font-size: 28px;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(0, 132, 255, 0.4);
-            transition: transform 0.3s, box-shadow 0.3s;
+            font-size: 24px;
             text-decoration: none;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s ease;
+            position: relative;
         }
 
-        .whatsapp-button:hover {
-            transform: scale(1.1);
-            box-shadow: 0 6px 20px rgba(0, 132, 255, 0.6);
+        .option-button:hover {
+            transform: scale(1.15) translateX(-5px);
         }
 
-        .whatsapp-button:active {
-            transform: scale(0.96);
-            box-shadow: 0 3px 10px rgba(0, 132, 255, 0.6);
+        .option-button.messenger {
+            background-color: #0084ff;
+        }
+
+        .option-button.whatsapp {
+            background-color: #25D366;
+        }
+
+        .option-button.email {
+            background-color: #EA4335;
+        }
+
+        .tooltip {
+            position: absolute;
+            right: 65px;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+
+        .tooltip::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            right: -6px;
+            transform: translateY(-50%);
+            border-width: 6px 0 6px 6px;
+            border-style: solid;
+            border-color: transparent transparent transparent rgba(0, 0, 0, 0.8);
+        }
+
+        .option-button:hover .tooltip {
+            opacity: 1;
+            visibility: visible;
         }
 
         /* Messenger 复制成功提示 */
@@ -1604,7 +2126,7 @@
             margin: 24px auto 0;
             padding: 12px 26px;
             border-radius: 999px;
-            background: linear-gradient(135deg, #f59e0b 0%, #f97316 40%, #ea580c 100%);
+            background: linear-gradient(135deg, #f59e0b 0%, #f97316 50%, #ea580c 100%);
             color: #fff;
             font-size: 15px;
             font-weight: 600;
@@ -1858,7 +2380,7 @@
             }
 
             .order-tab.active {
-                background: linear-gradient(135deg, #60a5fa, #2563eb);
+                background: linear-gradient(135deg, #6366f1, #8b5cf6);
                 color: #ffffff;
                 border-color: transparent;
             }
@@ -1946,7 +2468,7 @@
             border-radius: 999px;
             font-size: 13px;
             font-weight: 500;
-            background: linear-gradient(135deg, #4ade80, #22c55e);
+            background: linear-gradient(135deg, #10b981, #059669);
             color: #ffffff;
             box-shadow: 0 4px 10px rgba(34, 197, 94, 0.25);
             border: none;
@@ -2279,26 +2801,34 @@
             width: 100%;
             border-collapse: collapse;
             background: white;
-            border-radius: 8px;
+            border-radius: var(--radius-md);
             overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            box-shadow: var(--shadow-md);
         }
 
         .admin-table th,
         .admin-table td {
             padding: 12px 15px;
             text-align: left;
-            border-bottom: 1px solid #e9ecef;
+            border-bottom: 1px solid var(--gray-200);
         }
 
         .admin-table th {
-            background: #f8f9fa;
+            background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
             font-weight: 600;
             color: var(--dark);
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 0.5px;
+        }
+
+        .admin-table tbody tr {
+            transition: all var(--transition-fast);
         }
 
         .admin-table tbody tr:hover {
-            background: #f8f9fa;
+            background: var(--gray-100);
+            transform: scale(1.01);
         }
 
         .users-table-container,
@@ -3281,6 +3811,23 @@
             }
         }
 
+        /* 响应式断点优化 */
+        @media (max-width: 768px) {
+            .products-grid {
+                grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+                gap: 16px;
+            }
+            
+            .modal-content {
+                width: 95%;
+                margin: 10px;
+            }
+            
+            .carousel {
+                aspect-ratio: 16 / 9;
+            }
+        }
+
         @media (max-width: 480px) {
             .products-grid {
                 grid-template-columns: 1fr;
@@ -3288,7 +3835,7 @@
             }
 
             .product-card {
-                max-width: 50%;
+                max-width: 100%;
             }
         }
 
@@ -4174,13 +4721,26 @@
                 font-size: 24px;
             }
 
-            /* WhatsApp按钮移动端优化 */
-            .whatsapp-button {
-                width: 55px;
-                height: 55px;
+            /* 客服按钮移动端优化 */
+            .contact-button {
+                bottom: 20px;
+                right: 20px;
+            }
+
+            .main-button {
+                width: 60px;
+                height: 60px;
                 font-size: 24px;
-                bottom: 85px;
-                right: 15px;
+            }
+
+            .option-button {
+                width: 50px;
+                height: 50px;
+                font-size: 20px;
+            }
+
+            .contact-options {
+                bottom: 75px;
             }
 
             /* WhatsApp模态框移动端优化 */
@@ -4386,6 +4946,331 @@
             .charts-section button {
                 width: 100%;
                 max-width: 200px;
+            }
+        }
+
+        /* ================================
+           移动端交互与输入体验优化（第1、2、3部分）
+           保持原有布局与功能不变，仅增强触控与视觉反馈
+        ================================= */
+
+        /* 1. 触控交互优化：可点击区域尺寸与按下反馈 */
+        .tappable,
+        .btn,
+        .product-card,
+        .nav-links a,
+        .category-item,
+        .bottom-nav-item {
+            min-height: 44px;
+            min-width: 44px;
+        }
+
+        .tappable:active,
+        .btn:active,
+        .product-card:active,
+        .bottom-nav-item:active {
+            opacity: 0.85;
+            transform: scale(0.98);
+            transition: transform 0.1s ease, opacity 0.1s ease;
+        }
+
+        /* 移除点击高亮，并禁止全局选中（输入框/按钮文字除外） */
+        * {
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+
+        .btn,
+        input,
+        textarea {
+            user-select: text;
+        }
+
+        /* 分类筛选器水平滑动优化（保留现有布局） */
+        .category-filter {
+            overflow-x: auto;
+            overflow-y: hidden;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            scroll-snap-type: x mandatory;
+            padding-bottom: 8px;
+        }
+
+        .category-filter::-webkit-scrollbar {
+            display: none;
+        }
+
+        .category-item {
+            scroll-snap-align: start;
+        }
+
+        /* 产品网格滚动阻尼，防止滚动穿透 */
+        .products-grid {
+            overscroll-behavior: contain;
+        }
+
+
+        /* 2. 移动端视觉反馈增强：骨架屏与 hover 替代 */
+        @media (max-width: 768px) {
+            /* 骨架屏更紧凑，适配移动端 */
+            .skeleton {
+                min-height: 100px;
+                border-radius: 8px;
+            }
+
+            .product-card.skeleton {
+                height: 240px;
+            }
+
+            /* 移动端禁用 hover 抬升，改用点击态 .tapped */
+            .product-card:hover {
+                transform: none;
+                box-shadow: var(--shadow-md);
+            }
+
+            .product-card.tapped {
+                transform: translateY(-4px);
+                box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+                transition: transform 0.2s ease, box-shadow 0.2s ease;
+            }
+        }
+
+        /* 底部导航点击波纹与选中状态增强 */
+        .bottom-nav-item {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .bottom-nav-item::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.1);
+            transform: translate(-50%, -50%);
+            transition: width 0.3s, height 0.3s;
+        }
+
+        .bottom-nav-item:active::after {
+            width: 100px;
+            height: 100px;
+            opacity: 0.7;
+        }
+
+        .bottom-nav-item.active {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .bottom-nav-item.active i {
+            color: var(--primary);
+        }
+
+
+        /* 3. 表单与输入体验优化（移动端） */
+        @media (max-width: 768px) {
+            input[type="text"],
+            input[type="email"],
+            input[type="tel"],
+            input[type="password"],
+            select,
+            textarea {
+                font-size: 16px !important; /* 防止 iOS Safari 自动缩放 */
+            }
+
+            /* 搜索框输入区域更易点选 */
+            .search-bar input {
+                font-size: 16px;
+                padding: 12px 16px;
+            }
+
+            /* 常见表单提交按钮增大触控面积（尽量不影响布局） */
+            .form-actions .btn,
+            button[type="submit"] {
+                padding: 14px 20px;
+                font-size: 16px;
+                font-weight: 600;
+            }
+        }
+
+        /* 键盘弹起时的模态滚动体验优化（如页面中存在 .modal-body） */
+        @media (max-height: 600px) {
+            .modal-body {
+                max-height: 70vh;
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+        }
+
+        /* 原生下拉选择器简易美化（不破坏功能） */
+        select {
+            appearance: none;
+            -webkit-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23666' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 12px;
+            padding-right: 36px;
+        }
+
+        /* ======================
+           第4部分：性能与加载优化
+        ======================= */
+
+        /* 图片懒加载占位与动画（可与现有 .lazy-load 协同） */
+        .product-image.lazy-loading {
+            background: linear-gradient(110deg, #ececec 8%, #f5f5f5 18%, #ececec 33%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s linear infinite;
+        }
+
+        @keyframes shimmer {
+            to {
+                background-position: -200% 0;
+            }
+        }
+
+        .product-image.lazy-loaded {
+            animation: fadeInUp 0.5s ease;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* 滚动性能优化：减少重绘区域 & 启用 GPU 加速 */
+        .product-card,
+        .carousel-slide,
+        .modal-content {
+            transform: translateZ(0);
+            backface-visibility: hidden;
+            perspective: 1000px;
+        }
+
+        .products-grid {
+            contain: content;
+        }
+
+        /* ======================
+           第5部分：手势与滑动提示
+        ======================= */
+
+        /* 轮播图滑动提示文案（仅移动端显示） */
+        .carousel::after {
+            content: '← 滑动 →';
+            position: absolute;
+            bottom: 15px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 12px;
+            pointer-events: none;
+            animation: swipeHint 2s infinite;
+        }
+
+        @keyframes swipeHint {
+            0%,
+            100% {
+                opacity: 0.5;
+            }
+
+            50% {
+                opacity: 1;
+            }
+        }
+
+        @media (min-width: 769px) {
+            .carousel::after {
+                display: none;
+            }
+        }
+
+        /* 下拉刷新指示器（如需可在 HTML 中添加 #pull-to-refresh 容器） */
+        #pull-to-refresh {
+            position: fixed;
+            top: -60px;
+            left: 0;
+            right: 0;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--primary);
+            color: white;
+            transition: transform 0.3s ease;
+            z-index: 10000;
+        }
+
+        #pull-to-refresh.pulling {
+            transform: translateY(60px);
+        }
+
+        #pull-to-refresh i {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* ======================
+           第6部分：Toast 与空状态
+        ======================= */
+
+        /* 复用现有 messenger-copy-toast，移动端位置适配 */
+        @media (max-width: 768px) {
+            .messenger-copy-toast {
+                bottom: 80px;
+                top: auto;
+                left: 50%;
+                transform: translateX(-50%);
+                width: auto;
+                max-width: 90%;
+                border-radius: 12px;
+                padding: 14px 18px;
+            }
+        }
+
+        /* 通用空状态（如有需要可复用类名 .empty-state 等） */
+        @media (max-width: 768px) {
+            .empty-state {
+                padding: 60px 20px;
+                text-align: center;
+            }
+
+            .empty-state-icon {
+                font-size: 64px;
+                color: var(--gray-300);
+                margin-bottom: 20px;
+                opacity: 0.6;
+            }
+
+            .empty-state-text {
+                font-size: 16px;
+                color: var(--gray-600);
+                line-height: 1.6;
+            }
+
+            .empty-state-action {
+                margin-top: 24px;
             }
         }
     </style>
@@ -5426,9 +6311,27 @@
     </div>
 
     <!-- Messenger 联系按钮（Get Prepaid） -->
-    <a href="https://m.me/beefreebies" target="_blank" class="whatsapp-button" title="Get more help">
-        <i class="fab fa-facebook-messenger"></i>
-    </a>
+    <!-- 客服联系按钮 -->
+    <div class="contact-button">
+        <button class="main-button" id="mainButton">
+            <i class="fas fa-headset"></i>
+        </button>
+        
+        <div class="contact-options" id="contactOptions">
+            <a href="https://m.me/beefreebies" target="_blank" class="option-button messenger">
+                <i class="fab fa-facebook-messenger"></i>
+                <span class="tooltip">Messenger</span>
+            </a>
+            <a href="https://wa.me/12132756555" target="_blank" class="option-button whatsapp">
+                <i class="fab fa-whatsapp"></i>
+                <span class="tooltip">WhatsApp</span>
+            </a>
+            <a href="mailto:service@beefreebies.com?subject=I need more help" class="option-button email">
+                <i class="fas fa-envelope"></i>
+                <span class="tooltip">Email</span>
+            </a>
+        </div>
+    </div>
 
 
     <!-- 登录/注册选择模态框 -->
@@ -5560,154 +6463,137 @@
     <!-- WhatsApp提示模态框 - 有跳转链接的产品（两步流程） -->
     <div class="modal" id="whatsapp-modal">
         <!-- 两步流程样式（有跳转链接） -->
-        <div class="modal-content whatsapp-modal-content whatsapp-modal-two-steps" id="whatsapp-modal-two-steps" style="display: none;">
-            <div class="modal-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 25px 30px; position: relative;">
-                <div style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%;">
-                    <div style="flex: 1;">
-                        <h3 style="color: white; font-size: 26px; font-weight: 700; margin: 0; line-height: 1.2;">Get Your Product!</h3>
-                        <p style="color: white; font-size: 14px; margin: 8px 0 0 0; opacity: 0.95; line-height: 1.4;">Two simple steps to get your product and cash back</p>
-                    </div>
-                    <button class="close-modal" onclick="closeModal('whatsapp-modal')" style="background: rgba(255,255,255,0.25); border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border: none; color: white; cursor: pointer; font-size: 22px; flex-shrink: 0; margin-left: 20px; transition: background 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.35)'" onmouseout="this.style.background='rgba(255,255,255,0.25)'">&times;</button>
+        <div class="modal-content whatsapp-modal-content whatsapp-modal-two-steps" id="whatsapp-modal-two-steps" style="display: none; max-width: 900px; border-radius: 20px; overflow: hidden; box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);">
+            <div class="modal-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 24px 40px 30px; position: relative; overflow: hidden;">
+                <button class="close-modal" onclick="closeModal('whatsapp-modal')" style="position: absolute; top: 20px; right: 20px; width: 36px; height: 36px; background: rgba(255, 255, 255, 0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.2rem; cursor: pointer; z-index: 100; transition: all 0.3s ease; border: 2px solid rgba(255, 255, 255, 0.3); backdrop-filter: blur(5px);" onmouseover="this.style.background='rgba(255,255,255,0.3)'; this.style.transform='rotate(90deg) scale(1.1)';" onmouseout="this.style.background='rgba(255,255,255,0.2)'; this.style.transform='rotate(0deg) scale(1)';">
+                    <i class="fas fa-times"></i>
+                </button>
+                <div style="text-align: center; position: relative;">
+                    <h3 style="color: white; font-size: 2.4rem; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 8px; text-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);">Get Your Product!</h3>
+                    <p style="color: white; font-size: 1.1rem; opacity: 0.9; font-weight: 300; max-width: 500px; margin: 0 auto;">Two simple steps to get your product and cash back</p>
                 </div>
             </div>
-            <div class="modal-body whatsapp-modal-body" style="padding: 50px 40px; background: white;">
-                <div style="display: flex; justify-content: space-around; align-items: flex-start; gap: 40px; margin-bottom: 40px;">
-                    <!-- Step 1: Place an Order -->
-                    <div style="flex: 1; text-align: center; max-width: 200px;">
-                        <div style="width: 50px; height: 50px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 25px; color: white; font-size: 24px; font-weight: bold; box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);">1</div>
-                        <div style="width: 90px; height: 90px; background: #fff; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); cursor: pointer; transition: transform 0.3s, box-shadow 0.3s;" onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 4px 15px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 2px 10px rgba(0,0,0,0.08)';">
-                            <a id="whatsapp-amazon-link" href="#" target="_blank" rel="noopener" style="text-decoration: none; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; padding: 10px;">
-                                <img src="https://d92ap0lo8fr10.cloudfront.net/A14TLSYJXI3UM6_8654e5c28a177eafe3857ef70b48eb85_ProductImage_MAIN" alt="Place Your Order" style="width: 70px; height: 70px; object-fit: contain; border-radius: 8px;">
-                            </a>
+            <div class="modal-body whatsapp-modal-body" style="padding: 30px; background: #fafbfd;">
+                <div style="display: flex; gap: 20px;">
+                    <!-- Step 1: Place Your Order -->
+                    <a id="whatsapp-amazon-link" href="#" target="_blank" rel="noopener" style="flex: 1; display: flex; flex-direction: column; align-items: center; padding: 35px 25px; border-radius: 18px; background: white; box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08); border: 1px solid rgba(0, 0, 0, 0.04); min-height: 480px; text-decoration: none; color: inherit; transition: all 0.3s ease; cursor: pointer;" onmouseover="this.style.transform='translateY(-8px)'; this.style.boxShadow='0 15px 35px rgba(0, 0, 0, 0.12)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 5px 20px rgba(0, 0, 0, 0.08)';">
+                        <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.3rem; margin-bottom: 25px; box-shadow: 0 6px 15px rgba(102, 126, 234, 0.3);">1</div>
+                        <div style="width: 75px; height: 75px; border-radius: 20px; display: flex; align-items: center; justify-content: center; margin-bottom: 25px; box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1); background: linear-gradient(135deg, #FF9900 0%, #FFAC33 100%);">
+                            <i class="fab fa-amazon" style="font-size: 2.8rem; color: white;"></i>
                         </div>
-                        <h4 style="font-size: 18px; font-weight: 600; color: #333; margin: 0 0 8px 0; line-height: 1.3;">Place Your Order</h4>
-                        <p style="font-size: 14px; color: #999; margin: 0; line-height: 1.4;">Order the product on Amazon</p>
-                        <div style="display: flex; justify-content: center; margin-top: 160px;">
-                            <a id="whatsapp-amazon-button" href="#" target="_blank" rel="noopener" class="amazon-order-btn">
-                                <i class="fab fa-amazon"></i>
-                                <span>Order on Amazon</span>
-                            </a>
+                        <div style="text-align: center; width: 100%; flex-grow: 1; display: flex; flex-direction: column;">
+                            <div style="font-size: 1.6rem; font-weight: 800; color: #2d3748; margin-bottom: 10px; letter-spacing: -0.2px;">Place Your Order</div>
+                            <div style="font-size: 1.05rem; color: #718096; font-weight: 500; line-height: 1.5; margin-bottom: 25px; min-height: 50px;">Order the product on Amazon</div>
+                            <div style="width: 100%; margin-top: auto;">
+                                <div style="display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; padding: 16px; background: linear-gradient(135deg, #FF9900 0%, #FFAC33 100%); color: white; border-radius: 12px; font-weight: 700; font-size: 1.1rem; box-shadow: 0 6px 20px rgba(255, 153, 0, 0.25);">
+                                    <i class="fab fa-amazon" style="font-size: 1.4rem;"></i>
+                                    Order on Amazon
+                                </div>
+                            </div>
                         </div>
-                    </div>
+                    </a>
                     
-                    <!-- Step 2: Get Prepaid (Messenger) -->
-                    <div style="flex: 1; max-width: 320px;">
-                        <div style="text-align: center; margin-bottom: 25px;">
-                            <div style="width: 50px; height: 50px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; color: white; font-size: 24px; font-weight: bold; box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);">2</div>
-                            <div style="width: 76px; height: 76px; border-radius: 20px; background: #e6f2ff; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);">
-                                <i class="fab fa-facebook-messenger" style="font-size: 40px; color: #0084FF;"></i>
-                            </div>
-                            <h4 style="font-size: 18px; font-weight: 600; color: #333; margin: 0 0 4px 0; line-height: 1.3;">Get Prepaid</h4>
-                            <p style="font-size: 14px; color: #999; margin: 0; line-height: 1.4;">Get instant prepayment via Messenger</p>
+                    <!-- Step 2: Get Prepaid -->
+                    <div style="flex: 1; display: flex; flex-direction: column; align-items: center; padding: 35px 25px; border-radius: 18px; background: white; box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08); border: 1px solid rgba(0, 0, 0, 0.04); min-height: 480px; transition: all 0.3s ease; cursor: pointer;" onmouseover="this.style.transform='translateY(-8px)'; this.style.boxShadow='0 15px 35px rgba(0, 0, 0, 0.12)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 5px 20px rgba(0, 0, 0, 0.08)';">
+                        <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.3rem; margin-bottom: 25px; box-shadow: 0 6px 15px rgba(102, 126, 234, 0.3);">2</div>
+                        <div style="width: 75px; height: 75px; border-radius: 20px; display: flex; align-items: center; justify-content: center; margin-bottom: 25px; box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1); background: linear-gradient(135deg, #006AFF 0%, #0084FF 100%);">
+                            <i class="fab fa-facebook-messenger" style="font-size: 2.8rem; color: white;"></i>
                         </div>
-
-                        <!-- Copy message card -->
-                        <div style="background: #f7f8ff; border-radius: 16px; padding: 18px 20px; margin-bottom: 16px; box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08); border: 1px solid rgba(148, 163, 184, 0.3);">
-                            <div style="font-size: 14px; font-weight: 600; color: #111827; margin-bottom: 10px;">Step 1: Copy Message</div>
-                            <div style="background: white; border-radius: 10px; padding: 14px 14px 10px; border: 1px dashed rgba(148, 163, 184, 0.7); position: relative; margin-bottom: 12px;">
-                                <p id="messenger-prepay-text" style="font-size: 13px; color: #4b5563; margin: 0; line-height: 1.5;">
-                                    Please make the prepayment for my order number XXXXX.
-                                </p>
+                        <div style="text-align: center; width: 100%; flex-grow: 1; display: flex; flex-direction: column;">
+                            <div style="font-size: 1.6rem; font-weight: 800; color: #2d3748; margin-bottom: 10px; letter-spacing: -0.2px;">Get Prepaid</div>
+                            <div style="font-size: 1.05rem; color: #718096; font-weight: 500; line-height: 1.5; margin-bottom: 25px; min-height: 50px;">Get instant prepayment via Messenger</div>
+                            
+                            <!-- Copy Message Container -->
+                            <div style="width: 100%; margin-bottom: 25px; padding: 20px; border-radius: 14px; background: #f8f9fa; border: 1px solid #e9ecef;">
+                                <div style="font-size: 1.1rem; font-weight: 600; color: #2d3748; margin-bottom: 15px; text-align: center;">Copy Message</div>
+                                <div id="messenger-prepay-text" style="background: white; border: 1px solid #dee2e6; border-radius: 10px; padding: 14px; font-size: 0.95rem; color: #495057; margin-bottom: 15px; word-break: break-all; line-height: 1.5; font-family: 'Courier New', monospace; min-height: 70px; border-style: dashed;">
+                                    Please provide prepayment for order XXX
+                                </div>
+                                <button type="button" onclick="copyMessengerPrepayText()" style="width: 100%; padding: 12px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 10px; font-weight: 600; font-size: 1rem; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 8px;" onmouseover="this.style.background='linear-gradient(135deg, #764ba2 0%, #667eea 100%)'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 20px rgba(102, 126, 234, 0.3)';" onmouseout="this.style.background='linear-gradient(135deg, #667eea 0%, #764ba2 100%)'; this.style.transform='translateY(0)'; this.style.boxShadow='none';">
+                                    <i class="fas fa-copy"></i> Step 1: Copy Message
+                                </button>
                             </div>
-                            <button type="button" class="messenger-step-btn messenger-step-btn-copy" onclick="copyMessengerPrepayText()" style="width: 100%; background: linear-gradient(135deg, #4f46e5 0%, #6366f1 50%, #3b82f6 100%); border-radius: 999px; border: none; padding: 10px 14px; color: white; font-size: 14px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 10px 25px rgba(79, 70, 229, 0.35);">
-                                <i class="far fa-copy"></i>
-                                Copy
-                            </button>
+                            
+                            <!-- Messenger Button -->
+                            <div style="width: 100%; margin-top: auto;">
+                                <a href="https://m.me/beefreebies" target="_blank" rel="noopener" onclick="openMessengerPrepay(); return false;" style="display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; padding: 16px; background: linear-gradient(135deg, #006AFF 0%, #0084FF 100%); color: white; border-radius: 12px; font-weight: 700; font-size: 1.1rem; text-decoration: none; box-shadow: 0 6px 20px rgba(0, 106, 255, 0.25); transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 10px 25px rgba(0, 0, 0, 0.2)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 6px 20px rgba(0, 106, 255, 0.25)';">
+                                    <i class="fab fa-facebook-messenger" style="font-size: 1.4rem;"></i>
+                                    Step 2: Send via Messenger
+                                </a>
+                            </div>
                         </div>
-
-                        <!-- Open Messenger button -->
-                        <button type="button" class="messenger-step-btn messenger-step-btn-open" onclick="openMessengerPrepay()" style="width: 100%; background: #0084FF; border-radius: 999px; border: none; padding: 13px 16px; color: white; font-size: 14px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 12px 30px rgba(0, 132, 255, 0.45);">
-                            <i class="fab fa-facebook-messenger" style="font-size: 18px;"></i>
-                            Step 2: Open Messenger
-                        </button>
                     </div>
                 </div>
-                <div style="text-align: center; margin-top: 40px; padding-top: 30px;">
-                    <div style="display: flex; justify-content: center; gap: 6px; margin-bottom: 12px;">
-                        <div style="width: 8px; height: 8px; border-radius: 50%; background: #667eea;"></div>
-                        <div style="width: 8px; height: 8px; border-radius: 50%; background: #667eea;"></div>
-                        <div style="width: 8px; height: 8px; border-radius: 50%; background: #d0d0d0;"></div>
+                
+                <!-- Progress Indicator -->
+                <div style="display: flex; align-items: center; justify-content: center; padding: 0 30px 20px; margin-top: 0;">
+                    <div style="display: flex; gap: 10px;">
+                        <div style="width: 8px; height: 8px; border-radius: 50%; background: #667eea; transform: scale(1.2);"></div>
+                        <div style="width: 8px; height: 8px; border-radius: 50%; background: #667eea; transform: scale(1.2);"></div>
+                        <div style="width: 8px; height: 8px; border-radius: 50%; background: #cbd5e0;"></div>
                     </div>
-                    <p style="font-size: 13px; color: #999; margin: 0; line-height: 1.5;">Complete both steps to receive your cash back</p>
+                </div>
+                
+                <!-- Footer Note -->
+                <div style="text-align: center; padding: 18px; font-size: 0.9rem; color: #a0aec0; background: white; border-top: 1px solid rgba(0, 0, 0, 0.05); font-weight: 500; margin-top: 0;">
+                    Complete both steps to receive your cash back
                 </div>
             </div>
         </div>
 
         <!-- 单步流程样式（无跳转链接） -> 改为 Messenger 预付款弹窗样式 -->
-        <div class="modal-content whatsapp-modal-content whatsapp-modal-single-step" id="whatsapp-modal-single-step" style="display: none;">
+        <div class="modal-content whatsapp-modal-content whatsapp-modal-single-step" id="whatsapp-modal-single-step" style="display: none; max-width: 600px; border-radius: 20px; overflow: hidden; box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);">
             <!-- 顶部蓝色标题区域 -->
-            <div class="modal-header" style="background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 40%, #3b82f6 100%); padding: 28px 32px; position: relative;">
-                <div style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%;">
-                    <div style="flex: 1;">
-                        <h3 style="color: #ffffff; font-size: 26px; font-weight: 700; margin: 0; line-height: 1.25; letter-spacing: -0.02em;">
-                            Get Instant Prepayment!
-                        </h3>
-                        <p style="color: #e0e7ff; font-size: 14px; margin: 8px 0 0 0; line-height: 1.5;">
-                            Confirm your order to receive instant prepayment via Messenger
-                        </p>
-                    </div>
-                    <button class="close-modal" onclick="closeModal('whatsapp-modal')" style="background: rgba(255,255,255,0.2); border-radius: 999px; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border: none; color: #ffffff; cursor: pointer; font-size: 22px; flex-shrink: 0; margin-left: 20px; transition: background 0.25s, transform 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.3)'; this.style.transform='scale(1.03)';" onmouseout="this.style.background='rgba(255,255,255,0.2)'; this.style.transform='scale(1)';">
-                        &times;
-                    </button>
-                </div>
+            <div class="modal-header" style="background: linear-gradient(135deg, #006AFF 0%, #0084FF 100%); padding: 30px 40px; position: relative; overflow: hidden; text-align: center;">
+                <button class="close-modal" onclick="closeModal('whatsapp-modal')" style="position: absolute; top: 20px; right: 20px; width: 36px; height: 36px; background: rgba(255, 255, 255, 0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.2rem; cursor: pointer; z-index: 100; transition: all 0.3s ease; border: 2px solid rgba(255, 255, 255, 0.3); backdrop-filter: blur(5px);" onmouseover="this.style.background='rgba(255,255,255,0.3)'; this.style.transform='rotate(90deg) scale(1.1)';" onmouseout="this.style.background='rgba(255,255,255,0.2)'; this.style.transform='rotate(0deg) scale(1)';">
+                    <i class="fas fa-times"></i>
+                </button>
+                <h3 style="color: white; font-size: 2.4rem; font-weight: 800; letter-spacing: -0.5px; margin: 0 auto 10px; position: relative; text-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); text-align: center;">Get Your Product!</h3>
             </div>
 
             <!-- 主体内容 -->
-            <div class="modal-body whatsapp-modal-body" style="padding: 40px 42px 32px; background: #f3f4f6;">
-                <div style="max-width: 640px; margin: 0 auto; background: #ffffff; border-radius: 18px; box-shadow: 0 18px 45px rgba(15, 23, 42, 0.18); padding: 40px 36px 30px;">
+            <div class="modal-body whatsapp-modal-body" style="padding: 40px 30px 30px; background: #fafbfd;">
+                <div style="display: flex; flex-direction: column; align-items: center;">
                     <!-- Messenger 图标 -->
-                    <div style="display: flex; flex-direction: column; align-items: center;">
-                        <div style="width: 96px; height: 96px; border-radius: 50%; background: #e0f2ff; display: flex; align-items: center; justify-content: center; margin-bottom: 18px; box-shadow: 0 10px 30px rgba(59, 130, 246, 0.35);">
-                            <i class="fab fa-facebook-messenger" style="font-size: 48px; color: #0084FF;"></i>
-                        </div>
-                        <h2 style="font-size: 24px; font-weight: 700; color: #111827; margin: 0 0 4px 0; letter-spacing: -0.03em;">
-                            Confirm Your Order
-                        </h2>
-                        <p style="font-size: 14px; color: #6b7280; margin: 0 0 22px 0; text-align: center; max-width: 420px; line-height: 1.6;">
-                            Copy the message below and send it via Messenger to receive your instant prepayment.
-                        </p>
+                    <div style="width: 100px; height: 100px; border-radius: 24px; display: flex; align-items: center; justify-content: center; margin-bottom: 25px; box-shadow: 0 10px 30px rgba(0, 106, 255, 0.2); background: linear-gradient(135deg, #006AFF 0%, #0084FF 100%); transition: all 0.3s ease;">
+                        <i class="fab fa-facebook-messenger" style="font-size: 3.5rem; color: white;"></i>
                     </div>
+                    
+                    <div style="font-size: 2rem; font-weight: 800; color: #2d3748; margin-bottom: 10px; text-align: center; letter-spacing: -0.3px;">Confirm your order</div>
+                    <div style="font-size: 1.1rem; color: #718096; font-weight: 500; line-height: 1.5; text-align: center; max-width: 500px; margin: 0 auto 30px;">Copy the message below and send it via Messenger</div>
 
                     <!-- 复制消息卡片 -->
-                    <div style="margin-top: 10px;">
-                        <div style="font-size: 14px; font-weight: 600; color: #111827; margin-bottom: 10px;">
-                            Copy This Message:
+                    <div style="width: 100%; margin-bottom: 30px; padding: 25px; border-radius: 16px; background: white; border: 1px solid #e9ecef; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);">
+                        <div style="font-size: 1.2rem; font-weight: 700; color: #2d3748; margin-bottom: 15px; text-align: center;">Copy This Message</div>
+                        <div id="messenger-prepay-text-single" style="background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 10px; padding: 16px; font-size: 1rem; color: #495057; margin-bottom: 20px; word-break: break-all; line-height: 1.5; font-family: 'Courier New', monospace; position: relative; padding-right: 45px; min-height: 80px; border-style: dashed;">
+                            Please confirm my order. The order number is XXX
                         </div>
-                        <div style="background: #f9fafb; border-radius: 14px; padding: 14px 16px 12px; border: 1px solid #e5e7eb; margin-bottom: 14px;">
-                            <p style="font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 14px; color: #374151; margin: 0; line-height: 1.6;">
-                                Please make the payment for my order number XXXXX.
-                            </p>
-                        </div>
-
-                        <!-- 大号 Copy 按钮 -->
-                        <button type="button" onclick="copyMessengerPrepayText()" style="width: 100%; background: linear-gradient(135deg, #4f46e5 0%, #6366f1 50%, #3b82f6 100%); border-radius: 999px; border: none; padding: 12px 16px; color: #ffffff; font-size: 15px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 14px 30px rgba(79, 70, 229, 0.55); margin-bottom: 14px; transition: transform 0.18s ease, box-shadow 0.18s ease, opacity 0.18s ease;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 18px 38px rgba(79,70,229,0.75)'; this.style.opacity='0.96';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 14px 30px rgba(79,70,229,0.55)'; this.style.opacity='1';">
-                            <i class="far fa-copy"></i>
-                            <span>Copy</span>
+                        <button type="button" onclick="copySingleStepMessage()" style="width: 100%; padding: 14px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 10px; font-weight: 700; font-size: 1.1rem; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 10px;" onmouseover="this.style.background='linear-gradient(135deg, #764ba2 0%, #667eea 100%)'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 20px rgba(102, 126, 234, 0.3)';" onmouseout="this.style.background='linear-gradient(135deg, #667eea 0%, #764ba2 100%)'; this.style.transform='translateY(0)'; this.style.boxShadow='none';">
+                            <i class="fas fa-copy"></i> Step 1: Copy
                         </button>
                     </div>
 
-                    <!-- 说明文字 -->
-                    <p style="font-size: 13px; color: #6b7280; margin: 4px 0 22px 0; text-align: center; line-height: 1.6;">
-                        After copying the message, click below to open Messenger and send it to receive your instant prepayment.
-                    </p>
-
-                    <!-- Open Messenger 按钮 -->
-                    <button type="button" onclick="openMessengerPrepay()" style="width: 100%; background: #0084FF; border-radius: 999px; border: none; padding: 15px 18px; color: #ffffff; font-size: 15px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 16px 36px rgba(0, 132, 255, 0.6); margin-top: 4px; transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 20px 42px rgba(0,132,255,0.8)'; this.style.background='#0090ff';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 16px 36px rgba(0,132,255,0.6)'; this.style.background='#0084FF';">
-                        <i class="fab fa-facebook-messenger" style="font-size: 18px;"></i>
-                        <span>Open Messenger</span>
-                    </button>
-
-                    <!-- 底部小圆点 -->
-                    <div style="display: flex; justify-content: center; gap: 6px; margin-top: 18px; margin-bottom: 6px;">
-                        <div style="width: 8px; height: 8px; border-radius: 50%; background: #2563eb;"></div>
-                        <div style="width: 8px; height: 8px; border-radius: 50%; background: #d1d5db;"></div>
-                        <div style="width: 8px; height: 8px; border-radius: 50%; background: #d1d5db;"></div>
+                    <!-- Messenger 按钮 -->
+                    <div style="width: 100%; margin-top: 10px;">
+                        <a href="https://m.me/beefreebies" target="_blank" rel="noopener" onclick="openMessengerPrepay(); return false;" style="display: flex; align-items: center; justify-content: center; gap: 12px; width: 100%; padding: 18px; background: linear-gradient(135deg, #006AFF 0%, #0084FF 100%); color: white; border-radius: 12px; font-weight: 700; font-size: 1.2rem; text-decoration: none; box-shadow: 0 6px 20px rgba(0, 106, 255, 0.25); transition: all 0.3s ease;" onmouseover="this.style.background='linear-gradient(135deg, #0052CC 0%, #006AFF 100%)'; this.style.transform='translateY(-3px)'; this.style.boxShadow='0 10px 25px rgba(0, 106, 255, 0.35)';" onmouseout="this.style.background='linear-gradient(135deg, #006AFF 0%, #0084FF 100%)'; this.style.transform='translateY(0)'; this.style.boxShadow='0 6px 20px rgba(0, 106, 255, 0.25)';">
+                            <i class="fab fa-facebook-messenger" style="font-size: 1.5rem;"></i>
+                            Step 2: Send via Messenger
+                        </a>
                     </div>
+                </div>
 
-                    <!-- 底部提示文案 -->
-                    <p style="font-size: 12px; color: #9ca3af; text-align: center; margin: 0;">
-                        Send the message via Messenger to receive your instant prepayment.
-                    </p>
+                <!-- 进度指示器 -->
+                <div style="display: flex; align-items: center; justify-content: center; padding: 0 30px 30px; margin-top: 16px;">
+                    <div style="display: flex; gap: 10px;">
+                        <div style="width: 8px; height: 8px; border-radius: 50%; background: #006AFF; transform: scale(1.2);"></div>
+                        <div style="width: 8px; height: 8px; border-radius: 50%; background: #006AFF; transform: scale(1.2);"></div>
+                        <div style="width: 8px; height: 8px; border-radius: 50%; background: #006AFF; transform: scale(1.2);"></div>
+                    </div>
+                </div>
+
+                <!-- 底部提示文案 -->
+                <div style="text-align: center; padding: 20px; font-size: 0.95rem; color: #a0aec0; background: white; border-top: 1px solid rgba(0, 0, 0, 0.05); font-weight: 500; margin-top: 0;">
+                    Complete the process to receive your product
                 </div>
             </div>
         </div>
@@ -20960,7 +21846,6 @@ const paginationContainers = {
             const twoStepsModal = document.getElementById('whatsapp-modal-two-steps');
             const singleStepModal = document.getElementById('whatsapp-modal-single-step');
             const amazonLink = document.getElementById('whatsapp-amazon-link');
-            const amazonButton = document.getElementById('whatsapp-amazon-button');
             currentProductIdForWhatsApp = null;
 
             if (whatsappModal) {
@@ -20996,9 +21881,6 @@ const paginationContainers = {
                     if (amazonLink) {
                         amazonLink.href = redirectLink;
                     }
-                    if (amazonButton) {
-                        amazonButton.href = redirectLink;
-                    }
                 } else {
                     // 无跳转链接：显示单步流程样式
                     if (twoStepsModal) {
@@ -21022,7 +21904,7 @@ const paginationContainers = {
                 // 如果有当前订单号，动态替换占位符，并去掉前后空白
                 let rawText = textElement.innerText || textElement.textContent || '';
                 if (typeof currentOrderIdForWhatsApp !== 'undefined' && currentOrderIdForWhatsApp) {
-                    rawText = rawText.replace('XXXXX', String(currentOrderIdForWhatsApp));
+                    rawText = rawText.replace('XXX', String(currentOrderIdForWhatsApp));
                 }
                 const text = rawText.trim();
 
@@ -21052,29 +21934,49 @@ const paginationContainers = {
             }
         }
 
+        // 单步流程复制消息
+        function copySingleStepMessage() {
+            try {
+                const textElement = document.getElementById('messenger-prepay-text-single');
+                if (!textElement) return;
+
+                // 如果有当前订单号，动态替换占位符，并去掉前后空白
+                let rawText = textElement.innerText || textElement.textContent || '';
+                if (typeof currentOrderIdForWhatsApp !== 'undefined' && currentOrderIdForWhatsApp) {
+                    rawText = rawText.replace('XXX', String(currentOrderIdForWhatsApp));
+                }
+                const text = rawText.trim();
+
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(text);
+                } else {
+                    const tempInput = document.createElement('textarea');
+                    tempInput.value = text;
+                    document.body.appendChild(tempInput);
+                    tempInput.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(tempInput);
+                }
+
+                // 显示底部提示气泡
+                const toast = document.getElementById('messenger-copy-toast');
+                if (toast) {
+                    toast.classList.add('show');
+                    setTimeout(() => {
+                        toast.classList.remove('show');
+                    }, 1800);
+                }
+
+                console.log('✅ 单步流程消息已复制');
+            } catch (e) {
+                console.warn('复制单步流程消息失败:', e);
+            }
+        }
+
         // 打开 Messenger 预付款聊天
         function openMessengerPrepay() {
-            const appLink = 'fb-messenger://user-thread/beefreebies'; // Messenger 深链，优先尝试唤起 App
-            const webLink = 'https://m.me/beefreebies';                // 兜底用网页版
-
-            // 兜底：若未成功唤起 App，则在 1.2s 后跳转到网页版
-            const timer = setTimeout(() => {
-                window.location.href = webLink;
-            }, 1200);
-
-            // 如果用户成功切到后台（被 App 拉起），取消兜底跳转避免双跳
-            const handleVisibility = () => {
-                if (document.hidden) {
-                    clearTimeout(timer);
-                    document.removeEventListener('visibilitychange', handleVisibility);
-                }
-            };
-            document.addEventListener('visibilitychange', handleVisibility);
-
-            // 先尝试拉起 Messenger App
-            window.location.href = appLink;
-
-            // 关闭弹窗以避免返回页面时遮挡
+            const messengerUrl = 'https://m.me/beefreebies';
+            window.open(messengerUrl, '_blank');
             closeModal('whatsapp-modal');
         }
 
@@ -23622,8 +24524,8 @@ const paginationContainers = {
             width: 100vw;
             height: 100vh;
             background: 
-                radial-gradient(ellipse at top left, rgba(255, 182, 193, 0.15) 0%, transparent 50%),
-                radial-gradient(ellipse at bottom right, rgba(255, 192, 203, 0.15) 0%, transparent 50%),
+                radial-gradient(ellipse at top left, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
+                radial-gradient(ellipse at bottom right, rgba(139, 92, 246, 0.15) 0%, transparent 50%),
                 linear-gradient(135deg, #1a0a1a 0%, #2d1b2d 30%, #3d2b3d 50%, #2d1b2d 70%, #1a0a1a 100%);
             z-index: 99999;
             display: flex;
@@ -23642,8 +24544,8 @@ const paginationContainers = {
             width: 100%;
             height: 100%;
             background: 
-                radial-gradient(circle at 20% 30%, rgba(255, 182, 193, 0.1) 0%, transparent 40%),
-                radial-gradient(circle at 80% 70%, rgba(255, 192, 203, 0.1) 0%, transparent 40%);
+                radial-gradient(circle at 20% 30%, rgba(99, 102, 241, 0.1) 0%, transparent 40%),
+                radial-gradient(circle at 80% 70%, rgba(139, 92, 246, 0.1) 0%, transparent 40%);
             animation: backgroundPulse 8s ease-in-out infinite;
             z-index: 1;
         }
@@ -23709,7 +24611,7 @@ const paginationContainers = {
         .light1 {
             width: 600px;
             height: 600px;
-            background: radial-gradient(circle, rgba(255, 182, 193, 0.7), rgba(255, 182, 193, 0.3), transparent);
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.7), rgba(99, 102, 241, 0.3), transparent);
             top: -250px;
             left: -250px;
             animation-duration: 12s;
@@ -23719,7 +24621,7 @@ const paginationContainers = {
         .light2 {
             width: 700px;
             height: 700px;
-            background: radial-gradient(circle, rgba(255, 192, 203, 0.6), rgba(255, 192, 203, 0.2), transparent);
+            background: radial-gradient(circle, rgba(139, 92, 246, 0.6), rgba(139, 92, 246, 0.2), transparent);
             bottom: -350px;
             right: -350px;
             animation-duration: 15s;
@@ -23730,7 +24632,7 @@ const paginationContainers = {
         .light3 {
             width: 500px;
             height: 500px;
-            background: radial-gradient(circle, rgba(255, 218, 225, 0.5), rgba(255, 218, 225, 0.2), transparent);
+            background: radial-gradient(circle, rgba(168, 85, 247, 0.5), rgba(168, 85, 247, 0.2), transparent);
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
@@ -23859,37 +24761,37 @@ const paginationContainers = {
 
         .heart-left-3d {
             left: 80px;
-            background: linear-gradient(135deg, #ffb6c1 0%, #ff91a4 50%, #ff69b4 100%);
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%);
             transform: rotate(-45deg) translateZ(0);
             transform-origin: 0 100%;
-            color: #ffb6c1;
+            color: #6366f1;
             animation: pulseLeft 2s ease-in-out infinite;
         }
 
         .heart-right-3d {
             right: 80px;
-            background: linear-gradient(135deg, #ff91a4 0%, #ffb6c1 50%, #ff69b4 100%);
+            background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 50%, #a855f7 100%);
             transform: rotate(45deg) translateZ(0);
             transform-origin: 100% 100%;
-            color: #ff91a4;
+            color: #8b5cf6;
             animation: pulseRight 2s ease-in-out infinite;
         }
 
         @keyframes pulseLeft {
             0%, 100% {
-                box-shadow: 0 0 40px rgba(255, 182, 193, 0.6), 0 0 80px rgba(255, 182, 193, 0.3);
+                box-shadow: 0 0 40px rgba(99, 102, 241, 0.6), 0 0 80px rgba(99, 102, 241, 0.3);
             }
             50% {
-                box-shadow: 0 0 60px rgba(255, 182, 193, 0.8), 0 0 120px rgba(255, 182, 193, 0.5);
+                box-shadow: 0 0 60px rgba(99, 102, 241, 0.8), 0 0 120px rgba(99, 102, 241, 0.5);
             }
         }
 
         @keyframes pulseRight {
             0%, 100% {
-                box-shadow: 0 0 40px rgba(255, 192, 203, 0.6), 0 0 80px rgba(255, 192, 203, 0.3);
+                box-shadow: 0 0 40px rgba(139, 92, 246, 0.6), 0 0 80px rgba(139, 92, 246, 0.3);
             }
             50% {
-                box-shadow: 0 0 60px rgba(255, 192, 203, 0.8), 0 0 120px rgba(255, 192, 203, 0.5);
+                box-shadow: 0 0 60px rgba(139, 92, 246, 0.8), 0 0 120px rgba(139, 92, 246, 0.5);
             }
         }
 
@@ -23979,16 +24881,16 @@ const paginationContainers = {
             height: 100%;
             background: linear-gradient(to right, 
                 rgba(255, 255, 255, 1) 0%, 
-                rgba(255, 240, 245, 0.95) 10%,
-                #ffb6c1 30%, 
-                #ff91a4 55%, 
-                #ff7f9f 75%,
-                rgba(255, 107, 142, 0.9) 100%);
+                rgba(238, 242, 255, 0.95) 10%,
+                #6366f1 30%, 
+                #8b5cf6 55%, 
+                #a855f7 75%,
+                rgba(139, 92, 246, 0.9) 100%);
             border-radius: 8px;
             box-shadow: 
-                0 0 16px rgba(255, 182, 193, 0.9),
-                0 0 32px rgba(255, 182, 193, 0.7),
-                0 0 56px rgba(255, 182, 193, 0.5),
+                0 0 16px rgba(99, 102, 241, 0.9),
+                0 0 32px rgba(139, 92, 246, 0.7),
+                0 0 56px rgba(168, 85, 247, 0.5),
                 inset 0 0 18px rgba(255, 255, 255, 0.35);
             position: relative;
             animation: shaftShimmer 2s ease-in-out infinite;
@@ -23997,16 +24899,16 @@ const paginationContainers = {
         @keyframes shaftShimmer {
             0%, 100% {
                 box-shadow: 
-                    0 0 16px rgba(255, 182, 193, 0.9),
-                    0 0 32px rgba(255, 182, 193, 0.7),
-                    0 0 56px rgba(255, 182, 193, 0.5),
+                    0 0 16px rgba(99, 102, 241, 0.9),
+                    0 0 32px rgba(99, 102, 241, 0.7),
+                    0 0 56px rgba(99, 102, 241, 0.5),
                     inset 0 0 18px rgba(255, 255, 255, 0.35);
             }
             50% {
                 box-shadow: 
-                    0 0 22px rgba(255, 182, 193, 1),
-                    0 0 42px rgba(255, 182, 193, 0.85),
-                    0 0 70px rgba(255, 182, 193, 0.65),
+                    0 0 22px rgba(99, 102, 241, 1),
+                    0 0 42px rgba(99, 102, 241, 0.85),
+                    0 0 70px rgba(99, 102, 241, 0.65),
                     inset 0 0 26px rgba(255, 255, 255, 0.45);
             }
         }
@@ -24022,9 +24924,9 @@ const paginationContainers = {
             border-bottom: 12px solid transparent;
             border-left: 28px solid #fff;
             filter: 
-                drop-shadow(0 0 14px rgba(255, 182, 193, 1))
-                drop-shadow(0 0 28px rgba(255, 182, 193, 0.8))
-                drop-shadow(0 0 44px rgba(255, 182, 193, 0.6));
+                drop-shadow(0 0 14px rgba(99, 102, 241, 1))
+                drop-shadow(0 0 28px rgba(99, 102, 241, 0.8))
+                drop-shadow(0 0 44px rgba(99, 102, 241, 0.6));
             z-index: 2;
             animation: headGlow 1.5s ease-in-out infinite;
         }
@@ -24032,15 +24934,15 @@ const paginationContainers = {
         @keyframes headGlow {
             0%, 100% {
                 filter: 
-                    drop-shadow(0 0 15px rgba(255, 182, 193, 1))
-                    drop-shadow(0 0 30px rgba(255, 182, 193, 0.8))
-                    drop-shadow(0 0 50px rgba(255, 182, 193, 0.6));
+                    drop-shadow(0 0 15px rgba(99, 102, 241, 1))
+                    drop-shadow(0 0 30px rgba(99, 102, 241, 0.8))
+                    drop-shadow(0 0 50px rgba(99, 102, 241, 0.6));
             }
             50% {
                 filter: 
-                    drop-shadow(0 0 25px rgba(255, 182, 193, 1.2))
-                    drop-shadow(0 0 50px rgba(255, 182, 193, 1))
-                    drop-shadow(0 0 80px rgba(255, 182, 193, 0.8));
+                    drop-shadow(0 0 25px rgba(99, 102, 241, 1.2))
+                    drop-shadow(0 0 50px rgba(99, 102, 241, 1))
+                    drop-shadow(0 0 80px rgba(99, 102, 241, 0.8));
             }
         }
 
@@ -24053,7 +24955,7 @@ const paginationContainers = {
             height: 0;
             border-top: 10px solid transparent;
             border-bottom: 10px solid transparent;
-            border-left: 20px solid #ffb6c1;
+            border-left: 20px solid #6366f1;
         }
 
         .arrow-head::after {
@@ -24065,7 +24967,7 @@ const paginationContainers = {
             height: 0;
             border-top: 8px solid transparent;
             border-bottom: 8px solid transparent;
-            border-left: 16px solid #ff91a4;
+            border-left: 16px solid #8b5cf6;
         }
 
         /* 箭尾拖尾效果 - 增强版 */
@@ -24077,14 +24979,14 @@ const paginationContainers = {
             width: 120px;
             height: 10px;
             background: linear-gradient(to right, 
-                rgba(255, 182, 193, 0.1) 0%,
-                rgba(255, 182, 193, 0.45) 40%,
-                rgba(255, 182, 193, 0.7) 70%,
-                rgba(255, 182, 193, 0.2) 100%);
+                rgba(99, 102, 241, 0.1) 0%,
+                rgba(99, 102, 241, 0.45) 40%,
+                rgba(99, 102, 241, 0.7) 70%,
+                rgba(99, 102, 241, 0.2) 100%);
             border-radius: 6px;
             filter: blur(12px);
             animation: trailGlow 0.6s ease-in-out infinite;
-            box-shadow: 0 0 18px rgba(255, 182, 193, 0.45);
+            box-shadow: 0 0 18px rgba(99, 102, 241, 0.45);
         }
 
         @keyframes trailGlow {
@@ -24120,7 +25022,7 @@ const paginationContainers = {
             transform: translate(-50%, -50%);
             width: 350px;
             height: 350px;
-            background: radial-gradient(circle, rgba(255, 182, 193, 0.3) 0%, transparent 70%);
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.3) 0%, transparent 70%);
             border-radius: 50%;
             animation: glowPulse 3s ease-in-out infinite;
             z-index: -1;
@@ -24145,7 +25047,7 @@ const paginationContainers = {
         }
 
         .text-gradient {
-            background: linear-gradient(135deg, #ffb6c1 0%, #ff91a4 30%, #ffc0cb 60%, #ffb6c1 100%);
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 30%, #a855f7 60%, #6366f1 100%);
             background-size: 200% 200%;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -24156,26 +25058,26 @@ const paginationContainers = {
             font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
             animation: textShimmer 4s ease-in-out infinite, textFloat 5s ease-in-out infinite;
             filter: 
-                drop-shadow(0 0 15px rgba(255, 182, 193, 0.8))
-                drop-shadow(0 0 30px rgba(255, 182, 193, 0.6))
-                drop-shadow(0 0 50px rgba(255, 192, 203, 0.4));
-            text-shadow: 0 0 30px rgba(255, 182, 193, 0.5);
+                drop-shadow(0 0 15px rgba(99, 102, 241, 0.8))
+                drop-shadow(0 0 30px rgba(139, 92, 246, 0.6))
+                drop-shadow(0 0 50px rgba(168, 85, 247, 0.4));
+            text-shadow: 0 0 30px rgba(99, 102, 241, 0.5);
         }
 
         @keyframes textShimmer {
             0%, 100% {
                 background-position: 0% 50%;
                 filter: 
-                    drop-shadow(0 0 15px rgba(255, 182, 193, 0.8))
-                    drop-shadow(0 0 30px rgba(255, 182, 193, 0.6))
-                    drop-shadow(0 0 50px rgba(255, 192, 203, 0.4));
+                    drop-shadow(0 0 15px rgba(99, 102, 241, 0.8))
+                    drop-shadow(0 0 30px rgba(99, 102, 241, 0.6))
+                    drop-shadow(0 0 50px rgba(139, 92, 246, 0.4));
             }
             50% {
                 background-position: 100% 50%;
                 filter: 
-                    drop-shadow(0 0 25px rgba(255, 182, 193, 1))
-                    drop-shadow(0 0 50px rgba(255, 182, 193, 0.8))
-                    drop-shadow(0 0 80px rgba(255, 192, 203, 0.6));
+                    drop-shadow(0 0 25px rgba(99, 102, 241, 1))
+                    drop-shadow(0 0 50px rgba(99, 102, 241, 0.8))
+                    drop-shadow(0 0 80px rgba(139, 92, 246, 0.6));
             }
         }
 
@@ -24201,9 +25103,9 @@ const paginationContainers = {
             font-weight: 300;
             letter-spacing: 4px;
             text-shadow: 
-                0 0 20px rgba(255, 182, 193, 0.8),
-                0 0 40px rgba(255, 192, 203, 0.6),
-                0 0 60px rgba(255, 218, 225, 0.4);
+                0 0 20px rgba(99, 102, 241, 0.8),
+                0 0 40px rgba(139, 92, 246, 0.6),
+                0 0 60px rgba(168, 85, 247, 0.4);
             opacity: 0;
             animation: subtitleSlideIn 2s ease-out 3.2s both, subtitleGlow 3s ease-in-out infinite 5s, subtitleFloat 4s ease-in-out infinite 5s;
             line-height: 1.8;
@@ -24238,15 +25140,15 @@ const paginationContainers = {
         @keyframes subtitleGlow {
             0%, 100% {
                 text-shadow: 
-                    0 0 20px rgba(255, 182, 193, 0.8),
-                    0 0 40px rgba(255, 192, 203, 0.6),
-                    0 0 60px rgba(255, 218, 225, 0.4);
+                    0 0 20px rgba(99, 102, 241, 0.8),
+                    0 0 40px rgba(139, 92, 246, 0.6),
+                    0 0 60px rgba(168, 85, 247, 0.4);
             }
             50% {
                 text-shadow: 
-                    0 0 30px rgba(255, 182, 193, 1),
-                    0 0 60px rgba(255, 192, 203, 0.8),
-                    0 0 90px rgba(255, 218, 225, 0.6);
+                    0 0 30px rgba(99, 102, 241, 1),
+                    0 0 60px rgba(139, 92, 246, 0.8),
+                    0 0 90px rgba(168, 85, 247, 0.6);
             }
         }
 
@@ -24268,12 +25170,12 @@ const paginationContainers = {
             height: 90px;
             border-radius: 50%;
             background: 
-                radial-gradient(circle, rgba(255, 240, 245, 0.25) 0%, rgba(255, 182, 193, 0.15) 100%);
+                radial-gradient(circle, rgba(99, 102, 241, 0.25) 0%, rgba(139, 92, 246, 0.15) 100%);
             backdrop-filter: blur(15px);
-            border: 3px solid rgba(255, 182, 193, 0.6);
+            border: 3px solid rgba(99, 102, 241, 0.6);
             box-shadow: 
-                0 0 20px rgba(255, 182, 193, 0.5),
-                0 0 40px rgba(255, 182, 193, 0.3),
+                0 0 20px rgba(99, 102, 241, 0.5),
+                0 0 40px rgba(139, 92, 246, 0.3),
                 inset 0 0 20px rgba(255, 255, 255, 0.1);
             display: flex;
             align-items: center;
@@ -24282,9 +25184,9 @@ const paginationContainers = {
             font-weight: 400;
             color: #fff;
             text-shadow: 
-                0 0 15px rgba(255, 182, 193, 0.8),
-                0 0 30px rgba(255, 182, 193, 0.6),
-                0 0 50px rgba(255, 192, 203, 0.4);
+                0 0 15px rgba(99, 102, 241, 0.8),
+                0 0 30px rgba(99, 102, 241, 0.6),
+                0 0 50px rgba(139, 92, 246, 0.4);
             animation: countdownPulse 1.2s ease-in-out infinite;
             z-index: 100;
             transition: all 0.3s ease;
@@ -24293,8 +25195,8 @@ const paginationContainers = {
         .countdown:hover {
             transform: scale(1.1);
             box-shadow: 
-                0 0 30px rgba(255, 182, 193, 0.8),
-                0 0 60px rgba(255, 182, 193, 0.6),
+                0 0 30px rgba(99, 102, 241, 0.8),
+                0 0 60px rgba(99, 102, 241, 0.6),
                 inset 0 0 30px rgba(255, 255, 255, 0.2);
         }
 
@@ -24302,15 +25204,15 @@ const paginationContainers = {
             0%, 100% {
                 transform: scale(1);
                 box-shadow: 
-                    0 0 20px rgba(255, 182, 193, 0.5),
-                    0 0 40px rgba(255, 182, 193, 0.3),
+                    0 0 20px rgba(99, 102, 241, 0.5),
+                    0 0 40px rgba(99, 102, 241, 0.3),
                     inset 0 0 20px rgba(255, 255, 255, 0.1);
             }
             50% {
                 transform: scale(1.08);
                 box-shadow: 
-                    0 0 30px rgba(255, 182, 193, 0.8),
-                    0 0 60px rgba(255, 182, 193, 0.6),
+                    0 0 30px rgba(99, 102, 241, 0.8),
+                    0 0 60px rgba(99, 102, 241, 0.6),
                     inset 0 0 30px rgba(255, 255, 255, 0.2);
             }
         }
@@ -24321,8 +25223,8 @@ const paginationContainers = {
             bottom: 50px;
             padding: 18px 50px;
             background: 
-                linear-gradient(135deg, rgba(255, 240, 245, 0.2) 0%, rgba(255, 182, 193, 0.15) 100%);
-            border: 2px solid rgba(255, 182, 193, 0.5);
+                linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(139, 92, 246, 0.15) 100%);
+            border: 2px solid rgba(99, 102, 241, 0.5);
             color: rgba(255, 250, 250, 0.98);
             font-size: 17px;
             font-weight: 400;
@@ -24333,40 +25235,40 @@ const paginationContainers = {
             z-index: 100;
             letter-spacing: 3px;
             box-shadow: 
-                0 0 20px rgba(255, 182, 193, 0.3),
-                0 0 40px rgba(255, 182, 193, 0.2),
+                0 0 20px rgba(99, 102, 241, 0.3),
+                0 0 40px rgba(139, 92, 246, 0.2),
                 inset 0 0 15px rgba(255, 255, 255, 0.1);
-            text-shadow: 0 0 10px rgba(255, 182, 193, 0.6);
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.6);
             animation: buttonGlow 2s ease-in-out infinite;
         }
 
         @keyframes buttonGlow {
             0%, 100% {
                 box-shadow: 
-                    0 0 20px rgba(255, 182, 193, 0.3),
-                    0 0 40px rgba(255, 182, 193, 0.2),
+                    0 0 20px rgba(99, 102, 241, 0.3),
+                    0 0 40px rgba(139, 92, 246, 0.2),
                     inset 0 0 15px rgba(255, 255, 255, 0.1);
             }
             50% {
                 box-shadow: 
-                    0 0 30px rgba(255, 182, 193, 0.5),
-                    0 0 60px rgba(255, 182, 193, 0.3),
+                    0 0 30px rgba(99, 102, 241, 0.5),
+                    0 0 60px rgba(139, 92, 246, 0.3),
                     inset 0 0 20px rgba(255, 255, 255, 0.15);
             }
         }
 
         .close-romantic-btn:hover {
             background: 
-                linear-gradient(135deg, rgba(255, 182, 193, 0.3) 0%, rgba(255, 192, 203, 0.25) 100%);
-            border-color: rgba(255, 182, 193, 0.8);
+                linear-gradient(135deg, rgba(99, 102, 241, 0.3) 0%, rgba(139, 92, 246, 0.25) 100%);
+            border-color: rgba(99, 102, 241, 0.8);
             transform: scale(1.08) translateY(-5px);
             box-shadow: 
-                0 10px 50px rgba(255, 182, 193, 0.6),
-                0 0 80px rgba(255, 182, 193, 0.4),
+                0 10px 50px rgba(99, 102, 241, 0.6),
+                0 0 80px rgba(99, 102, 241, 0.4),
                 inset 0 0 25px rgba(255, 255, 255, 0.2);
             text-shadow: 
-                0 0 15px rgba(255, 182, 193, 0.9),
-                0 0 30px rgba(255, 182, 193, 0.6);
+                0 0 15px rgba(99, 102, 241, 0.9),
+                0 0 30px rgba(99, 102, 241, 0.6);
         }
 
         .close-romantic-btn:active {
@@ -24621,11 +25523,11 @@ const paginationContainers = {
             const centerX = 200;
             const centerY = 200;
             const colors = [
-                'radial-gradient(circle, #ffb6c1, #ff91a4)',
-                'radial-gradient(circle, #ffc0cb, #ffb6c1)',
-                'radial-gradient(circle, #fff, #ffc0cb)',
-                'radial-gradient(circle, #ff69b4, #ff1493)',
-                'radial-gradient(circle, #ffb6c1, #fff)'
+                'radial-gradient(circle, #6366f1, #8b5cf6)',
+                'radial-gradient(circle, #8b5cf6, #a855f7)',
+                'radial-gradient(circle, #fff, #c7d2fe)',
+                'radial-gradient(circle, #7c3aed, #6d28d9)',
+                'radial-gradient(circle, #6366f1, #fff)'
             ];
             
             for (let i = 0; i < particleCount; i++) {
@@ -24644,8 +25546,8 @@ const paginationContainers = {
                     border-radius: 50%;
                     left: ${centerX}px;
                     top: ${centerY}px;
-                    box-shadow: 0 0 ${size * 3}px ${colors[colorIndex].includes('#ffb6c1') ? '#ffb6c1' : '#ffc0cb'}, 
-                                0 0 ${size * 5}px ${colors[colorIndex].includes('#ffb6c1') ? '#ff91a4' : '#ffb6c1'};
+                    box-shadow: 0 0 ${size * 3}px ${colors[colorIndex].includes('#6366f1') ? '#6366f1' : '#8b5cf6'}, 
+                                0 0 ${size * 5}px ${colors[colorIndex].includes('#6366f1') ? '#8b5cf6' : '#6366f1'};
                     opacity: 0;
                     transition: opacity 0.1s ease-out;
                 `;
@@ -24900,6 +25802,175 @@ const paginationContainers = {
                 customAlert(t('loginFailedRetry'), t('errorTitle'));
             }
         }
+
+        // ========== 客服按钮控制 ==========
+        (function() {
+            const mainButton = document.getElementById('mainButton');
+            const contactOptions = document.getElementById('contactOptions');
+            
+            if (!mainButton || !contactOptions) return;
+
+            // 切换联系选项的显示/隐藏
+            mainButton.addEventListener('click', function(e) {
+                e.stopPropagation();
+                this.classList.toggle('active');
+                contactOptions.classList.toggle('active');
+            });
+
+            // 点击选项后关闭菜单
+            const optionButtons = document.querySelectorAll('.option-button');
+            optionButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    mainButton.classList.remove('active');
+                    contactOptions.classList.remove('active');
+                });
+            });
+
+            // 点击页面其他区域关闭联系选项
+            document.addEventListener('click', function(event) {
+                if (!event.target.closest('.contact-button')) {
+                    mainButton.classList.remove('active');
+                    contactOptions.classList.remove('active');
+                }
+            });
+
+            // 添加键盘支持（ESC 键关闭）
+            document.addEventListener('keydown', function(event) {
+                if (event.key === 'Escape') {
+                    mainButton.classList.remove('active');
+                    contactOptions.classList.remove('active');
+                }
+            });
+        })();
+
+        // ========== 移动端点击反馈与防误触 ==========
+
+        // 触发移动端更快 click 事件
+        document.addEventListener('touchstart', function () {}, { passive: true });
+
+        // 产品卡片点击反馈：添加 .tapped 类，短暂抬升
+        document.addEventListener(
+            'click',
+            function (e) {
+                const target = e.target;
+                const card = target.classList.contains('product-card')
+                    ? target
+                    : target.closest('.product-card');
+
+                if (card) {
+                    card.classList.add('tapped');
+                    setTimeout(() => card.classList.remove('tapped'), 300);
+                }
+            },
+            { passive: true }
+        );
+
+        // 防止提交按钮快速双击造成重复提交
+        let lastClickTime = 0;
+        document.addEventListener(
+            'click',
+            function (e) {
+                const submitBtn =
+                    e.target.type === 'submit'
+                        ? e.target
+                        : e.target.closest('[type=\"submit\"]');
+                if (!submitBtn) return;
+
+                const now = Date.now();
+                if (now - lastClickTime < 1000) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return;
+                }
+                lastClickTime = now;
+            },
+            true
+        );
+
+        // ========== 简单滑动检测（左右） ==========
+        let touchStartX = 0;
+        let touchEndX = 0;
+
+        document.addEventListener(
+            'touchstart',
+            function (e) {
+                if (!e.changedTouches || !e.changedTouches.length) return;
+                touchStartX = e.changedTouches[0].screenX;
+            },
+            { passive: true }
+        );
+
+        document.addEventListener(
+            'touchend',
+            function (e) {
+                if (!e.changedTouches || !e.changedTouches.length) return;
+                touchEndX = e.changedTouches[0].screenX;
+                handleSwipe();
+            },
+            { passive: true }
+        );
+
+        function handleSwipe() {
+            const threshold = 50;
+            const diff = touchEndX - touchStartX;
+
+            if (Math.abs(diff) <= threshold) return;
+
+            if (diff > 0) {
+                // 向右滑动：可根据需要触发轮播上一张等行为
+                console.log('Swiped right');
+            } else {
+                // 向左滑动
+                console.log('Swiped left');
+            }
+        }
+
+        // ========== 下拉刷新指示状态（可选） ==========
+        (function () {
+            const ptr = document.getElementById('pull-to-refresh');
+            if (!ptr) return;
+
+            let startY = 0;
+            let pulling = false;
+
+            document.addEventListener(
+                'touchstart',
+                function (e) {
+                    if (window.scrollY > 0) return;
+                    startY = e.touches[0].clientY;
+                    pulling = false;
+                },
+                { passive: true }
+            );
+
+            document.addEventListener(
+                'touchmove',
+                function (e) {
+                    if (window.scrollY > 0) return;
+                    const currentY = e.touches[0].clientY;
+                    const distance = currentY - startY;
+
+                    if (distance > 60) {
+                        ptr.classList.add('pulling');
+                        pulling = true;
+                    }
+                },
+                { passive: true }
+            );
+
+            document.addEventListener(
+                'touchend',
+                function () {
+                    if (!pulling) return;
+                    // 这里只做视觉反馈，不强制刷新；需要时可在此调用 location.reload()
+                    setTimeout(() => {
+                        ptr.classList.remove('pulling');
+                    }, 600);
+                    pulling = false;
+                },
+                { passive: true }
+            );
+        })();
     </script>
 </body>
 
