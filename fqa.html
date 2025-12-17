@@ -1,0 +1,1715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- 添加viewport元标签优化移动体验 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Beefreebies - Free Product Platform FAQ</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        
+        :root {
+            --primary-color: #6A11CB;
+            --secondary-color: #2575FC;
+            --light-bg: #F8F7FF;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --text-light: #6B7280;
+            --border-color: #E5E7EB;
+            --success-color: #10B981;
+            --warning-color: #F59E0B;
+            --danger-color: #EF4444;
+            --honey-color: #9B5DE5;
+            --shadow: 0 10px 25px rgba(106, 17, 203, 0.1);
+            --radius: 12px;
+            --transition: all 0.3s ease;
+            --gradient: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+        }
+        
+        html, body {
+            width: 100%;
+            max-width: 100vw;
+            overflow-x: hidden; /* 防止手机端横向滚动 */
+        }
+        
+        body {
+            background: linear-gradient(135deg, #F8F7FF 0%, #F0F4FF 100%);
+            color: var(--text-color);
+            line-height: 1.6;
+            min-height: 100vh;
+            padding-bottom: 20px;
+            -webkit-text-size-adjust: 100%;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+        
+        /* 已删除 Admin Panel 相关样式 */
+        
+        /* Main Page Styles */
+        header {
+            background: var(--gradient);
+            color: white;
+            padding: 40px 30px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            margin: 40px 0 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
+            background-size: 30px 30px;
+            opacity: 0.3;
+            z-index: 0;
+        }
+        
+        .header-content {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            font-size: 38px;
+            font-weight: 800;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        
+        /* 移除头部白色圆圈图标 */
+        .logo i {
+            display: none;
+        }
+        
+        .tagline {
+            font-size: 20px;
+            opacity: 0.95;
+            max-width: 800px;
+            margin: 0 auto 20px;
+            font-weight: 400;
+        }
+        
+        .honey-system {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 18px 30px;
+            border-radius: 50px;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 25px;
+            font-weight: 600;
+            backdrop-filter: blur(10px);
+            font-size: 18px;
+        }
+        
+        .honey-icon {
+            color: var(--honey-color);
+            font-size: 28px;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 36px;
+            font-weight: 800;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 16px;
+            opacity: 0.9;
+            font-weight: 500;
+        }
+        
+        .search-section {
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 30px;
+            position: relative;
+        }
+        
+        .search-box {
+            position: relative;
+        }
+        
+        .search-box input {
+            width: 100%;
+            padding: 20px 25px;
+            padding-left: 65px;
+            border: 2px solid var(--border-color);
+            border-radius: 50px;
+            font-size: 17px;
+            transition: var(--transition);
+            background-color: #F8F7FF;
+        }
+        
+        .search-box input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 5px 15px rgba(106, 17, 203, 0.15);
+            background-color: white;
+        }
+        
+        .search-icon {
+            position: absolute;
+            left: 25px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--primary-color);
+            font-size: 22px;
+        }
+        
+        .search-results {
+            margin-top: 15px;
+            color: var(--primary-color);
+            font-size: 15px;
+            display: none;
+            padding-left: 10px;
+            font-weight: 500;
+        }
+        
+        .content-section {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+        
+        .sidebar {
+            flex: 1;
+            min-width: 280px;
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 30px;
+            box-shadow: var(--shadow);
+            height: fit-content;
+        }
+        
+        .sidebar h3 {
+            color: #374151;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 20px;
+        }
+        
+        .sidebar h3 i {
+            color: var(--primary-color);
+        }
+        
+        .categories {
+            list-style: none;
+            margin-bottom: 30px;
+        }
+        
+        .categories li {
+            margin-bottom: 10px;
+        }
+        
+        .categories a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #4B5563;
+            text-decoration: none;
+            padding: 14px;
+            border-radius: 10px;
+            transition: var(--transition);
+            font-weight: 500;
+        }
+        
+        .categories a:hover, .categories a.active {
+            background: linear-gradient(135deg, rgba(106, 17, 203, 0.1) 0%, rgba(37, 117, 252, 0.1) 100%);
+            color: var(--primary-color);
+        }
+        
+        .categories i {
+            width: 20px;
+            text-align: center;
+            font-size: 18px;
+        }
+        
+        .tags-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .tag {
+            display: inline-block;
+            background: #F0EBFF;
+            color: var(--primary-color);
+            padding: 8px 16px;
+            border-radius: 50px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: var(--transition);
+            border: 1px solid #E5DEFF;
+            font-weight: 500;
+        }
+        
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            transform: translateY(-2px);
+        }
+        
+        .faq-container {
+            flex: 2;
+            min-width: 300px;
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 35px;
+            box-shadow: var(--shadow);
+            position: relative;
+        }
+        
+        .section-title {
+            color: #374151;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 24px;
+            font-weight: 700;
+        }
+        
+        .section-title i {
+            color: var(--primary-color);
+            background: #F0EBFF;
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+        
+        .faq-list {
+            margin-bottom: 40px;
+        }
+        
+        .faq-item {
+            margin-bottom: 15px;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #F0EBFF;
+            transition: var(--transition);
+        }
+        
+        .faq-item.highlight {
+            border-color: var(--primary-color);
+            box-shadow: 0 5px 15px rgba(106, 17, 203, 0.15);
+        }
+        
+        .faq-question {
+            background-color: #F8F7FF;
+            padding: 22px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            color: #374151;
+            transition: background-color 0.2s;
+            font-size: 17px;
+            gap: 8px;
+        }
+        
+        .faq-question span {
+            flex: 1;
+        }
+        
+        .faq-answer {
+            padding: 0 22px;
+            display: none;
+            background-color: white;
+            line-height: 1.7;
+            font-size: 16px;
+        }
+        
+        .faq-answer.open {
+            display: block;
+            padding: 22px;
+            max-height: 1000px;
+        }
+        
+        .faq-answer p {
+            margin-bottom: 15px;
+        }
+        
+        .faq-answer ul, .faq-answer ol {
+            margin-left: 20px;
+            margin-bottom: 15px;
+        }
+        
+        .faq-answer li {
+            margin-bottom: 8px;
+        }
+        
+        .faq-toggle {
+            color: var(--primary-color);
+            font-size: 22px;
+            transition: transform 0.3s ease;
+            flex-shrink: 0;
+            margin-left: 10px;
+        }
+        
+        .faq-item.active .faq-toggle {
+            transform: rotate(45deg);
+        }
+        
+        .no-results {
+            text-align: center;
+            padding: 60px 30px;
+            color: #888;
+            display: none;
+        }
+        
+        .no-results i {
+            font-size: 80px;
+            margin-bottom: 20px;
+            color: #E5DEFF;
+        }
+        
+        .no-results h3 {
+            margin-bottom: 15px;
+            color: #666;
+            font-size: 24px;
+        }
+        
+        footer {
+            background: var(--card-bg);
+            padding: 35px;
+            border-radius: var(--radius);
+            text-align: center;
+            color: var(--text-light);
+            border-top: 1px solid #F0EBFF;
+            font-size: 15px;
+            margin-top: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.03);
+        }
+        
+        .info-box {
+            background: #F8F7FF;
+            border-left: 5px solid var(--primary-color);
+            padding: 22px;
+            border-radius: 10px;
+            margin: 20px 0;
+            display: flex;
+            align-items: flex-start;
+            gap: 18px;
+        }
+        
+        .info-icon {
+            color: var(--primary-color);
+            font-size: 26px;
+            flex-shrink: 0;
+        }
+        
+        .process-step {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+            padding: 18px;
+            background: #F8F7FF;
+            border-radius: 10px;
+        }
+        
+        .step-number {
+            background: var(--gradient);
+            color: white;
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            flex-shrink: 0;
+            font-size: 18px;
+        }
+        
+        .payment-methods {
+            display: flex;
+            gap: 15px;
+            margin: 15px 0;
+            flex-wrap: wrap;
+        }
+        
+        .payment-method {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #F8F7FF;
+            padding: 12px 18px;
+            border-radius: 8px;
+            border: 1px solid #E5DEFF;
+            font-weight: 500;
+        }
+        
+        /* Platform Flow Diagram - 修复移动端显示问题 */
+        .platform-flow {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            margin: 30px 0;
+            gap: 20px;
+        }
+        
+        .flow-step {
+            flex: 1;
+            min-width: 200px;
+            text-align: center;
+            padding: 25px 15px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(106, 17, 203, 0.08);
+            transition: var(--transition);
+        }
+        
+        .flow-step:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 25px rgba(106, 17, 203, 0.12);
+        }
+        
+        .flow-icon {
+            font-size: 36px;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, rgba(106, 17, 203, 0.1) 0%, rgba(37, 117, 252, 0.1) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+        }
+        
+        .flow-step h4 {
+            color: #374151;
+            margin-bottom: 10px;
+            font-size: 18px;
+            font-weight: 700;
+        }
+        
+        .flow-step p {
+            color: var(--text-light);
+            font-size: 14px;
+            line-height: 1.5;
+            /* 添加文字换行和溢出处理 */
+            word-break: break-word;
+            overflow-wrap: break-word;
+            hyphens: auto;
+        }
+        
+        .flow-arrow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-color);
+            font-size: 28px;
+            flex: 0 0 30px;
+        }
+        
+        /* Support Section with Chat Icon */
+        .support-section {
+            margin-top: 30px;
+            padding: 25px;
+            background: linear-gradient(135deg, #F8F7FF 0%, #F0EBFF 100%);
+            border-radius: 15px;
+            border: 2px dashed var(--primary-color);
+            text-align: center;
+        }
+        
+        .support-icon {
+            font-size: 48px;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+        }
+        
+        .support-section h4 {
+            color: #374151;
+            margin-bottom: 10px;
+            font-size: 20px;
+        }
+        
+        .support-section p {
+            color: var(--text-light);
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
+        
+        .support-notice {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 600;
+            color: var(--primary-color);
+            border: 1px solid #E5DEFF;
+        }
+        
+        .support-notice i {
+            font-size: 24px;
+            color: var(--secondary-color);
+        }
+        
+        /* Mobile Chat Icon */
+        .mobile-chat-icon {
+            position: fixed;
+            bottom: 90px;
+            right: 20px;
+            z-index: 999;
+            background: var(--gradient);
+            color: white;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            box-shadow: 0 5px 15px rgba(106, 17, 203, 0.4);
+            cursor: pointer;
+            transition: var(--transition);
+            display: none;
+        }
+        
+        .mobile-chat-icon:hover {
+            transform: scale(1.1);
+        }
+        
+        /* 移动端标题优化 */
+        .mobile-header-title {
+            display: none;
+        }
+        
+        .mobile-tagline {
+            display: none;
+        }
+        
+        /* Mobile Optimization */
+        @media (max-width: 768px) {
+            body {
+                padding-bottom: 90px; /* 仅保留聊天按钮空间 */
+            }
+    
+            .container {
+                padding: 0 10px;
+            }
+            
+            /* 隐藏侧边栏 */
+            .sidebar {
+                display: none;
+            }
+            
+            /* 调整主内容宽度 */
+            .faq-container {
+                width: 100%;
+                min-width: 100%;
+            }
+            
+            /* 简化顶部header */
+            header {
+                padding: 25px 20px !important;
+                margin: 15px 0 20px !important;
+            }
+            
+            /* 移动端显示简洁标题 */
+            .mobile-header-title {
+                display: block !important;
+                font-size: 20px !important;
+                font-weight: 700 !important;
+                margin-bottom: 5px !important;
+                color: white !important;
+                text-align: center !important;
+            }
+            
+            .logo {
+                font-size: 28px !important;
+                gap: 10px !important;
+                margin-bottom: 5px !important;
+            }
+            
+            /* 隐藏桌面版完整标题，显示简洁版本 */
+            .tagline {
+                display: none !important;
+            }
+            
+            .mobile-tagline {
+                display: block !important;
+                font-size: 15px !important;
+                line-height: 1.4 !important;
+                opacity: 0.95 !important;
+                text-align: center !important;
+                margin-bottom: 15px !important;
+            }
+            
+            .honey-system {
+                flex-direction: column !important;
+                padding: 12px 16px !important;
+                font-size: 14px !important;
+                text-align: center !important;
+                gap: 8px !important;
+                margin-top: 15px !important;
+                border-radius: 15px !important;
+                background: rgba(255, 255, 255, 0.25) !important;
+                backdrop-filter: blur(8px) !important;
+            }
+            
+            .honey-icon {
+                font-size: 24px !important;
+            }
+            
+            /* 简化统计数据 */
+            .stats {
+                flex-direction: column !important;
+                gap: 15px !important;
+                margin-top: 20px !important;
+                padding-top: 15px !important;
+                border-top: 1px solid rgba(255, 255, 255, 0.2) !important;
+            }
+            
+            .stat-item {
+                display: flex !important;
+                justify-content: space-between !important;
+                align-items: center !important;
+                text-align: left !important;
+                padding: 10px 0 !important;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+            }
+            
+            .stat-item:last-child {
+                border-bottom: none !important;
+            }
+            
+            .stat-number {
+                font-size: 22px !important;
+                margin-bottom: 0 !important;
+                font-weight: 700 !important;
+                min-width: 80px !important;
+            }
+            
+            .stat-label {
+                font-size: 14px !important;
+                opacity: 0.9 !important;
+                text-align: right !important;
+                flex: 1 !important;
+            }
+            
+            /* 优化搜索框 */
+            .search-section {
+                padding: 20px 15px !important;
+                margin-bottom: 20px !important;
+            }
+            
+            .search-box input {
+                padding: 18px 15px 18px 50px !important;
+                font-size: 15px !important;
+            }
+            
+            .search-icon {
+                left: 18px !important;
+            }
+            
+            /* 调整内容区域 */
+            .content-section {
+                flex-direction: column;
+                gap: 0 !important;
+                margin-bottom: 30px !important;
+            }
+            
+            .sidebar, .faq-container {
+                width: 100%;
+                min-width: auto;
+            }
+            
+            .sidebar {
+                padding: 22px 18px;
+            }
+            
+            .faq-container {
+                padding: 24px 18px;
+            }
+            
+            .categories a {
+                padding: 12px;
+                font-size: 14px;
+            }
+            
+            .tags-container {
+                gap: 8px;
+            }
+            
+            .tag {
+                padding: 6px 12px;
+                font-size: 13px;
+            }
+            
+            .section-title {
+                font-size: 20px;
+            }
+            
+            .section-title i {
+                width: 48px;
+                height: 48px;
+                font-size: 22px;
+            }
+            
+            .faq-question {
+                padding: 18px 16px;
+                font-size: 15px;
+            }
+            
+            .faq-answer.open {
+                padding: 18px 16px;
+                font-size: 15px;
+            }
+            
+            footer {
+                padding: 26px 16px;
+                font-size: 14px;
+            }
+            
+            .payment-methods {
+                flex-direction: column;
+            }
+            
+            /* 修复移动端流程图显示问题 */
+            .platform-flow {
+                flex-direction: column;
+                margin: 20px 0;
+            }
+            
+            .flow-arrow {
+                transform: rotate(90deg);
+                margin: 10px 0;
+                flex: 0 0 20px;
+            }
+            
+            .flow-step {
+                min-width: 100%;
+                padding: 20px 15px;
+            }
+            
+            .flow-step h4 {
+                font-size: 16px;
+                line-height: 1.3;
+            }
+            
+            .flow-step p {
+                font-size: 13px;
+                line-height: 1.4;
+                /* 确保长文本在移动端正确换行 */
+                word-break: break-word;
+                overflow-wrap: break-word;
+                hyphens: auto;
+                max-height: none;
+                overflow: visible;
+            }
+            
+            /* 确保所有流程步骤的p标签都正确显示 */
+            .platform-flow .flow-step p {
+                display: block !important;
+                opacity: 1 !important;
+                max-height: none !important;
+            }
+            
+            .support-section {
+                padding: 20px 16px;
+            }
+            
+            .support-notice {
+                flex-direction: column;
+                text-align: center;
+                gap: 8px;
+            }
+            
+            /* 移动端只显示聊天图标 */
+            .mobile-chat-icon {
+                display: flex;
+                bottom: 20px;
+                right: 16px;
+                z-index: 1000;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            header {
+                padding: 20px 15px !important;
+            }
+            
+            .logo {
+                font-size: 24px !important;
+            }
+            
+            .mobile-header-title {
+                font-size: 18px !important;
+            }
+            
+            .mobile-tagline {
+                font-size: 14px !important;
+            }
+            
+            .honey-system {
+                font-size: 13px !important;
+                padding: 10px 14px !important;
+            }
+            
+            .stat-number {
+                font-size: 20px !important;
+            }
+            
+            .stat-label {
+                font-size: 13px !important;
+            }
+            
+            .search-box input {
+                padding: 16px 16px;
+                padding-left: 52px;
+                font-size: 14px;
+            }
+            
+            .search-icon {
+                left: 16px;
+            }
+            
+            .flow-step {
+                padding: 18px 12px;
+            }
+            
+            .flow-step p {
+                font-size: 12px;
+            }
+            
+            .mobile-chat-icon {
+                width: 55px;
+                height: 55px;
+                font-size: 24px;
+                bottom: 20px;
+                right: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 已删除 Admin Panel 和 Mobile Admin Button -->
+    
+    <!-- Mobile Chat Icon -->
+    <div class="mobile-chat-icon" id="mobileChatIcon">
+        <i class="fas fa-headset"></i>
+    </div>
+    
+    <!-- Main Page -->
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <!-- 移动端简洁标题 -->
+                <h1 class="mobile-header-title">Free Product FAQ</h1>
+                
+                <div class="logo">
+                    <span>Beefreebies</span>
+                </div>
+                
+                <!-- 桌面版完整描述（移动端隐藏） -->
+                <p class="tagline">Get free products with 100% cashback. Help sellers grow with honest reviews.</p>
+                
+                <!-- 移动端简洁描述 -->
+                <p class="mobile-tagline">Free products with 100% cashback</p>
+                
+                <div class="honey-system">
+                    <i class="fas fa-honey-pot honey-icon"></i>
+                    <span>Use 1 Honey to claim free products. Get 2 Honey for reviews.</span>
+                </div>
+                
+                <div class="stats">
+                    <div class="stat-item">
+                        <div class="stat-number">8,450+</div>
+                        <div class="stat-label">Free Products</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">15,280+</div>
+                        <div class="stat-label">Honest Reviews</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">99%</div>
+                        <div class="stat-label">Satisfaction</div>
+                    </div>
+                </div>
+            </div>
+        </header>
+        
+        <section class="search-section">
+            <div class="search-box">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" id="searchInput" placeholder="Search questions, e.g., 'how to get free products', 'review requirements', 'Honey system', 'shipping policy'...">
+                <div class="search-results" id="searchResults">Found <span id="resultCount">0</span> related questions</div>
+            </div>
+        </section>
+        
+        <section class="content-section">
+            <aside class="sidebar">
+                <h3><i class="fas fa-filter"></i> Categories</h3>
+                <ul class="categories">
+                    <li><a href="#" class="active" data-category="all"><i class="fas fa-th-large"></i> All Questions</a></li>
+                    <li><a href="#" data-category="basics"><i class="fas fa-info-circle"></i> Getting Started</a></li>
+                    <li><a href="#" data-category="account"><i class="fas fa-user-check"></i> Account & Eligibility</a></li>
+                    <li><a href="#" data-category="process"><i class="fas fa-shopping-cart"></i> Order & Payment Process</a></li>
+                    <li><a href="#" data-category="review"><i class="fas fa-star"></i> Reviews & Rewards</a></li>
+                    <li><a href="#" data-category="shipping"><i class="fas fa-shipping-fast"></i> Shipping & Delivery</a></li>
+                    <li><a href="#" data-category="rules"><i class="fas fa-gavel"></i> Platform Rules</a></li>
+                    <li><a href="#" data-category="support"><i class="fas fa-headset"></i> Support</a></li>
+                </ul>
+                
+                <h3><i class="fas fa-tags"></i> Popular Tags</h3>
+                <div class="tags-container" id="popularTags">
+                    <!-- Popular tags will be added dynamically via JS -->
+                </div>
+            </aside>
+            
+            <main class="faq-container">
+                <h2 class="section-title"><i class="fas fa-question-circle"></i> Frequently Asked Questions</h2>
+                
+                <div class="faq-list" id="faqList">
+                    <!-- Questions will be generated dynamically via JavaScript -->
+                </div>
+                
+                <div class="no-results" id="noResults">
+                    <i class="fas fa-search"></i>
+                    <h3>No questions found</h3>
+                    <p>Try using different keywords or browse questions by category</p>
+                </div>
+            </main>
+        </section>
+        
+        <footer>
+            <p>© 2023 Beefreebies Free Product Platform | Connecting consumers with quality products</p>
+            <p style="margin-top: 8px; margin-bottom: 20px;">All reviews are genuine user experiences. Fake reviews are strictly prohibited.</p>
+            
+            <div style="margin-top: 25px; padding-top: 20px; border-top: 1px solid #F0EBFF;">
+                <p style="font-size: 14px; color: #888;">
+                    <strong>Company:</strong> Shenzhen Shenqi Kui Technology Co., Ltd.<br>
+                    Lianhua Shanzhuang 4th Village, No. 130 Lianhua Road, Buji, Longgang District, Shenzhen, China
+                </p>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // 移动端检测
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        
+        // FAQ Data - Optimized for US audience
+        let faqData = [
+            {
+                id: 1,
+                question: "What is Beefreebies and how does it work?",
+                answer: `<p>Beefreebies is an innovative platform that connects US consumers with quality products at no cost, while providing valuable feedback to sellers.</p>
+                
+                <div class="platform-flow">
+                    <div class="flow-step">
+                        <div class="flow-icon"><i class="fas fa-store"></i></div>
+                        <h4>Sellers List Products</h4>
+                        <p>Brands and sellers offer their products for free to get authentic user feedback</p>
+                    </div>
+                    <div class="flow-step">
+                        <div class="flow-icon"><i class="fas fa-user-check"></i></div>
+                        <h4>Users Apply</h4>
+                        <p>Qualified users browse products and apply using Honey credits (1 Honey per application)</p>
+                    </div>
+                    <div class="flow-step">
+                        <div class="flow-icon"><i class="fas fa-shopping-cart"></i></div>
+                        <h4>Purchase & Get Refund</h4>
+                        <p>Users purchase approved products and receive 100% cashback from Beefreebies</p>
+                    </div>
+                    <div class="flow-step">
+                        <div class="flow-icon"><i class="fas fa-star"></i></div>
+                        <h4>Leave Honest Review</h4>
+                        <p>After using the product, users share their genuine experience through reviews</p>
+                    </div>
+                </div>
+                
+                <div class="info-box" style="margin-top: 30px;">
+                    <div class="info-icon">
+                        <i class="fas fa-lightbulb"></i>
+                    </div>
+                    <div>
+                        <p><strong>Win-Win-Win Ecosystem:</strong> This creates a mutually beneficial ecosystem where users get free products, sellers receive authentic feedback to improve their offerings and sales, and the platform builds a trustworthy community of honest reviewers.</p>
+                    </div>
+                </div>`,
+                category: "basics",
+                tags: ["platform", "how it works", "win-win", "ecosystem"],
+                status: "active",
+                featured: true
+            },
+            {
+                id: 2,
+                question: "Who can join Beefreebies? What are the eligibility requirements?",
+                answer: `<p>To ensure fairness and maintain a quality community, Beefreebies has the following eligibility requirements:</p>
+                
+                <div class="info-box">
+                    <div class="info-icon">
+                        <i class="fas fa-user-check"></i>
+                    </div>
+                    <div>
+                        <p><strong>Basic Eligibility Requirements:</strong></p>
+                        <ul>
+                            <li><strong>US Residents Only:</strong> Currently available only to users residing in the United States</li>
+                            <li><strong>Age 18+:</strong> Must be at least 18 years old</li>
+                            <li><strong>One Account Per Person:</strong> Each person may only have one account. Multiple accounts will result in suspension</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <p>We use verification systems to ensure genuine users have fair access to free product opportunities.</p>`,
+                category: "account",
+                tags: ["eligibility", "US only", "age requirement", "one account"],
+                status: "active",
+                featured: true
+            },
+            {
+                id: 3,
+                question: "How do I apply for free products?",
+                answer: `<p>Applying for free products on Beefreebies is simple and straightforward:</p>
+                
+                <div class="process-step">
+                    <div class="step-number">1</div>
+                    <div>
+                        <strong>Create Your Account</strong>
+                        <p>Sign up with your accurate information</p>
+                    </div>
+                </div>
+                
+                <div class="process-step">
+                    <div class="step-number">2</div>
+                    <div>
+                        <strong>Browse Available Products</strong>
+                        <p>Explore the free products listed on our platform</p>
+                    </div>
+                </div>
+                
+                <div class="process-step">
+                    <div class="step-number">3</div>
+                    <div>
+                        <strong>Submit Your Application</strong>
+                        <p>Apply for products that interest you (uses 1 Honey credit)</p>
+                    </div>
+                </div>
+                
+                <div class="process-step">
+                    <div class="step-number">4</div>
+                    <div>
+                        <strong>Get Approved & Follow Instructions</strong>
+                        <p>If approved, you'll receive detailed instructions for claiming your product</p>
+                    </div>
+                </div>
+                
+                <p><strong>Note:</strong> New accounts start with 1 Honey credit. Applying for a product uses 1 Honey, and submitting an approved review earns you 2 Honey credits.</p>`,
+                category: "process",
+                tags: ["application process", "how to apply", "Honey credits"],
+                status: "active",
+                featured: true
+            },
+            {
+                id: 4,
+                question: "What's the difference between Amazon and non-Amazon products?",
+                answer: `<p>We offer two types of free products based on the shipping method:</p>
+                
+                <div class="info-box">
+                    <div class="info-icon">
+                        <i class="fab fa-amazon"></i>
+                    </div>
+                    <div>
+                        <h4 style="color: var(--primary-color); margin-bottom: 5px;">Amazon-Shipped Products</h4>
+                        <div class="process-step" style="margin-bottom: 10px; padding: 12px;">
+                            <div class="step-number">1</div>
+                            <div>Purchase the product on Amazon</div>
+                        </div>
+                        <div class="process-step" style="margin-bottom: 10px; padding: 12px;">
+                            <div class="step-number">2</div>
+                            <div>Send your order number and screenshot via Messenger</div>
+                        </div>
+                        <div class="process-step" style="padding: 12px;">
+                            <div class="step-number">3</div>
+                            <div><strong>Get immediate cashback</strong> (no need to wait for delivery)</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="info-box">
+                    <div class="info-icon">
+                        <i class="fas fa-box"></i>
+                    </div>
+                    <div>
+                        <h4 style="color: var(--primary-color); margin-bottom: 5px;">Non-Amazon Products</h4>
+                        <div class="process-step" style="margin-bottom: 10px; padding: 12px;">
+                            <div class="step-number">1</div>
+                            <div>Send your order number to Beefreebies support via Messenger for confirmation</div>
+                        </div>
+                        <div class="process-step" style="padding: 12px;">
+                            <div class="step-number">2</div>
+                            <div>Wait for product delivery</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <p><strong>Payment Options:</strong> For Amazon orders, we refund through PayPal, USDT, or Amazon Gift Cards.</p>`,
+                category: "process",
+                tags: ["Amazon products", "non-Amazon products", "cashback", "payment options"],
+                status: "active",
+                featured: true
+            },
+            {
+                id: 5,
+                question: "What are the review requirements? Are reviews mandatory?",
+                answer: `<p>Our review policy is designed to maintain authenticity and trust:</p>
+                
+                <div class="info-box">
+                    <div class="info-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div>
+                        <p><strong>Core Principle: No fake or copied reviews!</strong> All reviews must reflect your genuine experience with the product.</p>
+                    </div>
+                </div>
+                
+                <h4 style="color: var(--primary-color); margin-top: 20px; margin-bottom: 10px;">Review Guidelines:</h4>
+                <ul>
+                    <li><strong>Review After Receipt:</strong> Please use the product before reviewing</li>
+                    <li><strong>Be Honest:</strong> Share your authentic experience, both positive and negative aspects</li>
+                    <li><strong>No Disclosure Needed:</strong> You don't need to mention that you received the product through Beefreebies</li>
+                    <li><strong>Platform:</strong> For Amazon purchases, leave your review on Amazon</li>
+                </ul>
+                
+                <h4 style="color: var(--primary-color); margin-top: 20px; margin-bottom: 10px;">Are Reviews Mandatory?</h4>
+                <p><strong>Encouraged but Not Required:</strong> For Amazon orders, we hope you'll leave a positive review as this motivates sellers to offer free products. However, you'll receive 100% cashback regardless of whether you leave a review.</p>
+                
+                <div class="info-box">
+                    <div class="info-icon">
+                        <i class="fas fa-honey-pot"></i>
+                    </div>
+                    <div>
+                        <p><strong>Reward System:</strong> Submit a review and get it approved to earn 2 Honey credits for more free products!</p>
+                    </div>
+                </div>`,
+                category: "review",
+                tags: ["review policy", "honest reviews", "not mandatory", "Honey rewards"],
+                status: "active",
+                featured: true
+            },
+            {
+                id: 6,
+                question: "How does the Honey credit system work?",
+                answer: `<p>The Honey system is our credit-based reward program with simple rules:</p>
+                
+                <div class="info-box">
+                    <div class="info-icon">
+                        <i class="fas fa-honey-pot"></i>
+                    </div>
+                    <div>
+                        <p><strong>Honey Credit Rules:</strong></p>
+                        <ul>
+                            <li><strong>Starting Balance:</strong> New accounts receive 1 Honey credit</li>
+                            <li><strong>Using Credits:</strong> Applying for a product costs 1 Honey credit</li>
+                            <li><strong>Earning Credits:</strong> Submitting an approved review earns 2 Honey credits</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <p>This system allows you to continue getting free products by sharing your honest feedback!</p>
+                
+                <div class="info-box" style="background: #F8F7FF; border-left-color: var(--honey-color);">
+                    <div class="info-icon">
+                        <i class="fas fa-money-bill-wave"></i>
+                    </div>
+                    <div>
+                        <p><strong>Extra Cash Bonus:</strong> If you create and share a social media video (YouTube, TikTok, Instagram) recommending Beefreebies, you can earn <strong>$20-100 cash</strong>. Contact us 7 days after posting to claim your bonus.</p>
+                    </div>
+                </div>`,
+                category: "review",
+                tags: ["Honey system", "credits", "rewards", "cash bonus"],
+                status: "active"
+            },
+            {
+                id: 7,
+                question: "What's your shipping and delivery policy?",
+                answer: `<p>Our shipping and delivery policies are transparent and straightforward:</p>
+                
+                <div class="info-box">
+                    <div class="info-icon">
+                        <i class="fas fa-shipping-fast"></i>
+                    </div>
+                    <div>
+                        <p><strong>Shipping Costs:</strong></p>
+                        <ul>
+                            <li><strong>Regular Products:</strong> Most products include free shipping at no cost to you</li>
+                            <li><strong>Special Products:</strong> Some high-value or large items may require a small shipping fee (typically ≤5% of product value)</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="info-box">
+                    <div class="info-icon">
+                        <i class="fas fa-exclamation-circle"></i>
+                    </div>
+                    <div>
+                        <p><strong>Important Commitment:</strong> We never charge "processing fees," "security deposits," or any other hidden charges.</p>
+                    </div>
+                </div>
+                
+                <h4 style="color: var(--primary-color); margin-top: 20px; margin-bottom: 10px;">Delivery Times:</h4>
+                <ul>
+                    <li><strong>Amazon Products:</strong> Follow Amazon's estimated delivery times</li>
+                    <li><strong>Non-Amazon Products:</strong> Typically ship within 3 business days</li>
+                    <li><strong>Shipping From:</strong> All products ship from within the United States</li>
+                </ul>`,
+                category: "shipping",
+                tags: ["shipping policy", "delivery times", "US shipping", "no hidden fees"],
+                status: "active"
+            },
+            {
+                id: 8,
+                question: "What if I receive a defective product? Can I return it?",
+                answer: `<p>Regarding product quality and returns:</p>
+                
+                <div class="info-box">
+                    <div class="info-icon">
+                        <i class="fas fa-box-open"></i>
+                    </div>
+                    <div>
+                        <p><strong>Current Policy:</strong> Since products are free, we don't offer returns or exchanges.</p>
+                        <p><strong>Important Note:</strong> Orders confirmed with our support team cannot be canceled or returned.</p>
+                    </div>
+                </div>
+                
+                <p>If you receive a product with significant quality issues, please contact us promptly at our support email, and we'll work with the seller to address the situation.</p>`,
+                category: "shipping",
+                tags: ["defective products", "return policy", "quality issues"],
+                status: "active"
+            },
+            {
+                id: 9,
+                question: "What are the important platform rules I should know?",
+                answer: `<p>To maintain fairness and integrity, please follow these platform rules:</p>
+                
+                <div class="info-box">
+                    <div class="info-icon">
+                        <i class="fas fa-gavel"></i>
+                    </div>
+                    <div>
+                        <p><strong>Key Platform Rules:</strong></p>
+                        <ul>
+                            <li><strong>One Account Per Person:</strong> Multiple accounts will result in suspension</li>
+                            <li><strong>Authentic Reviews:</strong> Fake, copied, or templated reviews are prohibited</li>
+                            <li><strong>Timely Communication:</strong> Respond promptly to our support team via Messenger</li>
+                            <li><strong>Honest Participation:</strong> Any form of fraud or manipulation will not be tolerated</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <p>Violating these rules may result in account suspension and loss of access to free product opportunities.</p>`,
+                category: "rules",
+                tags: ["platform rules", "account suspension", "honesty policy"],
+                status: "active"
+            },
+            {
+                id: 10,
+                question: "What payment methods do you offer for cashback?",
+                answer: `<p>For Amazon order cashback, we offer several convenient payment options:</p>
+                
+                <div class="payment-methods">
+                    <div class="payment-method">
+                        <i class="fab fa-paypal" style="color: #003087;"></i>
+                        <span>PayPal</span>
+                    </div>
+                    <div class="payment-method">
+                        <i class="fas fa-coins" style="color: #26A17B;"></i>
+                        <span>USDT</span>
+                    </div>
+                    <div class="payment-method">
+                        <i class="fab fa-amazon" style="color: #FF9900;"></i>
+                        <span>Amazon Gift Card</span>
+                    </div>
+                </div>
+                
+                <h4 style="color: var(--primary-color); margin-top: 20px; margin-bottom: 10px;">Payment Process & Timeline:</h4>
+                <ol>
+                    <li>Send your Amazon order number and screenshot via Messenger</li>
+                    <li>Our team confirms your order (typically within 24 hours)</li>
+                    <li>Choose your preferred payment method</li>
+                    <li>We process your payment within 24 hours of confirmation</li>
+                </ol>
+                
+                <p><strong>Best Part: You get cashback immediately - no need to wait for delivery confirmation!</strong></p>`,
+                category: "process",
+                tags: ["payment methods", "cashback", "PayPal", "USDT", "Amazon Gift Card"],
+                status: "active"
+            },
+            {
+                id: 11,
+                question: "How can I get customer support?",
+                answer: `<p>We're here to help! Here are the ways to get support:</p>
+                
+                <div class="support-section">
+                    <div class="support-icon">
+                        <i class="fas fa-headset"></i>
+                    </div>
+                    <h4>Need Help?</h4>
+                    <p>Our support team is available to assist you with any questions or issues you may have.</p>
+                    
+                    <div class="support-notice">
+                        <i class="fas fa-mobile-alt"></i>
+                        <div>
+                            <strong>On Mobile?</strong> Tap the chat icon in the bottom right corner
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="info-box" style="margin-top: 20px;">
+                    <div class="info-icon">
+                        <i class="fas fa-comment-dots"></i>
+                    </div>
+                    <div>
+                        <p><strong>Quick Support via Messenger:</strong> For fastest response, contact us through Messenger with your order details or questions.</p>
+                        <p style="margin-top: 10px;"><strong>Response Time:</strong> We typically respond within 24 hours, but often much faster!</p>
+                    </div>
+                </div>
+                
+                <p><strong>Remember:</strong> Always keep your communication through official Beefreebies channels to ensure your account security.</p>`,
+                category: "support",
+                tags: ["customer support", "help", "contact us", "Messenger"],
+                status: "active"
+            }
+        ];
+
+        // 热门标签
+        let popularTags = ["free products", "cashback", "Amazon orders", "review requirements", "Honey credits", "US only", "Messenger", "PayPal", "shipping policy", "platform rules", "customer support"];
+
+        // 初始化页面
+        document.addEventListener('DOMContentLoaded', function() {
+            // 移动端优化：设置合适的字体大小
+            if (isMobile) {
+                adjustMobileLayout();
+            }
+            
+            // 渲染页面
+            renderFAQList(faqData);
+            renderPopularTags();
+            
+            // 设置事件监听器
+            setupEventListeners();
+            
+            // 移动端优化：防止双击缩放
+            setupMobileTouchEvents();
+        });
+
+        // 移动端布局调整
+        function adjustMobileLayout() {
+            // 为移动端调整元素大小
+            document.querySelectorAll('.touch-friendly').forEach(el => {
+                el.style.minHeight = '44px';
+            });
+            
+            // 优化FAQ项触摸区域
+            document.querySelectorAll('.faq-question').forEach(el => {
+                el.style.padding = '18px 16px';
+            });
+            
+            // 移动端隐藏侧边栏
+            document.querySelector('.sidebar').style.display = 'none';
+            
+            // 确保流程图文字在移动端正确显示
+            document.querySelectorAll('.flow-step p').forEach(p => {
+                p.style.wordBreak = 'break-word';
+                p.style.overflowWrap = 'break-word';
+                p.style.hyphens = 'auto';
+            });
+        }
+
+        // 设置移动端触摸事件
+        function setupMobileTouchEvents() {
+            if (!isMobile) return;
+            
+            // 为FAQ项目添加触摸反馈
+            document.addEventListener('touchstart', function() {}, {passive: true});
+            
+            // 防止长按选中文本
+            document.addEventListener('contextmenu', function(e) {
+                if (e.target.closest('.faq-question') || e.target.closest('.tag')) {
+                    e.preventDefault();
+                }
+            });
+        }
+
+        // 渲染FAQ列表
+        function renderFAQList(faqs) {
+            const faqList = document.getElementById('faqList');
+            const noResults = document.getElementById('noResults');
+            
+            // 只显示活跃问题
+            const activeFaqs = faqs.filter(faq => faq.status === "active");
+            
+            if (activeFaqs.length === 0) {
+                faqList.innerHTML = '';
+                noResults.style.display = 'block';
+                return;
+            }
+            
+            noResults.style.display = 'none';
+            
+            let html = '';
+            activeFaqs.forEach(faq => {
+                html += `
+                    <div class="faq-item" data-id="${faq.id}" data-category="${faq.category}">
+                        <div class="faq-question">
+                            <span>${faq.question}</span>
+                            <i class="fas fa-plus faq-toggle"></i>
+                        </div>
+                        <div class="faq-answer">
+                            ${faq.answer}
+                            <div style="margin-top: 20px; font-size: 14px;">
+                                <strong>Tags:</strong>
+                                ${faq.tags.map(tag => `<span class="tag" style="font-size:12px; padding:4px 10px;">${tag}</span>`).join('')}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            faqList.innerHTML = html;
+            
+            // 添加FAQ项目点击事件
+            document.querySelectorAll('.faq-question').forEach(question => {
+                question.addEventListener('click', function() {
+                    const faqItem = this.parentElement;
+                    const answer = this.nextElementSibling;
+                    const toggleIcon = this.querySelector('.faq-toggle');
+                    
+                    // 如果当前已打开，关闭它
+                    if (faqItem.classList.contains('active')) {
+                        answer.classList.remove('open');
+                        faqItem.classList.remove('active');
+                        toggleIcon.classList.remove('fa-times');
+                        toggleIcon.classList.add('fa-plus');
+                    } else {
+                        // 关闭其他打开的FAQ
+                        document.querySelectorAll('.faq-item.active').forEach(item => {
+                            item.classList.remove('active');
+                            item.querySelector('.faq-answer').classList.remove('open');
+                            item.querySelector('.faq-toggle').classList.remove('fa-times');
+                            item.querySelector('.faq-toggle').classList.add('fa-plus');
+                        });
+                        
+                        // 打开当前FAQ
+                        faqItem.classList.add('active');
+                        answer.classList.add('open');
+                        toggleIcon.classList.remove('fa-plus');
+                        toggleIcon.classList.add('fa-times');
+                        
+                        // 平滑滚动到展开的问题上方一点，保证问题和答案都能看到
+                        setTimeout(() => {
+                            const rect = faqItem.getBoundingClientRect();
+                            const absoluteTop = window.pageYOffset + rect.top;
+                            // 根据设备预留一点顶部安全距离（避免贴边或被浏览器工具栏遮挡）
+                            const offset = isMobile ? 80 : 120;
+                            window.scrollTo({
+                                top: absoluteTop - offset,
+                                behavior: 'smooth'
+                            });
+                        }, 250);
+                    }
+                });
+            });
+        }
+
+        // 渲染热门标签
+        function renderPopularTags() {
+            const popularTagsContainer = document.getElementById('popularTags');
+            popularTagsContainer.innerHTML = '';
+            
+            popularTags.forEach(tag => {
+                const tagElement = document.createElement('span');
+                tagElement.className = 'tag';
+                tagElement.textContent = tag;
+                tagElement.addEventListener('click', function() {
+                    document.getElementById('searchInput').value = tag;
+                    const event = new Event('input');
+                    document.getElementById('searchInput').dispatchEvent(event);
+                });
+                popularTagsContainer.appendChild(tagElement);
+            });
+        }
+
+        // 设置事件监听器
+        function setupEventListeners() {
+            // 搜索功能
+            const searchInput = document.getElementById('searchInput');
+            const searchResults = document.getElementById('searchResults');
+            const resultCount = document.getElementById('resultCount');
+            
+            searchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase().trim();
+                
+                if (searchTerm.length === 0) {
+                    searchResults.style.display = 'none';
+                    renderFAQList(faqData);
+                    return;
+                }
+                
+                // 搜索问题、答案和标签
+                const filteredFAQs = faqData.filter(faq => {
+                    if (faq.status !== "active") return false;
+                    
+                    const questionMatch = faq.question.toLowerCase().includes(searchTerm);
+                    const answerMatch = faq.answer.toLowerCase().includes(searchTerm);
+                    const tagsMatch = faq.tags.some(tag => tag.toLowerCase().includes(searchTerm));
+                    
+                    return questionMatch || answerMatch || tagsMatch;
+                });
+                
+                // 高亮搜索词
+                const highlightedFAQs = filteredFAQs.map(faq => {
+                    const highlightedFAQ = {...faq};
+                    const regex = new RegExp(`(${escapeRegExp(searchTerm)})`, 'gi');
+                    
+                    // 在问题中高亮搜索词
+                    highlightedFAQ.question = faq.question.replace(regex, '<span style="background-color: #F0EBFF; padding: 2px 4px; border-radius: 3px; font-weight: bold;">$1</span>');
+                    
+                    // 在答案中高亮搜索词
+                    highlightedFAQ.answer = faq.answer.replace(regex, '<span style="background-color: #F0EBFF; padding: 2px 4px; border-radius: 3px; font-weight: bold;">$1</span>');
+                    
+                    return highlightedFAQ;
+                });
+                
+                renderFAQList(highlightedFAQs);
+                
+                // 显示搜索结果数量
+                resultCount.textContent = filteredFAQs.length;
+                searchResults.style.display = 'block';
+                
+                // 为搜索结果添加高亮类
+                document.querySelectorAll('.faq-item').forEach(item => {
+                    item.classList.add('highlight');
+                });
+            });
+            
+            // 分类过滤
+            document.querySelectorAll('.categories a').forEach(categoryLink => {
+                categoryLink.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // 更新活跃分类
+                    document.querySelectorAll('.categories a').forEach(link => {
+                        link.classList.remove('active');
+                    });
+                    this.classList.add('active');
+                    
+                    const category = this.getAttribute('data-category');
+                    
+                    // 重置搜索
+                    searchInput.value = '';
+                    searchResults.style.display = 'none';
+                    
+                    // 过滤FAQ
+                    if (category === 'all') {
+                        renderFAQList(faqData);
+                    } else {
+                        const filteredFAQs = faqData.filter(faq => faq.category === category && faq.status === "active");
+                        renderFAQList(filteredFAQs);
+                    }
+
+                    // 分类切换后，平滑滚动到FAQ区域（问题列表）位置
+                    const faqSection = document.querySelector('.faq-container');
+                    if (faqSection) {
+                        const rect = faqSection.getBoundingClientRect();
+                        const absoluteTop = window.pageYOffset + rect.top;
+                        const offset = isMobile ? 80 : 120;
+                        window.scrollTo({
+                            top: absoluteTop - offset,
+                            behavior: 'smooth'
+                        });
+                    }
+                });
+            });
+            
+            // 移动端聊天图标
+            document.getElementById('mobileChatIcon').addEventListener('click', function() {
+                alert("For customer support, please contact us through Messenger. We typically respond within 24 hours!");
+            });
+            
+            // 移动端显示聊天图标
+            if (isMobile) {
+                document.getElementById('mobileChatIcon').style.display = 'flex';
+                
+                // 移动端隐藏侧边栏
+                document.querySelector('.sidebar').style.display = 'none';
+                document.querySelector('.content-section').style.gap = '0';
+            }
+            
+            // 移动端优化：点击外部关闭搜索建议
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.search-box')) {
+                    searchResults.style.display = 'none';
+                }
+            });
+            
+            // 窗口大小变化时重新检测
+            window.addEventListener('resize', function() {
+                const isNowMobile = window.innerWidth <= 768;
+                if (isNowMobile !== isMobile) {
+                    location.reload(); // 简单重载以应用新的样式
+                }
+            });
+        }
+
+        // 辅助函数：转义正则表达式特殊字符
+        function escapeRegExp(string) {
+            return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        }
+    </script>
+</body>
+</html>
