@@ -474,6 +474,12 @@
             transition: color var(--transition-fast), transform var(--transition-fast), opacity var(--transition-fast);
         }
 
+        /* 底部导航 FAQ 按钮专属颜色（使用 data-role 标记） */
+        .bottom-nav-item[data-role="faq"] {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
         .bottom-nav-item span {
             pointer-events: none;
         }
@@ -482,6 +488,77 @@
         .bottom-nav-item:active {
             transform: scale(0.95);
             opacity: 0.8;
+        }
+
+        /* 移动端首页顶部 FQA 快捷按钮（默认隐藏，仅在小屏显示，位于导航栏中间） */
+        .mobile-faq-cta {
+            display: none;
+            margin-left: 12px;
+            padding: 6px 12px; /* 缩小按钮尺寸 */
+            border-radius: 999px;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(244, 114, 182, 0.08));
+            border: 1px solid rgba(129, 140, 248, 0.5);
+            color: #111827;
+            font-size: 13px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(79, 70, 229, 0.12);
+        }
+
+        .mobile-faq-cta i {
+            color: #4f46e5;
+            font-size: 14px;
+        }
+
+        .mobile-faq-cta span.mobile-faq-text-sub {
+            font-weight: 500;
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        @media (max-width: 768px) {
+            .mobile-faq-cta {
+                display: inline-flex;
+            }
+            /* 移动端隐藏顶部文字版 FAQ 链接，保留醒目的按钮 */
+            .nav-links a#faq-link {
+                display: none;
+            }
+            /* 移动端顶部导航重新布局：左侧 Logo，右侧依次为 FQA 与 登录/注册，三块保持同一行 */
+            .nav-container {
+                display: grid;
+                grid-template-columns: auto auto 1fr auto;
+                align-items: center;
+                column-gap: 8px;
+            }
+            .logo {
+                order: 1;
+                margin-left: 0;
+            }
+            .mobile-faq-cta {
+                order: 2;
+                margin-left: 4px;
+                justify-self: flex-start; /* 紧挨 logo */
+            }
+            .user-actions {
+                order: 3;
+                justify-content: flex-end;
+                align-self: center;       /* 与 Logo / FQA 垂直居中在同一行 */
+                white-space: nowrap;      /* 防止登录/注册按钮换行 */
+            }
+            .search-bar {
+                order: 4;
+                grid-column: 1 / 5;       /* 占据下一行整行 */
+                width: 100%;
+            }
+            /* 为了减小宽度，窄屏下隐藏 FQA 的副标题 */
+            .mobile-faq-cta span.mobile-faq-text-sub {
+                display: none;
+            }
         }
 
         .nav-container {
@@ -543,6 +620,20 @@
             line-height: 1.4;
             min-height: 48px;
             transition: all var(--transition-fast);
+        }
+
+        /* FAQ 顶部导航按钮专属样式：浅色渐变描边 + 文字高亮 */
+        .nav-links a#faq-link {
+            color: var(--primary-dark);
+            border: 1px solid rgba(99, 102, 241, 0.5);
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.06), rgba(139, 92, 246, 0.08));
+            box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.8);
+        }
+
+        .nav-links a#faq-link:hover {
+            color: #fff;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            box-shadow: 0 4px 10px rgba(99, 102, 241, 0.35);
         }
 
         /* 顶部导航：增加下划线微交互，不改变原有配色 */
@@ -958,6 +1049,43 @@
             margin-right: auto;
         }
 
+        /* 首页产品加载中占位 */
+        .products-loading {
+            width: 100%;
+            min-height: 180px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 16px;
+            background: #ffffff;
+            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.04);
+            margin-top: 12px;
+            margin-bottom: 24px;
+        }
+
+        .products-loading-spinner {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            border: 4px solid #e5e7eb;
+            border-top-color: #6366f1;
+            animation: homeProductsSpin 0.9s linear infinite;
+            margin-bottom: 10px;
+        }
+
+        .products-loading-text {
+            font-size: 14px;
+            color: #6b7280;
+            font-weight: 500;
+        }
+
+        @keyframes homeProductsSpin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
 
         /* 现代化产品卡片 */
         .product-card {
@@ -1044,16 +1172,23 @@
         }
 
         .product-image {
-            aspect-ratio: 1 / 1; /* 正方形比例 */
             width: 100%;
-            background-size: contain;
-            background-repeat: no-repeat;
-            background-position: center;
             background-color: var(--gray-100);
             position: relative;
-            padding: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px;
             transition: all var(--transition-normal);
-            overflow: hidden;
+            overflow: visible; /* 允许图片完整显示 */
+        }
+
+        .product-image img {
+            width: 100%;
+            height: auto; /* 按原图比例自适应 */
+            object-fit: contain; /* 保证整张图片完全显示，不被裁剪 */
+            display: block;
+            max-width: 100%;
         }
 
         .product-card:hover .product-image {
@@ -1083,8 +1218,9 @@
         }
 
         #featured-showcase .product-image {
-            aspect-ratio: 1 / 1; /* 正方形比例 */
             width: 100%;
+            padding: 0; /* 去掉内边距给图片更多空间 */
+            overflow: visible;
         }
 
         #featured-showcase .product-info {
@@ -1462,6 +1598,30 @@
             background: rgba(0, 0, 0, 0.65);
             color: #fff;
             font-size: 12px;
+        }
+
+        /* 首页产品卡片 - 亚马逊图标（仅有亚马逊链接的产品显示） */
+        .home-feature-amazon-icon {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            /* 默认按移动端尺寸：28x28 */
+            width: 28px !important;
+            height: 28px !important;
+            border-radius: 50%;
+            background: #ffffff;
+            padding: 0;
+            box-shadow: 0 6px 16px rgba(15, 23, 42, 0.25);
+            object-fit: contain;
+            pointer-events: none;
+        }
+
+        /* PC 端：放大到 40x40（视口宽度大于等于 1024px） */
+        @media (min-width: 1024px) {
+            .home-feature-amazon-icon {
+                width: 40px !important;
+                height: 40px !important;
+            }
         }
 
         .home-feature-body {
@@ -1962,7 +2122,7 @@
         /* 移动端上移，避免被浏览器工具栏 & 底部导航遮挡 */
         @media (max-width: 768px) {
             .contact-button {
-                bottom: 110px; /* 预留 Safari 底部工具栏 + 站点底部导航的高度 */
+                bottom: 110px; /* 再向上抬高，确保完全露出在底部导航之上 */
                 right: 20px;
             }
         }
@@ -3816,7 +3976,6 @@
             }
 
             .product-image {
-                aspect-ratio: 1 / 1; /* 正方形比例 */
                 width: 100%;
             }
 
@@ -4321,7 +4480,6 @@
             }
 
             .product-image {
-                aspect-ratio: 1 / 1; /* 正方形比例 */
                 width: 100%;
             }
 
@@ -4732,9 +4890,9 @@
                 font-size: 24px;
             }
 
-            /* 客服按钮移动端优化 */
+            /* 客服按钮移动端优化（抬高以避免被底部导航遮挡） */
             .contact-button {
-                bottom: 20px;
+                bottom: 110px;
                 right: 20px;
             }
 
@@ -5306,21 +5464,23 @@
                 <button id="search-btn"><i class="fas fa-search"></i></button>
             </div>
 
+            <!-- 移动端导航栏行内 FQA 按钮：放在顶部中间，仅小屏显示 -->
+            <div class="mobile-faq-cta" onclick="window.open('faq.html', '_blank')">
+                <i class="fas fa-question-circle"></i>
+                <span>FQA</span>
+                <span class="mobile-faq-text-sub">Common Questions</span>
+            </div>
+
             <ul class="nav-links">
                 <li><a href="#" class="active" id="main-home-link">Home</a></li>
                 <li><a href="#" id="admin-link" style="display:none">Admin Panel</a></li>
                 <li><a href="#" id="user-center-link" style="display:none">Account</a></li>
                 <li><a href="#" id="my-orders-link" style="display:none" data-tab="orders">My Orders</a></li>
+                <!-- FQA 独立页面入口（PC 顶部导航） -->
+                <li><a href="faq.html" id="faq-link" target="_blank" rel="noopener noreferrer">FQA</a></li>
             </ul>
 
             <div class="user-actions">
-                <!-- 语言选择器 -->
-                <div class="language-selector" style="position: relative; margin-right: 15px;">
-                    <select id="language-select" style="padding: 6px 12px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer; font-size: 14px;">
-                        <option value="zh">Chinese</option>
-                        <option value="en" selected>English</option>
-                    </select>
-                </div>
 
                 <!-- 管理员控制面板（仅管理员可见） -->
                 <div id="admin-control-panel" style="display:none; position:relative; margin-right:15px;">
@@ -5408,6 +5568,7 @@
     <div class="container">
         <!-- 首页内容 -->
         <div id="home-page">
+
             <!-- 轮播图 -->
             <div class="carousel">
                 <div class="carousel-arrow prev">&#10094;</div>
@@ -5453,6 +5614,12 @@
                     <div class="category-item" data-category="beauty">Beauty & Skincare</div>
                 </div>
 
+                <!-- 产品加载中占位 -->
+                <div id="products-loading" class="products-loading">
+                    <div class="products-loading-spinner"></div>
+                    <p class="products-loading-text">Loading products, please wait...</p>
+                </div>
+
                 <div id="products-grid">
                     <!-- 动态渲染 -->
                 </div>
@@ -5494,6 +5661,15 @@
             </div>
 
             <div class="user-content">
+                <!-- 语言选择器移动到账号中心顶部 -->
+                <div style="display: flex; justify-content: flex-end; margin-bottom: 16px;">
+                    <div class="language-selector">
+                        <select id="language-select" style="padding: 6px 12px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer; font-size: 14px;">
+                            <option value="zh">Chinese</option>
+                            <option value="en" selected>English</option>
+                        </select>
+                    </div>
+                </div>
                 <!-- 我的报名页面 -->
                 <div class="user-page active" id="user-orders">
                     <div class="order-tabs">
@@ -15783,10 +15959,16 @@ const paginationContainers = {
             const productsGrid = document.getElementById('products-grid');
             const productDetail = document.getElementById('product-detail');
             const topCarousel = document.querySelector('.carousel');
+            const productsLoading = document.getElementById('products-loading');
 
             if (!productsGrid || !productDetail) {
                 console.info('首页已隐藏商品展示，renderProducts 跳过渲染。');
                 return;
+            }
+
+            // 首次渲染或每次刷新时，隐藏“加载中”占位
+            if (productsLoading) {
+                productsLoading.style.display = 'none';
             }
 
             productDetail.style.display = 'none';
@@ -15813,6 +15995,8 @@ const paginationContainers = {
                 const oldPrice = formatCurrency(product.price);
                 const newPrice = formatCurrency(product.newPrice !== undefined ? product.newPrice : 0);
                 const stock = (product && typeof product.stock !== 'undefined') ? product.stock : 0;
+            const hasAmazonLink = !!(product && product.redirectUrl);
+            const amazonIconUrl = 'https://pic.pngsucai.com/00/95/87/1bbee63e588617b1.webp';
                 
                 // 检查用户是否已领取该产品
                 let isClaimed = false;
@@ -15836,7 +16020,7 @@ const paginationContainers = {
                     <article class="home-feature-card" data-product-id="${product.id}">
                         <div class="home-feature-image">
                             <img src="${getPrimaryProductImage(product)}" alt="${product.name || ''}">
-                            <span class="home-feature-tag">${categoryLabel}</span>
+                            ${hasAmazonLink ? `<img class="home-feature-amazon-icon" src="${amazonIconUrl}" alt="Amazon">` : ''}
                         </div>
                         <div class="home-feature-body">
                             <div>
@@ -21549,7 +21733,9 @@ const paginationContainers = {
                                style="width: 20px; height: 20px; cursor: pointer;">
                     </div>
                     ${allowDrag ? '<div style="position: absolute; top: 10px; right: 10px; z-index: 10; color: #999; font-size: 18px; cursor: move; padding: 5px;" title="拖动以调整顺序"><i class="fas fa-grip-vertical"></i></div>' : ''}
-                    <div class="product-image" style="background-image: url('${getPrimaryProductImage(product)}')"></div>
+                    <div class="product-image">
+                        <img src="${getPrimaryProductImage(product)}" alt="${product.name || 'product image'}">
+                    </div>
                     <div class="product-info">
                         <h3 class="product-title">${product.name}</h3>
                         <div class="product-price">
