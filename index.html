@@ -1959,6 +1959,14 @@
             z-index: 1000;
         }
 
+        /* 移动端上移，避免被浏览器工具栏 & 底部导航遮挡 */
+        @media (max-width: 768px) {
+            .contact-button {
+                bottom: 110px; /* 预留 Safari 底部工具栏 + 站点底部导航的高度 */
+                right: 20px;
+            }
+        }
+
         .main-button {
             width: 70px;
             height: 70px;
@@ -3712,46 +3720,61 @@
             transform: translateY(-1px);
         }
 
-        /* 响应式设计 */
+        /* 响应式设计：移动端顶部导航两行布局 */
         @media (max-width: 768px) {
             .nav-container {
                 flex-direction: row;
+                flex-wrap: wrap;
                 align-items: center;
-                gap: 10px;
+                gap: 8px;
             }
 
+            /* 第一行：左侧 Logo，右侧登录/注册等按钮 */
             .logo {
+                order: 1;
                 margin-left: 0;
                 min-width: auto;
             }
 
-            .search-bar {
-                flex: 1;
+            .user-actions {
+                order: 2;
+                margin-top: 0;
                 width: auto;
-                margin: 0;
+                justify-content: flex-end;
+                flex: 1 0 auto;
             }
 
-            .nav-links,
-            .nav-links li,
-            .nav-links a {
-                display: none !important;
-                visibility: hidden;
-                pointer-events: none;
+            /* 语言选择器放到这一行最右侧（Login / Register 的右边） */
+            .language-selector {
+                order: 99;
+                margin-left: auto;
+            }
+
+            /* 第二行：导航链接 + 搜索栏 */
+            .nav-links {
+                order: 3;
+                display: flex;
+                flex: 1 0 100%;
+                justify-content: flex-start;
                 margin: 0;
                 padding: 0;
             }
 
-            #main-home-link,
-            #admin-link,
-            #user-center-link,
-            #my-orders-link {
-                display: none !important;
+            .nav-links li {
+                margin-left: 0;
             }
 
-            .user-actions {
-                margin-top: 8px;
-                width: auto;
-                justify-content: flex-end;
+            .nav-links a {
+                padding: 8px 10px;
+                font-size: 13px;
+                min-height: 40px;
+            }
+
+            .search-bar {
+                order: 4;
+                flex: 1 0 100%;
+                width: 100%;
+                margin: 4px 0 0;
             }
 
             /* 底部固定导航栏 */
@@ -4015,15 +4038,16 @@
             }
         }
 
-        /* 移动端导航重排：直接展示菜单 */
+        /* 移动端导航重排：沿用两行方案，但不再单独控制语言下拉位置 */
         @media (max-width: 768px) {
             .nav-container {
-                flex-wrap: nowrap;
+                flex-wrap: wrap;
                 align-items: center;
                 gap: 10px;
                 padding: 10px 15px;
             }
 
+            /* 第一行：左侧 Logo，右侧登录/注册等按钮（包含语言选择器，按原顺序排列） */
             .logo {
                 margin: 0;
                 flex: 0 0 auto;
@@ -4038,27 +4062,9 @@
                 max-width: 100%;
             }
 
-            .menu-toggle {
-                order: 2;
-            }
-
-            .nav-links {
-                display: none !important;
-                width: 100%;
-                padding: 0;
-                margin: 0;
-            }
-
-            .search-bar {
-                order: 3;
-                flex: 1;
-                min-width: 0;
-                margin: 0;
-            }
-
             .user-actions {
-                order: 4;
-                flex: 0 0 auto;
+                order: 2;
+                flex: 1 0 auto;
                 flex-wrap: nowrap;
                 justify-content: flex-end;
                 gap: 8px;
@@ -4068,10 +4074,13 @@
                 margin-left: 0 !important;
             }
 
-            .language-selector {
-                width: auto;
-                margin-left: 0 !important;
-                order: 5;
+            /* 第二行：搜索栏单独一整行 */
+            .search-bar {
+                order: 3;
+                flex: 1 0 100%;
+                width: 100%;
+                min-width: 0;
+                margin: 4px 0 0;
             }
         }
 
@@ -4080,7 +4089,7 @@
             .nav-container {
                 padding: 8px 10px;
                 gap: 6px;
-                flex-wrap: nowrap;
+                flex-wrap: wrap; /* 小屏也允许换行，保证搜索栏能单独一行 */
             }
 
             .logo {
@@ -4103,8 +4112,10 @@
                 min-height: 40px;
             }
 
+            /* 搜索栏在更小屏幕上依旧占据单独一整行 */
             .search-bar {
-                flex: 1;
+                order: 3;
+                flex: 1 0 100%;
                 min-width: 0;
             }
 
