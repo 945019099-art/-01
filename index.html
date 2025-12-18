@@ -245,9 +245,12 @@
         #whatsapp-modal-single-step .window-container {
             width: 100%;
             max-width: 600px;
+            /* 让弹窗自身在视口内滚动，而不是整页滚动 */
+            max-height: 90vh;
             background: white;
             border-radius: 20px;
-            overflow: hidden;
+            overflow-y: auto;
+            overflow-x: hidden;
             box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);
             position: relative;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -2081,6 +2084,11 @@
             /* 原来这里有 max-height: 70vh 和 overflow-y: auto;
                会在内容较高时出现内部滚动条。
                现在改为由外层模态整体滚动，不在内容区域单独滚动。 */
+        }
+        
+        /* 打开模态框时锁定页面滚动（允许模态框自身滚动） */
+        body.modal-open {
+            overflow: hidden;
         }
         
         /* WhatsApp模态框样式 - 参考亚马逊下单步骤样式 */
@@ -23261,6 +23269,9 @@ const paginationContainers = {
             } else {
                 console.error('❌ 未找到模态框:', modalId);
             }
+            
+            // 关闭任意模态框时，解除对页面滚动的锁定
+            document.body.classList.remove('modal-open');
         }
         
         // 显示WhatsApp提示模态框
@@ -23291,6 +23302,8 @@ const paginationContainers = {
             currentProductIdForWhatsApp = null;
 
             if (whatsappModal) {
+                // 打开模态框时锁定页面滚动，防止背景产品页跟随滑动
+                document.body.classList.add('modal-open');
                 // 保存订单号
                 currentOrderIdForWhatsApp = orderId;
                 
@@ -23436,9 +23449,15 @@ const paginationContainers = {
                 }
             });
             
-            // 更新所有图标容器和图标（两步 + 单步）
-            const stepIconContainers = document.querySelectorAll('.step-icon-container');
-            const stepIcons = document.querySelectorAll('.step-icon');
+            // 仅更新“联系渠道相关”的图标（保留 Step 1 的 Amazon 图标）
+            const stepIconContainers = [
+                document.getElementById('step-icon-container'),
+                document.getElementById('single-step-icon-container')
+            ].filter(Boolean);
+            const stepIcons = [
+                document.getElementById('step-icon'),
+                document.getElementById('single-step-icon')
+            ].filter(Boolean);
             if (stepIconContainers.length && stepIcons.length) {
                 stepIconContainers.forEach(container => {
                     container.className = `step-icon-container ${contact.iconBg}`;
