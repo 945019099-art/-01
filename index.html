@@ -563,6 +563,103 @@
             transform: scale(1.2);
         }
 
+        /* 移动端优化：在一屏内完整显示单步弹窗 */
+        @media (max-width: 480px) {
+            /* 整个弹窗容器尽量填满视口，但不超过一屏 */
+            #whatsapp-modal-single-step .window-container {
+                max-height: 100vh;
+                border-radius: 18px;
+            }
+
+            /* 头部区域更紧凑 */
+            #whatsapp-modal-single-step .window-header {
+                padding: 18px 16px 14px;
+            }
+
+            #whatsapp-modal-single-step .window-header h1 {
+                font-size: 1.8rem;
+                margin-bottom: 4px;
+            }
+
+            /* 主体内容区域压缩上下内边距 */
+            #whatsapp-modal-single-step .step-container {
+                padding: 20px 16px 16px;
+            }
+
+            /* 图标稍微缩小，减少高度占用 */
+            #whatsapp-modal-single-step .step-icon-container {
+                width: 72px;
+                height: 72px;
+                margin-bottom: 16px;
+            }
+
+            #whatsapp-modal-single-step .step-icon {
+                font-size: 2.4rem;
+            }
+
+            /* 标题、说明文字缩小一点并减少间距 */
+            #whatsapp-modal-single-step .step-title {
+                font-size: 1.5rem;
+                margin-bottom: 6px;
+            }
+
+            #whatsapp-modal-single-step .step-subtitle {
+                font-size: 0.95rem;
+                margin-bottom: 16px;
+            }
+
+            /* 联系方式切换区整体更紧凑 */
+            #whatsapp-modal-single-step .contact-switcher {
+                margin-bottom: 16px;
+            }
+
+            #whatsapp-modal-single-step .switcher-buttons {
+                max-width: 100%;
+            }
+
+            #whatsapp-modal-single-step .contact-btn {
+                padding: 10px;
+                font-size: 0.9rem;
+            }
+
+            /* 文本复制区域缩小内边距和最小高度 */
+            #whatsapp-modal-single-step .copy-container {
+                padding: 16px 14px;
+                margin-bottom: 18px;
+            }
+
+            #whatsapp-modal-single-step .copy-title {
+                font-size: 1.05rem;
+                margin-bottom: 10px;
+            }
+
+            #whatsapp-modal-single-step .copy-text {
+                padding: 10px;
+                font-size: 0.9rem;
+                min-height: 60px;
+            }
+
+            #whatsapp-modal-single-step .copy-btn {
+                padding: 12px;
+                font-size: 1rem;
+            }
+
+            /* 发送按钮和底部区域高度压缩 */
+            #whatsapp-modal-single-step .send-btn {
+                padding: 14px;
+                font-size: 1.05rem;
+            }
+
+            #whatsapp-modal-single-step .progress-indicator {
+                padding: 8px 16px 10px;
+            }
+
+            #whatsapp-modal-single-step .footer-note {
+                padding: 10px 12px 14px;
+                font-size: 0.85rem;
+            }
+        }
+
         @keyframes window-appear {
             from {
                 opacity: 0;
@@ -2546,7 +2643,8 @@
         @media (max-width: 768px) {
             .modal {
                 padding: 5px 0;
-                align-items: flex-start;
+                /* 移动端同样保持垂直居中显示登录/注册等弹窗 */
+                align-items: center;
             }
             
             .modal-content {
@@ -13821,12 +13919,14 @@ const paginationContainers = {
 
             bindFastTap(loginLink, function () {
                 loginModal.style.display = 'flex';
+                document.body.classList.add('modal-open');
             });
 
             // 已移除数据源选择功能，强制使用云端模式
 
             bindFastTap(registerLink, function () {
                 registerModal.style.display = 'flex';
+                document.body.classList.add('modal-open');
             });
 
             // 登录/注册选择模态框按钮事件
@@ -13837,14 +13937,20 @@ const paginationContainers = {
             if (gotoLoginBtn) {
                 bindFastTap(gotoLoginBtn, function () {
                     if (authChoiceModal) authChoiceModal.style.display = 'none';
-                    if (loginModal) loginModal.style.display = 'flex';
+                    if (loginModal) {
+                        loginModal.style.display = 'flex';
+                        document.body.classList.add('modal-open');
+                    }
                 });
             }
 
             if (gotoRegisterBtn) {
                 bindFastTap(gotoRegisterBtn, function () {
                     if (authChoiceModal) authChoiceModal.style.display = 'none';
-                    if (registerModal) registerModal.style.display = 'flex';
+                    if (registerModal) {
+                        registerModal.style.display = 'flex';
+                        document.body.classList.add('modal-open');
+                    }
                 });
             }
 
@@ -13854,6 +13960,7 @@ const paginationContainers = {
                     modals.forEach(modal => modal.style.display = 'none');
                     // 同时关闭登录/注册选择模态框
                     if (authChoiceModal) authChoiceModal.style.display = 'none';
+                    document.body.classList.remove('modal-open');
                 });
             });
 
@@ -17706,6 +17813,7 @@ const paginationContainers = {
 
             // 显示模态框
             signupModal.style.display = 'flex';
+            document.body.classList.add('modal-open');
             console.log('✅ 报名模态框已打开');
 
             if (pendingSignupFormData) {
@@ -23410,7 +23518,7 @@ const paginationContainers = {
                 message: "Please provide prepayment for order XXX"
             },
             whatsapp: {
-                link: "https://wa.me/17077902826?text=",
+                link: "https://wa.me/12132756555?text=",
                 iconClass: "fab fa-whatsapp",
                 btnText: "Step 2: Send via WhatsApp",
                 iconBg: "whatsapp-icon-container",
@@ -23648,6 +23756,7 @@ const paginationContainers = {
                 modal.style.display = 'none';
             });
             console.log('✅ 已关闭所有模态框');
+            document.body.classList.remove('modal-open');
         }
         // 分类名称映射
         function getCategoryName(category) {
@@ -23983,7 +24092,7 @@ const paginationContainers = {
 
             const orderIdText = String(order.id || orderId);
             const message = `Please confirm my Beefreebies order #${orderIdText}`;
-            const url = `https://wa.me/+17077902826?text=${encodeURIComponent(message)}`;
+            const url = `https://wa.me/12132756555?text=${encodeURIComponent(message)}`;
             window.open(url, '_blank');
         }
 
