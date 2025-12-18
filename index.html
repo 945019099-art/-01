@@ -241,6 +241,336 @@
             --transition-slow: 500ms ease;
         }
 
+        /* ===== Messenger/WhatsApp 单步弹窗专用样式（参考“非亚马逊下单步骤.html”，作用于 whatsapp-modal-single-step 内部） ===== */
+        #whatsapp-modal-single-step .window-container {
+            width: 100%;
+            max-width: 600px;
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);
+            position: relative;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            animation: window-appear 0.5s ease-out;
+            margin: 0 auto;
+        }
+
+        #whatsapp-modal-single-step .window-container:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+        }
+
+        #whatsapp-modal-single-step .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 36px;
+            height: 36px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            z-index: 100;
+            transition: all 0.3s ease;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(5px);
+        }
+
+        #whatsapp-modal-single-step .close-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: rotate(90deg) scale(1.1);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+
+        #whatsapp-modal-single-step .close-btn:active {
+            transform: rotate(90deg) scale(0.95);
+        }
+
+        #whatsapp-modal-single-step .window-header {
+            background: linear-gradient(135deg, #006AFF 0%, #0084FF 100%);
+            color: white;
+            padding: 30px 40px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #whatsapp-modal-single-step .window-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiB2aWV3Qm94PSIwIDAgMTAwIDEwMCIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48cGF0dGVybiBpZD0icGF0dGVybiIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgd2lkdGg9IjUwIiBoZWlnaHQ9IjUwIiBwYXR0ZXJuVHJhbnNmb3JtPSJyb3RhdGUoNDUpIj48cmVjdCB3aWR0aD0iMiIgaGVpZ2h0PSI1MCIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjA3KSIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNwYXR0ZXJuKSIvPjwvc3ZnPg==');
+        }
+
+        #whatsapp-modal-single-step .window-header h1 {
+            font-size: 2.4rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            margin-bottom: 10px;
+            position: relative;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        #whatsapp-modal-single-step .step-container {
+            padding: 40px 30px 30px;
+            background: #fafbfd;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #whatsapp-modal-single-step .step-icon-container {
+            width: 100px;
+            height: 100px;
+            border-radius: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 30px rgba(0, 106, 255, 0.2);
+            background: linear-gradient(135deg, #006AFF 0%, #0084FF 100%);
+            transition: all 0.3s ease;
+        }
+
+        #whatsapp-modal-single-step .step-icon {
+            font-size: 3.5rem;
+            color: white;
+        }
+
+        #whatsapp-modal-single-step .step-title {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #2d3748;
+            margin-bottom: 10px;
+            text-align: center;
+            letter-spacing: -0.3px;
+        }
+
+        #whatsapp-modal-single-step .step-subtitle {
+            font-size: 1.1rem;
+            color: #718096;
+            font-weight: 500;
+            line-height: 1.5;
+            text-align: center;
+            max-width: 500px;
+            margin: 0 auto 30px;
+        }
+
+        #whatsapp-modal-single-step .contact-switcher {
+            width: 100%;
+            margin-bottom: 25px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        #whatsapp-modal-single-step .switcher-label {
+            font-size: 1rem;
+            color: #64748b;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        #whatsapp-modal-single-step .switcher-buttons {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+            max-width: 320px;
+        }
+
+        #whatsapp-modal-single-step .contact-btn {
+            flex: 1;
+            padding: 14px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: #64748b;
+        }
+
+        #whatsapp-modal-single-step .contact-btn:hover {
+            border-color: #cbd5e1;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        #whatsapp-modal-single-step .contact-btn.active {
+            border-color: transparent;
+            color: white;
+        }
+
+        #whatsapp-modal-single-step .contact-btn.messenger-btn.active {
+            background: linear-gradient(135deg, #006AFF 0%, #0084FF 100%);
+            box-shadow: 0 5px 15px rgba(0, 106, 255, 0.2);
+        }
+
+        #whatsapp-modal-single-step .contact-btn.whatsapp-btn.active {
+            background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+            box-shadow: 0 5px 15px rgba(37, 211, 102, 0.2);
+        }
+
+        #whatsapp-modal-single-step .contact-btn i {
+            font-size: 1.2rem;
+        }
+
+        #whatsapp-modal-single-step .copy-container {
+            width: 100%;
+            margin-bottom: 30px;
+            padding: 25px;
+            border-radius: 16px;
+            background: white;
+            border: 1px solid #e9ecef;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        #whatsapp-modal-single-step .copy-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        #whatsapp-modal-single-step .copy-text {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 10px;
+            padding: 16px;
+            font-size: 1rem;
+            color: #495057;
+            margin-bottom: 20px;
+            word-break: break-all;
+            line-height: 1.5;
+            font-family: 'Courier New', monospace;
+            min-height: 80px;
+        }
+
+        #whatsapp-modal-single-step .copy-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        #whatsapp-modal-single-step .copy-btn:hover {
+            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        #whatsapp-modal-single-step .send-action {
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        #whatsapp-modal-single-step .send-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            width: 100%;
+            padding: 18px;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            box-shadow: 0 6px 20px rgba(0, 106, 255, 0.25);
+        }
+
+        #whatsapp-modal-single-step .send-btn.messenger-btn {
+            background: linear-gradient(135deg, #006AFF 0%, #0084FF 100%);
+        }
+
+        #whatsapp-modal-single-step .send-btn.whatsapp-btn {
+            background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+            box-shadow: 0 6px 20px rgba(37, 211, 102, 0.25);
+        }
+
+        #whatsapp-modal-single-step .send-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        #whatsapp-modal-single-step .send-btn i {
+            font-size: 1.5rem;
+        }
+
+        #whatsapp-modal-single-step .footer-note {
+            text-align: center;
+            padding: 20px;
+            font-size: 0.95rem;
+            color: #a0aec0;
+            background: white;
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+            font-weight: 500;
+        }
+
+        #whatsapp-modal-single-step .progress-indicator {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 30px 20px;
+            background: #fafbfd;
+        }
+
+        #whatsapp-modal-single-step .progress-dots {
+            display: flex;
+            gap: 10px;
+        }
+
+        #whatsapp-modal-single-step .progress-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #cbd5e0;
+            transition: all 0.3s ease;
+        }
+
+        #whatsapp-modal-single-step .progress-dot.active {
+            background: #006AFF;
+            transform: scale(1.2);
+        }
+
+        @keyframes window-appear {
+            from {
+                opacity: 0;
+                transform: translateY(20px) scale(0.98);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
         /* 订单操作按钮样式 */
         .order-action-buttons {
             display: flex;
@@ -490,7 +820,7 @@
             opacity: 0.8;
         }
 
-        /* 移动端首页顶部 FQA 快捷按钮（默认隐藏，仅在小屏显示，位于导航栏中间） */
+        /* 移动端首页顶部 FAQ 快捷按钮（默认隐藏，仅在小屏显示，位于导航栏中间） */
         .mobile-faq-cta {
             display: none;
             margin-left: 12px;
@@ -528,7 +858,7 @@
             .nav-links a#faq-link {
                 display: none;
             }
-            /* 移动端顶部导航重新布局：左侧 Logo，右侧依次为 FQA 与 登录/注册，三块保持同一行 */
+            /* 移动端顶部导航重新布局：左侧 Logo，右侧依次为 FAQ 与 登录/注册，三块保持同一行 */
             .nav-container {
                 display: grid;
                 grid-template-columns: auto auto 1fr auto;
@@ -547,7 +877,7 @@
             .user-actions {
                 order: 3;
                 justify-content: flex-end;
-                align-self: center;       /* 与 Logo / FQA 垂直居中在同一行 */
+                align-self: center;       /* 与 Logo / FAQ 垂直居中在同一行 */
                 white-space: nowrap;      /* 防止登录/注册按钮换行 */
             }
             .search-bar {
@@ -555,7 +885,7 @@
                 grid-column: 1 / 5;       /* 占据下一行整行 */
                 width: 100%;
             }
-            /* 为了减小宽度，窄屏下隐藏 FQA 的副标题 */
+            /* 为了减小宽度，窄屏下隐藏 FAQ 的副标题 */
             .mobile-faq-cta span.mobile-faq-text-sub {
                 display: none;
             }
@@ -1672,6 +2002,8 @@
             justify-content: center;
             align-items: center;
             animation: fadeIn 0.25s ease;
+            overflow-y: auto;
+            padding: 20px 0;
         }
 
         @keyframes fadeIn {
@@ -1687,11 +2019,15 @@
             background: white;
             width: 90%;
             max-width: 500px;
+            max-height: 90vh;
             border-radius: var(--radius-lg);
-            overflow: hidden;
+            overflow-y: auto;
+            overflow-x: hidden;
             box-shadow: var(--shadow-xl);
             animation: slideUp 0.25s ease;
             transform-origin: center center;
+            display: flex;
+            flex-direction: column;
         }
 
         @keyframes slideUp {
@@ -1747,24 +2083,620 @@
                现在改为由外层模态整体滚动，不在内容区域单独滚动。 */
         }
         
-        /* WhatsApp模态框样式 */
+        /* WhatsApp模态框样式 - 参考亚马逊下单步骤样式 */
         .whatsapp-modal-content {
-            max-width: 600px;
-            text-align: center;
-            border-radius: 12px;
-            overflow: hidden;
+            max-width: 900px;
+            max-height: 90vh;
+            border-radius: 20px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);
+            position: relative;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            animation: window-appear 0.5s ease-out;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        @keyframes window-appear {
+            from {
+                opacity: 0;
+                transform: translateY(20px) scale(0.98);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        
+        .whatsapp-modal-content:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
         }
         
         .whatsapp-modal-content.whatsapp-modal-two-steps {
-            max-width: 750px;
+            max-width: 900px;
         }
         
         .whatsapp-modal-content.whatsapp-modal-single-step {
-            max-width: 520px;
+            max-width: 600px;
         }
         
         .whatsapp-modal-body {
-            padding: 40px 30px;
+            padding: 30px;
+            background: #fafbfd;
+        }
+        
+        /* 步骤容器样式 */
+        .steps-container {
+            display: flex;
+            gap: 20px;
+            padding: 0;
+        }
+        
+        .step {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 35px 25px;
+            border-radius: 18px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            position: relative;
+            background: white;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+            border: 1px solid rgba(0, 0, 0, 0.04);
+            min-height: 480px;
+        }
+        
+        .step:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.12);
+        }
+        
+        .step-number {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.3rem;
+            margin-bottom: 25px;
+            box-shadow: 0 6px 15px rgba(102, 126, 234, 0.3);
+            position: relative;
+            z-index: 1;
+            transition: transform 0.3s ease;
+        }
+        
+        .step:hover .step-number {
+            transform: scale(1.1);
+        }
+        
+        .step-icon-container {
+            width: 75px;
+            height: 75px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 25px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .step:hover .step-icon-container {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+        }
+        
+        .amazon-icon-container {
+            background: linear-gradient(135deg, #FF9900 0%, #FFAC33 100%);
+        }
+        
+        .messenger-icon-container {
+            background: linear-gradient(135deg, #006AFF 0%, #0084FF 100%);
+        }
+        
+        .whatsapp-icon-container {
+            background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+        }
+        
+        .step-icon {
+            font-size: 2.8rem;
+            color: white;
+        }
+        
+        .step-text {
+            text-align: center;
+            width: 100%;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .step-title {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: #2d3748;
+            margin-bottom: 10px;
+            letter-spacing: -0.2px;
+        }
+        
+        .step-subtitle {
+            font-size: 1.05rem;
+            color: #718096;
+            font-weight: 500;
+            line-height: 1.5;
+            margin-bottom: 25px;
+            min-height: 50px;
+        }
+        
+        /* 复制文本容器样式 */
+        .copy-container {
+            width: 100%;
+            margin-bottom: 25px;
+            padding: 20px;
+            border-radius: 14px;
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+        }
+        
+        .copy-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .copy-text {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 10px;
+            padding: 14px;
+            font-size: 0.95rem;
+            color: #495057;
+            margin-bottom: 15px;
+            word-break: break-all;
+            line-height: 1.5;
+            font-family: 'Courier New', monospace;
+            position: relative;
+            min-height: 70px;
+        }
+        
+        .copy-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .copy-btn:hover {
+            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        /* 切换器样式 */
+        .contact-switcher {
+            width: 100%;
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .switcher-label {
+            font-size: 0.9rem;
+            color: #64748b;
+            font-weight: 600;
+        }
+        
+        .switcher-buttons {
+            display: flex;
+            gap: 8px;
+            width: 100%;
+            max-width: 280px;
+        }
+        
+        .contact-btn {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: #64748b;
+        }
+        
+        .contact-btn:hover {
+            border-color: #cbd5e1;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .contact-btn.active {
+            border-color: transparent;
+            color: white;
+        }
+        
+        .contact-btn.messenger-btn.active {
+            background: linear-gradient(135deg, #006AFF 0%, #0084FF 100%);
+            box-shadow: 0 5px 15px rgba(0, 106, 255, 0.2);
+        }
+        
+        .contact-btn.whatsapp-btn.active {
+            background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+            box-shadow: 0 5px 15px rgba(37, 211, 102, 0.2);
+        }
+        
+        .contact-btn i {
+            font-size: 1.1rem;
+        }
+        
+        /* 按钮区域 */
+        .step-action {
+            width: 100%;
+            margin-top: auto;
+        }
+        
+        .action-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            padding: 16px;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+        
+        .action-btn.amazon-btn {
+            background: linear-gradient(135deg, #FF9900 0%, #FFAC33 100%);
+            box-shadow: 0 6px 20px rgba(255, 153, 0, 0.25);
+        }
+        
+        .action-btn.messenger-btn {
+            background: linear-gradient(135deg, #006AFF 0%, #0084FF 100%);
+            box-shadow: 0 6px 20px rgba(0, 106, 255, 0.25);
+        }
+        
+        .action-btn.whatsapp-btn {
+            background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+            box-shadow: 0 6px 20px rgba(37, 211, 102, 0.25);
+        }
+        
+        .action-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+        
+        .action-btn:active {
+            transform: translateY(0);
+        }
+        
+        .action-btn i {
+            font-size: 1.4rem;
+        }
+        
+        .progress-indicator {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 30px 20px;
+            background: #fafbfd;
+        }
+        
+        .progress-dots {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .progress-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #cbd5e0;
+            transition: all 0.3s ease;
+        }
+        
+        .progress-dot.active {
+            background: #667eea;
+            transform: scale(1.2);
+        }
+        
+        .footer-note {
+            text-align: center;
+            padding: 18px;
+            font-size: 0.9rem;
+            color: #a0aec0;
+            background: white;
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+            font-weight: 500;
+        }
+        
+        /* 成功提示 */
+        .copy-success {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #10b981;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 1000;
+            animation: slide-in 0.3s ease-out;
+            display: none;
+        }
+        
+        @keyframes slide-in {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-8px);
+            }
+        }
+        
+        .step-icon-container {
+            animation: float 4s ease-in-out infinite;
+        }
+        
+        .step:nth-child(1) .step-icon-container {
+            animation-delay: 0.2s;
+        }
+        
+        .step:nth-child(2) .step-icon-container {
+            animation-delay: 0.4s;
+        }
+        
+        @keyframes pulse {
+            0%, 100% {
+                box-shadow: 0 6px 20px rgba(255, 153, 0, 0.25);
+            }
+            50% {
+                box-shadow: 0 6px 20px rgba(255, 153, 0, 0.4);
+            }
+        }
+        
+        .amazon-btn {
+            animation: pulse 3s ease-in-out infinite;
+        }
+        
+        @keyframes pulse-blue {
+            0%, 100% {
+                box-shadow: 0 6px 20px rgba(0, 106, 255, 0.25);
+            }
+            50% {
+                box-shadow: 0 6px 20px rgba(0, 106, 255, 0.4);
+            }
+        }
+        
+        .messenger-btn {
+            animation: pulse-blue 3s ease-in-out infinite;
+        }
+        
+        @keyframes pulse-green {
+            0%, 100% {
+                box-shadow: 0 6px 20px rgba(37, 211, 102, 0.25);
+            }
+            50% {
+                box-shadow: 0 6px 20px rgba(37, 211, 102, 0.4);
+            }
+        }
+        
+        .whatsapp-btn {
+            animation: pulse-green 3s ease-in-out infinite;
+        }
+        
+        @media (max-width: 768px) {
+            .modal {
+                padding: 5px 0;
+                align-items: flex-start;
+            }
+            
+            .modal-content {
+                width: 98%;
+                max-height: 98vh;
+                margin: 5px auto;
+            }
+            
+            .whatsapp-modal-content {
+                max-width: 98%;
+                max-height: 98vh;
+            }
+            
+            /* 移动端标题区域优化 */
+            .whatsapp-modal-content .modal-header {
+                padding: 15px 20px 18px !important;
+            }
+            
+            .whatsapp-modal-content .modal-header h1 {
+                font-size: 1.6rem !important;
+                margin-bottom: 4px !important;
+            }
+            
+            .whatsapp-modal-content .modal-header p {
+                font-size: 0.85rem !important;
+            }
+            
+            .whatsapp-modal-body {
+                padding: 15px 12px !important;
+            }
+            
+            .steps-container {
+                flex-direction: column;
+                gap: 12px;
+            }
+            
+            .step {
+                padding: 18px 15px;
+                min-height: auto;
+                border-radius: 12px;
+            }
+            
+            .step-number {
+                width: 36px;
+                height: 36px;
+                font-size: 1rem;
+                margin-bottom: 12px;
+            }
+            
+            .step-title {
+                font-size: 1.15rem;
+                margin-bottom: 6px;
+            }
+            
+            .step-subtitle {
+                font-size: 0.85rem;
+                margin-bottom: 15px;
+                min-height: auto;
+                line-height: 1.4;
+            }
+            
+            .step-icon-container {
+                width: 55px;
+                height: 55px;
+                margin-bottom: 12px;
+                border-radius: 14px;
+            }
+            
+            .step-icon {
+                font-size: 1.8rem;
+            }
+            
+            .action-btn {
+                padding: 10px 12px;
+                font-size: 0.9rem;
+            }
+            
+            .copy-container {
+                padding: 12px;
+                margin-bottom: 12px;
+                border-radius: 10px;
+            }
+            
+            .copy-title {
+                font-size: 0.95rem;
+                margin-bottom: 10px;
+            }
+            
+            .copy-text {
+                padding: 10px;
+                font-size: 0.8rem;
+                margin-bottom: 10px;
+                min-height: 50px;
+                border-radius: 8px;
+            }
+            
+            .copy-btn {
+                padding: 10px;
+                font-size: 0.85rem;
+            }
+            
+            .switcher-buttons {
+                max-width: 100%;
+                gap: 6px;
+            }
+            
+            .switcher-label {
+                font-size: 0.8rem;
+                margin-bottom: 6px;
+            }
+            
+            .contact-switcher {
+                margin-bottom: 12px;
+            }
+            
+            .contact-btn {
+                padding: 8px 10px;
+                font-size: 0.8rem;
+                border-radius: 8px;
+            }
+            
+            .contact-btn i {
+                font-size: 0.95rem;
+            }
+            
+            /* 进度指示器和底部文字 */
+            .progress-indicator {
+                margin-top: 12px;
+                margin-bottom: 8px;
+            }
+            
+            .footer-note {
+                font-size: 0.75rem;
+                margin-top: 8px;
+                padding: 12px !important;
+            }
+            
+            /* 关闭按钮优化 - 确保足够大以便点击 */
+            .whatsapp-modal-content .close-btn,
+            .whatsapp-modal-content .close-modal {
+                width: 36px !important;
+                height: 36px !important;
+                min-width: 36px !important;
+                min-height: 36px !important;
+                top: 10px !important;
+                right: 10px !important;
+                font-size: 1rem !important;
+            }
+            
+            /* 确保步骤卡片在移动端不会太高 */
+            .step {
+                max-height: none;
+            }
+            
+            /* 优化action按钮图标 */
+            .action-btn i {
+                font-size: 1.1rem !important;
+            }
         }
         
         .whatsapp-message {
@@ -2997,6 +3929,48 @@
         .admin-table tbody tr:hover {
             background: var(--gray-100);
             transform: scale(1.01);
+        }
+
+        /* 可点击复制的单元格样式 */
+        .admin-table tbody td.copyable-cell {
+            cursor: pointer;
+            position: relative;
+            transition: all var(--transition-fast);
+        }
+
+        .admin-table tbody td.copyable-cell:hover {
+            background-color: rgba(67, 97, 238, 0.1);
+            color: var(--primary);
+        }
+
+        .admin-table tbody td.copyable-cell:active {
+            background-color: rgba(67, 97, 238, 0.2);
+            transform: scale(0.98);
+        }
+
+        /* 复制提示动画 */
+        .copy-tooltip {
+            position: absolute;
+            background: var(--dark);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            white-space: nowrap;
+            z-index: 1000;
+            pointer-events: none;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: all var(--transition-fast);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) translateY(-10px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .copy-tooltip.show {
+            opacity: 1;
+            transform: translate(-50%, -50%) translateY(-5px);
         }
 
         .users-table-container,
@@ -4915,19 +5889,23 @@
             /* WhatsApp模态框移动端优化 */
             .whatsapp-modal-content {
                 max-width: 95vw !important;
+                max-height: 95vh !important;
                 margin: 10px auto;
             }
 
             .whatsapp-modal-content.whatsapp-modal-two-steps {
                 max-width: 95vw !important;
+                max-height: 95vh !important;
             }
 
-            .whatsapp-modal-content.whatsapp-modal-single-step {
+        .whatsapp-modal-content.whatsapp-modal-single-step {
                 max-width: 95vw !important;
+                max-height: 95vh !important;
             }
 
             .whatsapp-modal-body {
                 padding: 30px 20px !important;
+                overflow-y: auto;
             }
 
             .whatsapp-modal-two-steps .modal-body > div[style*="display: flex"] {
@@ -4982,15 +5960,18 @@
                 font-size: 12px !important;
             }
 
-            .whatsapp-modal-single-step .modal-body h3 {
-                font-size: 18px !important;
+            /* 单步流程弹窗移动端优化（配合参考样式窗口） */
+            .whatsapp-modal-single-step .window-container {
+                width: 100%;
+                max-width: 600px;
+                border-radius: 20px;
+                overflow: hidden;
             }
 
-            .whatsapp-modal-single-step .modal-body button {
-                padding: 12px 30px !important;
-                font-size: 14px !important;
+            .whatsapp-modal-single-step .step-container {
+                padding: 30px 20px 25px;
             }
-
+            
             /* 触摸优化 */
             .btn,
             .btn-primary,
@@ -5464,10 +6445,10 @@
                 <button id="search-btn"><i class="fas fa-search"></i></button>
             </div>
 
-            <!-- 移动端导航栏行内 FQA 按钮：放在顶部中间，仅小屏显示 -->
-            <div class="mobile-faq-cta" onclick="window.open('fqa.html', '_blank')">
+            <!-- 移动端导航栏行内 FAQ 按钮：放在顶部中间，仅小屏显示 -->
+            <div class="mobile-faq-cta" onclick="window.open('faq.html', '_blank')">
                 <i class="fas fa-question-circle"></i>
-                <span>FQA</span>
+                <span>FAQ</span>
                 <span class="mobile-faq-text-sub">Common Questions</span>
             </div>
 
@@ -6648,30 +7629,31 @@
     <!-- WhatsApp提示模态框 - 有跳转链接的产品（两步流程） -->
     <div class="modal" id="whatsapp-modal">
         <!-- 两步流程样式（有跳转链接） -->
-        <div class="modal-content whatsapp-modal-content whatsapp-modal-two-steps" id="whatsapp-modal-two-steps" style="display: none; max-width: 900px; border-radius: 20px; overflow: hidden; box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);">
-            <div class="modal-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 24px 40px 30px; position: relative; overflow: hidden;">
-                <button class="close-modal" onclick="closeModal('whatsapp-modal')" style="position: absolute; top: 20px; right: 20px; width: 36px; height: 36px; background: rgba(255, 255, 255, 0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.2rem; cursor: pointer; z-index: 100; transition: all 0.3s ease; border: 2px solid rgba(255, 255, 255, 0.3); backdrop-filter: blur(5px);" onmouseover="this.style.background='rgba(255,255,255,0.3)'; this.style.transform='rotate(90deg) scale(1.1)';" onmouseout="this.style.background='rgba(255,255,255,0.2)'; this.style.transform='rotate(0deg) scale(1)';">
-                    <i class="fas fa-times"></i>
-                </button>
-                <div style="text-align: center; position: relative;">
-                    <h3 style="color: white; font-size: 2.4rem; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 8px; text-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);">Get Your Product!</h3>
-                    <p style="color: white; font-size: 1.1rem; opacity: 0.9; font-weight: 300; max-width: 500px; margin: 0 auto;">Two simple steps to get your product and cash back</p>
-                </div>
+        <div class="modal-content whatsapp-modal-content whatsapp-modal-two-steps" id="whatsapp-modal-two-steps" style="display: none;">
+            <div class="close-btn" onclick="closeModal('whatsapp-modal')" style="position: absolute; top: 20px; right: 20px; width: 36px; height: 36px; background: rgba(255, 255, 255, 0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.2rem; cursor: pointer; z-index: 100; transition: all 0.3s ease; border: 2px solid rgba(255, 255, 255, 0.3); backdrop-filter: blur(5px);">
+                <i class="fas fa-times"></i>
             </div>
-            <div class="modal-body whatsapp-modal-body" style="padding: 30px; background: #fafbfd;">
-                <div style="display: flex; gap: 20px;">
+            
+            <div class="modal-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 24px 40px 30px; text-align: center; position: relative; overflow: hidden;">
+                <h1 style="font-size: 2.4rem; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 8px; position: relative; text-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);">Get Your Product!</h1>
+                <p style="font-size: 1.1rem; opacity: 0.9; font-weight: 300; max-width: 500px; margin: 0 auto; position: relative;">Two simple steps to get your product and cash back</p>
+            </div>
+            
+            <div class="modal-body whatsapp-modal-body">
+                <div class="steps-container">
                     <!-- Step 1: Place Your Order -->
-                    <a id="whatsapp-amazon-link" href="#" target="_blank" rel="noopener" style="flex: 1; display: flex; flex-direction: column; align-items: center; padding: 35px 25px; border-radius: 18px; background: white; box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08); border: 1px solid rgba(0, 0, 0, 0.04); min-height: 480px; text-decoration: none; color: inherit; transition: all 0.3s ease; cursor: pointer;" onmouseover="this.style.transform='translateY(-8px)'; this.style.boxShadow='0 15px 35px rgba(0, 0, 0, 0.12)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 5px 20px rgba(0, 0, 0, 0.08)';">
-                        <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.3rem; margin-bottom: 25px; box-shadow: 0 6px 15px rgba(102, 126, 234, 0.3);">1</div>
-                        <div style="width: 75px; height: 75px; border-radius: 20px; display: flex; align-items: center; justify-content: center; margin-bottom: 25px; box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1); background: linear-gradient(135deg, #FF9900 0%, #FFAC33 100%);">
-                            <i class="fab fa-amazon" style="font-size: 2.8rem; color: white;"></i>
+                    <a id="whatsapp-amazon-link" href="#" target="_blank" rel="noopener" class="step">
+                        <div class="step-number">1</div>
+                        <div class="step-icon-container amazon-icon-container">
+                            <i class="step-icon fab fa-amazon"></i>
                         </div>
-                        <div style="text-align: center; width: 100%; flex-grow: 1; display: flex; flex-direction: column;">
-                            <div style="font-size: 1.6rem; font-weight: 800; color: #2d3748; margin-bottom: 10px; letter-spacing: -0.2px;">Place Your Order</div>
-                            <div style="font-size: 1.05rem; color: #718096; font-weight: 500; line-height: 1.5; margin-bottom: 25px; min-height: 50px;">Order the product on Amazon</div>
-                            <div style="width: 100%; margin-top: auto;">
-                                <div style="display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; padding: 16px; background: linear-gradient(135deg, #FF9900 0%, #FFAC33 100%); color: white; border-radius: 12px; font-weight: 700; font-size: 1.1rem; box-shadow: 0 6px 20px rgba(255, 153, 0, 0.25);">
-                                    <i class="fab fa-amazon" style="font-size: 1.4rem;"></i>
+                        <div class="step-text">
+                            <div class="step-title">Place Your Order</div>
+                            <div class="step-subtitle">Order the product on Amazon</div>
+                            
+                            <div class="step-action">
+                                <div class="action-btn amazon-btn">
+                                    <i class="fab fa-amazon"></i>
                                     Order on Amazon
                                 </div>
                             </div>
@@ -6679,30 +7661,45 @@
                     </a>
                     
                     <!-- Step 2: Get Prepaid -->
-                    <div style="flex: 1; display: flex; flex-direction: column; align-items: center; padding: 35px 25px; border-radius: 18px; background: white; box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08); border: 1px solid rgba(0, 0, 0, 0.04); min-height: 480px; transition: all 0.3s ease; cursor: pointer;" onmouseover="this.style.transform='translateY(-8px)'; this.style.boxShadow='0 15px 35px rgba(0, 0, 0, 0.12)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 5px 20px rgba(0, 0, 0, 0.08)';">
-                        <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.3rem; margin-bottom: 25px; box-shadow: 0 6px 15px rgba(102, 126, 234, 0.3);">2</div>
-                        <div style="width: 75px; height: 75px; border-radius: 20px; display: flex; align-items: center; justify-content: center; margin-bottom: 25px; box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1); background: linear-gradient(135deg, #006AFF 0%, #0084FF 100%);">
-                            <i class="fab fa-facebook-messenger" style="font-size: 2.8rem; color: white;"></i>
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <div class="step-icon-container messenger-icon-container" id="step-icon-container">
+                            <i class="step-icon fab fa-facebook-messenger" id="step-icon"></i>
                         </div>
-                        <div style="text-align: center; width: 100%; flex-grow: 1; display: flex; flex-direction: column;">
-                            <div style="font-size: 1.6rem; font-weight: 800; color: #2d3748; margin-bottom: 10px; letter-spacing: -0.2px;">Get Prepaid</div>
-                            <div style="font-size: 1.05rem; color: #718096; font-weight: 500; line-height: 1.5; margin-bottom: 25px; min-height: 50px;">Get instant prepayment via Messenger</div>
+                        <div class="step-text">
+                            <div class="step-title">Get Prepaid</div>
+                            <div class="step-subtitle">👉 Message us now to get your cash back</div>
                             
-                            <!-- Copy Message Container -->
-                            <div style="width: 100%; margin-bottom: 25px; padding: 20px; border-radius: 14px; background: #f8f9fa; border: 1px solid #e9ecef;">
-                                <div style="font-size: 1.1rem; font-weight: 600; color: #2d3748; margin-bottom: 15px; text-align: center;">Copy Message</div>
-                                <div id="messenger-prepay-text" style="background: white; border: 1px solid #dee2e6; border-radius: 10px; padding: 14px; font-size: 0.95rem; color: #495057; margin-bottom: 15px; word-break: break-all; line-height: 1.5; font-family: 'Courier New', monospace; min-height: 70px; border-style: dashed;">
+                            <!-- 切换器 -->
+                            <div class="contact-switcher">
+                                <div class="switcher-label">Choose contact method:</div>
+                                <div class="switcher-buttons">
+                                    <button class="contact-btn messenger-btn active" data-option="messenger" id="messenger-switch-btn">
+                                        <i class="fab fa-facebook-messenger"></i>
+                                        Messenger
+                                    </button>
+                                    <button class="contact-btn whatsapp-btn" data-option="whatsapp" id="whatsapp-switch-btn">
+                                        <i class="fab fa-whatsapp"></i>
+                                        WhatsApp
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- 复制消息部分 -->
+                            <div class="copy-container">
+                                <div class="copy-title">Copy Message</div>
+                                <div class="copy-text" id="messenger-prepay-text">
                                     Please provide prepayment for order XXX
                                 </div>
-                                <button type="button" onclick="copyMessengerPrepayText()" style="width: 100%; padding: 12px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 10px; font-weight: 600; font-size: 1rem; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 8px;" onmouseover="this.style.background='linear-gradient(135deg, #764ba2 0%, #667eea 100%)'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 20px rgba(102, 126, 234, 0.3)';" onmouseout="this.style.background='linear-gradient(135deg, #667eea 0%, #764ba2 100%)'; this.style.transform='translateY(0)'; this.style.boxShadow='none';">
+                                <button class="copy-btn" id="copy-message-btn">
                                     <i class="fas fa-copy"></i> Step 1: Copy Message
                                 </button>
                             </div>
                             
-                            <!-- Messenger Button -->
-                            <div style="width: 100%; margin-top: auto;">
-                                <a href="https://m.me/beefreebies" target="_blank" rel="noopener" onclick="openMessengerPrepay(); return false;" style="display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; padding: 16px; background: linear-gradient(135deg, #006AFF 0%, #0084FF 100%); color: white; border-radius: 12px; font-weight: 700; font-size: 1.1rem; text-decoration: none; box-shadow: 0 6px 20px rgba(0, 106, 255, 0.25); transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 10px 25px rgba(0, 0, 0, 0.2)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 6px 20px rgba(0, 106, 255, 0.25)';">
-                                    <i class="fab fa-facebook-messenger" style="font-size: 1.4rem;"></i>
+                            <!-- 发送按钮部分 -->
+                            <div class="step-action">
+                                <a href="https://m.me/beefreebies" target="_blank" class="action-btn messenger-btn" id="send-message-btn" onclick="openMessengerPrepay(); return false;">
+                                    <i class="fab fa-facebook-messenger"></i>
                                     Step 2: Send via Messenger
                                 </a>
                             </div>
@@ -6710,74 +7707,89 @@
                     </div>
                 </div>
                 
-                <!-- Progress Indicator -->
-                <div style="display: flex; align-items: center; justify-content: center; padding: 0 30px 20px; margin-top: 0;">
-                    <div style="display: flex; gap: 10px;">
-                        <div style="width: 8px; height: 8px; border-radius: 50%; background: #667eea; transform: scale(1.2);"></div>
-                        <div style="width: 8px; height: 8px; border-radius: 50%; background: #667eea; transform: scale(1.2);"></div>
-                        <div style="width: 8px; height: 8px; border-radius: 50%; background: #cbd5e0;"></div>
+                <div class="progress-indicator">
+                    <div class="progress-dots">
+                        <div class="progress-dot active"></div>
+                        <div class="progress-dot"></div>
+                        <div class="progress-dot active"></div>
                     </div>
                 </div>
                 
-                <!-- Footer Note -->
-                <div style="text-align: center; padding: 18px; font-size: 0.9rem; color: #a0aec0; background: white; border-top: 1px solid rgba(0, 0, 0, 0.05); font-weight: 500; margin-top: 0;">
+                <div class="footer-note">
                     Complete both steps to receive your cash back
                 </div>
             </div>
         </div>
 
-        <!-- 单步流程样式（无跳转链接） -> 改为 Messenger 预付款弹窗样式 -->
-        <div class="modal-content whatsapp-modal-content whatsapp-modal-single-step" id="whatsapp-modal-single-step" style="display: none; max-width: 600px; border-radius: 20px; overflow: hidden; box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);">
-            <!-- 顶部蓝色标题区域 -->
-            <div class="modal-header" style="background: linear-gradient(135deg, #006AFF 0%, #0084FF 100%); padding: 30px 40px; position: relative; overflow: hidden; text-align: center;">
-                <button class="close-modal" onclick="closeModal('whatsapp-modal')" style="position: absolute; top: 20px; right: 20px; width: 36px; height: 36px; background: rgba(255, 255, 255, 0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.2rem; cursor: pointer; z-index: 100; transition: all 0.3s ease; border: 2px solid rgba(255, 255, 255, 0.3); backdrop-filter: blur(5px);" onmouseover="this.style.background='rgba(255,255,255,0.3)'; this.style.transform='rotate(90deg) scale(1.1)';" onmouseout="this.style.background='rgba(255,255,255,0.2)'; this.style.transform='rotate(0deg) scale(1)';">
+        <!-- 单步流程样式（无跳转链接） -> 参考“非亚马逊下单步骤.html”的弹窗样式 -->
+        <div class="modal-content whatsapp-modal-content whatsapp-modal-single-step" id="whatsapp-modal-single-step" style="display: none; max-width: 600px; border-radius: 20px; overflow: hidden; box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12); background: transparent; box-sizing: border-box;">
+            <!-- 参考文件中的窗口整体容器 -->
+            <div id="windowContainer" class="window-container">
+                <!-- 关闭按钮仍然通过页面已有的 closeModal 方法关闭外围 modal -->
+                <div class="close-btn" id="closeBtn" onclick="closeModal('whatsapp-modal')">
                     <i class="fas fa-times"></i>
-                </button>
-                <h3 style="color: white; font-size: 2.4rem; font-weight: 800; letter-spacing: -0.5px; margin: 0 auto 10px; position: relative; text-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); text-align: center;">Get Your Product!</h3>
-            </div>
+                </div>
 
-            <!-- 主体内容 -->
-            <div class="modal-body whatsapp-modal-body" style="padding: 40px 30px 30px; background: #fafbfd;">
-                <div style="display: flex; flex-direction: column; align-items: center;">
-                    <!-- Messenger 图标 -->
-                    <div style="width: 100px; height: 100px; border-radius: 24px; display: flex; align-items: center; justify-content: center; margin-bottom: 25px; box-shadow: 0 10px 30px rgba(0, 106, 255, 0.2); background: linear-gradient(135deg, #006AFF 0%, #0084FF 100%); transition: all 0.3s ease;">
-                        <i class="fab fa-facebook-messenger" style="font-size: 3.5rem; color: white;"></i>
+                <!-- 顶部标题区域 -->
+                <div class="window-header">
+                    <h1>Get Your Product!</h1>
+                </div>
+
+                <!-- 主步骤内容 -->
+                <div class="step-container">
+                    <div class="step-icon-container" id="single-step-icon-container">
+                        <i class="step-icon fab fa-facebook-messenger" id="single-step-icon"></i>
                     </div>
-                    
-                    <div style="font-size: 2rem; font-weight: 800; color: #2d3748; margin-bottom: 10px; text-align: center; letter-spacing: -0.3px;">Confirm your order</div>
-                    <div style="font-size: 1.1rem; color: #718096; font-weight: 500; line-height: 1.5; text-align: center; max-width: 500px; margin: 0 auto 30px;">Copy the message below and send it via Messenger</div>
 
-                    <!-- 复制消息卡片 -->
-                    <div style="width: 100%; margin-bottom: 30px; padding: 25px; border-radius: 16px; background: white; border: 1px solid #e9ecef; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);">
-                        <div style="font-size: 1.2rem; font-weight: 700; color: #2d3748; margin-bottom: 15px; text-align: center;">Copy This Message</div>
-                        <div id="messenger-prepay-text-single" style="background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 10px; padding: 16px; font-size: 1rem; color: #495057; margin-bottom: 20px; word-break: break-all; line-height: 1.5; font-family: 'Courier New', monospace; position: relative; padding-right: 45px; min-height: 80px; border-style: dashed;">
+                    <div class="step-title">Confirm your order</div>
+                    <div class="step-subtitle">Copy the message below and send it</div>
+
+                    <!-- 联系方式切换器（Messenger / WhatsApp） -->
+                    <div class="contact-switcher">
+                        <div class="switcher-label"></div>
+                        <div class="switcher-buttons">
+                            <button class="contact-btn messenger-btn active" data-option="messenger" onclick="switchContactMethod('messenger')">
+                                <i class="fab fa-facebook-messenger"></i>
+                                Messenger
+                            </button>
+                            <button class="contact-btn whatsapp-btn" data-option="whatsapp" onclick="switchContactMethod('whatsapp')">
+                                <i class="fab fa-whatsapp"></i>
+                                WhatsApp
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 复制消息部分：保持原有 id 以兼容 copySingleStepMessage() -->
+                    <div class="copy-container">
+                        <div class="copy-title">Copy This Message</div>
+                        <div class="copy-text" id="messenger-prepay-text-single">
                             Please confirm my order. The order number is XXX
                         </div>
-                        <button type="button" onclick="copySingleStepMessage()" style="width: 100%; padding: 14px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 10px; font-weight: 700; font-size: 1.1rem; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 10px;" onmouseover="this.style.background='linear-gradient(135deg, #764ba2 0%, #667eea 100%)'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 20px rgba(102, 126, 234, 0.3)';" onmouseout="this.style.background='linear-gradient(135deg, #667eea 0%, #764ba2 100%)'; this.style.transform='translateY(0)'; this.style.boxShadow='none';">
+                        <button class="copy-btn" type="button" onclick="copySingleStepMessage()">
                             <i class="fas fa-copy"></i> Step 1: Copy
                         </button>
                     </div>
 
-                    <!-- Messenger 按钮 -->
-                    <div style="width: 100%; margin-top: 10px;">
-                        <a href="https://m.me/beefreebies" target="_blank" rel="noopener" onclick="openMessengerPrepay(); return false;" style="display: flex; align-items: center; justify-content: center; gap: 12px; width: 100%; padding: 18px; background: linear-gradient(135deg, #006AFF 0%, #0084FF 100%); color: white; border-radius: 12px; font-weight: 700; font-size: 1.2rem; text-decoration: none; box-shadow: 0 6px 20px rgba(0, 106, 255, 0.25); transition: all 0.3s ease;" onmouseover="this.style.background='linear-gradient(135deg, #0052CC 0%, #006AFF 100%)'; this.style.transform='translateY(-3px)'; this.style.boxShadow='0 10px 25px rgba(0, 106, 255, 0.35)';" onmouseout="this.style.background='linear-gradient(135deg, #006AFF 0%, #0084FF 100%)'; this.style.transform='translateY(0)'; this.style.boxShadow='0 6px 20px rgba(0, 106, 255, 0.25)';">
-                            <i class="fab fa-facebook-messenger" style="font-size: 1.5rem;"></i>
+                    <!-- 发送按钮部分：仍然复用 openMessengerPrepay 逻辑 -->
+                    <div class="send-action">
+                        <a href="https://m.me/beefreebies" target="_blank" class="send-btn messenger-btn" id="sendBtn" onclick="openMessengerPrepay(); return false;">
+                            <i class="fab fa-facebook-messenger"></i>
                             Step 2: Send via Messenger
                         </a>
                     </div>
                 </div>
 
                 <!-- 进度指示器 -->
-                <div style="display: flex; align-items: center; justify-content: center; padding: 0 30px 30px; margin-top: 16px;">
-                    <div style="display: flex; gap: 10px;">
-                        <div style="width: 8px; height: 8px; border-radius: 50%; background: #006AFF; transform: scale(1.2);"></div>
-                        <div style="width: 8px; height: 8px; border-radius: 50%; background: #006AFF; transform: scale(1.2);"></div>
-                        <div style="width: 8px; height: 8px; border-radius: 50%; background: #006AFF; transform: scale(1.2);"></div>
+                <div class="progress-indicator">
+                    <div class="progress-dots">
+                        <div class="progress-dot active"></div>
+                        <div class="progress-dot active"></div>
+                        <div class="progress-dot active"></div>
                     </div>
                 </div>
 
                 <!-- 底部提示文案 -->
-                <div style="text-align: center; padding: 20px; font-size: 0.95rem; color: #a0aec0; background: white; border-top: 1px solid rgba(0, 0, 0, 0.05); font-weight: 500; margin-top: 0;">
+                <div class="footer-note">
                     Complete the process to receive your product
                 </div>
             </div>
@@ -7238,7 +8250,8 @@
             `;
 
             container.querySelectorAll('button').forEach(btn => {
-                btn.addEventListener('click', () => {
+                // 使用 bindFastTap，确保分页在移动端首次点击就生效
+                bindFastTap(btn, () => {
                     const direction = btn.getAttribute('data-direction');
                     if (direction === 'prev' && state.page > 1) {
                         state.page--;
@@ -12189,6 +13202,32 @@ const paginationContainers = {
             }
         })();
 
+        // ========== 全局弹窗工具：customAlert ==========
+        // 统一的提示弹窗，兼容 Promise 调用：customAlert(msg, title).then(...)
+        // 如果未来需要更漂亮的 UI，可以在这里改成自定义模态框，而不影响其它业务代码
+        window.customAlert = function (message, title) {
+            return new Promise((resolve) => {
+                try {
+                    const msg = String(message == null ? '' : message);
+                    const ttl = title ? String(title) : '';
+
+                    // 将简单的 HTML 换行转换为普通换行，避免在 alert 里出现标签
+                    const normalized = msg
+                        .replace(/<br\s*\/?>/gi, '\n')
+                        .replace(/<\/p>/gi, '\n')
+                        .replace(/<[^>]+>/g, '');
+
+                    const finalText = ttl ? `${ttl}\n\n${normalized}` : normalized;
+                    alert(finalText || '');
+                } catch (e) {
+                    // 兜底：即使解析出错，也保证有提示
+                    alert(message || '');
+                } finally {
+                    resolve();
+                }
+            });
+        };
+
         // ========== 彩蛋函数定义（必须在DOMContentLoaded之前定义，确保登录表单事件绑定时可访问） ==========
         // 彩蛋登录相关变量 - 使用window对象确保全局访问
         window.romanticLoginAccount = null;
@@ -12579,7 +13618,7 @@ const paginationContainers = {
             const searchInput = document.getElementById('search-input');
             const searchBtn = document.getElementById('search-btn');
 
-            searchBtn.addEventListener('click', performSearch);
+            bindFastTap(searchBtn, performSearch);
             // 输入即时搜索（防抖）
             searchInput.addEventListener('input', debounce(performSearch, 300));
 
@@ -12599,7 +13638,7 @@ const paginationContainers = {
             // 分类筛选
             const categoryItems = document.querySelectorAll('.category-item');
             categoryItems.forEach(item => {
-                item.addEventListener('click', () => {
+                bindFastTap(item, function () {
                     categoryItems.forEach(i => i.classList.remove('active'));
                     item.classList.add('active');
 
@@ -12693,18 +13732,15 @@ const paginationContainers = {
                 renderAdminProducts();
             }
 
-            homeLink.addEventListener('click', (e) => {
-                e.preventDefault();
+            bindFastTap(homeLink, function () {
                 showHomePage();
             });
 
-            mainHomeLink.addEventListener('click', (e) => {
-                e.preventDefault();
+            bindFastTap(mainHomeLink, function () {
                 showHomePage();
             });
 
-            adminLink.addEventListener('click', (e) => {
-                e.preventDefault();
+            bindFastTap(adminLink, function () {
                 if (!isLoggedIn()) {
                     customAlert(t('pleaseLogin'), t('infoTitle')).then(() => {
                         document.getElementById('login-modal').style.display = 'flex';
@@ -12720,8 +13756,7 @@ const paginationContainers = {
                 showAdminPanel();
             });
 
-            userCenterLink.addEventListener('click', (e) => {
-                e.preventDefault();
+            bindFastTap(userCenterLink, function () {
                 if (currentUser) {
                     showUserCenter();
                 } else {
@@ -12734,8 +13769,7 @@ const paginationContainers = {
             // 我的报名链接点击事件
             const myOrdersLink = document.getElementById('my-orders-link');
             if (myOrdersLink) {
-                myOrdersLink.addEventListener('click', (e) => {
-                    e.preventDefault();
+                bindFastTap(myOrdersLink, function () {
                     if (currentUser) {
                         homePage.style.display = 'none';
                         adminPanel.style.display = 'none';
@@ -12777,15 +13811,13 @@ const paginationContainers = {
             const logoutLink = document.getElementById('logout-link');
             const closeButtons = document.querySelectorAll('.close-modal');
 
-            loginLink.addEventListener('click', (e) => {
-                e.preventDefault();
+            bindFastTap(loginLink, function () {
                 loginModal.style.display = 'flex';
             });
 
             // 已移除数据源选择功能，强制使用云端模式
 
-            registerLink.addEventListener('click', (e) => {
-                e.preventDefault();
+            bindFastTap(registerLink, function () {
                 registerModal.style.display = 'flex';
             });
 
@@ -12795,23 +13827,22 @@ const paginationContainers = {
             const gotoRegisterBtn = document.getElementById('goto-register-btn');
 
             if (gotoLoginBtn) {
-                gotoLoginBtn.addEventListener('click', (e) => {
-                    e.preventDefault();
+                bindFastTap(gotoLoginBtn, function () {
                     if (authChoiceModal) authChoiceModal.style.display = 'none';
-                    loginModal.style.display = 'flex';
+                    if (loginModal) loginModal.style.display = 'flex';
                 });
             }
 
             if (gotoRegisterBtn) {
-                gotoRegisterBtn.addEventListener('click', (e) => {
-                    e.preventDefault();
+                bindFastTap(gotoRegisterBtn, function () {
                     if (authChoiceModal) authChoiceModal.style.display = 'none';
-                    registerModal.style.display = 'flex';
+                    if (registerModal) registerModal.style.display = 'flex';
                 });
             }
 
+            // 使用 bindFastTap 统一处理关闭按钮，保证移动端第一次点击就生效
             closeButtons.forEach(button => {
-                button.addEventListener('click', () => {
+                bindFastTap(button, () => {
                     modals.forEach(modal => modal.style.display = 'none');
                     // 同时关闭登录/注册选择模态框
                     if (authChoiceModal) authChoiceModal.style.display = 'none';
@@ -13333,9 +14364,9 @@ const paginationContainers = {
                 }
             }
 
-            // 退出登录
-            logoutLink.addEventListener('click', async (e) => {
-                e.preventDefault();
+            // 退出登录（使用 bindFastTap，保证移动端点击一次就触发）
+            bindFastTap(logoutLink, async (e) => {
+                e && e.preventDefault && e.preventDefault();
 
                 // 如果是管理员，退出前先同步产品数据到云端，避免数据丢失
                 const isAdmin = isCurrentUserAdmin();
@@ -13408,13 +14439,13 @@ const paginationContainers = {
 
             const deleteAccountBtn = document.getElementById('delete-account-btn');
             if (deleteAccountBtn) {
-                deleteAccountBtn.addEventListener('click', handleSelfAccountDeletion);
+                bindFastTap(deleteAccountBtn, handleSelfAccountDeletion);
             }
 
             // 同步状态点击事件 - 显示同步详情对话框
             const syncStatus = document.getElementById('sync-status');
             if (syncStatus) {
-                syncStatus.addEventListener('click', () => {
+                bindFastTap(syncStatus, () => {
                     showSyncStatusDialog();
                 });
             }
@@ -13423,10 +14454,10 @@ const paginationContainers = {
             const controlPanelBtn = document.getElementById('control-panel-btn');
             const controlPanelDropdown = document.getElementById('control-panel-dropdown');
 
-            // 点击按钮切换下拉菜单
+            // 点击按钮切换下拉菜单（使用 bindFastTap，兼容移动端）
             if (controlPanelBtn) {
-                controlPanelBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
+                bindFastTap(controlPanelBtn, (e) => {
+                    e && e.stopPropagation && e.stopPropagation();
                     const isVisible = controlPanelDropdown.style.display === 'block';
                     controlPanelDropdown.style.display = isVisible ? 'none' : 'block';
                 });
@@ -13449,10 +14480,10 @@ const paginationContainers = {
                 console.log('📥 从云端加载最新数据...');
             }
 
-            // 测试云端连接
+            // 测试云端连接（使用 bindFastTap，避免移动端第一次点击无响应）
             const testCloudBtn = document.getElementById('test-cloud-connection');
             if (testCloudBtn) {
-                testCloudBtn.addEventListener('click', async function () {
+                bindFastTap(testCloudBtn, async function () {
                     this.disabled = true;
                     this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 测试中...';
 
@@ -13476,10 +14507,10 @@ const paginationContainers = {
                 });
             }
 
-            // 强制同步数据
+            // 强制同步数据（使用 bindFastTap）
             const forceSyncBtn = document.getElementById('force-sync');
             if (forceSyncBtn) {
-                forceSyncBtn.addEventListener('click', async function () {
+                bindFastTap(forceSyncBtn, async function () {
                     this.disabled = true;
                     this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 同步中...';
 
@@ -13507,10 +14538,10 @@ const paginationContainers = {
                 });
             }
 
-            // 清除本地缓存
+            // 清除本地缓存（使用 bindFastTap）
             const clearCacheBtn = document.getElementById('clear-cache');
             if (clearCacheBtn) {
-                clearCacheBtn.addEventListener('click', function () {
+                bindFastTap(clearCacheBtn, function () {
                     customConfirm(t('confirmClearCache'), t('confirmClearCache')).then(confirmed => {
                         if (!confirmed) return;
                         localStorage.removeItem('products');
@@ -15952,6 +16983,37 @@ const paginationContainers = {
             }
         }
 
+        // 统一绑定「快速点击」：改为只使用最稳定的 click 事件，避免任何额外节流/阻止默认行为造成 PC 端需要多次点击
+        function bindFastTap(element, handler) {
+            if (!element || typeof handler !== 'function') return;
+            element.addEventListener('click', function (e) {
+                handler.call(element, e);
+            });
+        }
+
+        // 全局防连点：同一按钮/链接在短时间内被快速连点时，仅响应第一次点击，后续点击会被忽略
+        (function setupGlobalClickGuard() {
+            const CLICK_GUARD_INTERVAL = 400; // ms，同一元素 400ms 内只允许一次点击
+
+            document.addEventListener('click', function (e) {
+                // 只对按钮和链接（以及带 .btn 类的元素）做防连点，避免影响普通内容点击
+                const target = e.target.closest('button, a, .btn');
+                if (!target) return;
+
+                const now = Date.now();
+                const last = parseInt(target.getAttribute('data-last-click') || '0', 10);
+
+                if (now - last < CLICK_GUARD_INTERVAL) {
+                    // 在间隔内的重复点击：直接吃掉，不再向下分发
+                    e.stopImmediatePropagation();
+                    e.preventDefault();
+                    return;
+                }
+
+                target.setAttribute('data-last-click', String(now));
+            }, true); // 捕获阶段拦截，优先于后续监听器
+        })();
+
         // 渲染首页产品列表
         function renderProducts(productsToRender) {
             const productsGrid = document.getElementById('products-grid');
@@ -16038,11 +17100,15 @@ const paginationContainers = {
                 `;
             }).join('');
 
-            // 重新绑定事件
+            // 重新绑定事件：报名 / Claim Now 按钮
             document.querySelectorAll('.signup-btn').forEach(btn => {
-                btn.addEventListener('click', function (e) {
-                    e.preventDefault();
-                    e.stopPropagation();
+                bindFastTap(btn, function (e) {
+                    // 防止点击冒泡到整张卡片上，从而误触发「查看详情」
+                    if (e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                    }
+
                     const productId = parseInt(this.getAttribute('data-product-id'), 10);
                     const isClaimed = this.getAttribute('data-is-claimed') === 'true';
                     const product = products.find(p => p.id === productId);
@@ -16101,14 +17167,19 @@ const paginationContainers = {
                 });
             });
 
+            // 详情按钮：仍然进入产品详情页
             document.querySelectorAll('.view-detail').forEach(btn => {
-                btn.addEventListener('click', function (e) {
-                    e.stopPropagation();
+                bindFastTap(btn, function (e) {
+                    if (e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                    }
                     const productId = this.closest('.home-feature-card').getAttribute('data-product-id');
                     showProductDetail(parseInt(productId, 10));
                 });
             });
 
+            // 整个卡片点击仍使用普通 click，避免与内部按钮冲突
             document.querySelectorAll('.home-feature-card').forEach(card => {
                 card.addEventListener('click', function () {
                     const productId = this.getAttribute('data-product-id');
@@ -16320,7 +17391,11 @@ const paginationContainers = {
             const signupNowBtn = document.querySelector('#product-detail .signup-now');
             const backBtn = document.querySelector('#product-detail .back-to-list');
             if (signupNowBtn) {
-                signupNowBtn.addEventListener('click', function () {
+                signupNowBtn.addEventListener('click', function (e) {
+                    if (e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                    }
                     const isClaimed = this.getAttribute('data-is-claimed') === 'true';
                     
                     // 如果已领取，显示WhatsApp模态框
@@ -16372,7 +17447,11 @@ const paginationContainers = {
                 });
             }
             if (backBtn) {
-                backBtn.addEventListener('click', function () {
+                backBtn.addEventListener('click', function (e) {
+                    if (e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                    }
                     showProductList();
                 });
             }
@@ -17060,6 +18139,164 @@ const paginationContainers = {
             }
         }
 
+        // 复制到剪贴板函数
+        function copyToClipboard(text, element) {
+            if (!text || text.trim() === '') return false;
+            
+            // 移除HTML标签，只保留文本内容
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = text;
+            const plainText = tempDiv.textContent || tempDiv.innerText || text;
+            
+            // 使用现代 Clipboard API
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(plainText).then(() => {
+                    showCopyTooltip(element, '已复制!');
+                }).catch(err => {
+                    console.error('复制失败:', err);
+                    fallbackCopyToClipboard(plainText, element);
+                });
+            } else {
+                // 降级方案
+                fallbackCopyToClipboard(plainText, element);
+            }
+        }
+
+        // 降级复制方案
+        function fallbackCopyToClipboard(text, element) {
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            textArea.style.position = 'fixed';
+            textArea.style.left = '-999999px';
+            textArea.style.top = '-999999px';
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            
+            try {
+                const successful = document.execCommand('copy');
+                if (successful) {
+                    showCopyTooltip(element, '已复制!');
+                } else {
+                    showCopyTooltip(element, '复制失败');
+                }
+            } catch (err) {
+                console.error('降级复制失败:', err);
+                showCopyTooltip(element, '复制失败');
+            } finally {
+                document.body.removeChild(textArea);
+            }
+        }
+
+        // 显示复制提示
+        function showCopyTooltip(element, message) {
+            // 移除已存在的提示
+            const existingTooltip = element.querySelector('.copy-tooltip');
+            if (existingTooltip) {
+                existingTooltip.remove();
+            }
+
+            // 创建新提示
+            const tooltip = document.createElement('div');
+            tooltip.className = 'copy-tooltip';
+            tooltip.textContent = message;
+            element.style.position = 'relative';
+            element.appendChild(tooltip);
+
+            // 显示动画
+            setTimeout(() => {
+                tooltip.classList.add('show');
+            }, 10);
+
+            // 2秒后移除
+            setTimeout(() => {
+                tooltip.classList.remove('show');
+                setTimeout(() => {
+                    if (tooltip.parentNode) {
+                        tooltip.parentNode.removeChild(tooltip);
+                    }
+                }, 300);
+            }, 2000);
+        }
+
+        // 为表格单元格绑定复制事件
+        function bindCopyEvents(tableId, excludeColumns = []) {
+            const table = document.getElementById(tableId);
+            if (!table) return;
+
+            const tbody = table.querySelector('tbody');
+            if (!tbody) return;
+
+            // 获取表头，确定哪些列需要排除
+            const headers = table.querySelectorAll('thead th');
+            const excludeIndices = new Set();
+            headers.forEach((th, index) => {
+                const headerText = th.textContent.trim().toLowerCase();
+                // 排除操作列、复选框列
+                if (headerText.includes('操作') || 
+                    headerText.includes('action') || 
+                    th.querySelector('input[type="checkbox"]') ||
+                    excludeColumns.includes(index)) {
+                    excludeIndices.add(index);
+                }
+            });
+
+            // 为每个单元格绑定点击事件
+            tbody.querySelectorAll('tr').forEach(row => {
+                const cells = row.querySelectorAll('td');
+                cells.forEach((cell, index) => {
+                    // 跳过排除的列
+                    if (excludeIndices.has(index)) {
+                        return;
+                    }
+
+                    // 跳过包含复选框的单元格
+                    if (cell.querySelector('input[type="checkbox"]')) {
+                        return;
+                    }
+
+                    // 检查是否包含按钮（操作列）
+                    const hasButton = cell.querySelector('button');
+                    if (hasButton) {
+                        return;
+                    }
+
+                    // 添加可复制样式类
+                    cell.classList.add('copyable-cell');
+                    
+                    // 绑定点击事件
+                    cell.addEventListener('click', function(e) {
+                        // 如果点击的是链接，不触发复制（让链接正常工作）
+                        if (e.target.tagName === 'A' || e.target.closest('a')) {
+                            return;
+                        }
+                        
+                        // 如果点击的是按钮，不触发复制
+                        if (e.target.tagName === 'BUTTON' || e.target.closest('button')) {
+                            return;
+                        }
+                        
+                        e.stopPropagation();
+                        
+                        // 获取要复制的文本
+                        let textToCopy = '';
+                        // 如果单元格内有链接，复制链接的文本内容
+                        const link = cell.querySelector('a');
+                        if (link) {
+                            textToCopy = link.textContent.trim();
+                        } else {
+                            // 否则复制整个单元格的文本
+                            textToCopy = cell.textContent.trim();
+                        }
+                        
+                        if (textToCopy) {
+                            copyToClipboard(textToCopy, cell);
+                        }
+                    });
+                });
+            });
+        }
+
         // 渲染用户表格
         // 计算注册天数
         function getRegisterDays(registerTime) {
@@ -17280,6 +18517,11 @@ const paginationContainers = {
 
             refreshUserSelectionUI();
             updatePaginationControls('users', filteredUsers.length, renderUsersTable);
+            
+            // 绑定复制事件
+            setTimeout(() => {
+                bindCopyEvents('users-table', [0, 9]); // 排除复选框列(0)和操作列(9)
+            }, 100);
         }
 
         function refreshUserSelectionUI() {
@@ -17504,6 +18746,11 @@ const paginationContainers = {
 
             refreshOrderSelectionUI();
             updatePaginationControls('orders', filteredOrders.length, renderOrdersTable);
+            
+            // 绑定复制事件
+            setTimeout(() => {
+                bindCopyEvents('orders-table', [0, 7]); // 排除复选框列(0)和操作列(7)
+            }, 100);
         }
 
         function collectAllReviews() {
@@ -22076,6 +23323,52 @@ const paginationContainers = {
                     if (amazonLink) {
                         amazonLink.href = redirectLink;
                     }
+                    
+                    // 初始化切换器事件
+                    setTimeout(() => {
+                        const messengerBtn = document.getElementById('messenger-switch-btn');
+                        const whatsappBtn = document.getElementById('whatsapp-switch-btn');
+                        const copyBtn = document.getElementById('copy-message-btn');
+                        
+                        // 移除旧的事件监听器（如果存在）
+                        if (messengerBtn) {
+                            messengerBtn.replaceWith(messengerBtn.cloneNode(true));
+                        }
+                        if (whatsappBtn) {
+                            whatsappBtn.replaceWith(whatsappBtn.cloneNode(true));
+                        }
+                        if (copyBtn) {
+                            copyBtn.replaceWith(copyBtn.cloneNode(true));
+                        }
+                        
+                        // 重新绑定事件
+                        const newMessengerBtn = document.getElementById('messenger-switch-btn');
+                        const newWhatsappBtn = document.getElementById('whatsapp-switch-btn');
+                        const newCopyBtn = document.getElementById('copy-message-btn');
+                        
+                        if (newMessengerBtn) {
+                            newMessengerBtn.addEventListener('click', () => switchContactMethod('messenger'));
+                        }
+                        if (newWhatsappBtn) {
+                            newWhatsappBtn.addEventListener('click', () => switchContactMethod('whatsapp'));
+                        }
+                        if (newCopyBtn) {
+                            newCopyBtn.addEventListener('click', copyMessengerPrepayText);
+                        }
+                        
+                        // 更新消息文本（包含订单号）
+                        const messageText = document.getElementById('messenger-prepay-text');
+                        if (messageText) {
+                            let message = contactMethods[currentContactMethod].message;
+                            if (orderId) {
+                                message = message.replace('XXX', String(orderId));
+                            }
+                            messageText.textContent = message;
+                        }
+                        
+                        // 初始化当前联系方式的显示
+                        switchContactMethod(currentContactMethod);
+                    }, 100);
                 } else {
                     // 无跳转链接：显示单步流程样式
                     if (twoStepsModal) {
@@ -22090,6 +23383,118 @@ const paginationContainers = {
             }
         }
 
+        // 当前选择的联系方式
+        let currentContactMethod = 'messenger';
+        
+        // 联系方式配置
+        const contactMethods = {
+            messenger: {
+                link: "https://m.me/beefreebies",
+                iconClass: "fab fa-facebook-messenger",
+                btnText: "Step 2: Send via Messenger",
+                iconBg: "messenger-icon-container",
+                btnClass: "messenger-btn",
+                message: "Please provide prepayment for order XXX"
+            },
+            whatsapp: {
+                link: "https://wa.me/17077902826?text=",
+                iconClass: "fab fa-whatsapp",
+                btnText: "Step 2: Send via WhatsApp",
+                iconBg: "whatsapp-icon-container",
+                btnClass: "whatsapp-btn",
+                message: "Please provide prepayment for order XXX"
+            }
+        };
+        
+        // 切换联系方式（同时支持两步弹窗和单步弹窗）
+        function switchContactMethod(method) {
+            if (method === currentContactMethod) return;
+            
+            currentContactMethod = method;
+            const contact = contactMethods[method];
+            
+            // 更新两步弹窗的按钮激活状态
+            const messengerBtn = document.getElementById('messenger-switch-btn');
+            const whatsappBtn = document.getElementById('whatsapp-switch-btn');
+            if (messengerBtn && whatsappBtn) {
+                if (method === 'messenger') {
+                    messengerBtn.classList.add('active');
+                    whatsappBtn.classList.remove('active');
+                } else {
+                    whatsappBtn.classList.add('active');
+                    messengerBtn.classList.remove('active');
+                }
+            }
+
+            // 更新单步弹窗的按钮激活状态
+            const singleStepButtons = document.querySelectorAll('#whatsapp-modal-single-step .contact-btn');
+            singleStepButtons.forEach(btn => {
+                if (btn.dataset.option === method) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+            
+            // 更新所有图标容器和图标（两步 + 单步）
+            const stepIconContainers = document.querySelectorAll('.step-icon-container');
+            const stepIcons = document.querySelectorAll('.step-icon');
+            if (stepIconContainers.length && stepIcons.length) {
+                stepIconContainers.forEach(container => {
+                    container.className = `step-icon-container ${contact.iconBg}`;
+                });
+                stepIcons.forEach(icon => {
+                    icon.className = `step-icon ${contact.iconClass}`;
+                });
+            }
+            
+            // 更新消息文本（两步弹窗）
+            const messageText = document.getElementById('messenger-prepay-text');
+            // 更新消息文本（单步弹窗）
+            const messageTextSingle = document.getElementById('messenger-prepay-text-single');
+            const updateMessageText = (el) => {
+                if (!el) return;
+                let message = contact.message;
+                if (typeof currentOrderIdForWhatsApp !== 'undefined' && currentOrderIdForWhatsApp) {
+                    message = message.replace('XXX', String(currentOrderIdForWhatsApp));
+                }
+                el.textContent = message;
+            };
+            updateMessageText(messageText);
+            updateMessageText(messageTextSingle);
+            
+            // 更新发送按钮（两步弹窗 + 单步弹窗）
+            const sendButtons = [];
+            const sendBtnTwoSteps = document.getElementById('send-message-btn');
+            const sendBtnSingle = document.getElementById('sendBtn');
+            if (sendBtnTwoSteps) sendButtons.push(sendBtnTwoSteps);
+            if (sendBtnSingle) sendButtons.push(sendBtnSingle);
+
+            if (sendButtons.length) {
+                let link = contact.link;
+                if (method === 'whatsapp') {
+                    // WhatsApp需要预填充消息
+                    let message = contact.message;
+                    if (typeof currentOrderIdForWhatsApp !== 'undefined' && currentOrderIdForWhatsApp) {
+                        message = message.replace('XXX', String(currentOrderIdForWhatsApp));
+                    }
+                    link = contact.link + encodeURIComponent(message);
+                }
+
+                sendButtons.forEach(btn => {
+                    btn.href = link;
+                    if (btn.id === 'send-message-btn') {
+                        // 两步弹窗按钮
+                        btn.className = `action-btn ${contact.btnClass}`;
+                    } else {
+                        // 单步弹窗按钮
+                        btn.className = `send-btn ${contact.btnClass}`;
+                    }
+                    btn.innerHTML = `<i class="${contact.iconClass}"></i> ${contact.btnText}`;
+                });
+            }
+        }
+        
         // 复制 Messenger 预付款消息
         function copyMessengerPrepayText() {
             try {
@@ -22104,7 +23509,9 @@ const paginationContainers = {
                 const text = rawText.trim();
 
                 if (navigator.clipboard && navigator.clipboard.writeText) {
-                    navigator.clipboard.writeText(text);
+                    navigator.clipboard.writeText(text).then(() => {
+                        showCopySuccess();
+                    });
                 } else {
                     const tempInput = document.createElement('textarea');
                     tempInput.value = text;
@@ -22112,6 +23519,7 @@ const paginationContainers = {
                     tempInput.select();
                     document.execCommand('copy');
                     document.body.removeChild(tempInput);
+                    showCopySuccess();
                 }
 
                 // 显示底部提示气泡
@@ -22123,10 +23531,38 @@ const paginationContainers = {
                     }, 1800);
                 }
 
-                console.log('✅ Messenger 预付款消息已复制');
+                // 更新复制按钮状态
+                const copyBtn = document.getElementById('copy-message-btn');
+                if (copyBtn) {
+                    const originalHTML = copyBtn.innerHTML;
+                    copyBtn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+                    copyBtn.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
+                    setTimeout(() => {
+                        copyBtn.innerHTML = originalHTML;
+                        copyBtn.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+                    }, 2000);
+                }
+
+                console.log('✅ 消息已复制');
             } catch (e) {
-                console.warn('复制 Messenger 预付款消息失败:', e);
+                console.warn('复制消息失败:', e);
             }
+        }
+        
+        // 显示复制成功提示
+        function showCopySuccess() {
+            let successToast = document.getElementById('copy-success-toast');
+            if (!successToast) {
+                successToast = document.createElement('div');
+                successToast.id = 'copy-success-toast';
+                successToast.className = 'copy-success';
+                successToast.innerHTML = '<i class="fas fa-check-circle"></i><span>Message copied to clipboard!</span>';
+                document.body.appendChild(successToast);
+            }
+            successToast.style.display = 'flex';
+            setTimeout(() => {
+                successToast.style.display = 'none';
+            }, 3000);
         }
 
         // 单步流程复制消息
@@ -22168,10 +23604,21 @@ const paginationContainers = {
             }
         }
 
-        // 打开 Messenger 预付款聊天
+        // 打开 Messenger/WhatsApp 预付款聊天
         function openMessengerPrepay() {
-            const messengerUrl = 'https://m.me/beefreebies';
-            window.open(messengerUrl, '_blank');
+            const contact = contactMethods[currentContactMethod];
+            let link = contact.link;
+            
+            // 如果是WhatsApp，需要预填充消息
+            if (currentContactMethod === 'whatsapp') {
+                let message = contact.message;
+                if (typeof currentOrderIdForWhatsApp !== 'undefined' && currentOrderIdForWhatsApp) {
+                    message = message.replace('XXX', String(currentOrderIdForWhatsApp));
+                }
+                link = contact.link + encodeURIComponent(message);
+            }
+            
+            window.open(link, '_blank');
             closeModal('whatsapp-modal');
         }
 
