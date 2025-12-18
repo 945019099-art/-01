@@ -6813,7 +6813,6 @@
                                 <span class="phone-prefix">+1</span>
                                 <input type="tel" id="profile-phone" class="phone-input" maxlength="10" data-i18n-placeholder="enterPhone" placeholder="${t('enterPhone') || '请输入手机号'}">
                             </div>
-                            <small class="phone-input-hint" data-i18n="usPhoneHint">${t('usPhoneHint') || '请输入美国手机号（+1开头的10位数字）'}</small>
                         </div>
                         <div class="form-group">
                             <label for="profile-email" data-i18n="email">${t('email') || '邮箱'}</label>
@@ -13510,6 +13509,14 @@ const paginationContainers = {
         document.addEventListener('DOMContentLoaded', async function () {
             const loader = DOMCache.get('#page-loader');
             const loaderProgress = DOMCache.get('#loader-progress');
+
+            // 确保页面本身始终可以滚动（防止某些情况下 overflow 被错误锁定）
+            try {
+                document.documentElement.style.overflowY = 'auto';
+                document.body.style.overflow = '';
+            } catch (e) {
+                console.warn('重置页面滚动状态时出错:', e);
+            }
             
             try {
                 // 更新加载进度
@@ -14193,6 +14200,14 @@ const paginationContainers = {
 
                     showNotification(`登录成功！正在从云端加载数据...`, 'success');
                     loginModal.style.display = 'none';
+
+                    // 登录成功后，强制恢复页面滚动（防止之前的弹窗或彩蛋将页面锁定）
+                    try {
+                        document.documentElement.style.overflowY = 'auto';
+                        document.body.style.overflow = '';
+                    } catch (e) {
+                        console.warn('登录后重置页面滚动状态时出错:', e);
+                    }
 
                     // ========== 强制使用云端模式加载数据 ==========
                     console.log('🔄 登录成功，强制使用云端模式');
