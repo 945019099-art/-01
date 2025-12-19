@@ -241,12 +241,12 @@
             --transition-slow: 500ms ease;
         }
 
-        /* ===== Messenger/WhatsApp 单步弹窗专用样式（参考“非亚马逊下单步骤.html”，作用于 whatsapp-modal-single-step 内部） ===== */
+        /* ===== Messenger/WhatsApp 单步弹窗专用样式（参考"非亚马逊下单步骤.html"，作用于 whatsapp-modal-single-step 内部） ===== */
         #whatsapp-modal-single-step .window-container {
             width: 100%;
             max-width: 600px;
-            /* 让弹窗自身在视口内滚动，而不是整页滚动 */
-            max-height: 90vh;
+            /* 桌面端：一次显示完，不滚动；移动端：允许滚动 */
+            max-height: 95vh;
             background: white;
             border-radius: 20px;
             overflow-y: auto;
@@ -256,6 +256,14 @@
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             animation: window-appear 0.5s ease-out;
             margin: 0 auto;
+        }
+
+        /* 桌面端：移除滚动，确保一次显示完 */
+        @media (min-width: 769px) {
+            #whatsapp-modal-single-step .window-container {
+                overflow-y: visible;
+                max-height: none;
+            }
         }
 
         #whatsapp-modal-single-step .window-container:hover {
@@ -657,6 +665,217 @@
             #whatsapp-modal-single-step .footer-note {
                 padding: 10px 12px 14px;
                 font-size: 0.85rem;
+            }
+        }
+
+        /* ===== 桌面端优化：确保两个模态窗口一次显示完，无需滚动 ===== */
+        @media (min-width: 769px) {
+            /* 两步流程模态窗口 - 使用 flex 布局确保内容在一屏内 */
+            .whatsapp-modal-content.whatsapp-modal-two-steps {
+                display: flex;
+                flex-direction: column;
+                max-height: 95vh;
+            }
+
+            .whatsapp-modal-two-steps .modal-header {
+                flex-shrink: 0;
+                padding: 18px 35px 20px !important;
+            }
+
+            .whatsapp-modal-two-steps .modal-header h1 {
+                font-size: 1.9rem !important;
+                margin-bottom: 4px !important;
+            }
+
+            .whatsapp-modal-two-steps .modal-header p {
+                font-size: 0.95rem !important;
+            }
+
+            .whatsapp-modal-two-steps .whatsapp-modal-body {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                padding: 20px 25px 15px !important;
+                min-height: 0;
+            }
+
+            .whatsapp-modal-two-steps .steps-container {
+                flex: 1;
+                min-height: 0;
+                gap: 15px !important;
+            }
+
+            .whatsapp-modal-two-steps .step {
+                min-height: auto !important;
+                display: flex;
+                flex-direction: column;
+                padding: 22px 18px !important;
+            }
+
+            .whatsapp-modal-two-steps .step-number {
+                width: 38px !important;
+                height: 38px !important;
+                font-size: 1.1rem !important;
+                margin-bottom: 15px !important;
+            }
+
+            .whatsapp-modal-two-steps .step-icon-container {
+                width: 65px !important;
+                height: 65px !important;
+                margin-bottom: 15px !important;
+            }
+
+            .whatsapp-modal-two-steps .step-icon {
+                font-size: 2.3rem !important;
+            }
+
+            .whatsapp-modal-two-steps .step-title {
+                font-size: 1.3rem !important;
+                margin-bottom: 6px !important;
+            }
+
+            .whatsapp-modal-two-steps .step-subtitle {
+                font-size: 0.9rem !important;
+                margin-bottom: 12px !important;
+                min-height: auto !important;
+            }
+
+            .whatsapp-modal-two-steps .contact-switcher {
+                margin-bottom: 12px !important;
+            }
+
+            .whatsapp-modal-two-steps .switcher-label {
+                font-size: 0.8rem !important;
+                margin-bottom: 3px !important;
+            }
+
+            .whatsapp-modal-two-steps .switcher-buttons {
+                gap: 6px !important;
+            }
+
+            .whatsapp-modal-two-steps .contact-btn {
+                padding: 8px !important;
+                font-size: 0.85rem !important;
+            }
+
+            .whatsapp-modal-two-steps .copy-container {
+                padding: 15px !important;
+                margin-bottom: 12px !important;
+            }
+
+            .whatsapp-modal-two-steps .copy-title {
+                font-size: 0.95rem !important;
+                margin-bottom: 10px !important;
+            }
+
+            .whatsapp-modal-two-steps .copy-text {
+                padding: 10px !important;
+                margin-bottom: 10px !important;
+                min-height: 50px !important;
+                font-size: 0.85rem !important;
+            }
+
+            .whatsapp-modal-two-steps .copy-btn {
+                padding: 8px !important;
+                font-size: 0.9rem !important;
+            }
+
+            .whatsapp-modal-two-steps .step-action {
+                margin-top: auto;
+            }
+
+            .whatsapp-modal-two-steps .action-btn {
+                padding: 12px !important;
+                font-size: 0.95rem !important;
+            }
+
+            .whatsapp-modal-two-steps .progress-indicator {
+                padding: 10px 25px 8px !important;
+                flex-shrink: 0;
+            }
+
+            .whatsapp-modal-two-steps .footer-note {
+                padding: 10px 18px !important;
+                font-size: 0.85rem !important;
+                flex-shrink: 0;
+            }
+
+            /* 单步流程模态窗口 - 紧凑布局 */
+            #whatsapp-modal-single-step .window-header {
+                padding: 20px 35px 18px !important;
+            }
+
+            #whatsapp-modal-single-step .window-header h1 {
+                font-size: 1.9rem !important;
+                margin-bottom: 4px !important;
+            }
+
+            #whatsapp-modal-single-step .step-container {
+                padding: 25px 25px 18px !important;
+            }
+
+            #whatsapp-modal-single-step .step-icon-container {
+                width: 80px !important;
+                height: 80px !important;
+                margin-bottom: 18px !important;
+            }
+
+            #whatsapp-modal-single-step .step-icon {
+                font-size: 2.8rem !important;
+            }
+
+            #whatsapp-modal-single-step .step-title {
+                font-size: 1.6rem !important;
+                margin-bottom: 6px !important;
+            }
+
+            #whatsapp-modal-single-step .step-subtitle {
+                font-size: 0.95rem !important;
+                margin-bottom: 18px !important;
+            }
+
+            #whatsapp-modal-single-step .contact-switcher {
+                margin-bottom: 15px !important;
+            }
+
+            #whatsapp-modal-single-step .copy-container {
+                padding: 18px !important;
+                margin-bottom: 15px !important;
+            }
+
+            #whatsapp-modal-single-step .copy-title {
+                font-size: 1.05rem !important;
+                margin-bottom: 10px !important;
+            }
+
+            #whatsapp-modal-single-step .copy-text {
+                padding: 12px !important;
+                margin-bottom: 12px !important;
+                min-height: 55px !important;
+                font-size: 0.9rem !important;
+            }
+
+            #whatsapp-modal-single-step .copy-btn {
+                padding: 10px !important;
+                font-size: 0.95rem !important;
+            }
+
+            #whatsapp-modal-single-step .send-action {
+                margin-top: 6px !important;
+            }
+
+            #whatsapp-modal-single-step .send-btn {
+                padding: 14px !important;
+                font-size: 1.05rem !important;
+            }
+
+            #whatsapp-modal-single-step .progress-indicator {
+                padding: 0 25px 12px !important;
+            }
+
+            #whatsapp-modal-single-step .footer-note {
+                padding: 12px 18px !important;
+                font-size: 0.85rem !important;
             }
         }
 
@@ -2106,6 +2325,14 @@
             padding: 20px 0;
         }
 
+        /* 桌面端：移除模态窗口的滚动和padding，确保一次显示完 */
+        @media (min-width: 769px) {
+            .modal {
+                overflow-y: visible;
+                padding: 0;
+            }
+        }
+
         @keyframes fadeIn {
             from {
                 opacity: 0;
@@ -2128,6 +2355,14 @@
             transform-origin: center center;
             display: flex;
             flex-direction: column;
+        }
+
+        /* 桌面端：移除模态内容的滚动 */
+        @media (min-width: 769px) {
+            .modal-content {
+                overflow-y: visible;
+                max-height: none;
+            }
         }
 
         @keyframes slideUp {
@@ -2199,8 +2434,14 @@
             position: relative;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             animation: window-appear 0.5s ease-out;
-            display: flex;
-            flex-direction: column;
+        }
+
+        /* 桌面端：移除WhatsApp模态内容的滚动 */
+        @media (min-width: 769px) {
+            .whatsapp-modal-content {
+                overflow-y: visible;
+                max-height: none;
+            }
         }
         
         @keyframes window-appear {
@@ -2230,6 +2471,13 @@
         .whatsapp-modal-body {
             padding: 30px;
             background: #fafbfd;
+        }
+
+        /* 桌面端：确保模态窗口内容不滚动 */
+        @media (min-width: 769px) {
+            .whatsapp-modal-body {
+                overflow-y: visible;
+            }
         }
         
         /* 步骤容器样式 */
@@ -6011,7 +6259,7 @@
 
             .whatsapp-modal-body {
                 padding: 30px 20px !important;
-                overflow-y: auto;
+                overflow-y: auto; /* 移动端允许滚动 */
             }
 
             .whatsapp-modal-two-steps .modal-body > div[style*="display: flex"] {
@@ -8967,6 +9215,8 @@ const paginationContainers = {
                 'notesPlaceholder': 'Please enter your special requirements or notes',
                 'submitRegistration': 'Submit Registration',
                 'cancel': 'Cancel',
+                'ok': 'OK',
+                'confirm': 'Confirm',
                 // 提示信息
                 'pleaseLogin': 'Please login first',
                 'passwordChangedSuccess': 'Password changed successfully! Please remember your new password',
@@ -13191,7 +13441,7 @@ const paginationContainers = {
                     return {
                         success: false,
                         error: 'password',
-                        message: '密码错误，请重新输入'
+                        message: 'Password incorrect, please re-enter'
                     };
                 }
             }
@@ -13203,7 +13453,7 @@ const paginationContainers = {
                 if (user.status === 'banned') {
                     return {
                         banned: true,
-                        message: '您的账号已被禁用，请联系管理员'
+                        message: 'Your account has been disabled. Please contact the administrator'
                     };
                 }
                 
@@ -13241,12 +13491,12 @@ const paginationContainers = {
             
             // 检查管理员账号是否已存在（使用规范化格式）
             if (findAdminAccount(account)) {
-                return { success: false, message: t('accountExists') || '该账号已被使用' };
+                return { success: false, message: t('accountExists') || 'Account already exists' };
             }
             
             // 检查普通用户是否已存在（使用规范化格式）
             if (findUserByAccount(account)) {
-                return { success: false, message: t('accountExists') || '该账号已被使用' };
+                return { success: false, message: t('accountExists') || 'Account already exists' };
             }
 
             // 检查设备注册限制（可配置）
@@ -13259,7 +13509,7 @@ const paginationContainers = {
             if (sameDeviceUsers.length >= deviceLimit) {
                 return {
                     success: false,
-                    message: t('deviceRegisterLimitReached') || '已经有账户啦，快去登录账户领取好物吧！'
+                    message: t('deviceRegisterLimitReached') || 'You already have an account. Please log in to claim items!'
                 };
             }
 
@@ -13284,7 +13534,7 @@ const paginationContainers = {
             allUsers.push(newUser);
             saveAllUsers();
 
-            return { success: true, message: '注册成功' };
+            return { success: true, message: 'Registration successful' };
         }
 
         // 立即初始化Logo显示（不等待DOMContentLoaded）
@@ -14129,7 +14379,7 @@ const paginationContainers = {
                 // ========== 防止重复登录 ==========
                 // 使用规范化比较，支持大小写不敏感
                 if (currentUser && normalizeAccount(currentUser.account) === normalizeAccount(account)) {
-                    showNotification('该账号已在其他设备登录', 'warning');
+                    showNotification('This account is already logged in on another device', 'warning');
                     loginModal.style.display = 'none';
                     return;
                 }
@@ -14198,7 +14448,7 @@ const paginationContainers = {
                     saveCurrentUser();
                     refreshCurrentUserSnapshot(authResult.account);
 
-                    showNotification(`登录成功！正在从云端加载数据...`, 'success');
+                    showNotification(`Login successful! Loading data from cloud...`, 'success');
                     loginModal.style.display = 'none';
 
                     // 登录成功后，强制恢复页面滚动（防止之前的弹窗或彩蛋将页面锁定）
@@ -14255,7 +14505,7 @@ const paginationContainers = {
                             renderUserOrders();
                             renderAddressList();
 
-                            showNotification(`☁️ 云端数据加载完成！欢迎 ${authResult.username}`, 'success');
+                            showNotification(`☁️ Cloud data loaded successfully! Welcome ${authResult.username}`, 'success');
                         } else {
                             // 云端同步未启用,回退到本地缓存
                             console.log('⚠️ 云端同步未启用,使用本地缓存数据');
@@ -14276,11 +14526,11 @@ const paginationContainers = {
                             renderUserOrders();
                             renderAddressList();
                             
-                            showNotification(`💾 云端未连接，已加载本地数据！欢迎 ${authResult.username}`, 'warning');
+                            showNotification(`💾 Cloud not connected, loaded local data! Welcome ${authResult.username}`, 'warning');
                         }
                     } catch (error) {
                         console.error('❌ 数据加载失败:', error);
-                        showNotification('数据加载失败,使用本地缓存', 'warning');
+                        showNotification('Data loading failed, using local cache', 'warning');
                         // 失败时使用本地缓存
                         products = JSON.parse(localStorage.getItem('products')) || [];
                         const userOrdersKey = `userOrders_${authResult.account}`;
@@ -14420,7 +14670,7 @@ const paginationContainers = {
                     }
 
                     // 注册成功后：直接提示 + 自动登录并关闭注册窗口
-                    showNotification(t('registrationSuccess') || '注册成功！', 'success');
+                    showNotification(t('registrationSuccess') || 'Registration successful!', 'success');
                     registerModal.style.display = 'none';
                     updateUserInterface();
                     renderUserOrders();
@@ -17053,7 +17303,7 @@ const paginationContainers = {
                         document.getElementById('user-center').style.display = 'none';
                         document.getElementById('admin-panel').style.display = 'none';
 
-                        showNotification('您的账号已被禁用，正在完成数据同步并已自动退出登录', 'error');
+                        showNotification('Your account has been disabled. Data synchronization completed and you have been automatically logged out', 'error');
                     })();
 
                     // 立即返回，避免继续按照“已登录状态”更新界面
@@ -25726,8 +25976,8 @@ const paginationContainers = {
             </div>
             <div class="modal-footer" id="message-modal-footer" style="padding: 15px 20px; display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid var(--border-subtle);">
                 <button class="btn btn-secondary" id="message-modal-cancel" onclick="closeMessageModal()" style="display: none;">取消</button>
-                <button class="btn btn-primary" id="message-modal-confirm" onclick="confirmMessageModal()" style="display: none;">确定</button>
-                <button class="btn btn-primary" id="message-modal-ok" onclick="closeMessageModal()">确定</button>
+                <button class="btn btn-primary" id="message-modal-confirm" onclick="confirmMessageModal()" style="display: none;">OK</button>
+                <button class="btn btn-primary" id="message-modal-ok" onclick="closeMessageModal()">OK</button>
             </div>
         </div>
     </div>
