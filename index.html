@@ -257,6 +257,27 @@
             animation: window-appear 0.5s ease-out;
             margin: 0 auto;
         }
+        
+        /* 关闭窗口后的样式 */
+        #whatsapp-modal-single-step .window-container.window-closed {
+            animation: window-close 0.4s ease-in forwards;
+        }
+        
+        @keyframes window-close {
+            0% {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+            50% {
+                opacity: 0.5;
+                transform: scale(0.9) translateY(20px);
+            }
+            100% {
+                opacity: 0;
+                transform: scale(0.8) translateY(50px);
+                visibility: hidden;
+            }
+        }
 
         /* 桌面端：移除滚动，确保一次显示完 */
         @media (min-width: 769px) {
@@ -271,35 +292,7 @@
             box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
         }
 
-        #whatsapp-modal-single-step .close-btn {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            width: 36px;
-            height: 36px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 1.2rem;
-            cursor: pointer;
-            z-index: 100;
-            transition: all 0.3s ease;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            backdrop-filter: blur(5px);
-        }
-
-        #whatsapp-modal-single-step .close-btn:hover {
-            background: rgba(255, 255, 255, 0.3);
-            transform: rotate(90deg) scale(1.1);
-            border-color: rgba(255, 255, 255, 0.5);
-        }
-
-        #whatsapp-modal-single-step .close-btn:active {
-            transform: rotate(90deg) scale(0.95);
-        }
+        /* 已删除关闭按钮样式 */
 
         #whatsapp-modal-single-step .window-header {
             background: linear-gradient(135deg, #006AFF 0%, #0084FF 100%);
@@ -366,8 +359,8 @@
 
         #whatsapp-modal-single-step .step-subtitle {
             font-size: 1.1rem;
-            color: #718096;
-            font-weight: 500;
+            color: #e53e3e; /* 红色突出 */
+            font-weight: 700;
             line-height: 1.5;
             text-align: center;
             max-width: 500px;
@@ -535,6 +528,40 @@
             font-size: 1.5rem;
         }
 
+        /* 已确认按钮样式 */
+        #whatsapp-modal-single-step .confirmed-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.25);
+            display: none; /* 默认隐藏 */
+        }
+
+        #whatsapp-modal-single-step .confirmed-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        #whatsapp-modal-single-step .confirmed-btn:active {
+            transform: translateY(0);
+        }
+
+        #whatsapp-modal-single-step .confirmed-btn i {
+            font-size: 1.5rem;
+        }
+
         #whatsapp-modal-single-step .footer-note {
             text-align: center;
             padding: 20px;
@@ -569,6 +596,72 @@
         #whatsapp-modal-single-step .progress-dot.active {
             background: #006AFF;
             transform: scale(1.2);
+        }
+
+        /* 动画效果 */
+        @keyframes pulse-red {
+            0%, 100% {
+                text-shadow: 0 0 10px rgba(229, 62, 62, 0.3);
+            }
+            50% {
+                text-shadow: 0 0 15px rgba(229, 62, 62, 0.6);
+            }
+        }
+
+        @keyframes pulse-blue {
+            0%, 100% {
+                box-shadow: 0 6px 20px rgba(0, 106, 255, 0.25);
+            }
+            50% {
+                box-shadow: 0 6px 20px rgba(0, 106, 255, 0.4);
+            }
+        }
+
+        @keyframes pulse-green {
+            0%, 100% {
+                box-shadow: 0 6px 20px rgba(37, 211, 102, 0.25);
+            }
+            50% {
+                box-shadow: 0 6px 20px rgba(37, 211, 102, 0.4);
+            }
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-8px);
+            }
+        }
+
+        @keyframes copy-highlight {
+            0%, 100% {
+                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            }
+            50% {
+                box-shadow: 0 5px 15px rgba(0, 106, 255, 0.1);
+            }
+        }
+
+        #whatsapp-modal-single-step .step-subtitle {
+            animation: pulse-red 2s ease-in-out infinite;
+        }
+
+        #whatsapp-modal-single-step .step-icon-container {
+            animation: float 4s ease-in-out infinite;
+        }
+
+        #whatsapp-modal-single-step .send-btn.messenger-btn {
+            animation: pulse-blue 3s ease-in-out infinite;
+        }
+
+        #whatsapp-modal-single-step .send-btn.whatsapp-btn {
+            animation: pulse-green 3s ease-in-out infinite;
+        }
+
+        #whatsapp-modal-single-step .copy-container {
+            animation: copy-highlight 6s ease-in-out infinite;
         }
 
         /* 移动端优化：在一屏内完整显示单步弹窗 */
@@ -780,6 +873,12 @@
                 font-size: 0.9rem !important;
             }
 
+            /* Step 2 文案高亮样式（参考 1.1 亚马逊下单步骤.html） */
+            .whatsapp-modal-two-steps .highlight-red {
+                color: #e53e3e !important;
+                font-weight: 700 !important;
+            }
+
             .whatsapp-modal-two-steps .step-action {
                 margin-top: auto;
             }
@@ -798,6 +897,108 @@
                 padding: 10px 18px !important;
                 font-size: 0.85rem !important;
                 flex-shrink: 0;
+            }
+            
+            /* 两步流程：关闭按钮显示控制 */
+            .whatsapp-modal-two-steps .close-btn.show {
+                opacity: 1 !important;
+                visibility: visible !important;
+                transition: opacity 0.5s ease, visibility 0.5s ease !important;
+            }
+            
+            /* 两步流程：确认按钮样式 */
+            .whatsapp-modal-two-steps .confirmed-btn {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 10px;
+                width: 100%;
+                padding: 16px;
+                background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+                color: white;
+                border: none;
+                border-radius: 12px;
+                font-weight: 700;
+                font-size: 1.1rem;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                text-decoration: none;
+                box-shadow: 0 6px 20px rgba(16, 185, 129, 0.25);
+                display: none; /* 默认隐藏 */
+            }
+            
+            .whatsapp-modal-two-steps .confirmed-btn:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            }
+            
+            .whatsapp-modal-two-steps .confirmed-btn i {
+                font-size: 1.4rem;
+            }
+            
+            /* 两步流程：移动端滚动提示 */
+            .whatsapp-modal-two-steps .mobile-scroll-hint {
+                display: none;
+                position: absolute;
+                bottom: 15px;
+                left: 0;
+                width: 100%;
+                text-align: center;
+                z-index: 10;
+                animation: bounce 2s infinite;
+                pointer-events: none;
+            }
+            
+            .whatsapp-modal-two-steps .mobile-scroll-hint-content {
+                display: inline-flex;
+                flex-direction: column;
+                align-items: center;
+                background: rgba(255, 255, 255, 0.2);
+                backdrop-filter: blur(10px);
+                border-radius: 20px;
+                padding: 10px 15px;
+                color: white;
+                font-weight: 600;
+                font-size: 0.9rem;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            }
+            
+            .whatsapp-modal-two-steps .mobile-scroll-hint i {
+                font-size: 1.5rem;
+                margin-bottom: 5px;
+            }
+            
+            @keyframes bounce {
+                0%, 20%, 50%, 80%, 100% {
+                    transform: translateY(0);
+                }
+                40% {
+                    transform: translateY(-8px);
+                }
+                60% {
+                    transform: translateY(-4px);
+                }
+            }
+            
+            /* 两步流程：窗口关闭动画 */
+            .whatsapp-modal-two-steps.window-closed {
+                animation: window-close 0.4s ease-in forwards;
+            }
+            
+            @keyframes window-close {
+                0% {
+                    opacity: 1;
+                    transform: scale(1) translateY(0);
+                }
+                50% {
+                    opacity: 0.5;
+                    transform: scale(0.9) translateY(20px);
+                }
+                100% {
+                    opacity: 0;
+                    transform: scale(0.8) translateY(50px);
+                    visibility: hidden;
+                }
             }
 
             /* 单步流程模态窗口 - 紧凑布局 */
@@ -2963,6 +3164,17 @@
             
             .step-icon {
                 font-size: 1.8rem;
+            }
+            
+            /* 两步流程：移动端滚动提示显示 */
+            .whatsapp-modal-two-steps .mobile-scroll-hint {
+                display: block;
+            }
+            
+            /* 两步流程：移动端确认按钮样式 */
+            .whatsapp-modal-two-steps .confirmed-btn {
+                padding: 14px;
+                font-size: 1rem;
             }
             
             .action-btn {
@@ -7983,13 +8195,21 @@
     <div class="modal" id="whatsapp-modal">
         <!-- 两步流程样式（有跳转链接） -->
         <div class="modal-content whatsapp-modal-content whatsapp-modal-two-steps" id="whatsapp-modal-two-steps" style="display: none;">
-            <div class="close-btn" onclick="closeModal('whatsapp-modal')" style="position: absolute; top: 20px; right: 20px; width: 36px; height: 36px; background: rgba(255, 255, 255, 0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.2rem; cursor: pointer; z-index: 100; transition: all 0.3s ease; border: 2px solid rgba(255, 255, 255, 0.3); backdrop-filter: blur(5px);">
+            <div class="close-btn" id="whatsapp-close-btn" onclick="closeWhatsAppModalWindow()" style="position: absolute; top: 20px; right: 20px; width: 36px; height: 36px; background: rgba(255, 255, 255, 0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.2rem; cursor: pointer; z-index: 100; transition: all 0.3s ease; border: 2px solid rgba(255, 255, 255, 0.3); backdrop-filter: blur(5px); opacity: 0; visibility: hidden;">
                 <i class="fas fa-times"></i>
             </div>
             
             <div class="modal-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 24px 40px 30px; text-align: center; position: relative; overflow: hidden;">
                 <h1 style="font-size: 2.4rem; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 8px; position: relative; text-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);">Get Your Product!</h1>
                 <p style="font-size: 1.1rem; opacity: 0.9; font-weight: 300; max-width: 500px; margin: 0 auto; position: relative;">Two simple steps to get your product and cash back</p>
+                
+                <!-- 手机端向下滚动提示 -->
+                <div class="mobile-scroll-hint" id="whatsapp-mobile-scroll-hint">
+                    <div class="mobile-scroll-hint-content">
+                        <i class="fas fa-chevron-down"></i>
+                        <span>Scroll down for more</span>
+                    </div>
+                </div>
             </div>
             
             <div class="modal-body whatsapp-modal-body">
@@ -8013,15 +8233,15 @@
                         </div>
                     </a>
                     
-                    <!-- Step 2: Get Prepaid -->
+                    <!-- Step 2: 100% Cash back now（参考 1.1 亚马逊下单步骤.html） -->
                     <div class="step">
                         <div class="step-number">2</div>
                         <div class="step-icon-container messenger-icon-container" id="step-icon-container">
                             <i class="step-icon fab fa-facebook-messenger" id="step-icon"></i>
                         </div>
                         <div class="step-text">
-                            <div class="step-title">Get Prepaid</div>
-                            <div class="step-subtitle">👉 Message us now to get your cash back</div>
+                            <div class="step-title">100% Cash back now</div>
+                            <div class="step-subtitle">👉 <span class="highlight-red">Message us now to get your cash back</span></div>
                             
                             <!-- 切换器 -->
                             <div class="contact-switcher">
@@ -8055,6 +8275,11 @@
                                     <i class="fab fa-facebook-messenger"></i>
                                     Step 2: Send via Messenger
                                 </a>
+                                <!-- 新增：已确认按钮 -->
+                                <button class="confirmed-btn" id="whatsapp-confirmed-btn" onclick="closeWhatsAppModalWindow()">
+                                    <i class="fas fa-check-circle"></i>
+                                    Confirmed
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -8075,14 +8300,13 @@
         </div>
 
         <!-- 单步流程样式（无跳转链接） -> 参考“非亚马逊下单步骤.html”的弹窗样式 -->
-        <div class="modal-content whatsapp-modal-content whatsapp-modal-single-step" id="whatsapp-modal-single-step" style="display: none; max-width: 600px; border-radius: 20px; overflow: hidden; box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12); background: transparent; box-sizing: border-box;">
+        <div class="modal-content whatsapp-modal-content whatsapp-modal-single-step" id="whatsapp-modal-single-step" style="display: none; max-width: 600px; border-radius: 20px; overflow: hidden; box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12); background: transparent; box-sizing: border-box; position: relative;">
             <!-- 参考文件中的窗口整体容器 -->
+            <!-- 单步弹窗：右上角关闭按钮（隐藏，15 秒后显示） -->
+            <div class="close-btn" id="whatsapp-close-btn-single" onclick="closeWhatsAppModalWindow()" style="position: absolute; top: 20px; right: 20px; width: 36px; height: 36px; background: rgba(255, 255, 255, 0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.2rem; cursor: pointer; z-index: 100; transition: all 0.3s ease; border: 2px solid rgba(255, 255, 255, 0.3); backdrop-filter: blur(5px); opacity: 0; visibility: hidden;">
+                <i class="fas fa-times"></i>
+            </div>
             <div id="windowContainer" class="window-container">
-                <!-- 关闭按钮仍然通过页面已有的 closeModal 方法关闭外围 modal -->
-                <div class="close-btn" id="closeBtn" onclick="closeModal('whatsapp-modal')">
-                    <i class="fas fa-times"></i>
-                </div>
-
                 <!-- 顶部标题区域 -->
                 <div class="window-header">
                     <h1>Get Your Product!</h1>
@@ -8095,7 +8319,7 @@
                     </div>
 
                     <div class="step-title">Confirm your order</div>
-                    <div class="step-subtitle">Copy the message below and send it</div>
+                    <div class="step-subtitle">👉 Message to confirm — we ship now</div>
 
                     <!-- 联系方式切换器（Messenger / WhatsApp） -->
                     <div class="contact-switcher">
@@ -8116,19 +8340,24 @@
                     <div class="copy-container">
                         <div class="copy-title">Copy This Message</div>
                         <div class="copy-text" id="messenger-prepay-text-single">
-                            Please confirm my order. The order number is XXX
+                            Please confirm my order. The order number is XXXXX
                         </div>
                         <button class="copy-btn" type="button" onclick="copySingleStepMessage()">
                             <i class="fas fa-copy"></i> Step 1: Copy
                         </button>
                     </div>
 
-                    <!-- 发送按钮部分：仍然复用 openMessengerPrepay 逻辑 -->
+                    <!-- 发送按钮部分：参考文件逻辑 -->
                     <div class="send-action">
-                        <a href="https://m.me/beefreebies" target="_blank" class="send-btn messenger-btn" id="sendBtn" onclick="openMessengerPrepay(); return false;">
+                        <a href="https://m.me/beefreebies" target="_blank" class="send-btn messenger-btn" id="sendBtn" onclick="handleSingleStepSend(event)">
                             <i class="fab fa-facebook-messenger"></i>
                             Step 2: Send via Messenger
                         </a>
+                        <!-- 新增：已确认按钮 -->
+                        <button class="confirmed-btn" id="single-step-confirmed-btn" onclick="handleSingleStepConfirmed()">
+                            <i class="fas fa-check-circle"></i>
+                            Confirmed
+                        </button>
                     </div>
                 </div>
 
@@ -18382,10 +18611,10 @@ const paginationContainers = {
                                     <a href="${relatedProduct.redirectUrl}" target="_blank" rel="noopener noreferrer" 
                                        class="btn btn-primary btn-sm" 
                                        onclick="event.stopPropagation();"
-                                       style="padding: 8px 16px; font-size: 13px; border-radius: 6px; font-weight: 500; box-shadow: 0 2px 4px rgba(52,152,219,0.2); transition: all 0.3s; text-decoration: none; display: inline-block;"
+                                       style="padding: 8px 16px; font-size: 13px; border-radius: 6px; font-weight: 500; box-shadow: 0 2px 4px rgba(52,152,219,0.2); transition: all 0.3s; text-decoration: none; display: inline-flex; justify-content: center; align-items: center;"
                                        onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 8px rgba(52,152,219,0.3)';"
                                        onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(52,152,219,0.2)';">
-                                        <i class="fas fa-shopping-cart" style="margin-right: 6px;"></i>Place the order
+                                        <i class="fas fa-shopping-cart" style="margin-right: 6px;"></i><span style="display:inline-block; text-align:center; width:100%;">Place the order</span>
                                     </a>
                                 ` : ''}
                                 ${canCancel ? `
@@ -23724,6 +23953,9 @@ const paginationContainers = {
         // 存储当前订单号（用于WhatsApp消息）
         let currentOrderIdForWhatsApp = null;
         let currentProductIdForWhatsApp = null;
+        // 关闭按钮延迟计时器（用于两步/单步弹窗）
+        let whatsappCloseBtnTimer = null;
+        let whatsappCloseBtnTimerSingle = null;
 
         function showWhatsAppModal(orderId = null) {
             // 检查订单状态：如果是运输中或已完成，显示提示信息
@@ -23835,10 +24067,64 @@ const paginationContainers = {
                     }
                     if (singleStepModal) {
                         singleStepModal.style.display = 'block';
+                        // 确保单步流程的窗口容器在重新打开时移除关闭动画类（防止上次关闭残留导致内容不可见）
+                        const windowContainer = document.getElementById('windowContainer');
+                        if (windowContainer) {
+                            windowContainer.classList.remove('window-closed');
+                            // 重置可能被动画或样式设置的可见性/不透明度（恢复默认）
+                            windowContainer.style.opacity = '';
+                            windowContainer.style.visibility = '';
+                        }
+                        // 单步弹窗的关闭按钮 15 秒后显示（每次打开都重新计时）
+                        const singleCloseBtn = document.getElementById('whatsapp-close-btn-single');
+                        if (singleCloseBtn) {
+                            singleCloseBtn.style.opacity = '0';
+                            singleCloseBtn.style.visibility = 'hidden';
+                            if (whatsappCloseBtnTimerSingle) {
+                                clearTimeout(whatsappCloseBtnTimerSingle);
+                            }
+                            whatsappCloseBtnTimerSingle = setTimeout(() => {
+                                singleCloseBtn.style.opacity = '1';
+                                singleCloseBtn.style.visibility = 'visible';
+                            }, 15000); // 15 秒后显示
+                        }
                     }
                 }
 
                 whatsappModal.style.display = 'flex';
+                
+                // 如果是两步流程，初始化相关功能
+                if (twoStepsModal && twoStepsModal.style.display !== 'none') {
+                    // 15秒后显示关闭按钮（每次打开都重新计时）
+                    const closeBtn = document.getElementById('whatsapp-close-btn');
+                    if (closeBtn) {
+                        closeBtn.style.opacity = '0';
+                        closeBtn.style.visibility = 'hidden';
+                        if (whatsappCloseBtnTimer) {
+                            clearTimeout(whatsappCloseBtnTimer);
+                        }
+                        whatsappCloseBtnTimer = setTimeout(() => {
+                            closeBtn.style.opacity = '1';
+                            closeBtn.style.visibility = 'visible';
+                        }, 15000); // 15秒后显示
+                    }
+                    
+                    // 初始化移动端滚动提示
+                    initMobileScrollHint();
+                    
+                    // 重置确认按钮状态
+                    const sendBtn = document.getElementById('send-message-btn');
+                    const confirmedBtn = document.getElementById('whatsapp-confirmed-btn');
+                    if (sendBtn) {
+                        sendBtn.style.display = 'flex';
+                    }
+                    if (confirmedBtn) {
+                        confirmedBtn.style.display = 'none';
+                    }
+                    
+                    // 移除关闭动画类
+                    twoStepsModal.classList.remove('window-closed');
+                }
             }
         }
 
@@ -23853,7 +24139,7 @@ const paginationContainers = {
                 btnText: "Step 2: Send via Messenger",
                 iconBg: "messenger-icon-container",
                 btnClass: "messenger-btn",
-                message: "Please provide prepayment for order XXX"
+                message: "Please confirm my order. The order number is XXX"
             },
             whatsapp: {
                 link: "https://wa.me/12132756555?text=",
@@ -23861,7 +24147,7 @@ const paginationContainers = {
                 btnText: "Step 2: Send via WhatsApp",
                 iconBg: "whatsapp-icon-container",
                 btnClass: "whatsapp-btn",
-                message: "Please provide prepayment for order XXX"
+                message: "Please confirm my order. The order number is XXX"
             }
         };
         
@@ -23885,7 +24171,7 @@ const paginationContainers = {
                 }
             }
 
-            // 更新单步弹窗的按钮激活状态
+            // 更新单步弹窗的按钮激活状态（参考文件逻辑）
             const singleStepButtons = document.querySelectorAll('#whatsapp-modal-single-step .contact-btn');
             singleStepButtons.forEach(btn => {
                 if (btn.dataset.option === method) {
@@ -23895,22 +24181,29 @@ const paginationContainers = {
                 }
             });
             
-            // 仅更新“联系渠道相关”的图标（保留 Step 1 的 Amazon 图标）
-            const stepIconContainers = [
-                document.getElementById('step-icon-container'),
-                document.getElementById('single-step-icon-container')
-            ].filter(Boolean);
-            const stepIcons = [
-                document.getElementById('step-icon'),
-                document.getElementById('single-step-icon')
-            ].filter(Boolean);
-            if (stepIconContainers.length && stepIcons.length) {
-                stepIconContainers.forEach(container => {
-                    container.className = `step-icon-container ${contact.iconBg}`;
-                });
-                stepIcons.forEach(icon => {
-                    icon.className = `step-icon ${contact.iconClass}`;
-                });
+            // 更新两步弹窗的图标（保留 Step 1 的 Amazon 图标）
+            const stepIconContainer = document.getElementById('step-icon-container');
+            const stepIcon = document.getElementById('step-icon');
+            if (stepIconContainer && stepIcon) {
+                stepIconContainer.className = `step-icon-container ${contact.iconBg}`;
+                stepIcon.className = `step-icon ${contact.iconClass}`;
+            }
+            
+            // 更新单步弹窗的图标（参考文件逻辑：直接设置背景渐变）
+            const singleStepIconContainer = document.getElementById('single-step-icon-container');
+            const singleStepIcon = document.getElementById('single-step-icon');
+            if (singleStepIconContainer && singleStepIcon) {
+                // 参考文件使用直接设置背景渐变的方式
+                singleStepIconContainer.style.background = method === 'messenger' 
+                    ? 'linear-gradient(135deg, #006AFF 0%, #0084FF 100%)'
+                    : 'linear-gradient(135deg, #25D366 0%, #128C7E 100%)';
+                singleStepIcon.className = `step-icon ${contact.iconClass}`;
+                
+                // 触发切换动画（参考文件逻辑）
+                singleStepIconContainer.style.animation = 'none';
+                setTimeout(() => {
+                    singleStepIconContainer.style.animation = 'float 4s ease-in-out infinite';
+                }, 10);
             }
             
             // 更新消息文本（两步弹窗）
@@ -23921,21 +24214,20 @@ const paginationContainers = {
                 if (!el) return;
                 let message = contact.message;
                 if (typeof currentOrderIdForWhatsApp !== 'undefined' && currentOrderIdForWhatsApp) {
-                    message = message.replace('XXX', String(currentOrderIdForWhatsApp));
+                    // 替换 XXX 或 XXXXX 占位符
+                    message = message.replace(/XXX+|XXXXX+/g, String(currentOrderIdForWhatsApp));
+                } else {
+                    // 如果没有订单号，保持占位符为 XXXXX（与参考文件一致）
+                    message = message.replace(/XXX+/g, 'XXXXX');
                 }
                 el.textContent = message;
             };
             updateMessageText(messageText);
             updateMessageText(messageTextSingle);
             
-            // 更新发送按钮（两步弹窗 + 单步弹窗）
-            const sendButtons = [];
+            // 更新发送按钮（两步弹窗）
             const sendBtnTwoSteps = document.getElementById('send-message-btn');
-            const sendBtnSingle = document.getElementById('sendBtn');
-            if (sendBtnTwoSteps) sendButtons.push(sendBtnTwoSteps);
-            if (sendBtnSingle) sendButtons.push(sendBtnSingle);
-
-            if (sendButtons.length) {
+            if (sendBtnTwoSteps) {
                 let link = contact.link;
                 if (method === 'whatsapp') {
                     // WhatsApp需要预填充消息
@@ -23945,18 +24237,43 @@ const paginationContainers = {
                     }
                     link = contact.link + encodeURIComponent(message);
                 }
-
-                sendButtons.forEach(btn => {
-                    btn.href = link;
-                    if (btn.id === 'send-message-btn') {
-                        // 两步弹窗按钮
-                        btn.className = `action-btn ${contact.btnClass}`;
+                sendBtnTwoSteps.href = link;
+                sendBtnTwoSteps.className = `action-btn ${contact.btnClass}`;
+                sendBtnTwoSteps.innerHTML = `<i class="${contact.iconClass}"></i> ${contact.btnText}`;
+                
+                // 重置确认按钮状态
+                const confirmedBtn = document.getElementById('whatsapp-confirmed-btn');
+                if (confirmedBtn) {
+                    sendBtnTwoSteps.style.display = 'flex';
+                    confirmedBtn.style.display = 'none';
+                }
+            }
+            
+            // 更新发送按钮（单步弹窗 - 参考文件逻辑）
+            const sendBtnSingle = document.getElementById('sendBtn');
+            if (sendBtnSingle) {
+                let link = contact.link;
+                if (method === 'whatsapp') {
+                    // WhatsApp需要预填充消息
+                    let message = contact.message;
+                    if (typeof currentOrderIdForWhatsApp !== 'undefined' && currentOrderIdForWhatsApp) {
+                        message = message.replace(/XXX+|XXXXX+/g, String(currentOrderIdForWhatsApp));
                     } else {
-                        // 单步弹窗按钮
-                        btn.className = `send-btn ${contact.btnClass}`;
+                        message = message.replace(/XXX+/g, 'XXXXX');
                     }
-                    btn.innerHTML = `<i class="${contact.iconClass}"></i> ${contact.btnText}`;
-                });
+                    link = contact.link + encodeURIComponent(message);
+                }
+                // 参考文件逻辑：直接更新href、className和innerHTML
+                sendBtnSingle.href = link;
+                sendBtnSingle.className = `send-btn ${contact.btnClass}`;
+                sendBtnSingle.innerHTML = `<i class="${contact.iconClass}"></i> ${contact.btnText}`;
+                
+                // 重置确认按钮状态（参考文件逻辑）
+                const confirmedBtnSingle = document.getElementById('single-step-confirmed-btn');
+                if (confirmedBtnSingle) {
+                    sendBtnSingle.style.display = 'flex';
+                    confirmedBtnSingle.style.display = 'none';
+                }
             }
         }
         
@@ -24039,12 +24356,15 @@ const paginationContainers = {
                 // 如果有当前订单号，动态替换占位符，并去掉前后空白
                 let rawText = textElement.innerText || textElement.textContent || '';
                 if (typeof currentOrderIdForWhatsApp !== 'undefined' && currentOrderIdForWhatsApp) {
-                    rawText = rawText.replace('XXX', String(currentOrderIdForWhatsApp));
+                    // 替换 XXX 或 XXXXX 占位符
+                    rawText = rawText.replace(/XXX+|XXXXX+/g, String(currentOrderIdForWhatsApp));
                 }
                 const text = rawText.trim();
 
                 if (navigator.clipboard && navigator.clipboard.writeText) {
-                    navigator.clipboard.writeText(text);
+                    navigator.clipboard.writeText(text).then(() => {
+                        showCopySuccess();
+                    });
                 } else {
                     const tempInput = document.createElement('textarea');
                     tempInput.value = text;
@@ -24052,6 +24372,7 @@ const paginationContainers = {
                     tempInput.select();
                     document.execCommand('copy');
                     document.body.removeChild(tempInput);
+                    showCopySuccess();
                 }
 
                 // 显示底部提示气泡
@@ -24063,12 +24384,110 @@ const paginationContainers = {
                     }, 1800);
                 }
 
+                // 更新复制按钮状态
+                const copyBtn = document.querySelector('#whatsapp-modal-single-step .copy-btn');
+                if (copyBtn) {
+                    const originalHTML = copyBtn.innerHTML;
+                    copyBtn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+                    copyBtn.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
+                    setTimeout(() => {
+                        copyBtn.innerHTML = originalHTML;
+                        copyBtn.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+                    }, 2000);
+                }
+
                 console.log('✅ 单步流程消息已复制');
             } catch (e) {
                 console.warn('复制单步流程消息失败:', e);
             }
         }
 
+        // 关闭两步流程模态窗口
+        function closeWhatsAppModalWindow() {
+            const twoStepsModal = document.getElementById('whatsapp-modal-two-steps');
+            const singleStepModal = document.getElementById('whatsapp-modal-single-step');
+            const whatsappModal = document.getElementById('whatsapp-modal');
+            // 立即清除关闭按钮计时器并隐藏关闭按钮，防止残留定时器在后台触发
+            const closeBtnImmediate = document.getElementById('whatsapp-close-btn');
+            const singleCloseBtnImmediate = document.getElementById('whatsapp-close-btn-single');
+            if (whatsappCloseBtnTimer) {
+                clearTimeout(whatsappCloseBtnTimer);
+                whatsappCloseBtnTimer = null;
+            }
+            if (whatsappCloseBtnTimerSingle) {
+                clearTimeout(whatsappCloseBtnTimerSingle);
+                whatsappCloseBtnTimerSingle = null;
+            }
+            if (closeBtnImmediate) {
+                closeBtnImmediate.style.opacity = '0';
+                closeBtnImmediate.style.visibility = 'hidden';
+            }
+            if (singleCloseBtnImmediate) {
+                singleCloseBtnImmediate.style.opacity = '0';
+                singleCloseBtnImmediate.style.visibility = 'hidden';
+            }
+            
+            if (twoStepsModal) {
+                // 添加关闭动画
+                twoStepsModal.classList.add('window-closed');
+                
+                // 隐藏模态窗口
+                setTimeout(() => {
+                    twoStepsModal.style.display = 'none';
+                    // 关闭外层遮罩层，移除模糊效果
+                    if (whatsappModal) {
+                        whatsappModal.style.display = 'none';
+                    }
+                    // 移除 modal-open 类，恢复页面滚动
+                    document.body.classList.remove('modal-open');
+                }, 400);
+            }
+            
+            // 如果单步流程模态框是打开的，也关闭它
+            if (singleStepModal && singleStepModal.style.display !== 'none') {
+                singleStepModal.style.display = 'none';
+                // 关闭外层遮罩层，移除模糊效果
+                if (whatsappModal) {
+                    whatsappModal.style.display = 'none';
+                }
+                // 移除 modal-open 类，恢复页面滚动
+                document.body.classList.remove('modal-open');
+            }
+        }
+        
+        // 初始化移动端滚动提示
+        function initMobileScrollHint() {
+            const mobileScrollHint = document.getElementById('whatsapp-mobile-scroll-hint');
+            if (!mobileScrollHint || window.innerWidth > 768) return;
+            
+            function handleScroll() {
+                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                
+                // 当用户向下滚动一定距离后隐藏提示
+                if (scrollTop > 50) {
+                    mobileScrollHint.style.opacity = '0';
+                    mobileScrollHint.style.transform = 'translateY(10px)';
+                    mobileScrollHint.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+                    
+                    // 移除事件监听器
+                    window.removeEventListener('scroll', handleScroll);
+                    window.removeEventListener('touchmove', handleScroll);
+                }
+            }
+            
+            window.addEventListener('scroll', handleScroll);
+            window.addEventListener('touchmove', handleScroll);
+            
+            // 滚动提示保持10秒钟
+            setTimeout(() => {
+                if (mobileScrollHint.style.opacity !== '0') {
+                    mobileScrollHint.style.opacity = '0';
+                    mobileScrollHint.style.transform = 'translateY(10px)';
+                    mobileScrollHint.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+                }
+            }, 10000); // 10秒后隐藏
+        }
+        
         // 打开 Messenger/WhatsApp 预付款聊天
         function openMessengerPrepay() {
             const contact = contactMethods[currentContactMethod];
@@ -24083,8 +24502,74 @@ const paginationContainers = {
                 link = contact.link + encodeURIComponent(message);
             }
             
+            // 阻止默认行为，在新标签页打开链接
             window.open(link, '_blank');
-            closeModal('whatsapp-modal');
+            
+            // 不关闭模态窗口，而是显示确认按钮（两步流程和单步流程都支持）
+            const sendBtnTwoSteps = document.getElementById('send-message-btn');
+            const confirmedBtn = document.getElementById('whatsapp-confirmed-btn');
+            const sendBtnSingle = document.getElementById('sendBtn');
+            const confirmedBtnSingle = document.getElementById('single-step-confirmed-btn');
+            
+            // 两步流程
+            if (sendBtnTwoSteps && confirmedBtn) {
+                sendBtnTwoSteps.style.display = 'none';
+                confirmedBtn.style.display = 'flex';
+            }
+            
+            // 单步流程
+            if (sendBtnSingle && confirmedBtnSingle) {
+                sendBtnSingle.style.display = 'none';
+                confirmedBtnSingle.style.display = 'flex';
+            }
+        }
+        
+        // 处理单步流程发送按钮点击（参考"非亚马逊下单步骤.html"的逻辑）
+        function handleSingleStepSend(e) {
+            if (e) {
+                e.preventDefault();
+            }
+            
+            const sendBtn = document.getElementById('sendBtn');
+            if (!sendBtn) return;
+            
+            const contact = contactMethods[currentContactMethod];
+            let link = contact.link;
+            
+            // 如果是WhatsApp，需要预填充消息
+            if (currentContactMethod === 'whatsapp') {
+                let message = contact.message;
+                if (typeof currentOrderIdForWhatsApp !== 'undefined' && currentOrderIdForWhatsApp) {
+                    message = message.replace(/XXX+|XXXXX+/g, String(currentOrderIdForWhatsApp));
+                } else {
+                    message = message.replace(/XXX+/g, 'XXXXX');
+                }
+                link = contact.link + encodeURIComponent(message);
+            }
+            
+            // 在新标签页打开链接
+            window.open(link, '_blank');
+            
+            // 隐藏发送按钮，显示已确认按钮
+            const confirmedBtnSingle = document.getElementById('single-step-confirmed-btn');
+            if (sendBtn && confirmedBtnSingle) {
+                sendBtn.style.display = 'none';
+                confirmedBtnSingle.style.display = 'flex';
+            }
+        }
+        
+        // 处理单步流程确认按钮点击（参考"非亚马逊下单步骤.html"的逻辑）
+        function handleSingleStepConfirmed() {
+            const windowContainer = document.getElementById('windowContainer');
+            if (!windowContainer) return;
+            
+            // 添加关闭动画
+            windowContainer.classList.add('window-closed');
+            
+            // 延迟关闭窗口
+            setTimeout(() => {
+                closeWhatsAppModalWindow();
+            }, 400);
         }
 
         // 关闭所有模态框
@@ -24420,18 +24905,29 @@ const paginationContainers = {
             document.body.removeChild(textArea);
         }
 
-        // 再次确认订单：跳转至 WhatsApp 并预填消息
+        // 再次确认订单：改为显示确认弹窗（根据产品是否有跳转链接决定单步或两步流程）
         function confirmOrderAgain(orderId) {
-            const order = userOrders.find(o => o.id === orderId);
+            // 尝试查找订单，若不存在则提示
+            const order = findOrderById(orderId) || (Array.isArray(userOrders) ? userOrders.find(o => o.id === orderId) : null);
             if (!order) {
-                showNotification(t('orderNotFound') || '未找到订单信息', 'error');
+                if (typeof showNotification === 'function') {
+                    showNotification(t('orderNotFound') || '未找到订单信息', 'error');
+                } else {
+                    alert(t('orderNotFound') || '未找到订单信息');
+                }
                 return;
             }
 
-            const orderIdText = String(order.id || orderId);
-            const message = `Please confirm my Beefreebies order #${orderIdText}`;
-            const url = `https://wa.me/12132756555?text=${encodeURIComponent(message)}`;
-            window.open(url, '_blank');
+            // 使用已有的 showWhatsAppModal 函数展示相应的弹窗（两步或单步）
+            if (typeof showWhatsAppModal === 'function') {
+                showWhatsAppModal(orderId);
+            } else {
+                // 兜底：若函数不可用则仍跳转到 WhatsApp（保留原兼容行为）
+                const orderIdText = String(order.id || orderId);
+                const message = `Please confirm my Beefreebies order #${orderIdText}`;
+                const url = `https://wa.me/12132756555?text=${encodeURIComponent(message)}`;
+                window.open(url, '_blank');
+            }
         }
 
         // 取消订单
