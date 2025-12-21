@@ -14204,6 +14204,13 @@ const paginationContainers = {
                 // 应用语言设置（在页面渲染后）
                 applyLanguage();
                 
+                // 更新用户界面以反映本地存储的登录状态（确保刷新后显示正确的登录/用户名）
+                try {
+                    if (typeof updateUserInterface === 'function') updateUserInterface();
+                } catch (e) {
+                    console.warn('更新用户界面失败:', e);
+                }
+                
             } catch (error) {
                 console.error('页面初始化失败:', error);
                 loaderProgress.textContent = '加载失败';
@@ -18611,10 +18618,10 @@ const paginationContainers = {
                                     <a href="${relatedProduct.redirectUrl}" target="_blank" rel="noopener noreferrer" 
                                        class="btn btn-primary btn-sm" 
                                        onclick="event.stopPropagation();"
-                                       style="padding: 8px 16px; font-size: 13px; border-radius: 6px; font-weight: 500; box-shadow: 0 2px 4px rgba(52,152,219,0.2); transition: all 0.3s; text-decoration: none; display: inline-flex; justify-content: center; align-items: center;"
+                                       style="padding: 8px 16px; font-size: 13px; border-radius: 6px; font-weight: 500; box-shadow: 0 2px 4px rgba(52,152,219,0.2); transition: all 0.3s; text-decoration: none; display: inline-flex; justify-content: center; align-items: center; gap: 8px;"
                                        onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 8px rgba(52,152,219,0.3)';"
                                        onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(52,152,219,0.2)';">
-                                        <i class="fas fa-shopping-cart" style="margin-right: 6px;"></i><span style="display:inline-block; text-align:center; width:100%;">Place the order</span>
+                                        <i class="fas fa-shopping-cart"></i><span style="display:inline-block; text-align:center;">Place the order</span>
                                     </a>
                                 ` : ''}
                                 ${canCancel ? `
