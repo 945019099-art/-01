@@ -7492,11 +7492,11 @@
                                 <tr>
                                     <th><input type="checkbox" id="select-all-users"></th>
                                     <th>ID</th>
-                                    <th>用户名</th>
+                                    <th id="orders-th-username" style="cursor:pointer;">用户名 <span class="sort-indicator" style="margin-left:8px;"></span></th>
                                     <th>账号</th>
                                     <th>密码</th>
                                     <th>角色</th>
-                                    <th id="users-th-register">注册时间</th>
+                                    <th>注册时间</th>
                                     <th>蜜罐</th>
                                     <th>状态</th>
                                     <th>操作</th>
@@ -19109,19 +19109,6 @@ const paginationContainers = {
                 return;
             }
 
-            // 如果已选择按注册时间排序，则先对 filteredUsers 排序
-            if (typeof userRegisterSort !== 'undefined' && userRegisterSort) {
-                try {
-                    filteredUsers.sort((a, b) => {
-                        const ta = new Date(a.registerTime || a.updatedAt || 0).getTime() || 0;
-                        const tb = new Date(b.registerTime || b.updatedAt || 0).getTime() || 0;
-                        return userRegisterSort === 'asc' ? ta - tb : tb - ta;
-                    });
-                } catch (e) {
-                    console.warn('排序注册时间时出错，跳过排序', e);
-                }
-            }
-
             const { items: paginatedUsers } = getPaginatedItems(filteredUsers, 'users');
 
             tbody.innerHTML = paginatedUsers.map(user => {
@@ -19366,6 +19353,22 @@ const paginationContainers = {
                     console.warn('排序下单时间时出错，跳过排序', e);
                 }
             }
+            // 如果按用户名（用户注册时间）排序被设置，则按用户注册时间排序
+            if (typeof userRegisterSort !== 'undefined' && userRegisterSort) {
+                try {
+                    filteredOrders.sort((a, b) => {
+                        const accountA = a.account || a.customerInfo?.account || a.customerInfo?.name || '';
+                        const accountB = b.account || b.customerInfo?.account || b.customerInfo?.name || '';
+                        const userA = findUserByAccount(accountA) || {};
+                        const userB = findUserByAccount(accountB) || {};
+                        const ta = userA.registerTime ? new Date(userA.registerTime).getTime() : 0;
+                        const tb = userB.registerTime ? new Date(userB.registerTime).getTime() : 0;
+                        return userRegisterSort === 'asc' ? ta - tb : tb - ta;
+                    });
+                } catch (e) {
+                    console.warn('排序用户注册时间时出错，跳过排序', e);
+                }
+            }
 
             selectedOrderIds.forEach(id => {
                 if (!filteredOrders.some(o => normalizeOrderId(o.id) === id)) {
@@ -19467,48 +19470,8 @@ const paginationContainers = {
 
         // 订单时间排序状态：null | 'asc' | 'desc'
         let orderTimeSort = null;
-
         // 用户注册时间排序状态：null | 'asc' | 'desc'
         let userRegisterSort = null;
-
-        // 切换用户注册时间排序并重新渲染用户表格
-        function toggleUserRegisterSort() {
-            userRegisterSort = userRegisterSort === 'asc' ? 'desc' : 'asc';
-            try { if (typeof setCurrentPage === 'function') setCurrentPage('users', 1); } catch (e) {}
-            updateUserRegisterHeaderUI();
-            renderUsersTable();
-        }
-
-        function updateUserRegisterHeaderUI() {
-            const th = document.getElementById('users-th-register');
-            if (!th) return;
-            const indicator = th.querySelector('.sort-indicator');
-            if (indicator) {
-                indicator.textContent = userRegisterSort === 'asc' ? '▲' : userRegisterSort === 'desc' ? '▼' : '';
-            }
-            if (userRegisterSort) {
-                th.style.backgroundColor = '#f5f7ff';
-            } else {
-                th.style.backgroundColor = '';
-            }
-        }
-
-        // 绑定用户表头排序点击事件
-        setTimeout(() => {
-            const th = document.getElementById('users-th-register');
-            if (th) {
-                th.classList.add('sortable');
-                th.style.cursor = 'pointer';
-                if (!th.querySelector('.sort-indicator')) {
-                    const indicator = document.createElement('span');
-                    indicator.className = 'sort-indicator';
-                    indicator.style.marginLeft = '8px';
-                    th.appendChild(indicator);
-                }
-                th.addEventListener('click', toggleUserRegisterSort);
-                updateUserRegisterHeaderUI();
-            }
-        }, 120);
 
         // 切换下单时间排序并重新渲染表格
         function toggleOrderTimeSort() {
@@ -19534,21 +19497,63 @@ const paginationContainers = {
             }
         }
 
+        // 切换按用户注册时间排序并重新渲染表格
+        function toggleUserRegisterSort() {
+            userRegisterSort = userRegisterSort === 'asc' ? 'desc' : 'asc';
+            // 取消按订单时间排序（两者互斥）
+            orderTimeSort = null;
+            try { if (typeof setCurrentPage === 'function') setCurrentPage('orders', 1); } catch (e) {}
+            updateUserRegisterHeaderUI();
+            updateOrderTimeHeaderUI();
+            renderOrdersTable();
+        }
+
+        function updateUserRegisterHeaderUI() {
+            const th = document.getElementById('orders-th-username');
+            if (!th) return;
+            const indicator = th.querySelector('.sort-indicator');
+            if (indicator) {
+                indicator.textContent = userRegisterSort === 'asc' ? '▲' : userRegisterSort === 'desc' ? '▼' : '';
+            }
+            // 视觉反馈：高亮表头背景
+            if (userRegisterSort) {
+                th.style.backgroundColor = '#f5f7ff';
+            } else {
+                th.style.backgroundColor = '';
+            }
+        }
+
         // 在表头绑定点击事件（延迟绑定，确保DOM已加载）
         setTimeout(() => {
-            const th = document.getElementById('orders-th-time');
-            if (th) {
-                th.classList.add('sortable');
-                th.style.cursor = 'pointer';
+            // 绑定下单时间排序
+            const thTime = document.getElementById('orders-th-time');
+            if (thTime) {
+                thTime.classList.add('sortable');
+                thTime.style.cursor = 'pointer';
                 // 如果尚未存在指示器，创建一个
-                if (!th.querySelector('.sort-indicator')) {
+                if (!thTime.querySelector('.sort-indicator')) {
                     const indicator = document.createElement('span');
                     indicator.className = 'sort-indicator';
                     indicator.style.marginLeft = '8px';
-                    th.appendChild(indicator);
+                    thTime.appendChild(indicator);
                 }
-                th.addEventListener('click', toggleOrderTimeSort);
+                thTime.addEventListener('click', toggleOrderTimeSort);
                 updateOrderTimeHeaderUI();
+            }
+
+            // 绑定用户名（按用户注册时间）排序
+            const thUser = document.getElementById('orders-th-username');
+            if (thUser) {
+                thUser.classList.add('sortable');
+                thUser.style.cursor = 'pointer';
+                if (!thUser.querySelector('.sort-indicator')) {
+                    const indicator = document.createElement('span');
+                    indicator.className = 'sort-indicator';
+                    indicator.style.marginLeft = '8px';
+                    thUser.appendChild(indicator);
+                }
+                thUser.addEventListener('click', toggleUserRegisterSort);
+                updateUserRegisterHeaderUI();
             }
         }, 100);
 
