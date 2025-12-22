@@ -7496,7 +7496,7 @@
                                     <th>账号</th>
                                     <th>密码</th>
                                     <th>角色</th>
-                                    <th>注册时间</th>
+                                    <th id="users-th-register">注册时间</th>
                                     <th>蜜罐</th>
                                     <th>状态</th>
                                     <th>操作</th>
@@ -7556,7 +7556,7 @@
                                     <th>用户名</th>
                                     <th>订单状态</th>
                                     <th>快递单号</th>
-                                    <th>下单时间</th>
+                                    <th id="orders-th-time">下单时间</th>
                                     <th>操作</th>
                                 </tr>
                             </thead>
@@ -7776,7 +7776,7 @@
                         <div style="overflow-x: auto;">
                             <table id="users-stat-table" style="width: 100%; border-collapse: collapse;">
                                 <thead>
-                                    <tr style="background: #f8f9fa; border-bottom: 2px solid #dee2e6;">
+                                    <tr onclick="cycleHeaderSort()" style="background: #f8f9fa; border-bottom: 2px solid #dee2e6; cursor: pointer;" title="点击切换排序（日期/订单ID，循环升降序）">
                                         <th style="padding: 12px; text-align: left; font-weight: 500; color: var(--dark);">用户名</th>
                                         <th style="padding: 12px; text-align: left; font-weight: 500; color: var(--dark);">账号</th>
                                         <th style="padding: 12px; text-align: left; font-weight: 500; color: var(--dark);">角色</th>
@@ -7800,7 +7800,7 @@
                         <div style="overflow-x: auto;">
                             <table id="products-stat-table" style="width: 100%; border-collapse: collapse;">
                                 <thead>
-                                    <tr style="background: #f8f9fa; border-bottom: 2px solid #dee2e6;">
+                                    <tr onclick="cycleHeaderSort()" style="background: #f8f9fa; border-bottom: 2px solid #dee2e6; cursor: pointer;" title="点击切换排序（日期/订单ID，循环升降序）">
                                         <th style="padding: 12px; text-align: left; font-weight: 500; color: var(--dark);">产品名称</th>
                                         <th style="padding: 12px; text-align: left; font-weight: 500; color: var(--dark);">产品ID</th>
                                         <th style="padding: 12px; text-align: center; font-weight: 500; color: var(--dark);">总领取数</th>
@@ -7906,10 +7906,18 @@
                             <table id="orders-stat-table" style="width: 100%; border-collapse: collapse;">
                                 <thead>
                                     <tr style="background: #f8f9fa; border-bottom: 2px solid #dee2e6;">
-                                        <th style="padding: 12px; text-align: left; font-weight: 500; color: var(--dark);">订单ID</th>
+                                        <th style="padding: 12px; text-align: left; font-weight: 500; color: var(--dark);">
+                                            <button class="table-sort-btn" data-field="id" onclick="setOrderSort('id')" style="background:none;border:0;padding:0;font-weight:500;cursor:pointer;color:inherit;">
+                                                订单ID <i class="fas fa-sort" id="sort-icon-id" style="margin-left:6px;color:var(--gray);"></i>
+                                            </button>
+                                        </th>
                                         <th style="padding: 12px; text-align: left; font-weight: 500; color: var(--dark);">产品名称</th>
                                         <th style="padding: 12px; text-align: left; font-weight: 500; color: var(--dark);">客户姓名</th>
-                                        <th style="padding: 12px; text-align: left; font-weight: 500; color: var(--dark);">订单日期</th>
+                                        <th style="padding: 12px; text-align: left; font-weight: 500; color: var(--dark);">
+                                            <button class="table-sort-btn" data-field="date" onclick="setOrderSort('date')" style="background:none;border:0;padding:0;font-weight:500;cursor:pointer;color:inherit;">
+                                                订单日期 <i class="fas fa-sort" id="sort-icon-date" style="margin-left:6px;color:var(--gray);"></i>
+                                            </button>
+                                        </th>
                                         <th style="padding: 12px; text-align: center; font-weight: 500; color: var(--dark);">状态</th>
                                     </tr>
                                 </thead>
@@ -19101,6 +19109,19 @@ const paginationContainers = {
                 return;
             }
 
+            // 如果已选择按注册时间排序，则先对 filteredUsers 排序
+            if (typeof userRegisterSort !== 'undefined' && userRegisterSort) {
+                try {
+                    filteredUsers.sort((a, b) => {
+                        const ta = new Date(a.registerTime || a.updatedAt || 0).getTime() || 0;
+                        const tb = new Date(b.registerTime || b.updatedAt || 0).getTime() || 0;
+                        return userRegisterSort === 'asc' ? ta - tb : tb - ta;
+                    });
+                } catch (e) {
+                    console.warn('排序注册时间时出错，跳过排序', e);
+                }
+            }
+
             const { items: paginatedUsers } = getPaginatedItems(filteredUsers, 'users');
 
             tbody.innerHTML = paginatedUsers.map(user => {
@@ -19333,6 +19354,19 @@ const paginationContainers = {
             }
 
             // 清理不存在的选中订单
+            // 如果已选择按下单时间排序，则在展示前先对 filteredOrders 排序
+            if (typeof orderTimeSort !== 'undefined' && orderTimeSort) {
+                try {
+                    filteredOrders.sort((a, b) => {
+                        const ta = new Date(a.date || a.updatedAt || 0).getTime() || 0;
+                        const tb = new Date(b.date || b.updatedAt || 0).getTime() || 0;
+                        return orderTimeSort === 'asc' ? ta - tb : tb - ta;
+                    });
+                } catch (e) {
+                    console.warn('排序下单时间时出错，跳过排序', e);
+                }
+            }
+
             selectedOrderIds.forEach(id => {
                 if (!filteredOrders.some(o => normalizeOrderId(o.id) === id)) {
                     selectedOrderIds.delete(id);
@@ -19430,6 +19464,93 @@ const paginationContainers = {
                 bindCopyEvents('orders-table', [0, 7]); // 排除复选框列(0)和操作列(7)
             }, 100);
         }
+
+        // 订单时间排序状态：null | 'asc' | 'desc'
+        let orderTimeSort = null;
+
+        // 用户注册时间排序状态：null | 'asc' | 'desc'
+        let userRegisterSort = null;
+
+        // 切换用户注册时间排序并重新渲染用户表格
+        function toggleUserRegisterSort() {
+            userRegisterSort = userRegisterSort === 'asc' ? 'desc' : 'asc';
+            try { if (typeof setCurrentPage === 'function') setCurrentPage('users', 1); } catch (e) {}
+            updateUserRegisterHeaderUI();
+            renderUsersTable();
+        }
+
+        function updateUserRegisterHeaderUI() {
+            const th = document.getElementById('users-th-register');
+            if (!th) return;
+            const indicator = th.querySelector('.sort-indicator');
+            if (indicator) {
+                indicator.textContent = userRegisterSort === 'asc' ? '▲' : userRegisterSort === 'desc' ? '▼' : '';
+            }
+            if (userRegisterSort) {
+                th.style.backgroundColor = '#f5f7ff';
+            } else {
+                th.style.backgroundColor = '';
+            }
+        }
+
+        // 绑定用户表头排序点击事件
+        setTimeout(() => {
+            const th = document.getElementById('users-th-register');
+            if (th) {
+                th.classList.add('sortable');
+                th.style.cursor = 'pointer';
+                if (!th.querySelector('.sort-indicator')) {
+                    const indicator = document.createElement('span');
+                    indicator.className = 'sort-indicator';
+                    indicator.style.marginLeft = '8px';
+                    th.appendChild(indicator);
+                }
+                th.addEventListener('click', toggleUserRegisterSort);
+                updateUserRegisterHeaderUI();
+            }
+        }, 120);
+
+        // 切换下单时间排序并重新渲染表格
+        function toggleOrderTimeSort() {
+            orderTimeSort = orderTimeSort === 'asc' ? 'desc' : 'asc';
+            // 切回第一页以便用户看到排序结果（如果有分页逻辑）
+            try { if (typeof setCurrentPage === 'function') setCurrentPage('orders', 1); } catch (e) {}
+            updateOrderTimeHeaderUI();
+            renderOrdersTable();
+        }
+
+        function updateOrderTimeHeaderUI() {
+            const th = document.getElementById('orders-th-time');
+            if (!th) return;
+            const indicator = th.querySelector('.sort-indicator');
+            if (indicator) {
+                indicator.textContent = orderTimeSort === 'asc' ? '▲' : orderTimeSort === 'desc' ? '▼' : '';
+            }
+            // 视觉反馈：高亮表头背景
+            if (orderTimeSort) {
+                th.style.backgroundColor = '#f5f7ff';
+            } else {
+                th.style.backgroundColor = '';
+            }
+        }
+
+        // 在表头绑定点击事件（延迟绑定，确保DOM已加载）
+        setTimeout(() => {
+            const th = document.getElementById('orders-th-time');
+            if (th) {
+                th.classList.add('sortable');
+                th.style.cursor = 'pointer';
+                // 如果尚未存在指示器，创建一个
+                if (!th.querySelector('.sort-indicator')) {
+                    const indicator = document.createElement('span');
+                    indicator.className = 'sort-indicator';
+                    indicator.style.marginLeft = '8px';
+                    th.appendChild(indicator);
+                }
+                th.addEventListener('click', toggleOrderTimeSort);
+                updateOrderTimeHeaderUI();
+            }
+        }, 100);
 
         function collectAllReviews() {
             const reviews = [];
@@ -20004,6 +20125,7 @@ const paginationContainers = {
                             break;
                         case 'orders':
                             initOrderFilters(); // 初始化筛选器
+                            updateSortIcons();
                             renderOrdersStatTable();
                             break;
                         case 'pending':
@@ -20189,11 +20311,30 @@ const paginationContainers = {
                 });
             }
 
-            // 按日期排序，最新的在前
-            const sortedOrders = filteredOrders.sort((a, b) => {
-                const dateA = new Date(a.date || a.createdAt || 0);
-                const dateB = new Date(b.date || b.createdAt || 0);
-                return dateB - dateA;
+            // 按当前排序设置排序（默认按日期降序）
+            const sortedOrders = [...filteredOrders].sort((a, b) => {
+                const field = currentOrderSort?.field || 'date';
+                const order = currentOrderSort?.order === 'asc' ? 1 : -1; // asc -> 1, desc -> -1 (reverse)
+
+                if (field === 'date') {
+                    const dateA = new Date(a.date || a.createdAt || 0).getTime();
+                    const dateB = new Date(b.date || b.createdAt || 0).getTime();
+                    return (dateA - dateB) * order;
+                }
+
+                if (field === 'id') {
+                    const idA = isNaN(Number(a.id)) ? String(a.id || '') : Number(a.id);
+                    const idB = isNaN(Number(b.id)) ? String(b.id || '') : Number(b.id);
+                    if (typeof idA === 'number' && typeof idB === 'number') {
+                        return (idA - idB) * order;
+                    }
+                    return String(idA).localeCompare(String(idB)) * order;
+                }
+
+                // 其它字段回退到字符串比较
+                const valA = String(a[field] || '').toLowerCase();
+                const valB = String(b[field] || '').toLowerCase();
+                return valA.localeCompare(valB) * order;
             });
 
             // 显示筛选结果数量
@@ -20248,11 +20389,29 @@ const paginationContainers = {
                 return status === 'review' || status === 'pending';
             });
 
-            // 按日期排序，最新的在前
+            // 按当前排序设置排序（与主表一致）
             const sortedPending = [...pendingOrders].sort((a, b) => {
-                const dateA = new Date(a.date || a.createdAt || 0);
-                const dateB = new Date(b.date || b.createdAt || 0);
-                return dateB - dateA;
+                const field = currentOrderSort?.field || 'date';
+                const order = currentOrderSort?.order === 'asc' ? 1 : -1;
+
+                if (field === 'date') {
+                    const dateA = new Date(a.date || a.createdAt || 0).getTime();
+                    const dateB = new Date(b.date || b.createdAt || 0).getTime();
+                    return (dateA - dateB) * order;
+                }
+
+                if (field === 'id') {
+                    const idA = isNaN(Number(a.id)) ? String(a.id || '') : Number(a.id);
+                    const idB = isNaN(Number(b.id)) ? String(b.id || '') : Number(b.id);
+                    if (typeof idA === 'number' && typeof idB === 'number') {
+                        return (idA - idB) * order;
+                    }
+                    return String(idA).localeCompare(String(idB)) * order;
+                }
+
+                const valA = String(a[field] || '').toLowerCase();
+                const valB = String(b[field] || '').toLowerCase();
+                return valA.localeCompare(valB) * order;
             });
 
             sortedPending.forEach(order => {
@@ -20305,6 +20464,66 @@ const paginationContainers = {
             customer: '',
             orderId: ''
         };
+
+        // 当前排序设置：field 可以是 'date' 或 'id' 等，order 为 'asc' 或 'desc'
+        let currentOrderSort = {
+            field: 'date',
+            order: 'desc'
+        };
+
+        function setOrderSort(field) {
+            if (!field) return;
+            if (currentOrderSort.field === field) {
+                currentOrderSort.order = currentOrderSort.order === 'asc' ? 'desc' : 'asc';
+            } else {
+                currentOrderSort.field = field;
+                // 新选择的字段默认使用降序（便于查看最新）
+                currentOrderSort.order = 'desc';
+            }
+            updateSortIcons();
+            renderOrdersStatTable();
+        }
+
+        function updateSortIcons() {
+            // 支持的字段集合（如需扩展请在此添加）
+            const fields = ['id', 'date'];
+            fields.forEach(f => {
+                const icon = document.getElementById(`sort-icon-${f}`);
+                if (!icon) return;
+                icon.classList.remove('fa-sort-up', 'fa-sort-down', 'fa-sort');
+                if (currentOrderSort.field === f) {
+                    if (currentOrderSort.order === 'asc') {
+                        icon.classList.add('fa-sort-up');
+                    } else {
+                        icon.classList.add('fa-sort-down');
+                    }
+                } else {
+                    icon.classList.add('fa-sort');
+                }
+            });
+        }
+
+        // 点击表头行时循环切换排序（顺序：date desc -> date asc -> id desc -> id asc）
+        function cycleHeaderSort() {
+            const sequence = [
+                { field: 'date', order: 'desc' },
+                { field: 'date', order: 'asc' },
+                { field: 'id', order: 'desc' },
+                { field: 'id', order: 'asc' }
+            ];
+
+            const curIndex = sequence.findIndex(s => s.field === currentOrderSort.field && s.order === currentOrderSort.order);
+            const next = sequence[(curIndex + 1) % sequence.length];
+            currentOrderSort.field = next.field;
+            currentOrderSort.order = next.order;
+            updateSortIcons();
+            renderOrdersStatTable();
+            // 如果待处理表格也在显示，则同时刷新它
+            const pendingTbody = document.getElementById('pending-stat-table-body');
+            if (document.getElementById('stat-table-pending')?.style.display !== 'none' && pendingTbody) {
+                renderPendingStatTable();
+            }
+        }
 
         // 初始化订单筛选（填充产品下拉框）
         function initOrderFilters() {
