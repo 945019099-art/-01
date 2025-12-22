@@ -1091,6 +1091,274 @@
             }
         }
 
+        /* WhatsApp 指引浮层与高亮 */
+        .whatsapp-guide-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 2200;
+            display: none;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 16px;
+            border: none;
+            border-radius: 999px;
+            background: linear-gradient(135deg, #006AFF 0%, #0084FF 100%);
+            color: #fff;
+            font-weight: 700;
+            box-shadow: 0 12px 30px rgba(0, 106, 255, 0.35);
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .whatsapp-guide-toggle:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 16px 36px rgba(0, 106, 255, 0.45);
+        }
+
+        .whatsapp-guide-toggle:active {
+            transform: translateY(0);
+        }
+
+        .whatsapp-guide-overlay {
+            position: fixed;
+            inset: 0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.2000);
+            backdrop-filter: blur(2px);
+            z-index: 2400;
+            opacity: 0;
+            transition: opacity 0.25s ease;
+            padding: 20px;
+        }
+
+        .whatsapp-guide-overlay.active {
+            opacity: 1;
+        }
+
+        .whatsapp-guide-content {
+            width: 100%;
+            max-width: 520px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.721));
+            border: 1px solid rgba(255, 255, 255, 0.35);
+            border-radius: 20px;
+            padding: 22px 22px 18px;
+            color: #0f172a;
+            box-shadow: 0 24px 60px rgba(15, 23, 42, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(16px) saturate(160%);
+        }
+
+        .whatsapp-guide-step {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            padding: 8px 12px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #e0f2fe 0%, #e2e8f0 100%);
+            color: #0f172a;
+            margin-bottom: 12px;
+        }
+
+        .whatsapp-guide-title {
+            margin: 0 0 8px;
+            font-size: 1.6rem;
+            font-weight: 800;
+            letter-spacing: -0.3px;
+            color: #0f172a;
+            text-align: center;
+        }
+
+        .whatsapp-guide-desc {
+            font-size: 1.05rem;
+            line-height: 1.6;
+            color: #1f2937;
+            margin-bottom: 12px;
+        }
+
+        .whatsapp-guide-desc .guide-action {
+            display: block;
+            font-weight: 800;
+            font-size: 1.18rem;
+            color: #1677ff;
+            padding: 6px 0;
+            text-align: center;
+            margin-bottom: 6px;
+        }
+
+        .whatsapp-guide-desc .guide-subtext {
+            display: block;
+            font-size: 0.88rem;
+            color: #6b7280;
+            margin-top: 2px;
+            text-align: center;
+        }
+
+        .whatsapp-guide-desc .guide-steps {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 6px;
+        }
+
+        .whatsapp-guide-desc .guide-step-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 12px;
+            background: linear-gradient(135deg, #e0f2fe 0%, #d9f99d 100%);
+            color: #0f172a;
+            font-weight: 700;
+            border-radius: 999px;
+            box-shadow: 0 10px 24px rgba(59, 130, 246, 0.18);
+        }
+
+        .whatsapp-guide-desc .guide-step-chip .step-number {
+            display: inline-flex;
+            top: 4px;
+            width: 22px;
+            height: 22px;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: #0f172a;
+            color: #ffffff;
+            font-size: 0.75rem;
+            font-weight: 800;
+        }
+
+        .whatsapp-guide-list {
+            margin: 10px 0 16px;
+            padding: 12px 14px;
+            border-radius: 14px;
+            background: #f8fafc00;
+            border: 1px solid #e2e8f0;
+            display: none;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .whatsapp-guide-list .guide-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.98rem;
+            color: #0f172a;
+        }
+
+        .whatsapp-guide-list .guide-item i {
+            width: 26px;
+            height: 26px;
+            border-radius: 8px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #e0e7ff;
+            color: #1d4ed8;
+        }
+
+        .whatsapp-guide-progress {
+            width: 100%;
+            height: 6px;
+            background: #e2e8f0;
+            border-radius: 999px;
+            overflow: hidden;
+            margin-bottom: 14px;
+        }
+
+        .whatsapp-guide-progress-fill {
+            width: 0;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: inherit;
+            transition: width 0.25s ease;
+        }
+
+        .whatsapp-guide-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 6px;
+            justify-content: center;
+        }
+
+        .whatsapp-guide-btn {
+            flex: 0 0 auto;
+            min-width: 160px;
+            padding: 12px 20px;
+            border-radius: 12px;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            text-align: center;
+        }
+
+        .whatsapp-guide-btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #ffffff;
+            box-shadow: 0 12px 28px rgba(102, 126, 234, 0.35);
+        }
+
+        .whatsapp-guide-btn-secondary {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            color: #0f172a;
+            border: 1px solid #cbd5e1;
+            box-shadow: 0 8px 18px rgba(148, 163, 184, 0.25);
+        }
+
+        .whatsapp-guide-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .whatsapp-guide-btn:active {
+            transform: translateY(0);
+        }
+
+        .whatsapp-guide-highlight {
+            position: relative;
+            box-shadow: 0 0 0 3px rgba(0, 106, 255, 0.35), 0 16px 40px rgba(0, 0, 0, 0.25);
+            border-radius: 16px;
+            animation: guide-focus-pulse 1.4s ease-in-out infinite;
+            z-index: 2100;
+        }
+
+        .whatsapp-guide-highlight-button {
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.35), 0 14px 32px rgba(16, 185, 129, 0.25);
+            animation: guide-focus-pulse-green 1.4s ease-in-out infinite;
+        }
+
+        @keyframes guide-focus-pulse {
+            0%, 100% { box-shadow: 0 0 0 3px rgba(0, 106, 255, 0.32), 0 16px 40px rgba(0, 0, 0, 0.25); }
+            50% { box-shadow: 0 0 0 6px rgba(0, 106, 255, 0.2), 0 18px 44px rgba(0, 0, 0, 0.3); }
+        }
+
+        @keyframes guide-focus-pulse-green {
+            0%, 100% { box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.3), 0 14px 32px rgba(16, 185, 129, 0.25); }
+            50% { box-shadow: 0 0 0 6px rgba(16, 185, 129, 0.2), 0 16px 36px rgba(16, 185, 129, 0.32); }
+        }
+
+        @media (max-width: 640px) {
+            .whatsapp-guide-content {
+                padding: 18px 16px 14px;
+            }
+
+            .whatsapp-guide-title {
+                font-size: 1.35rem;
+            }
+
+            .whatsapp-guide-desc {
+                font-size: 1rem;
+            }
+
+            .whatsapp-guide-toggle {
+                right: 14px;
+                bottom: 14px;
+            }
+        }
+
         /* 订单操作按钮样式 */
         .order-action-buttons {
             display: flex;
@@ -2428,14 +2696,18 @@
         .home-feature-image {
             position: relative;
             width: 100%;
-            aspect-ratio: 1 / 1; /* 正方形比例 */
+            aspect-ratio: 1 / 1; /* 保持方形占位，内部居中缩放 */
             overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f7f8fa;
         }
 
         .home-feature-image img {
             width: 100%;
             height: 100%;
-            object-fit: cover;
+            object-fit: contain; /* 按比例缩放，完整展示图片 */
             display: block;
         }
 
@@ -2479,7 +2751,7 @@
             display: flex;
             flex-direction: column;
             gap: 12px;
-            height: calc(100% - 220px);
+            flex: 1; /* 占据剩余空间，移除固定高度避免留白 */
         }
 
         .home-feature-body h3 {
@@ -2504,6 +2776,12 @@
             grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: 12px;
             margin-top: auto;
+        }
+
+        .home-feature-actions .btn {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
 
@@ -6048,12 +6326,15 @@
                 width: 100%;
                 position: relative;
                 background: #f7f8fa;
+                display: flex;
+                align-items: center;
+                justify-content: center;
             }
 
             .home-feature-image img {
                 width: 100%;
                 height: 100%;
-                object-fit: cover;
+                object-fit: contain;
             }
 
             .home-feature-tag {
@@ -6118,6 +6399,9 @@
                 padding: 6px 8px;
                 font-size: 11px;
                 border-radius: 4px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
             }
         }
 
@@ -8267,7 +8551,7 @@
                             </div>
                             
                             <!-- 复制消息部分 -->
-                            <div class="copy-container">
+                            <div class="copy-container" id="whatsapp-copy-container-two-step">
                                 <div class="copy-title">Copy Message</div>
                                 <div class="copy-text" id="messenger-prepay-text">
                                     Please provide prepayment for order XXX
@@ -8345,7 +8629,7 @@
                     </div>
 
                     <!-- 复制消息部分：保持原有 id 以兼容 copySingleStepMessage() -->
-                    <div class="copy-container">
+                    <div class="copy-container" id="whatsapp-copy-container-single">
                         <div class="copy-title">Copy This Message</div>
                         <div class="copy-text" id="messenger-prepay-text-single">
                             Please confirm my order. The order number is XXXXX
@@ -8384,6 +8668,27 @@
                 </div>
             </div>
         </div>
+        <!-- 指引浮层（两步 / 单步共用） -->
+        <div class="whatsapp-guide-overlay" id="whatsapp-guide-overlay">
+            <div class="whatsapp-guide-content">
+                <div class="whatsapp-guide-step" id="whatsapp-guide-step">Guide</div>
+                <div class="whatsapp-guide-progress">
+                    <div class="whatsapp-guide-progress-fill" id="whatsapp-guide-progress-fill"></div>
+                </div>
+                <h3 class="whatsapp-guide-title" id="whatsapp-guide-title">Follow these steps</h3>
+                <div class="whatsapp-guide-desc" id="whatsapp-guide-desc"></div>
+                <div class="whatsapp-guide-list" id="whatsapp-guide-list"></div>
+                <div class="whatsapp-guide-actions">
+                    <button type="button" class="whatsapp-guide-btn whatsapp-guide-btn-primary" id="whatsapp-guide-next">Next</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 指引开启按钮 -->
+        <button type="button" id="whatsapp-guide-toggle" class="whatsapp-guide-toggle">
+            <i class="fas fa-question-circle"></i>
+            <span>Guide</span>
+        </button>
     </div>
     
     <!-- 产品编辑模态框 -->
@@ -17734,7 +18039,7 @@ const paginationContainers = {
                         </div>
                         <div class="home-feature-body">
                             <div>
-                                <h3>${product.name || ''}</h3>
+                                <h3 style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; word-break: break-word; line-height: 1.3; max-height: calc(1.3em * 2);">${product.name || ''}</h3>
                                 <div class="home-feature-price">
                                     <span style="text-decoration: line-through; color: #999; margin-right: 10px;">${oldPrice}</span>
                                     <span style="color: #e74c3c; font-weight: bold; font-size: 1.2em;">${newPrice}</span>
@@ -24179,6 +24484,269 @@ const paginationContainers = {
             // 关闭任意模态框时，解除对页面滚动的锁定
             document.body.classList.remove('modal-open');
         }
+
+        // WhatsApp 指引（两步 / 单步共用）
+        let whatsappGuideMode = 'amazon';
+        let whatsappGuideStep = 0;
+        let whatsappGuideEventsBound = false;
+        let whatsappGuideAutoplayTimer = null;
+
+        // 按模式存储引导完成状态，避免重复打扰
+        const whatsappGuideStorageKey = (mode) => `whatsappGuideCompleted-${mode}`;
+        const isWhatsAppGuideCompleted = (mode) => localStorage.getItem(whatsappGuideStorageKey(mode)) === 'true';
+        const markWhatsAppGuideCompleted = (mode) => localStorage.setItem(whatsappGuideStorageKey(mode), 'true');
+        const resetWhatsAppGuideCompleted = (mode) => localStorage.removeItem(whatsappGuideStorageKey(mode));
+
+        const whatsappGuideConfigs = {
+            amazon: [
+                {
+                    title: 'How It Works',
+                    desc: '4 quick steps to get your product and 100% cash back.',
+                    list: [
+                        { icon: 'fas fa-shopping-cart', text: 'Order the product on Amazon' },
+                        { icon: 'fas fa-copy', text: 'Copy the message with your order number' },
+                        { icon: 'fas fa-paper-plane', text: 'Send it to us via Messenger or WhatsApp' },
+                        { icon: 'fas fa-money-bill-wave', text: 'Receive 100% cash back!' }
+                    ]
+                },
+                {
+                    title: 'Step 1 · Order on Amazon',
+                    desc: 'Tap the Amazon button to open the product page and place your order.',
+            
+                    highlight: highlightAmazonStep
+                },
+                {
+                    title: 'Step 2 · Get Your Cash Back',
+                    descHtml: '<span class="guide-action">Message us to get your 100% cash back.</span><span class="guide-subtext">You can use Messenger or WhatsApp</span>',
+                  
+                    highlight: highlightTwoStepCopy
+                },
+                {
+                    title: "You're All Set!",
+                    descHtml: '<span class="guide-subtext">Now you know the process:</span><div class="guide-steps"><span class="guide-step-chip"><span class="step-number">1</span>Order on Amazon</span><span class="guide-step-chip"><span class="step-number">2</span>Message us for cash back</span></div>',
+                  
+                    highlight: highlightTwoStepSend
+                }
+            ],
+            direct: [
+                {
+                    title: 'How this works',
+                    desc: 'Confirm your order so we can ship now.',
+                    list: [
+                        { icon: 'fas fa-copy', text: 'Copy the message with your order number' },
+                        { icon: 'fas fa-paper-plane', text: 'Send it to us via Messenger or WhatsApp' },
+                        { icon: 'fas fa-shipping-fast', text: 'We ship your product immediately' }
+                    ]
+                },
+                {
+                    title: 'Step 1 · Copy your order',
+                    desc: 'Copy the message so we can confirm your order.',
+                    highlight: highlightSingleCopy
+                },
+                {
+                    title: 'Step 2 · Send & confirm',
+                    desc: 'Send the message and tap Confirmed so we can ship.',
+                    highlight: highlightSingleSend
+                }
+            ]
+        };
+
+        function bindWhatsAppGuideEvents() {
+            if (whatsappGuideEventsBound) return;
+            const toggle = document.getElementById('whatsapp-guide-toggle');
+            const nextBtn = document.getElementById('whatsapp-guide-next');
+
+            if (toggle) {
+                toggle.addEventListener('click', openWhatsAppGuide);
+            }
+            if (nextBtn) {
+                nextBtn.addEventListener('click', nextWhatsAppGuideStep);
+            }
+
+            whatsappGuideEventsBound = true;
+        }
+
+        function setupWhatsAppGuide(mode, autoStart = false) {
+            bindWhatsAppGuideEvents();
+            whatsappGuideMode = mode === 'direct' ? 'direct' : 'amazon';
+            whatsappGuideStep = 0;
+
+            if (whatsappGuideAutoplayTimer) {
+                clearTimeout(whatsappGuideAutoplayTimer);
+                whatsappGuideAutoplayTimer = null;
+            }
+
+            const toggle = document.getElementById('whatsapp-guide-toggle');
+            if (toggle) {
+                toggle.style.display = 'flex';
+                const label = toggle.querySelector('span');
+                if (label) {
+                    label.textContent = 'Guide';
+                }
+            }
+
+            hideWhatsAppGuide(true);
+            updateWhatsAppGuideContent();
+
+            // 首次进入对应模式时自动弹出引导
+            if (autoStart && !isWhatsAppGuideCompleted(whatsappGuideMode)) {
+                whatsappGuideAutoplayTimer = setTimeout(() => {
+                    openWhatsAppGuide();
+                }, 200);
+            }
+        }
+
+        function openWhatsAppGuide() {
+            const overlay = document.getElementById('whatsapp-guide-overlay');
+            if (!overlay) return;
+
+            overlay.style.display = 'flex';
+            requestAnimationFrame(() => {
+                overlay.classList.add('active');
+            });
+
+            whatsappGuideStep = 0;
+            updateWhatsAppGuideContent();
+        }
+        function hideWhatsAppGuide(resetOnly = false) {
+            if (whatsappGuideAutoplayTimer) {
+                clearTimeout(whatsappGuideAutoplayTimer);
+                whatsappGuideAutoplayTimer = null;
+            }
+
+            const overlay = document.getElementById('whatsapp-guide-overlay');
+            if (overlay) {
+                overlay.classList.remove('active');
+                setTimeout(() => {
+                    overlay.style.display = 'none';
+                }, 180);
+            }
+
+            clearWhatsAppGuideHighlights();
+
+            if (resetOnly) {
+                whatsappGuideStep = 0;
+                updateWhatsAppGuideContent();
+            }
+        }
+
+        function nextWhatsAppGuideStep() {
+            const config = whatsappGuideConfigs[whatsappGuideMode] || [];
+            if (!config.length) return;
+
+            if (whatsappGuideStep < config.length - 1) {
+                whatsappGuideStep += 1;
+                updateWhatsAppGuideContent();
+            } else {
+                const modalBody = document.querySelector('.modal-body.whatsapp-modal-body');
+                if (modalBody && typeof modalBody.scrollTo === 'function') {
+                    modalBody.scrollTo({ top: 0, behavior: 'smooth' });
+                } else {
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+                completeWhatsAppGuide();
+            }
+        }
+
+        function completeWhatsAppGuide(markComplete = true) {
+            if (markComplete) {
+                markWhatsAppGuideCompleted(whatsappGuideMode);
+            }
+            hideWhatsAppGuide();
+        }
+
+        function updateWhatsAppGuideContent() {
+            const config = whatsappGuideConfigs[whatsappGuideMode] || [];
+            if (!config.length) return;
+
+            const stepData = config[whatsappGuideStep] || config[0];
+            const total = config.length;
+
+            const stepEl = document.getElementById('whatsapp-guide-step');
+            const titleEl = document.getElementById('whatsapp-guide-title');
+            const descEl = document.getElementById('whatsapp-guide-desc');
+            const listEl = document.getElementById('whatsapp-guide-list');
+            const progressEl = document.getElementById('whatsapp-guide-progress-fill');
+            const nextBtn = document.getElementById('whatsapp-guide-next');
+
+            if (stepEl) {
+                stepEl.textContent = `Step ${whatsappGuideStep + 1} of ${total}`;
+            }
+            if (titleEl) {
+                titleEl.textContent = stepData.title || '';
+            }
+            if (descEl) {
+                if (stepData.descHtml) {
+                    descEl.innerHTML = stepData.descHtml;
+                } else {
+                    descEl.textContent = stepData.desc || '';
+                }
+            }
+            if (listEl) {
+                if (stepData.list && stepData.list.length) {
+                    listEl.innerHTML = stepData.list.map(item => `<div class="guide-item guide-step-item guide-dark-gray-text"><i class="${item.icon}"></i><span>${item.text}</span></div>`).join('');
+                    listEl.style.display = 'flex';
+                } else {
+                    listEl.innerHTML = '';
+                    listEl.style.display = 'none';
+                }
+            }
+            if (progressEl) {
+                const percent = ((whatsappGuideStep + 1) / total) * 100;
+                progressEl.style.width = `${percent}%`;
+            }
+            if (nextBtn) {
+                nextBtn.textContent = whatsappGuideStep >= total - 1 ? 'Start Now' : 'Next';
+            }
+
+            clearWhatsAppGuideHighlights();
+            if (typeof stepData.highlight === 'function') {
+                stepData.highlight();
+            }
+        }
+
+        function clearWhatsAppGuideHighlights() {
+            const highlighted = document.querySelectorAll('.whatsapp-guide-highlight, .whatsapp-guide-highlight-button');
+            highlighted.forEach(el => {
+                el.classList.remove('whatsapp-guide-highlight', 'whatsapp-guide-highlight-button');
+            });
+        }
+
+        function applyWhatsAppGuideHighlight(target, isButton = false) {
+            if (!target) return;
+            target.classList.add('whatsapp-guide-highlight');
+            if (isButton) {
+                target.classList.add('whatsapp-guide-highlight-button');
+            }
+            if (typeof target.scrollIntoView === 'function') {
+                target.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+            }
+        }
+
+        function highlightAmazonStep() {
+            const step = document.getElementById('whatsapp-amazon-link');
+            applyWhatsAppGuideHighlight(step);
+        }
+
+        function highlightTwoStepCopy() {
+            const copyBox = document.getElementById('whatsapp-copy-container-two-step');
+            applyWhatsAppGuideHighlight(copyBox);
+        }
+
+        function highlightTwoStepSend() {
+            const sendBtn = document.getElementById('send-message-btn');
+            applyWhatsAppGuideHighlight(sendBtn, true);
+        }
+
+        function highlightSingleCopy() {
+            const copyBox = document.getElementById('whatsapp-copy-container-single');
+            applyWhatsAppGuideHighlight(copyBox);
+        }
+
+        function highlightSingleSend() {
+            const sendBtn = document.getElementById('sendBtn');
+            applyWhatsAppGuideHighlight(sendBtn, true);
+        }
         
         // 显示WhatsApp提示模态框
         // 存储当前订单号（用于WhatsApp消息）
@@ -24219,6 +24787,7 @@ const paginationContainers = {
                 // 尝试读取产品跳转链接
                 let hasRedirectUrl = false;
                 let redirectLink = '';
+                let guideMode = 'direct';
                 
                 if (orderId) {
                     // 使用findOrderById函数查找订单，这样可以从userOrders或allOrders中查找
@@ -24245,6 +24814,7 @@ const paginationContainers = {
                     if (amazonLink) {
                         amazonLink.href = redirectLink;
                     }
+                    guideMode = 'amazon';
                     
                     // 初始化切换器事件
                     setTimeout(() => {
@@ -24320,9 +24890,13 @@ const paginationContainers = {
                             }, 15000); // 15 秒后显示
                         }
                     }
+                    guideMode = 'direct';
                 }
 
                 whatsappModal.style.display = 'flex';
+
+                // 初始化指引模式（两步 = Amazon，下单直发 = direct），首次自动弹出
+                setupWhatsAppGuide(guideMode, true);
                 
                 // 如果是两步流程，初始化相关功能
                 if (twoStepsModal && twoStepsModal.style.display !== 'none') {
@@ -24638,6 +25212,11 @@ const paginationContainers = {
             const twoStepsModal = document.getElementById('whatsapp-modal-two-steps');
             const singleStepModal = document.getElementById('whatsapp-modal-single-step');
             const whatsappModal = document.getElementById('whatsapp-modal');
+            hideWhatsAppGuide(true);
+            const guideToggle = document.getElementById('whatsapp-guide-toggle');
+            if (guideToggle) {
+                guideToggle.style.display = 'none';
+            }
             // 立即清除关闭按钮计时器并隐藏关闭按钮，防止残留定时器在后台触发
             const closeBtnImmediate = document.getElementById('whatsapp-close-btn');
             const singleCloseBtnImmediate = document.getElementById('whatsapp-close-btn-single');
@@ -24811,6 +25390,12 @@ const paginationContainers = {
             });
             console.log('✅ 已关闭所有模态框');
             document.body.classList.remove('modal-open');
+
+            hideWhatsAppGuide(true);
+            const guideToggle = document.getElementById('whatsapp-guide-toggle');
+            if (guideToggle) {
+                guideToggle.style.display = 'none';
+            }
         }
         // 分类名称映射
         function getCategoryName(category) {
