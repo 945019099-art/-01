@@ -18035,7 +18035,7 @@ const paginationContainers = {
                     <article class="home-feature-card" data-product-id="${product.id}">
                         <div class="home-feature-image">
                             <img src="${getPrimaryProductImage(product)}" alt="${product.name || ''}">
-                            ${hasAmazonLink ? `<img class="home-feature-amazon-icon" src="${amazonIconUrl}" alt="Amazon">` : ''}
+                            ${hasAmazonLink ? `<img class="home-feature-amazon-icon" src="${amazonIconUrl}" alt="Amazon" referrerpolicy="no-referrer" onerror="this.onerror=null; this.src='images/amazon-fallback.png'">` : ''}
                         </div>
                         <div class="home-feature-body">
                             <div>
