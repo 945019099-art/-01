@@ -1573,6 +1573,27 @@
             z-index: 1000;
         }
 
+        /* 使 navbar 居中，视觉上把白色背景限制到内部 .nav-container */
+        .navbar {
+            display: flex;
+            justify-content: center;
+            background: transparent !important;
+            box-shadow: none !important; /* 让内层容器承担阴影 */
+            border-bottom: none !important;
+        }
+
+        /* 把白色背景、圆角和阴影移到 nav-container，使其宽度受 max-width 限制 */
+        .navbar > .nav-container {
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: var(--shadow-sm);
+            width: 100% !important;
+            max-width: 1100px !important;
+            margin: 12px auto !important; /* 顶部留白，避免紧贴浏览器顶端 */
+            padding: 8px 12px !important;
+            box-sizing: border-box !important;
+        }
+
         /* 底部导航（移动端） - 浮起式圆角条形导航 */
         .bottom-nav {
             display: none;
@@ -1625,6 +1646,29 @@
             gap: 8px;
             cursor: pointer;
             box-shadow: 0 4px 10px rgba(79, 70, 229, 0.12);
+            transform: translateY(0); /* 默认不偏移，便于后续移动仅影响自身 */
+            transition: transform var(--transition-fast); /* 平滑移动，不影响其它元素 */
+        }
+
+        /* About 按钮，样式与 FAQ 保持一致但颜色稍作区分 */
+        .about-cta {
+            display: none;
+            margin-left: 8px;
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.04), rgba(16, 185, 129, 0.06));
+            border: 1px solid rgba(34, 197, 94, 0.35);
+            color: #0f172a;
+            font-size: 13px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(16, 185, 129, 0.08);
+            transform: translateY(0);
+            transition: transform var(--transition-fast);
         }
 
         .mobile-faq-cta i {
@@ -1640,6 +1684,9 @@
 
         @media (max-width: 768px) {
             .mobile-faq-cta {
+                display: inline-flex;
+            }
+            .about-cta {
                 display: inline-flex;
             }
             /* 移动端隐藏顶部文字版 FAQ 链接，保留醒目的按钮 */
@@ -1661,6 +1708,12 @@
                 order: 2;
                 margin-left: 4px;
                 justify-self: flex-start; /* 紧挨 logo */
+                transform: translateY(12px); /* 将 FAQ 按钮向下移动，不影响其它元素布局 */
+            }
+            .about-cta {
+                order: 3;
+                margin-left: 6px;
+                justify-self: flex-start; /* 与 FAQ 左对齐，避免被居中覆盖 */
             }
             .user-actions {
                 order: 3;
@@ -1683,8 +1736,20 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 16px 0;
+            padding: 12px 0; /* 缩窄垂直内边距，减少导航栏占用高度 */
             gap: 24px;
+            /* 缩短导航栏在大屏的横向长度，避免覆盖或太靠边 */
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        /* 强制覆盖任何后续样式，确保 nav-container 在大屏被限制宽度并居中 */
+        .navbar > .nav-container {
+            width: 100% !important;
+            max-width: 1100px !important;
+            margin: 0 auto !important;
+            box-sizing: border-box !important;
+            padding-left: 12px !important;
+            padding-right: 12px !important;
         }
 
         .logo {
@@ -1696,16 +1761,35 @@
             display: flex;
             align-items: center;
             min-height: 60px;
-            min-width: 180px;
+            /* 略微减小左侧 logo 区域宽度，避免被导航栏遮挡 */
+            flex: 0 0 110px;
+            min-width: 110px;
             margin-left: 8px;
         }
         
         .logo img {
             height: 52px;
-            max-width: 260px;
+            /* 允许 logo 图片在更宽的容器中显示更大 */
+            max-width: 320px;
             width: auto;
             object-fit: contain;
             display: block;
+        }
+        
+        /* 强制覆盖内联样式，确保 logo 在桌面/大屏可见更大尺寸 */
+        #site-logo-img {
+            max-width: 220px !important; /* 缩小 logo 最大宽度，避免被导航遮挡 */
+            height: 52px !important;
+            width: auto !important;
+            display: block !important;
+        }
+
+        /* 窄屏恢复自适应，避免固定宽度影响移动端布局 */
+        @media (max-width: 768px) {
+            .logo {
+                flex: 0 0 auto !important;
+                min-width: initial !important;
+            }
         }
 
         .nav-links {
@@ -1794,8 +1878,7 @@
 
         .search-bar {
             display: flex;
-            width: 42%;
-            max-width: 520px;
+            width: 42%; /* 缩短：从 42% 调整为 30% */
             border-radius: var(--radius-md);
             background: #ffffff;
             border: 2px solid var(--gray-300);
@@ -6063,23 +6146,85 @@
 
         /* 更小屏幕优化 */
         @media (max-width: 480px) {
+            /* 顶部一行：FAQ / 登录等（占满第一行），第二行：logo + 搜索栏（同行，搜索栏置于 logo 右侧） */
             .nav-container {
-                padding: 8px 10px;
+                padding: 8px 0px; /* 进一步减小左右内边距，使 logo 更靠左 */
                 gap: 6px;
-                flex-wrap: wrap; /* 小屏也允许换行，保证搜索栏能单独一行 */
+                display: flex;
+                flex-wrap: wrap;
+                align-items: center; /* 顶部对齐，方便把搜索栏与 logo 顶部对齐 */
+                justify-content: space-between;
             }
 
+            /* 使 FAQ 能使用绝对定位下移而不影响其它元素 */
+            .nav-container {
+                position: relative;
+            }
+
+            /* 把顶部的操作类元素放到第一行并占满宽度，保证 logo+搜索栏换到第二行 */
+            .user-actions {
+                order: 1;
+                flex: 1 1 100%;
+                display: flex;
+                align-items: center;
+                justify-content: flex-end; /* 登录/注册 靠右 */
+                gap: 8px;
+                margin-bottom: 6px;
+            }
+
+            /* 移动端 FAQ 按钮不占满整行，保持原始尺寸 */
+            .mobile-faq-cta {
+                order: 1;
+                flex: 0 0 auto;
+                display: flex;
+                align-items: center;
+                justify-content: flex-start;
+                gap: 8px;
+                margin-bottom: 6px;
+                transform: translateY(0) !important; /* 上移一点，和 About 对齐 */
+                position: absolute !important;
+                left: 12px !important;
+                top: 6px !important; /* 将 FAQ 上移，靠近导航顶部 */
+                z-index: 60 !important;
+            }
+            /* About 按钮在极窄屏下居中显示（避免影响登录/注册） */
+            .about-cta {
+                position: absolute !important;
+                left: 84px !important; /* 左移到 FAQ 右侧，不紧贴 logo，保持间距 */
+                top: 6px !important; /* 与 FAQ 在同一水平线 */
+                display: flex !important;
+                z-index: 60 !important;
+            }
+
+            /* 若 FAQ 是链接或按钮，限制其内联尺寸 */
+            .mobile-faq-cta a,
+            .mobile-faq-cta button {
+                display: inline-flex;
+                white-space: nowrap;
+                padding: 6px 10px;
+                font-size: 13px;
+                min-width: 0;
+            }
+
+            /* 第二行：logo 与搜索栏（同行） */
             .logo {
                 font-size: 16px;
                 min-height: 40px;
                 flex: 0 0 auto;
-                min-width: 100px;
-                max-width: 120px;
+                width: 56px; /* 缩小 logo 宽度，减少空白 */
+                max-width: 90px;
+                margin: 0 6px 0 0; /* 右侧间距，避免贴合搜索栏 */
+                order: 2;
+                display: flex;
+                align-items: center;
+                justify-content: flex-start;
             }
-            
+
             .logo img {
-                height: 35px;
+                height: 36px;
                 max-width: 100%;
+                display: block;
+                object-fit: contain;
             }
 
             .menu-toggle {
@@ -6089,25 +6234,41 @@
                 min-height: 40px;
             }
 
-            /* 搜索栏在更小屏幕上依旧占据单独一整行 */
+            /* 搜索栏放在 logo 右侧，顶部对齐到 logo 上边 */
             .search-bar {
-                order: 3;
-                flex: 1 0 100%;
+                order: 2; /* 与 .logo 同一顺序，确保同行排列 */
+                flex: 0 0 auto; /* 不自动填充剩余空间，使用固定/最大宽度 */
+                width: 68%; /* 缩短搜索栏在极窄屏下的宽度 */
+                max-width: 320px; /* 限制最大宽度，避免太长 */
                 min-width: 0;
+                margin: 0;
+                display: flex;
+                align-items: center;
+                align-self: center;
+                box-sizing: border-box;
+                gap: 8px;
             }
 
             .search-bar input {
                 font-size: 14px;
-                padding: 8px 10px;
+                padding: 8px 12px;
+                height: 40px;
+                border-radius: 20px;
+                border: 1px solid var(--border-subtle);
+                box-sizing: border-box;
+                flex: 1 1 auto;
+                min-width: 0;
+                background: white;
             }
 
             .search-bar button {
-                padding: 0 12px;
-            }
-
-            .user-actions {
-                gap: 4px;
-                flex-wrap: nowrap;
+                padding: 0;
+                width: 40px;
+                height: 40px;
+                border-radius: 10px;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
             }
 
             .user-actions a {
@@ -6129,11 +6290,6 @@
             #control-panel-btn {
                 padding: 5px 8px !important;
                 font-size: 11px !important;
-            }
-
-            .user-actions a {
-                font-size: 11px;
-                padding: 5px 8px;
             }
 
             /* 确保导航链接在小屏幕上也能正常显示 */
@@ -7272,6 +7428,13 @@
             .empty-state-action {
                 margin-top: 24px;
             }
+            /* 移动端：进一步缩小导航栏 logo，避免内联样式在小屏下显得过大 */
+        @media (max-width: 480px) {
+            #site-logo-img {
+                height: 32px !important;
+                max-width: 160px !important;
+            }
+        }
         }
     </style>
 </head>
@@ -7285,9 +7448,9 @@
     </div>
     <!-- 导航栏 -->
     <nav class="navbar">
-        <div class="container nav-container">
+        <div class="container nav-container" style="max-width:1100px;margin:12px auto;background:#fff;border-radius:12px;box-shadow:var(--shadow-sm);padding:8px 12px;box-sizing:border-box;">
             <div class="logo" id="home-link">
-                <img id="site-logo-img" src="https://d92ap0lo8fr10.cloudfront.net/A14TLSYJXI3UM6_acd40833aec9706776e6e1e4432f7198_ProductImage_PT02" alt="Bee freebies" style="height: 60px; max-width: 300px; width: auto; object-fit: contain; display: block;" onerror="this.style.display='none'; console.error('Logo图片加载失败');">
+                <img id="site-logo-img" src="https://d92ap0lo8fr10.cloudfront.net/A19TTJV74BN2OJ_ed7f33a7af67dcf7f114c4e3d8f22515_ProductImage_MAIN" alt="Bee freebies" style="height: 44px; max-width: 220px; width: auto; object-fit: contain; display: block;" onerror="this.style.display='none'; console.error('Logo图片加载失败');">
             </div>
 
             <div class="search-bar">
@@ -7300,6 +7463,10 @@
                 <i class="fas fa-question-circle"></i>
                 <span>FAQ</span>
                 <span class="mobile-faq-text-sub">Common Questions</span>
+            </div>
+            <div class="about-cta" onclick="window.open('aboutUs.html', '_blank')" title="About us">
+                <i class="fas fa-info-circle"></i>
+                <span>About us</span>
             </div>
 
             <ul class="nav-links">
@@ -14121,7 +14288,7 @@ const paginationContainers = {
                 }
                 // 如果src为空，设置默认logo
                 if (!logoImg.src || logoImg.src === window.location.href) {
-                    logoImg.src = 'https://d92ap0lo8fr10.cloudfront.net/A14TLSYJXI3UM6_acd40833aec9706776e6e1e4432f7198_ProductImage_PT02';
+                    logoImg.src = 'https://d92ap0lo8fr10.cloudfront.net/A19TTJV74BN2OJ_ed7f33a7af67dcf7f114c4e3d8f22515_ProductImage_MAIN';
                 }
             }
         })();
@@ -18035,7 +18202,7 @@ const paginationContainers = {
                     <article class="home-feature-card" data-product-id="${product.id}">
                         <div class="home-feature-image">
                             <img src="${getPrimaryProductImage(product)}" alt="${product.name || ''}">
-                            ${hasAmazonLink ? `<img class="home-feature-amazon-icon" src="${amazonIconUrl}" alt="Amazon" referrerpolicy="no-referrer" onerror="this.onerror=null; this.src='images/amazon-fallback.png'">` : ''}
+                            ${hasAmazonLink ? `<img class="home-feature-amazon-icon" src="${amazonIconUrl}" alt="Amazon" onerror="this.onerror=null; this.src='images/amazon-fallback.png'">` : ''}
                         </div>
                         <div class="home-feature-body">
                             <div>
@@ -23601,7 +23768,7 @@ const paginationContainers = {
         let homepageSettings = JSON.parse(localStorage.getItem('homepageSettings')) || {
             siteTitle: '电商平台',
             siteSlogan: '优质商品，值得信赖',
-            siteLogo: 'https://d92ap0lo8fr10.cloudfront.net/A14TLSYJXI3UM6_acd40833aec9706776e6e1e4432f7198_ProductImage_PT02',
+            siteLogo: 'https://d92ap0lo8fr10.cloudfront.net/A19TTJV74BN2OJ_ed7f33a7af67dcf7f114c4e3d8f22515_ProductImage_MAIN',
             primaryColor: '#3498db',
             secondaryColor: '#2ecc71',
             getItNowButtonColor: '#667eea',
@@ -23813,7 +23980,7 @@ const paginationContainers = {
                 homepageSettings = normalizeHomepageSettings({
                     siteTitle: '电商平台',
                     siteSlogan: '优质商品，值得信赖',
-                    siteLogo: 'https://d92ap0lo8fr10.cloudfront.net/A14TLSYJXI3UM6_acd40833aec9706776e6e1e4432f7198_ProductImage_PT02',
+                    siteLogo: 'https://d92ap0lo8fr10.cloudfront.net/A19TTJV74BN2OJ_ed7f33a7af67dcf7f114c4e3d8f22515_ProductImage_MAIN',
                     primaryColor: '#3498db',
                     secondaryColor: '#2ecc71',
                     getItNowButtonColor: '#667eea',
@@ -23828,7 +23995,7 @@ const paginationContainers = {
             // 更新网站Logo
             const logoImg = document.getElementById('site-logo-img');
             if (logoImg) {
-                const logoUrl = homepageSettings.siteLogo || 'https://d92ap0lo8fr10.cloudfront.net/A14TLSYJXI3UM6_acd40833aec9706776e6e1e4432f7198_ProductImage_PT02';
+                const logoUrl = homepageSettings.siteLogo || 'https://d92ap0lo8fr10.cloudfront.net/A19TTJV74BN2OJ_ed7f33a7af67dcf7f114c4e3d8f22515_ProductImage_MAIN';
                 if (logoUrl) {
                     logoImg.src = logoUrl;
                     logoImg.style.display = 'block';
@@ -24098,7 +24265,7 @@ const paginationContainers = {
                 homepageSettings = normalizeHomepageSettings({
                     siteTitle: '电商平台',
                     siteSlogan: '优质商品，值得信赖',
-                    siteLogo: 'https://d92ap0lo8fr10.cloudfront.net/A14TLSYJXI3UM6_acd40833aec9706776e6e1e4432f7198_ProductImage_PT02',
+                    siteLogo: 'https://d92ap0lo8fr10.cloudfront.net/A19TTJV74BN2OJ_ed7f33a7af67dcf7f114c4e3d8f22515_ProductImage_MAIN',
                     primaryColor: '#3498db',
                     secondaryColor: '#2ecc71',
                     getItNowButtonColor: '#667eea',
