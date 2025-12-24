@@ -2945,6 +2945,27 @@
                 transform: translateY(0) scale(1);
             }
         }
+        
+        /* Consent note for auth/register modals (小条款提示) */
+        .modal .consent-note {
+            border: 1px solid #f1eaea;
+            padding: 10px 14px;
+            margin: 12px 0 6px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            color: #374151;
+            text-align: center;
+            background: #fff;
+        }
+        .modal .consent-note a {
+            color: #2563eb;
+            text-decoration: underline;
+            font-weight: 600;
+            margin: 0 4px;
+        }
+        .modal .consent-note a:hover {
+            text-decoration: none;
+        }
 
         .modal-header {
             padding: 20px 24px;
@@ -8621,6 +8642,9 @@
                     <div class="form-actions">
                         <button type="submit" class="btn btn-primary">登录</button>
                     </div>
+                    <div class="consent-note">
+                        By continuing you agree to the <a href="Terms of Service.html" target="_blank" rel="noopener">Terms of Service</a> and <a href="Privacy Poilcy.html" target="_blank" rel="noopener">Privacy Policy</a>
+                    </div>
                 </form>
             </div>
         </div>
@@ -8650,6 +8674,9 @@
                     </div>
                     <div class="form-actions">
                         <button type="submit" class="btn btn-primary">注册</button>
+                    </div>
+                    <div class="consent-note">
+                        By continuing you agree to the <a href="terms.html" target="_blank" rel="noopener">Terms of Service</a> and <a href="privacy.html" target="_blank" rel="noopener">Privacy Policy</a>
                     </div>
                 </form>
             </div>
