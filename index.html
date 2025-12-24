@@ -2948,23 +2948,24 @@
         
         /* Consent note for auth/register modals (小条款提示) */
         .modal .consent-note {
-            border: 1px solid #f1eaea;
-            padding: 10px 14px;
-            margin: 12px 0 6px;
-            border-radius: 8px;
-            font-size: 0.95rem;
-            color: #374151;
+            border: none;
+            padding: 6px 8px;
+            margin: 6px 0 4px;
+            border-radius: 6px;
+            font-size: 0.72rem;
+            color: #6b7280; /* muted gray */
             text-align: center;
-            background: #fff;
+            background: transparent;
         }
         .modal .consent-note a {
-            color: #2563eb;
+            color: #1f68cf; /* slightly darker gray for links */
             text-decoration: underline;
-            font-weight: 600;
+            font-weight: 500;
             margin: 0 4px;
         }
         .modal .consent-note a:hover {
-            text-decoration: none;
+            /* keep same underline on hover but slightly darker */
+            color: #374151;
         }
 
         .modal-header {
@@ -8676,7 +8677,7 @@
                         <button type="submit" class="btn btn-primary">注册</button>
                     </div>
                     <div class="consent-note">
-                        By continuing you agree to the <a href="terms.html" target="_blank" rel="noopener">Terms of Service</a> and <a href="privacy.html" target="_blank" rel="noopener">Privacy Policy</a>
+                        By continuing you agree to the <a href="Privacy Poilcy.html" target="_blank" rel="noopener">Terms of Service</a> and <a href="Terms of Service.html" target="_blank" rel="noopener">Privacy Policy</a>
                     </div>
                 </form>
             </div>
@@ -8727,6 +8728,9 @@
                     <div class="form-actions">
                         <button type="button" class="btn btn-secondary" id="signup-cancel-btn" onclick="closeModal('signup-modal')">取消</button>
                         <button type="submit" class="btn btn-primary" id="signup-submit-btn">提交报名</button>
+                    </div>
+                    <div class="consent-note">
+                        By continuing you agree to the <a href="Terms of Service.html" target="_blank" rel="noopener">Terms of Service</a> and <a href="Privacy Poilcy.html" target="_blank" rel="noopener">Privacy Policy</a>
                     </div>
                 </form>
             </div>
