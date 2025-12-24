@@ -1568,9 +1568,8 @@
             backdrop-filter: blur(10px);
             border-bottom: 1px solid rgba(0, 0, 0, 0.05);
             box-shadow: var(--shadow-sm);
-            position: sticky;
-            top: 0;
-            z-index: 1000;
+            /* 取消固定/粘性定位，改为随页面滚动 */
+            position: static;
         }
 
         /* 使 navbar 居中，视觉上把白色背景限制到内部 .nav-container */
@@ -1593,6 +1592,7 @@
             padding: 8px 12px !important;
             box-sizing: border-box !important;
         }
+        
 
         /* 底部导航（移动端） - 浮起式圆角条形导航 */
         .bottom-nav {
@@ -1619,8 +1619,16 @@
             font-weight: 600;
         }
 
+        /* 允许底部导航文本响应事件（某些浏览器/布局中 span 会阻止父元素接收事件） */
         .bottom-nav-item span {
-            pointer-events: none;
+            pointer-events: auto !important;
+        }
+
+        /* 强制提升导航与 About/FAQ 按钮的层级并确保可点击，优先级极高以排除遮挡问题 */
+        header, nav, .nav-container, .navbar, .nav-links, .bottom-nav, .about-cta, .mobile-faq-cta {
+            position: relative !important;
+            z-index: 2147483647 !important;
+            pointer-events: auto !important;
         }
 
         /* 底部导航交互：点击与当前状态反馈（不改颜色） */
@@ -1650,25 +1658,25 @@
             transition: transform var(--transition-fast); /* 平滑移动，不影响其它元素 */
         }
 
-        /* About 按钮，样式与 FAQ 保持一致但颜色稍作区分 */
+        /* About 按钮：简化样式，仅保留文字，尽量低调 */
         .about-cta {
             display: none;
             margin-left: 8px;
-            padding: 6px 12px;
-            border-radius: 999px;
-            background: linear-gradient(135deg, rgba(99, 102, 241, 0.04), rgba(16, 185, 129, 0.06));
-            border: 1px solid rgba(34, 197, 94, 0.35);
-            color: #0f172a;
+            padding: 0; /* 取消醒目的内边距 */
+            border-radius: 0;
+            background: transparent; /* 透明背景，不突出 */
+            border: none;
+            color: #1d1919; /* 不显眼的灰色 */
             font-size: 13px;
-            font-weight: 600;
+            font-weight: 500;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            gap: 0;
             cursor: pointer;
-            box-shadow: 0 4px 10px rgba(16, 185, 129, 0.08);
-            transform: translateY(0);
-            transition: transform var(--transition-fast);
+            box-shadow: none;
+            transform: none;
+            transition: none;
         }
 
         .mobile-faq-cta i {
@@ -6178,22 +6186,37 @@
                 flex: 0 0 auto;
                 display: flex;
                 align-items: center;
-                justify-content: flex-start;
-                gap: 8px;
+                justify-content: center;
+                gap: 6px;
                 margin-bottom: 6px;
-                transform: translateY(0) !important; /* 上移一点，和 About 对齐 */
+                /* 居中显示在顶部，但缩小并下移以避免遮挡右侧按钮 */
                 position: absolute !important;
-                left: 12px !important;
-                top: 6px !important; /* 将 FAQ 上移，靠近导航顶部 */
-                z-index: 60 !important;
+                left: 44% !important;
+                transform: translate(-50%, 0) !important; /* 完美水平居中 */
+                top: 10px !important; /* 稍微下移，避免遮挡登录/注册按钮 */
+                z-index: 100 !important; /* 放在 login 之下，确保登录按钮可点 */
+                background: rgba(255,255,255,0.95);
+                padding: 5px 8px;
+                border-radius: 8px;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+                pointer-events: auto;
+                white-space: nowrap;
+                max-width: 160px !important; /* 限制宽度，避免撑开覆盖右侧 */
+                overflow: hidden;
+                text-overflow: ellipsis;
             }
             /* About 按钮在极窄屏下居中显示（避免影响登录/注册） */
             .about-cta {
                 position: absolute !important;
-                left: 84px !important; /* 左移到 FAQ 右侧，不紧贴 logo，保持间距 */
-                top: 6px !important; /* 与 FAQ 在同一水平线 */
+                left: 12px !important; /* 靠近左侧 Logo，避免与居中 FAQ 重叠 */
+                top: 17px !important; /* 与 FAQ 在同一水平线 */
                 display: flex !important;
-                z-index: 60 !important;
+                z-index: 90 !important;
+            }
+            /* 确保登录/注册在 FAQ 之上可以被点击 */
+            .user-actions {
+                position: relative;
+                z-index: 120 !important;
             }
 
             /* 若 FAQ 是链接或按钮，限制其内联尺寸 */
@@ -7428,13 +7451,45 @@
             .empty-state-action {
                 margin-top: 24px;
             }
-            /* 移动端：进一步缩小导航栏 logo，避免内联样式在小屏下显得过大 */
+        }
+        /* 移动端：进一步缩小导航栏 logo，避免内联样式在小屏下显得过大 */
         @media (max-width: 480px) {
             #site-logo-img {
                 height: 32px !important;
                 max-width: 160px !important;
             }
-        }
+			.about-cta,
+			.mobile-faq-cta {
+			    z-index: 2147483648 !important;
+			    pointer-events: auto !important;
+			    touch-action: manipulation;
+			}
+
+        /* Mobile bottom-nav override: hide top nav links and show fixed bottom nav */
+        @media (max-width: 768px) {
+            .navbar .nav-links {
+                display: none !important;
+            }
+
+            .bottom-nav {
+                display: flex !important;
+                position: fixed !important;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                height: 56px;
+                background: #ffffff;
+                border-top: 1px solid #e5e7eb;
+                box-shadow: 0 -2px 6px rgba(15, 23, 42, 0.08);
+                justify-content: space-around;
+                align-items: center;
+                z-index: 11000 !important;
+            }
+
+            /* Prevent page content from being covered by the bottom nav */
+            body {
+                padding-bottom: 72px !important;
+            }
         }
     </style>
 </head>
@@ -7459,14 +7514,13 @@
             </div>
 
             <!-- 移动端导航栏行内 FAQ 按钮：放在顶部中间，仅小屏显示 -->
+            <div class="about-cta" onclick="window.open('aboutUs.html', '_blank')" title="About us">
+                <span>About us</span>
+            </div>
             <div class="mobile-faq-cta" onclick="window.open('faq.html', '_blank')">
                 <i class="fas fa-question-circle"></i>
                 <span>FAQ</span>
                 <span class="mobile-faq-text-sub">Common Questions</span>
-            </div>
-            <div class="about-cta" onclick="window.open('aboutUs.html', '_blank')" title="About us">
-                <i class="fas fa-info-circle"></i>
-                <span>About us</span>
             </div>
 
             <ul class="nav-links">
@@ -7532,6 +7586,14 @@
                             <div style="font-size:12px; color:#7f8c8d; display:flex; align-items:center; gap:6px;">
                                 <i class="fas fa-info-circle"></i>
                                 <span id="sync-status-text">状态：已连接</span>
+                            </div>
+                            <!-- 管理员查看客户端信息 -->
+                            <div id="admin-client-info" style="margin-top:8px; font-size:12px; color:#4b5563; display:flex; align-items:center; gap:8px;">
+                                <i class="fas fa-network-wired" style="font-size:14px; color:#6b7280;"></i>
+                                <div style="display:flex; flex-direction:column;">
+                                    <span style="font-weight:600; font-size:13px;">Client info</span>
+                                    <span style="font-size:12px; color:#6b7280;">IP: <span id="admin-client-ip">未知</span></span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -10644,16 +10706,20 @@ const paginationContainers = {
 
             // 等待 Firebase SDK 加载完成
             async waitForFirebaseSDK(timeout = 45000) {
-                console.log('⏳ 等待 Firebase SDK 加载...');
+                console.log('⏳ 等待 Firebase SDK（包含 Database）加载...');
 
                 const startTime = Date.now();
                 const checkInterval = 500; // 每500ms检查一次
 
                 return new Promise((resolve) => {
                     const check = () => {
-                        // 检查是否已加载成功
-                        if (typeof firebase !== 'undefined') {
-                            console.log('✅ Firebase SDK 检测成功');
+                        // 检查是否已加载成功并且 Database 可用（兼容 compat 与 modular 两种情况）
+                        const firebasePresent = typeof firebase !== 'undefined';
+                        const hasCompatDatabase = firebasePresent && typeof firebase.database === 'function';
+                        const hasModularGetDatabase = firebasePresent && typeof firebase.getDatabase === 'function';
+
+                        if (firebasePresent && (hasCompatDatabase || hasModularGetDatabase)) {
+                            console.log('✅ Firebase SDK（含 Database）检测成功');
                             resolve(true);
                             return;
                         }
@@ -10742,9 +10808,30 @@ const paginationContainers = {
 
                     console.log('🔄 获取 Database 实例...');
                     try {
-                        this.db = firebase.database();
-                        console.log('✅ Database 实例获取成功');
-                        console.log('🔗 Database URL:', this.db.ref().toString());
+                        // 支持 compat 与 modular 两种加载方式
+                        if (typeof firebase.database === 'function') {
+                            this.db = firebase.database();
+                            console.log('✅ Database (compat) 实例获取成功');
+                            try {
+                                console.log('🔗 Database URL:', this.db.ref().toString());
+                            } catch (e) {
+                                // 某些环境下 ref() 可能抛错，忽略以免影响后续逻辑
+                            }
+                        } else if (typeof firebase.getDatabase === 'function') {
+                            // modular SDK: 需要传入 app 实例
+                            try {
+                                const appInstance = firebase.app && firebase.app();
+                                this.db = firebase.getDatabase ? firebase.getDatabase(appInstance) : null;
+                                console.log('✅ Database (modular) 实例获取成功 via getDatabase()');
+                            } catch (modErr) {
+                                console.warn('⚠️ 使用 modular getDatabase() 获取实例失败，尝试 compat fallback', modErr);
+                                if (typeof firebase.database === 'function') {
+                                    this.db = firebase.database();
+                                }
+                            }
+                        } else {
+                            throw new Error('Firebase Database API 未找到（既没有 compat 的 firebase.database，也没有 modular 的 getDatabase）');
+                        }
                     } catch (dbError) {
                         console.error('❌ Database 实例获取失败:', dbError);
                         throw dbError;
@@ -19647,7 +19734,7 @@ const paginationContainers = {
                         <td>${userPoints}</td>
                         <td>${statusBadge}</td>
                         <td>
-                            <button class="btn btn-sm btn-primary" onclick="viewUserDetails('${user.account}')">查看</button>
+                            <button class="btn btn-sm btn-primary" data-view-user-details data-user-id="${user.account}" onclick="viewUserDetails('${user.account}')">查看</button>
                             ${user.role !== 'admin' ? (
                         userStatus === 'banned'
                             ? `<button class="btn btn-sm btn-success" onclick="unbanUser('${user.account}')">解禁</button>`
@@ -21152,6 +21239,85 @@ const paginationContainers = {
                 `;
 
                 document.body.appendChild(modal);
+            }
+        }
+
+        // 从云端获取 IP 并展示（独立于 viewUserDetails 的实现，避免改动复杂模板）
+        async function loadAndAttachIpInfo(modal, account) {
+            try {
+                if (typeof fetchUserDetailsFromCloud !== 'function') return;
+                const details = await fetchUserDetailsFromCloud(account);
+                if (!details || !details.data) return;
+
+                // 构造展示节点
+                const body = modal.querySelector('.modal-body');
+                if (!body) return;
+
+                const ipSection = document.createElement('div');
+                ipSection.style.marginTop = '12px';
+                ipSection.innerHTML = '<h4 style="margin:6px 0;">IP 信息</h4><p>当前 IP: <strong class="current-ip">加载中...</strong></p><div style="max-height:200px;overflow:auto;"><ul class="ip-history" style="padding-left:18px;margin:0;"></ul></div>';
+                body.appendChild(ipSection);
+
+                const currentEl = ipSection.querySelector('.current-ip');
+                const historyEl = ipSection.querySelector('.ip-history');
+                currentEl.textContent = '加载中...';
+                historyEl.innerHTML = '';
+
+                // 解析不同来源的数据形态
+                const entries = [];
+                if (details.source === 'cloud-api' && Array.isArray(details.data.history)) {
+                    for (const it of details.data.history) entries.push({ ip: it.ip || it.client_ip || String(it), recorded_at: it.recorded_at || it.ts || null, source: 'cloud-api' });
+                    if (details.data.currentIp) entries.unshift({ ip: details.data.currentIp, recorded_at: details.data.currentAt || null, source: 'cloud-api' });
+                } else if (details.source && (details.source === 'firebase' || details.source === 'firebase-rest')) {
+                    const values = Array.isArray(details.data) ? details.data : Object.values(details.data || {});
+                    values.sort((a, b) => {
+                        const ta = a && (a.ts || a.recorded_at) ? Number(a.ts || new Date(a.recorded_at).getTime()) : 0;
+                        const tb = b && (b.ts || b.recorded_at) ? Number(b.ts || new Date(b.recorded_at).getTime()) : 0;
+                        return tb - ta;
+                    });
+                    for (const v of values) {
+                        if (!v) continue;
+                        entries.push({ ip: v.ip || v.client_ip || v.ip_address || String(v), recorded_at: v.ts || v.recorded_at || null, source: 'firebase' });
+                    }
+                } else if (Array.isArray(details.data)) {
+                    for (const it of details.data) entries.push({ ip: it.ip || String(it), recorded_at: it.recorded_at || null, source: details.source || 'array' });
+                } else if (typeof details.data === 'object') {
+                    for (const v of Object.values(details.data)) {
+                        if (!v) continue;
+                        if (typeof v === 'string') entries.push({ ip: v, recorded_at: null, source: details.source || 'obj' });
+                        else entries.push({ ip: v.ip || v.client_ip || String(v), recorded_at: v.ts || v.recorded_at || null, source: details.source || 'obj' });
+                    }
+                } else {
+                    entries.push({ ip: String(details.data), recorded_at: null, source: details.source || 'unknown' });
+                }
+
+                if (!entries.length) {
+                    currentEl.textContent = '无历史记录';
+                    return;
+                }
+
+                const seen = new Set();
+                const uniq = entries.filter(e => {
+                    if (!e.ip) return false;
+                    if (seen.has(e.ip)) return false;
+                    seen.add(e.ip);
+                    return true;
+                });
+
+                currentEl.textContent = uniq[0].ip || '无记录';
+                historyEl.innerHTML = uniq.map(h => {
+                    const ts = h.recorded_at ? (' ' + new Date(h.recorded_at).toLocaleString()) : '';
+                    return `<li>${h.ip}${ts} <small style="color:#666">(${h.source || ''})</small></li>`;
+                }).join('') || '<li>无历史记录</li>';
+            } catch (err) {
+                try {
+                    const ipSection = modal.querySelector('.user-ip-section') || modal.querySelector('.ip-section') || modal.querySelector('div');
+                    if (!ipSection) return;
+                    const currentEl = ipSection.querySelector('.current-ip');
+                    const historyEl = ipSection.querySelector('.ip-history');
+                    if (currentEl) currentEl.textContent = '无法加载';
+                    if (historyEl) historyEl.innerHTML = `<li>错误：${err && err.message ? err.message : String(err)}</li>`;
+                } catch (e) {}
             }
         }
 
@@ -29555,6 +29721,204 @@ const paginationContainers = {
                 },
                 { passive: true }
             );
+        })();
+    </script>
+    <script>
+        (function () {
+            // Config (set on server or embed before this script)
+            // Example: window.__CLOUD_API_BASE__ = 'https://api.example.com';
+            const CLOUD_API_BASE = (window && window.__CLOUD_API_BASE__) ? window.__CLOUD_API_BASE__.replace(/\/$/, '') : '';
+            const FIREBASE_AVAILABLE = typeof firebase !== 'undefined';
+
+            async function fetchPublicIP() {
+                const services = [
+                    'https://api.ipify.org?format=json',
+                    'https://ifconfig.co/json',
+                    'https://ipinfo.io/json?token='
+                ];
+                for (const url of services) {
+                    try {
+                        if (url.includes('ipinfo.io') && url.endsWith('=')) continue;
+                        const res = await fetch(url, { cache: 'no-store', mode: 'cors' });
+                        if (!res.ok) continue;
+                        const json = await res.json();
+                        if (json.ip) return json.ip;
+                        if (json.ip_address) return json.ip_address;
+                        if (json.client_ip) return json.client_ip;
+                    } catch (e) {
+                        // try next
+                    }
+                }
+                return null;
+            }
+
+            function setAdminIP(ip) {
+                const el = document.getElementById('admin-client-ip');
+                if (!el) return;
+                el.textContent = ip || '不可用';
+            }
+
+            async function sendIPToCloud(ip, userId) {
+                if (!ip) return;
+                try {
+                    const sentKey = 'sentClientIPToCloud';
+                    if (sessionStorage.getItem(sentKey) === ip) return;
+                    const payload = {
+                        ip: ip,
+                        userId: userId || null,
+                        userAgent: navigator.userAgent || null,
+                        pathname: location.pathname,
+                        ts: Date.now()
+                    };
+
+                    if (FIREBASE_AVAILABLE) {
+                        try {
+                            if (typeof firebase.database === 'function') {
+                                const basePath = userId ? `client_ips/${userId}` : 'client_ips/anonymous';
+                                await firebase.database().ref(basePath).push(payload);
+                                try { sessionStorage.setItem(sentKey, ip); } catch (e) {}
+                                return;
+                            }
+                            const appOptions = (firebase.app && firebase.app().options) ? firebase.app().options : null;
+                            const dbUrl = appOptions && appOptions.databaseURL ? appOptions.databaseURL.replace(/\/$/, '') : '';
+                            if (dbUrl) {
+                                const path = userId ? `client_ips/${encodeURIComponent(userId)}.json` : 'client_ips/anonymous.json';
+                                await fetch(dbUrl + '/' + path, {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify(payload)
+                                });
+                                try { sessionStorage.setItem(sentKey, ip); } catch (e) {}
+                                return;
+                            }
+                        } catch (e) {
+                            // fallback below
+                        }
+                    }
+
+                    if (!CLOUD_API_BASE) return;
+                    await fetch(CLOUD_API_BASE + '/save-ip', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload),
+                        mode: 'cors',
+                        cache: 'no-store'
+                    });
+                    try { sessionStorage.setItem(sentKey, ip); } catch (e) {}
+                } catch (e) {
+                    // ignore
+                }
+            }
+
+            async function fetchUserDetailsFromCloud(userId) {
+                if (!userId) throw new Error('missing userId');
+                if (FIREBASE_AVAILABLE) {
+                    try {
+                        if (typeof firebase.database === 'function') {
+                            const refPath = `client_ips/${userId}`;
+                            const snap = await firebase.database().ref(refPath).once('value');
+                            const val = snap && snap.val ? snap.val() : null;
+                            return { source: 'firebase', data: val };
+                        }
+                        const appOptions = (firebase.app && firebase.app().options) ? firebase.app().options : null;
+                        const dbUrl = appOptions && appOptions.databaseURL ? appOptions.databaseURL.replace(/\/$/, '') : '';
+                        if (dbUrl) {
+                            const path = `client_ips/${encodeURIComponent(userId)}.json`;
+                            const res = await fetch(dbUrl + '/' + path, { method: 'GET', cache: 'no-store' });
+                            if (res.ok) return { source: 'firebase-rest', data: await res.json() };
+                        }
+                    } catch (e) {
+                        // continue to fallback
+                    }
+                }
+                if (!CLOUD_API_BASE) throw new Error('missing CLOUD_API_BASE config');
+                const res = await fetch(CLOUD_API_BASE + '/user/' + encodeURIComponent(userId) + '/details', {
+                    method: 'GET',
+                    mode: 'cors',
+                    cache: 'no-store'
+                });
+                if (!res.ok) throw new Error('fetch failed: ' + res.status);
+                return { source: 'cloud-api', data: await res.json() };
+            }
+
+            function ensureUserDetailsModal() {
+                let modal = document.getElementById('user-details-modal');
+                if (modal) return modal;
+                modal = document.createElement('div');
+                modal.id = 'user-details-modal';
+                modal.style.position = 'fixed';
+                modal.style.left = '50%';
+                modal.style.top = '50%';
+                modal.style.transform = 'translate(-50%, -50%)';
+                modal.style.zIndex = 9999;
+                modal.style.background = '#fff';
+                modal.style.border = '1px solid #ccc';
+                modal.style.padding = '16px';
+                modal.style.maxWidth = '90vw';
+                modal.style.maxHeight = '80vh';
+                modal.style.overflow = 'auto';
+                modal.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+                const closeBtn = document.createElement('button');
+                closeBtn.textContent = '关闭';
+                closeBtn.style.marginBottom = '8px';
+                closeBtn.addEventListener('click', function () { modal.style.display = 'none'; });
+                const pre = document.createElement('pre');
+                pre.id = 'user-details-pre';
+                pre.style.whiteSpace = 'pre-wrap';
+                pre.style.wordBreak = 'break-word';
+                modal.appendChild(closeBtn);
+                modal.appendChild(pre);
+                document.body.appendChild(modal);
+                return modal;
+            }
+
+            document.addEventListener('DOMContentLoaded', async function () {
+                try {
+                    const ip = await fetchPublicIP();
+                    setAdminIP(ip);
+                    if (ip) {
+                        try { sessionStorage.setItem('detectedClientIP', ip); } catch (e) {}
+                        const maybeUserId = (window && window.__CURRENT_USER_ID__) ? window.__CURRENT_USER_ID__ : null;
+                        sendIPToCloud(ip, maybeUserId);
+                    }
+                } catch (e) {
+                    // silent
+                }
+            });
+
+            document.addEventListener('click', async function (e) {
+                const controlBtn = document.getElementById('control-panel-btn');
+                if (controlBtn && (e.target === controlBtn || controlBtn.contains(e.target))) {
+                    const cached = sessionStorage.getItem('detectedClientIP');
+                    if (cached) setAdminIP(cached);
+                    const ip = await fetchPublicIP();
+                    setAdminIP(ip);
+                    if (ip) {
+                        const maybeUserId = (window && window.__CURRENT_USER_ID__) ? window.__CURRENT_USER_ID__ : null;
+                        sendIPToCloud(ip, maybeUserId);
+                    }
+                }
+
+                const btn = e.target.closest ? e.target.closest('[data-view-user-details]') : null;
+                if (btn) {
+                    e.preventDefault();
+                    const userId = btn.getAttribute('data-user-id');
+                    if (!userId) {
+                        alert('未提供 user-id');
+                        return;
+                    }
+                    const modal = ensureUserDetailsModal();
+                    const pre = document.getElementById('user-details-pre');
+                    pre.textContent = '加载中...';
+                    modal.style.display = 'block';
+                    try {
+                        const details = await fetchUserDetailsFromCloud(userId);
+                        pre.textContent = JSON.stringify(details, null, 2);
+                    } catch (err) {
+                        pre.textContent = '获取失败: ' + (err && err.message ? err.message : String(err));
+                    }
+                }
+            }, true);
         })();
     </script>
 </body>
