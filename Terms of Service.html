@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terms of Service - Beefreebies: Free Products for Honest Reviews</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+        }
+
+        :root {
+            --primary: #FF6B35;
+            --primary-light: #FF8E53;
+            --secondary: #004E89;
+            --secondary-light: #0066B3;
+            --accent: #FFD166;
+            --accent-light: #FFE8B3;
+            --text-dark: #333333;
+            --text-medium: #555555;
+            --text-light: #777777;
+            --background: #fffef7;
+            --white: #ffffff;
+            --border: rgba(255, 182, 72, 0.15);
+            --success: #10B981;
+            --warning: #F59E0B;
+            --error: #EF4444;
+            --shadow: 0 10px 40px rgba(0, 0, 0, 0.05);
+            --radius: 12px;
+            --gradient-bg: linear-gradient(135deg, #F9FAFB 0%, #F3F4F6 100%);
+            --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+        }
+
+        body {
+            background-color: var(--background);
+            color: var(--text-dark);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header - 极其紧凑 */
+        header {
+            background-color: var(--white);
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 800;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            letter-spacing: -0.5px;
+            line-height: 1;
+        }
+
+        .logo-bee {
+            color: #FFD166;
+            text-shadow: 0 1px 2px rgba(255, 209, 102, 0.3);
+        }
+
+        .logo-freebies {
+            color: #333333;
+            font-weight: 700;
+        }
+
+        /* 紧凑的页面标题区域 */
+        .page-header {
+            background: var(--gradient-bg);
+            padding: 20px 0 15px;
+            margin: 15px 0 15px;
+            border-radius: var(--radius);
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(0, 0, 0, 0.03);
+        }
+
+        .page-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(255, 209, 102, 0.03) 0%, transparent 40%),
+                radial-gradient(circle at 80% 20%, rgba(0, 78, 137, 0.02) 0%, transparent 40%);
+        }
+
+        .page-header-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .page-header h1 {
+            font-size: 28px;
+            font-weight: 800;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+            color: var(--secondary);
+            background: linear-gradient(135deg, var(--secondary) 0%, var(--secondary-light) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .date-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255, 107, 53, 0.08);
+            padding: 6px 12px;
+            border-radius: 20px;
+            color: var(--primary);
+            font-weight: 600;
+            font-size: 12px;
+            margin-bottom: 12px;
+        }
+
+        .date-badge i {
+            color: var(--primary);
+        }
+
+        .page-header p {
+            font-size: 15px;
+            opacity: 0.95;
+            margin-bottom: 10px;
+            font-weight: 500;
+            line-height: 1.5;
+            color: var(--text-medium);
+        }
+
+        .important-notice {
+            background: linear-gradient(135deg, rgba(255, 107, 53, 0.1) 0%, rgba(255, 209, 102, 0.1) 100%);
+            border-left: 3px solid var(--primary);
+            padding: 14px;
+            border-radius: 8px;
+            margin-top: 12px;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .important-icon {
+            color: var(--primary);
+            font-size: 18px;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .important-notice h3 {
+            color: var(--primary);
+            margin-bottom: 5px;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .important-notice p {
+            font-size: 13px;
+            margin-bottom: 0;
+            line-height: 1.5;
+        }
+
+        /* 条款容器 */
+        .terms-container {
+            width: 100%;
+            background-color: var(--white);
+            border-radius: var(--radius);
+            padding: 25px;
+            box-shadow: var(--card-shadow);
+            border: 1px solid rgba(0, 0, 0, 0.03);
+            margin-bottom: 25px;
+        }
+
+        .section-title {
+            color: var(--secondary);
+            margin-bottom: 20px;
+            font-size: 22px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid rgba(255, 107, 53, 0.1);
+        }
+
+        .section-title i {
+            color: var(--primary);
+            background: #FFF9F0;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        /* 条款内容样式 */
+        .terms-content {
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .terms-content h2 {
+            color: var(--secondary);
+            font-size: 18px;
+            margin: 20px 0 10px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid rgba(255, 107, 53, 0.1);
+            display: flex;
+            align-items: center;
+        }
+
+        .terms-content h3 {
+            color: var(--secondary);
+            font-size: 16px;
+            margin: 16px 0 6px;
+            font-weight: 600;
+            padding-left: 8px;
+            border-left: 2px solid var(--primary);
+        }
+
+        .terms-content p {
+            margin-bottom: 10px;
+            color: var(--text-medium);
+        }
+
+        .terms-content ul, .terms-content ol {
+            margin-left: 20px;
+            margin-bottom: 15px;
+            color: var(--text-medium);
+        }
+
+        .terms-content li {
+            margin-bottom: 5px;
+        }
+
+        .terms-content strong {
+            color: var(--text-dark);
+            font-weight: 600;
+        }
+
+        .highlight-box {
+            background: #FFF9F0;
+            border-left: 2px solid var(--accent);
+            padding: 14px;
+            border-radius: 6px;
+            margin: 15px 0;
+            font-size: 13px;
+        }
+
+        .warning-box {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.05) 0%, rgba(245, 158, 11, 0.1) 100%);
+            border-left: 2px solid var(--warning);
+            padding: 14px;
+            border-radius: 6px;
+            margin: 15px 0;
+            font-size: 13px;
+        }
+
+        .warning-box h4 {
+            color: var(--warning);
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 14px;
+        }
+
+        .section-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            font-weight: 700;
+            margin-right: 8px;
+            font-size: 13px;
+        }
+
+        /* 页面内快速导航 */
+        .page-quick-nav {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .nav-item {
+            background: rgba(255, 107, 53, 0.08);
+            color: var(--primary);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 107, 53, 0.2);
+        }
+
+        .nav-item:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        /* Footer */
+        footer {
+            background-color: var(--white);
+            padding: 25px;
+            border-radius: var(--radius);
+            text-align: center;
+            color: var(--text-light);
+            border-top: 1px solid #f0f0f0;
+            font-size: 13px;
+            margin-top: 20px;
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.03);
+            border: 1px solid rgba(0, 0, 0, 0.03);
+        }
+
+        .company-info {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        .company-info p {
+            font-size: 12px;
+            color: var(--text-light);
+            line-height: 1.5;
+        }
+
+        /* Back to Top Button */
+        .back-to-top {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: white;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(255, 107, 53, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            transition: all 0.3s ease;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(20px);
+        }
+
+        .back-to-top.visible {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .back-to-top:hover {
+            transform: scale(1.1) translateY(-3px);
+            box-shadow: 0 6px 20px rgba(255, 107, 53, 0.4);
+        }
+
+        /* 阅读进度指示器 */
+        .progress-container {
+            position: fixed;
+            top: 50px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.1);
+            z-index: 99;
+        }
+
+        .progress-bar {
+            height: 2px;
+            background: linear-gradient(90deg, var(--primary) 0%, var(--primary-light) 100%);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 16px;
+            }
+            
+            header {
+                padding: 10px 0;
+            }
+            
+            .logo {
+                font-size: 22px;
+            }
+            
+            .page-header {
+                padding: 16px 0 12px;
+                margin: 12px 0 12px;
+                border-radius: 10px;
+            }
+            
+            .page-header h1 {
+                font-size: 24px;
+                margin-bottom: 6px;
+            }
+            
+            .page-header p {
+                font-size: 14px;
+                margin-bottom: 8px;
+            }
+            
+            .important-notice {
+                padding: 12px;
+                margin-top: 10px;
+            }
+            
+            .important-notice h3 {
+                font-size: 13px;
+            }
+            
+            .important-notice p {
+                font-size: 12px;
+            }
+            
+            .terms-container {
+                padding: 20px;
+            }
+            
+            .section-title {
+                font-size: 20px;
+                margin-bottom: 16px;
+            }
+            
+            .section-title i {
+                width: 42px;
+                height: 42px;
+                font-size: 18px;
+            }
+            
+            .terms-content h2 {
+                font-size: 16px;
+            }
+            
+            .page-quick-nav {
+                margin-bottom: 16px;
+                padding-bottom: 12px;
+            }
+            
+            .nav-item {
+                font-size: 11px;
+                padding: 5px 10px;
+            }
+            
+            .back-to-top {
+                bottom: 16px;
+                right: 16px;
+                width: 42px;
+                height: 42px;
+                font-size: 16px;
+            }
+            
+            footer {
+                padding: 20px 16px;
+            }
+            
+            .progress-container {
+                top: 42px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .page-header h1 {
+                font-size: 20px;
+            }
+            
+            .page-header p {
+                font-size: 13px;
+            }
+            
+            .date-badge {
+                font-size: 11px;
+                padding: 5px 10px;
+            }
+            
+            .terms-container {
+                padding: 16px;
+            }
+            
+            .section-title {
+                font-size: 18px;
+            }
+            
+            .terms-content {
+                font-size: 13px;
+            }
+            
+            .page-quick-nav {
+                justify-content: center;
+            }
+            
+            .back-to-top {
+                bottom: 12px;
+                right: 12px;
+                width: 38px;
+                height: 38px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 阅读进度指示器 -->
+    <div class="progress-container">
+        <div class="progress-bar" id="progressBar"></div>
+    </div>
+
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <a href="#" class="logo">
+                <span class="logo-bee">Bee</span><span class="logo-freebies">freebies</span>
+            </a>
+        </div>
+    </header>
+
+    <!-- 紧凑的页面标题区域 -->
+    <section class="page-header">
+        <div class="container">
+            <div class="page-header-content">
+                <h1>Beefreebies Terms of Service</h1>
+                
+                <div class="date-badge">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>Last Updated: 2025/12/24</span>
+                </div>
+                
+                <p>These Terms of Service ("Terms") govern your access to and use of the Beefreebies website, applications, and related services (collectively, the "Service"), operated by HONG KONG DYNAMO TECH CO., LIMITED ("Beefreebies", "we", "us", or "our").</p>
+                
+                <p>By accessing or using the Service, you agree to be bound by these Terms and our Privacy Policy. If you do not agree, do not use the Service.</p>
+                
+                <div class="important-notice">
+                    <div class="important-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div>
+                        <h3>IMPORTANT NOTICE REGARDING ARBITRATION</h3>
+                        <p>PLEASE READ THIS SECTION CAREFULLY. THESE TERMS REQUIRE THE USE OF INDIVIDUAL ARBITRATION TO RESOLVE DISPUTES AND LIMIT THE MANNER IN WHICH YOU MAY SEEK RELIEF. YOU WAIVE YOUR RIGHT TO PARTICIPATE IN A CLASS ACTION LAWSUIT OR CLASS-WIDE ARBITRATION.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Terms Container -->
+        <main class="terms-container">
+            <h2 class="section-title"><i class="fas fa-gavel"></i> Terms of Service</h2>
+            
+            <!-- 简化的页面内快速导航 -->
+            <div class="page-quick-nav">
+                <a href="#eligibility" class="nav-item">1. Eligibility</a>
+                <a href="#cashback" class="nav-item">3. Cash Back</a>
+                <a href="#accounts" class="nav-item">4. Accounts</a>
+                <a href="#conduct" class="nav-item">5. Prohibited</a>
+                <a href="#ip" class="nav-item">6. IP Rights</a>
+                <a href="#liability" class="nav-item">11. Liability</a>
+                <a href="#dispute" class="nav-item">14. Disputes</a>
+                <a href="#contact" class="nav-item">16. Contact</a>
+            </div>
+            
+            <div class="terms-content">
+                <!-- Section 1 -->
+                <h2 id="eligibility"><span class="section-number">1</span> Eligibility</h2>
+                <p>You must be at least 18 years old to use Beefreebies. By using the Service, you represent and warrant that:</p>
+                <ul>
+                    <li><strong>You are 18 years of age or older</strong></li>
+                    <li><strong>You have the legal capacity to enter into a binding agreement</strong></li>
+                    <li><strong>You are not prohibited from using the Service under applicable laws</strong></li>
+                </ul>
+                
+                <!-- Section 2 -->
+                <h2 id="description"><span class="section-number">2</span> Description of the Service</h2>
+                <p>Beefreebies is a promotional platform that allows users ("Users") to discover deals, offers, and promotional opportunities provided by third-party merchants.</p>
+                <p>Some promotions may include cash back or reward incentives, subject to the conditions described in these Terms.</p>
+                <div class="highlight-box">
+                    <p><strong>Important:</strong> Beefreebies is not the seller of any third-party products and does not guarantee product availability, quality, or merchant performance.</p>
+                </div>
+                
+                <!-- Section 3 -->
+                <h2 id="cashback"><span class="section-number">3</span> Cash Back & Rewards Program</h2>
+                
+                <h3>3.1 Eligibility for Cash Back</h3>
+                <p>Cash back rewards are offered at Beefreebies' discretion and may be subject to:</p>
+                <ul>
+                    <li>Successful completion of all required promotional steps</li>
+                    <li>Merchant verification and confirmation</li>
+                    <li>Compliance with these Terms</li>
+                </ul>
+                
+                <h3>3.2 Calculation & Payment</h3>
+                <p>Cash back is typically calculated within 30 days after the qualifying action is verified.</p>
+                <ul>
+                    <li>Payments are issued via PayPal only</li>
+                    <li>You are responsible for maintaining a valid PayPal account</li>
+                </ul>
+                
+                <h3>3.3 Denial or Reversal</h3>
+                <p>Beefreebies reserves the right to deny, reverse, or withhold cash back if:</p>
+                <ul>
+                    <li>Fraud, abuse, or policy violations are suspected</li>
+                    <li>The merchant fails to confirm the qualifying transaction</li>
+                    <li>The User violates these Terms</li>
+                </ul>
+                
+                <h3>3.4 Taxes</h3>
+                <p>You are solely responsible for any tax obligations arising from rewards or cash back received.</p>
+                
+                <!-- Section 4 -->
+                <h2 id="accounts"><span class="section-number">4</span> User Accounts</h2>
+                <p>To access certain features, you may need to create an account. You agree to:</p>
+                <ul>
+                    <li>Provide accurate and complete information</li>
+                    <li>Maintain the confidentiality of your login credentials</li>
+                    <li>Accept responsibility for all activity under your account</li>
+                </ul>
+                <p>We reserve the right to suspend or terminate accounts that violate these Terms.</p>
+                
+                <!-- Section 5 -->
+                <h2 id="conduct"><span class="section-number">5</span> Prohibited Conduct</h2>
+                <p>You agree not to:</p>
+                <ul>
+                    <li>Engage in fraud, abuse, or manipulation of promotions</li>
+                    <li>Submit false or misleading information</li>
+                    <li>Interfere with platform security or functionality</li>
+                    <li>Upload malware or harmful code</li>
+                    <li>Violate any applicable law or third-party rights</li>
+                </ul>
+                
+                <!-- Section 6 -->
+                <h2 id="ip"><span class="section-number">6</span> Intellectual Property</h2>
+                <p>All content provided by Beefreebies, including text, graphics, logos, and software ("Company Content"), is owned by or licensed to Beefreebies and protected by intellectual property laws.</p>
+                <p>You may not copy, modify, distribute, or exploit Company Content without prior written permission.</p>
+                
+                <!-- Section 7 -->
+                <h2 id="user-content"><span class="section-number">7</span> User Content</h2>
+                <p>By submitting content (including reviews, comments, images), you grant Beefreebies a worldwide, non-exclusive, royalty-free, transferable license to use, display, reproduce, and distribute such content in connection with the Service.</p>
+                <p>You represent that you own or have rights to all content you submit.</p>
+                
+                <!-- Section 8 -->
+                <h2 id="dmca"><span class="section-number">8</span> DMCA & Copyright Complaints</h2>
+                <p>If you believe your copyright has been infringed, please contact:</p>
+                <div class="highlight-box">
+                    <p><strong>Email:</strong> service@beefreebies.com</p>
+                    <p>Include all information required under applicable copyright law.</p>
+                </div>
+                
+                <!-- Section 9 -->
+                <h2 id="third-party"><span class="section-number">9</span> Third-Party Services & Links</h2>
+                <p>The Service may contain links to third-party websites or services. Beefreebies is not responsible for third-party content, policies, or transactions.</p>
+                <p>Your dealings with third parties are solely between you and the third party.</p>
+                
+                <!-- Section 10 -->
+                <h2 id="warranties"><span class="section-number">10</span> Disclaimer of Warranties</h2>
+                <div class="warning-box">
+                    <h4><i class="fas fa-exclamation-triangle"></i> Important Notice</h4>
+                    <p>THE SERVICE IS PROVIDED "AS IS" AND "AS AVAILABLE". BEEFREBEEBIES DISCLAIMS ALL WARRANTIES, EXPRESS OR IMPLIED, INCLUDING MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT.</p>
+                    <p>We do not guarantee uninterrupted or error-free operation.</p>
+                </div>
+                
+                <!-- Section 11 -->
+                <h2 id="liability"><span class="section-number">11</span> Limitation of Liability</h2>
+                <p>TO THE MAXIMUM EXTENT PERMITTED BY LAW, BEEFREBEEBIES SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES.</p>
+                <p>IN NO EVENT SHALL BEEFREBEEBIES' TOTAL LIABILITY EXCEED THE AMOUNT PAID TO YOU BY BEEFREBEEBIES IN THE PRIOR 12 MONTHS, OR USD $100, WHICHEVER IS GREATER.</p>
+                
+                <!-- Section 12 -->
+                <h2 id="indemnification"><span class="section-number">12</span> Indemnification</h2>
+                <p>You agree to indemnify and hold harmless Beefreebies, its affiliates, officers, and employees from any claims, damages, or expenses arising from:</p>
+                <ul>
+                    <li>Your use of the Service</li>
+                    <li>Your violation of these Terms</li>
+                    <li>Your violation of applicable laws or third-party rights</li>
+                </ul>
+                
+                <!-- Section 13 -->
+                <h2 id="termination"><span class="section-number">13</span> Termination</h2>
+                <p>We may suspend or terminate your access to the Service at any time, with or without notice, if you violate these Terms or engage in harmful conduct.</p>
+                <p>Upon termination, any pending rewards may be forfeited.</p>
+                
+                <!-- Section 14 -->
+                <h2 id="dispute"><span class="section-number">14</span> Dispute Resolution & Arbitration</h2>
+                
+                <h3>14.1 Mandatory Arbitration</h3>
+                <p>Any dispute arising out of or relating to these Terms shall be resolved by binding individual arbitration, not in court.</p>
+                
+                <h3>14.2 Class Action Waiver</h3>
+                <p>You waive the right to participate in class actions, class arbitrations, or representative actions.</p>
+                
+                <h3>14.3 Governing Law</h3>
+                <p>These Terms shall be governed by the laws of Hong Kong, without regard to conflict-of-law principles.</p>
+                
+                <!-- Section 15 -->
+                <h2 id="miscellaneous"><span class="section-number">15</span> Miscellaneous</h2>
+                <p>These Terms constitute the entire agreement between you and Beefreebies.</p>
+                <p>If any provision is found unenforceable, the remaining provisions remain in effect.</p>
+                <p>We may update these Terms at any time by posting a revised version.</p>
+                
+                <!-- Section 16 -->
+                <h2 id="contact"><span class="section-number">16</span> Contact Information</h2>
+                <div class="highlight-box">
+                    <p><strong>Company Name:</strong> HONG KONG DYNAMO TECH CO., LIMITED</p>
+                    <p><strong>Address:</strong><br>
+                    UNIT 18, 8/F, PETER LEUNG INDUSTRIAL BUILDING<br>
+                    103 WAI YIP STREET, KWUN TONG<br>
+                    HONG KONG, CHINA</p>
+                    <p><strong>Email:</strong> service@beefreebies.com</p>
+                </div>
+            </div>
+        </main>
+        
+        <!-- Footer -->
+        <footer>
+            <p>© 2025 Beefreebies Free Product Platform | Connecting consumers with quality products</p>
+            <p style="margin-top: 10px; margin-bottom: 20px; font-size: 12px;">By using our service, you agree to abide by our Terms of Service and Privacy Policy.</p>
+            
+            <div class="company-info">
+                <p>
+                    <strong>Company:</strong> HONG KONG DYNAMO TECH CO., LIMITED<br>
+                    UNIT 18, 8/F, PETER LEUNG INDUSTRIAL BUILDING<br>
+                    103 WAI YIP STREET, KWUN TONG, HONG KONG<br>
+                    Phone: +852 5686 1782 | +1 213 275 6555<br>
+                    Email: service@beefreebies.com
+                </p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Back to Top Button -->
+    <button class="back-to-top" id="backToTop">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+
+    <script>
+        // Back to top functionality
+        const backToTopButton = document.getElementById('backToTop');
+        
+        window.addEventListener('scroll', function() {
+            if (window.scrollY > 300) {
+                backToTopButton.classList.add('visible');
+            } else {
+                backToTopButton.classList.remove('visible');
+            }
+            
+            // 更新阅读进度条
+            updateProgressBar();
+        });
+        
+        backToTopButton.addEventListener('click', function() {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+        
+        // 阅读进度条功能
+        function updateProgressBar() {
+            const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+            const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const scrolled = (winScroll / height) * 100;
+            document.getElementById("progressBar").style.width = scrolled + "%";
+        }
+        
+        // 平滑滚动功能
+        document.querySelectorAll('.nav-item').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                const targetId = this.getAttribute('href');
+                const targetElement = document.querySelector(targetId);
+                
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 60,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+        
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            updateProgressBar(); // Initialize progress bar
+        });
+    </script>
+</body>
+</html>
