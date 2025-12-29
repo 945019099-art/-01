@@ -29872,5 +29872,58 @@ const paginationContainers = {
             }
         })();
     </script>
+    <script>
+        // Capture-phase listener to ensure per-button clicks are handled even if inner handlers stop propagation.
+        (function () {
+            document.addEventListener('click', function (e) {
+                const btn = e.target && e.target.closest ? e.target.closest('.toggle-publish') : null;
+                if (!btn) return;
+                // Run in capture phase; ensure default prevented and propagation stopped for consistency
+                try {
+                    e.preventDefault();
+                } catch (err) {}
+                try {
+                    e.stopPropagation();
+                } catch (err) {}
+
+                // Prefer calling existing onToggleClick if available
+                if (typeof onToggleClick === 'function') {
+                    try {
+                        onToggleClick(e);
+                        return;
+                    } catch (err) {
+                        console.error('onToggleClick call failed:', err);
+                    }
+                }
+
+                // Fallback: toggle product visibility directly
+                const card = btn.closest('.product-card');
+                if (!card) return;
+                const productId = parseInt(card.getAttribute('data-product-id'), 10);
+                const product = products && products.find ? products.find(p => parseInt(p.id) === productId) : null;
+                if (!product) {
+                    if (typeof showNotification === 'function') showNotification('产品未找到', 'error');
+                    return;
+                }
+                product.visible = !(product.visible === false);
+
+                const p = saveProducts();
+                if (p && typeof p.then === 'function') {
+                    p.then(() => {
+                        renderAdminProducts();
+                        renderProducts(products);
+                        if (typeof showNotification === 'function') showNotification(product.visible === false ? '产品已下架' : '产品已上架', 'success');
+                    }).catch(err => {
+                        console.error('切换失败', err);
+                        if (typeof showNotification === 'function') showNotification('更新失败', 'error');
+                    });
+                } else {
+                    renderAdminProducts();
+                    renderProducts(products);
+                    if (typeof showNotification === 'function') showNotification(product.visible === false ? '产品已下架' : '产品已上架', 'success');
+                }
+            }, true);
+        })();
+    </script>
 </body>
 </html>
