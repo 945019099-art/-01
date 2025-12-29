@@ -7944,6 +7944,8 @@
                         <span>全选</span>
                     </label>
                     <button class="btn btn-warning" id="batch-edit-btn" style="display: none; flex-shrink: 0;">批量编辑</button>
+                    <button class="btn btn-success" id="batch-publish-btn" style="display: none; flex-shrink: 0;">批量上架</button>
+                    <button class="btn btn-secondary" id="batch-hide-btn" style="display: none; flex-shrink: 0;">批量下架</button>
                     <button class="btn btn-danger" id="batch-delete-btn" style="display: none; flex-shrink: 0;">批量删除</button>
                 </div>
 
@@ -16569,6 +16571,16 @@ const paginationContainers = {
             const batchEditBtn = document.getElementById('batch-edit-btn');
             if (batchEditBtn) {
                 batchEditBtn.addEventListener('click', safeButtonClick('batch-edit-btn', openBatchEditModal, 300));
+            }
+
+            const batchPublishBtn = document.getElementById('batch-publish-btn');
+            if (batchPublishBtn) {
+                batchPublishBtn.addEventListener('click', safeButtonClick('batch-publish-btn', batchPublishProducts, 300));
+            }
+
+            const batchHideBtn = document.getElementById('batch-hide-btn');
+            if (batchHideBtn) {
+                batchHideBtn.addEventListener('click', safeButtonClick('batch-hide-btn', batchHideProducts, 300));
             }
 
             const batchDeleteBtn = document.getElementById('batch-delete-btn');
@@ -26682,19 +26694,29 @@ const paginationContainers = {
             const selectedCheckboxes = document.querySelectorAll('.product-checkbox:checked');
             const allCheckboxes = document.querySelectorAll('.product-checkbox');
             const batchEditBtn = document.getElementById('batch-edit-btn');
+            const batchPublishBtn = document.getElementById('batch-publish-btn');
+            const batchHideBtn = document.getElementById('batch-hide-btn');
             const batchDeleteBtn = document.getElementById('batch-delete-btn');
             const selectAllCheckbox = document.getElementById('select-all-products');
 
             // 更新批量操作按钮显示
             if (selectedCheckboxes.length > 0) {
                 batchEditBtn.style.display = 'inline-block';
+                batchPublishBtn.style.display = 'inline-block';
+                batchHideBtn.style.display = 'inline-block';
                 batchDeleteBtn.style.display = 'inline-block';
                 batchEditBtn.textContent = `批量编辑 (${selectedCheckboxes.length})`;
+                batchPublishBtn.textContent = `批量上架 (${selectedCheckboxes.length})`;
+                batchHideBtn.textContent = `批量下架 (${selectedCheckboxes.length})`;
                 batchDeleteBtn.textContent = `批量删除 (${selectedCheckboxes.length})`;
             } else {
                 batchEditBtn.style.display = 'none';
+                batchPublishBtn.style.display = 'none';
+                batchHideBtn.style.display = 'none';
                 batchDeleteBtn.style.display = 'none';
                 batchEditBtn.textContent = '批量编辑';
+                batchPublishBtn.textContent = '批量上架';
+                batchHideBtn.textContent = '批量下架';
                 batchDeleteBtn.textContent = '批量删除';
             }
 
@@ -26773,6 +26795,108 @@ const paginationContainers = {
                 console.error('批量删除产品后同步失败:', error);
                 // 即使同步失败，也保持UI状态（产品已从UI移除）
                 showNotification(`产品已删除，但云端同步失败，请检查网络`, 'warning');
+            });
+        }
+
+        // 批量上架产品
+        function batchPublishProducts() {
+            const selectedIds = getSelectedProductIds();
+
+            if (selectedIds.length === 0) {
+                showNotification('请先选择要上架的产品', 'warning');
+                return;
+            }
+
+            const selectedProducts = products.filter(p => selectedIds.includes(parseInt(p.id)));
+            const hiddenProducts = selectedProducts.filter(p => p.visible === false);
+
+            if (hiddenProducts.length === 0) {
+                showNotification('选中的产品都已上架', 'info');
+                return;
+            }
+
+            if (!confirm(`确定要上架 ${hiddenProducts.length} 个产品吗？\n\n产品名称：${hiddenProducts.map(p => p.name).join('、')}`)) {
+                return;
+            }
+
+            // 更新产品可见性
+            let updatedCount = 0;
+            products.forEach(p => {
+                if (selectedIds.includes(parseInt(p.id)) && p.visible === false) {
+                    p.visible = true;
+                    updatedCount++;
+                }
+            });
+
+            // 立即更新UI（提供即时视觉反馈）
+            renderAdminProducts();
+            renderProducts(products); // 同时更新主页
+            document.getElementById('select-all-products').checked = false;
+            updateBatchButtons();
+
+            // 等待保存和同步完成
+            saveProducts().then(() => {
+                setTimeout(() => {
+                    renderAdminProducts();
+                    renderProducts(products); // 再次确保主页更新
+                    document.getElementById('select-all-products').checked = false;
+                    updateBatchButtons();
+                    showNotification(`成功上架 ${updatedCount} 个产品`, 'success');
+                }, 100);
+            }).catch((error) => {
+                console.error('批量上架产品后同步失败:', error);
+                showNotification(`产品已上架，但云端同步失败，请检查网络`, 'warning');
+            });
+        }
+
+        // 批量下架产品
+        function batchHideProducts() {
+            const selectedIds = getSelectedProductIds();
+
+            if (selectedIds.length === 0) {
+                showNotification('请先选择要下架的产品', 'warning');
+                return;
+            }
+
+            const selectedProducts = products.filter(p => selectedIds.includes(parseInt(p.id)));
+            const visibleProducts = selectedProducts.filter(p => p.visible !== false);
+
+            if (visibleProducts.length === 0) {
+                showNotification('选中的产品都已下架', 'info');
+                return;
+            }
+
+            if (!confirm(`确定要下架 ${visibleProducts.length} 个产品吗？\n\n产品名称：${visibleProducts.map(p => p.name).join('、')}`)) {
+                return;
+            }
+
+            // 更新产品可见性
+            let updatedCount = 0;
+            products.forEach(p => {
+                if (selectedIds.includes(parseInt(p.id)) && p.visible !== false) {
+                    p.visible = false;
+                    updatedCount++;
+                }
+            });
+
+            // 立即更新UI（提供即时视觉反馈）
+            renderAdminProducts();
+            renderProducts(products); // 同时更新主页
+            document.getElementById('select-all-products').checked = false;
+            updateBatchButtons();
+
+            // 等待保存和同步完成
+            saveProducts().then(() => {
+                setTimeout(() => {
+                    renderAdminProducts();
+                    renderProducts(products); // 再次确保主页更新
+                    document.getElementById('select-all-products').checked = false;
+                    updateBatchButtons();
+                    showNotification(`成功下架 ${updatedCount} 个产品`, 'success');
+                }, 100);
+            }).catch((error) => {
+                console.error('批量下架产品后同步失败:', error);
+                showNotification(`产品已下架，但云端同步失败，请检查网络`, 'warning');
             });
         }
 
@@ -29705,10 +29829,15 @@ const paginationContainers = {
                 }
                 const currentlyHidden = product.visible === false;
                 product.visible = !currentlyHidden;
+                // 立即更新按钮文字
+                btn.textContent = product.visible === false ? '上架' : '下架';
+
                 const p = saveProducts();
                 if (p && typeof p.then === 'function') {
                     p.then(() => {
                         renderAdminProducts();
+                        // 同时更新主页的产品显示
+                        renderProducts(products);
                         if (typeof showNotification === 'function') showNotification(product.visible === false ? '产品已下架' : '产品已上架', 'success');
                     }).catch(err => {
                         console.error('切换失败', err);
@@ -29716,6 +29845,8 @@ const paginationContainers = {
                     });
                 } else {
                     renderAdminProducts();
+                    // 同时更新主页的产品显示
+                    renderProducts(products);
                     if (typeof showNotification === 'function') showNotification(product.visible === false ? '产品已下架' : '产品已上架', 'success');
                 }
             }
