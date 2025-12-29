@@ -20648,6 +20648,40 @@ const paginationContainers = {
             }
         }
 
+        // Helper: parse date-only strings like "YYYY-MM-DD" into local Date at day's start/end
+        // This avoids the built-in Date('YYYY-MM-DD') parsing which can be treated as UTC
+        // and cause off-by-one-day errors when converting between timezones.
+        function parseDateOnlyToLocalStart(dateStr) {
+            if (!dateStr) return null;
+            // Expecting "YYYY-MM-DD"
+            const parts = String(dateStr).split('-');
+            if (parts.length === 3) {
+                const y = Number(parts[0]);
+                const m = Number(parts[1]) - 1;
+                const d = Number(parts[2]);
+                const dt = new Date(y, m, d);
+                dt.setHours(0, 0, 0, 0);
+                return dt;
+            }
+            const dt = new Date(dateStr);
+            dt.setHours(0, 0, 0, 0);
+            return dt;
+        }
+
+        function parseDateOnlyToLocalEnd(dateStr) {
+            if (!dateStr) return null;
+            const parts = String(dateStr).split('-');
+            if (parts.length === 3) {
+                const y = Number(parts[0]);
+                const m = Number(parts[1]) - 1;
+                const d = Number(parts[2]);
+                return new Date(y, m, d, 23, 59, 59, 999);
+            }
+            const dt = new Date(dateStr);
+            dt.setHours(23, 59, 59, 999);
+            return dt;
+        }
+
         // 渲染统计数据
         function renderStatistics() {
             const totalUsers = allUsers.length + Object.keys(ADMIN_ACCOUNTS).length;
@@ -20860,10 +20894,9 @@ const paginationContainers = {
                 );
             }
 
-            // 日期范围筛选
+            // 日期范围筛选（按本地日期边界解析，避免时区引起的跨日问题）
             if (currentOrderFilters.startDate) {
-                const startDate = new Date(currentOrderFilters.startDate);
-                startDate.setHours(0, 0, 0, 0);
+                const startDate = parseDateOnlyToLocalStart(currentOrderFilters.startDate);
                 filteredOrders = filteredOrders.filter(order => {
                     const orderDate = new Date(order.date || order.createdAt || 0);
                     orderDate.setHours(0, 0, 0, 0);
@@ -20872,8 +20905,7 @@ const paginationContainers = {
             }
 
             if (currentOrderFilters.endDate) {
-                const endDate = new Date(currentOrderFilters.endDate);
-                endDate.setHours(23, 59, 59, 999);
+                const endDate = parseDateOnlyToLocalEnd(currentOrderFilters.endDate);
                 filteredOrders = filteredOrders.filter(order => {
                     const orderDate = new Date(order.date || order.createdAt || 0);
                     return orderDate <= endDate;
@@ -25206,6 +25238,21 @@ const paginationContainers = {
                     
                     // 移除关闭动画类
                     twoStepsModal.classList.remove('window-closed');
+                }
+                
+                // 确保单步/两步流程的按钮状态被重置（防止上次展示遗留的已确认状态）
+                try {
+                    const sendBtnTwoSteps = document.getElementById('send-message-btn');
+                    const confirmedBtn = document.getElementById('whatsapp-confirmed-btn');
+                    const sendBtnSingle = document.getElementById('sendBtn');
+                    const confirmedBtnSingle = document.getElementById('single-step-confirmed-btn');
+
+                    if (sendBtnTwoSteps) sendBtnTwoSteps.style.display = 'flex';
+                    if (confirmedBtn) confirmedBtn.style.display = 'none';
+                    if (sendBtnSingle) sendBtnSingle.style.display = 'flex';
+                    if (confirmedBtnSingle) confirmedBtnSingle.style.display = 'none';
+                } catch (err) {
+                    console.warn('重置WhatsApp模态按钮状态时出错:', err);
                 }
             }
         }
