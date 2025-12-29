@@ -18235,179 +18235,190 @@ const paginationContainers = {
             }, true);
         })();
 
-        // 渲染首页产品列表
-        function renderProducts(productsToRender) {
-            const productsGrid = document.getElementById('products-grid');
-            const productDetail = document.getElementById('product-detail');
-            const topCarousel = document.querySelector('.carousel');
-            const productsLoading = document.getElementById('products-loading');
+        // 渲染首页产品列表（使用防抖以避免频繁完整重绘导致闪烁）
+        (function () {
+            let _renderTimeout = null;
+            function _renderProductsNow(productsToRender) {
+                const productsGrid = document.getElementById('products-grid');
+                const productDetail = document.getElementById('product-detail');
+                const topCarousel = document.querySelector('.carousel');
+                const productsLoading = document.getElementById('products-loading');
 
-            if (!productsGrid || !productDetail) {
-                console.info('首页已隐藏商品展示，renderProducts 跳过渲染。');
-                return;
-            }
-
-            // 首次渲染或每次刷新时，隐藏“加载中”占位
-            if (productsLoading) {
-                productsLoading.style.display = 'none';
-            }
-
-            productDetail.style.display = 'none';
-            productsGrid.style.display = 'grid';
-
-            if (!productsToRender || productsToRender.length === 0) {
-                productsGrid.innerHTML = `<div class="no-products">${t('noProducts')}</div>`;
-                return;
-            }
-
-            // 过滤掉无效的产品（undefined、null 或缺少必要属性）
-            const validProducts = productsToRender.filter(product => 
-                product && typeof product === 'object' && product.id && product.name && (product.visible !== false)
-            );
-
-            if (validProducts.length === 0) {
-                productsGrid.innerHTML = `<div class="no-products">${t('noProducts')}</div>`;
-                return;
-            }
-
-            productsGrid.innerHTML = validProducts.map(product => {
-                if (!product) return ''; // 额外安全检查
-                const categoryLabel = getCategoryLabel(product.category);
-                const oldPrice = formatCurrency(product.price);
-                const newPrice = formatCurrency(product.newPrice !== undefined ? product.newPrice : 0);
-                const stock = (product && typeof product.stock !== 'undefined') ? product.stock : 0;
-            const hasAmazonLink = !!(product && product.redirectUrl);
-            const amazonIconUrl = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJQAAACUCAMAAABC4vDmAAAAqFBMVEX///8AAAD/mQD/lwDl5eX/lQAyMjL/kwD4+Pj/kQD/jwD/jABRUVHi4uL19fXe3t5mZmbQ0NC3t7f//PlHR0e+vr5BQUHs7OzIyMiWlpaurq55eXlwcHCJiYlbW1vW1tYrKyshISH/7Nz/4cb/9e0YGBienp4RERH/1LD/oUH/nCE5OTn/pT7/oTL/sWP/6NP/tm7/pU3/zqH/xpb/vYL/ggD/rVb/unhlGJA0AAAH00lEQVR4nO2baZeqOBCGr41pCO7SiruCtCItKsvo//9nE9RWFFIsSfSeM/N+tBt4qFRVKpXw5w+jmo3OYDQdz74W35VKZf351Z6uep1Wk/W+5dVaTWaflRQZ9cmw9QagRredhhPXuKe/FKmXbqFn9ceNVxG1VnmArvrqvAJJny4KMBHVhXuXMipGdNZUrG+1+iWYiG/NBTINSyFF6opCao5LM1UqQzFM+hcDkyCqRjl3umvFn0nPlS1BDXgzNWfMTBWjyhmKxcdvmvBlKpMyU8R1AKtrPlAzhSNUnQ9TpcIxs/d4MVXa3JgUtqwZ14JbAGYa6nM86hGtcqQNbnMgnMrrq9gqYTDJgJpyYhpAD1n3nhYuAwOE+uEUf1PgGeOUZ8CDyKfea37Tn5A6GMoPBMWnZO8UZIJfg1OtQB89an6GCtQxFyhqklpT07MOrHfqPJiq1DoKyM6Ar3OBoicEYB4DioovHlDUdN4HOistOhR0WW41acMH5WadDvXDJVHRUsIIgqJ7+iefKVnprobj9tdT8llA80WTXldwgrqQNfVqYzCatvufC4PUoQZYrjXpVeGnmOaQUu10u7C7AlCLd3T4zlLoiep/qAf9lcP3ekfPIeUvhGrO6WU9zzyVKZLIGq3OaDiuG8Y3sKB+FZTe6Q6nlL2H10Mp1Xl3XLCXJhZK707bBTvqYqH0+bAEj1Co6pShCyMESumxtTtEQHVZe5/8oQbg4vctUArUVXgT1JwDEm+oFZ9mLFcoLo10zlBZHbp3QHFj4giVK+yMRX286nZajUajBRR5vKBybIK0V/FDCFDlyQkKaFdcVB/pj+tlqEbntGzPSOOT5DaQeCj4aEQ/bWdKOFQVNlPq+l04FHjOhtYfFgw1h/rPtFavaCgoRc1oFwmGUgCmCnWxKxgKypv0zQPBnTyg+gV29KndWy5QDWDZC2zo6/TaiwMUtCkK7OcDLWsOUNDWD9AQBxIuByggc9aBXiywmcoBCjAUtEcGGHjB3DSDshS0DQLELHvPswFAAYe0oGJnzXzeBdiqhaA60HzJfDKhWw4KPE8IbTTlEjTJ0H0KLlWZD1FBUBPqNlbGMRTW4xIQFH2LM6OlxnoyAfKpCi0LghdV2I8rgQNB8VigQrgI3irMFpQSKv30a7JX04znJeCVTC/tkqzBi8SY1MF711PiCDzXBF1YQAZ482SqGkC5/C62UzgZH1c8Z/Xcx0GZfD3ra4ZJvNKr5u/5f7Ecmcg8I7hYXb1W6RVqQLIkq2p243y9mE2nkx+jCFKFbV7mcLg6XSwDmCvES4mh2FM4HWXmCpUZf2XVZ4m/liEGim2qKfmtjNGCMumM8WhXs9TG7JqUcvQLZ8xn4MoE4HnJ2aAFCY9PaIpv831flsGUkefzWU/mN49PupUmaZPhd2oZVlzNYru093VOSuga/D5CLDLbxJfAiXqaqTx4kpJ7b63/aImnvAD1j0ooT+1NHCbhxA/X8TliHdM8xxC2U9aCsXlKxNd0vYwoHKdPHTdbifkaUpm3DQrQur+iunD3kkQpqUC7iIVL76acvqlPR+BKYD77NlLNaNp+uDtuXXfr7U6BvY/9yT4si3A19VZ3OG7X6/X2ZDwcDap6ZkgpetKM2j7cOLKMkHQWQrLsePbtz/8g9WAWweIgK9jUZEn6eJRUu5nHRR/ICZhGtaC00JGfgc5Ch99/MR3yD3hbaAyZZLr4MmSyjIlkdDOZdIP6s8TkRwntXjWGDpYcd+NFzu0TBQfPlRNQf/zzb7IUvAZqaS/3phX/xQwuVCiM/ejjM6fsLl/pWnFdqLD98Bu+mE897GmXidUSRc9XH5/uX8MBqeGr08MF6vz42tNABeo1AmTHf8MY2pGlJDf58zUwJRnbVtqF3GUF29P1SedYk5ORds4MF+Gtnfgzf6TQxeg3h4eRpeSUXGm66JbwZSTWWpp5VKOhubq2to1S5SbtkZaL7/MQ3vrimOydfDYA2l3814o8Wtql/3N4pyLWqgVCInEfqOrFUyTnahsbJxPCXYEanymxc+Ket+yd9PvmEvp1oiOKCKnX7H/noetlNcfmZy5rf1Lv4YSc3ztbUU0gA8FlHvFDWSFh98SngjBDT469MdrcRiHKUpILRlaAHosdCakoXLIFo7UMpNrDffHxnqNPBErNyEKmI388iqSITXl7WfZuIz+WdZIa3pksObJb1jyi+WqiMiT2wju7aBmh7ZehW8PPla/sxN/QJwkB5Yio5SatYEVY8o7+PieYtrd3niMnbyTJxwdn8KQPnK+WCySUpCI3lHBN3Ya+vTSpbJa5tP3TVo0slPJqsvToPqRCQJS8mbz1NeumkZHyWiIV7S4MzlUkkWZZ5p6wBKejt3E/yOIpdWkQmem57g7lbIeKvYKHKXe+2Oxc+qtq7SZVPS8D0szze5HqPceLpuLUSY8mzXZoL1xKpOC2EzbR8KFo9NhOMhDLImEp4FR6aL6LaL5VCEl2Q47VkGZ7KusoSqrrcy7QtP2BstDOaSTHE7J4M323VspcUaERiFu4macNKmgvSZY2opeS2jJwajifwUgWwzU3YKwucsryDxsHwxYjPMSNDi9aqV259nZIZjYVX9twcSFMMvzHwQemRqFoSz887I7e1nUiuduNd9wdTv5rBgxUNBGbeyKTzMvv6tn8R/Uvjyygg2H1gsIAAAAASUVORK5CYII=';
-                
-                // 检查用户是否已领取该产品
-                let isClaimed = false;
-                if (currentUser && currentUser.account && Array.isArray(userOrders)) {
-                    isClaimed = userOrders.some(o =>
-                        o &&
-                        o.productId === product.id &&
-                        o.account === currentUser.account &&
-                        o.status !== 'cancelled'
-                    );
+                if (!productsGrid || !productDetail) {
+                    console.info('首页已隐藏商品展示，renderProducts 跳过渲染。');
+                    return;
                 }
-                
-                const buttonText = isClaimed ? t('getItNow') : t('claimNow');
-                
-                // 获取Get it now按钮颜色
-                const getItNowButtonColor = (homepageSettings && homepageSettings.getItNowButtonColor) || '#667eea';
-                // 为Get it now按钮应用自定义颜色（仅当按钮文本是"Get it now"时）
-                const buttonStyle = isClaimed ? `style="background: ${getItNowButtonColor}; border-color: ${getItNowButtonColor}; color: white;"` : '';
-                
-                return `
-                    <article class="home-feature-card" data-product-id="${product.id}">
-                        <div class="home-feature-image">
-                            <img src="${getPrimaryProductImage(product)}" alt="${product.name || ''}">
-                            ${hasAmazonLink ? `<img class="home-feature-amazon-icon" src="${amazonIconUrl}" alt="Amazon" onerror="this.onerror=null; this.src='images/amazon-fallback.png'">` : ''}
-                        </div>
-                        <div class="home-feature-body">
-                            <div>
-                                <h3 style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; word-break: break-word; line-height: 1.3; max-height: calc(1.3em * 2);">${product.name || ''}</h3>
-                                <div class="home-feature-price">
-                                    <span style="text-decoration: line-through; color: #999; margin-right: 10px;">${oldPrice}</span>
-                                    <span style="color: #e74c3c; font-weight: bold; font-size: 1.2em;">${newPrice}</span>
+
+                // 首次渲染或每次刷新时，隐藏“加载中”占位
+                if (productsLoading) {
+                    productsLoading.style.display = 'none';
+                }
+
+                productDetail.style.display = 'none';
+                productsGrid.style.display = 'grid';
+
+                if (!productsToRender || productsToRender.length === 0) {
+                    productsGrid.innerHTML = `<div class="no-products">${t('noProducts')}</div>`;
+                    return;
+                }
+
+                // 过滤掉无效的产品（undefined、null 或缺少必要属性）
+                const validProducts = productsToRender.filter(product =>
+                    product && typeof product === 'object' && product.id && product.name && (product.visible !== false)
+                );
+
+                if (validProducts.length === 0) {
+                    productsGrid.innerHTML = `<div class="no-products">${t('noProducts')}</div>`;
+                    return;
+                }
+
+                productsGrid.innerHTML = validProducts.map(product => {
+                    if (!product) return ''; // 额外安全检查
+                    const categoryLabel = getCategoryLabel(product.category);
+                    const oldPrice = formatCurrency(product.price);
+                    const newPrice = formatCurrency(product.newPrice !== undefined ? product.newPrice : 0);
+                    const stock = (product && typeof product.stock !== 'undefined') ? product.stock : 0;
+                const hasAmazonLink = !!(product && product.redirectUrl);
+                const amazonIconUrl = 'data:image/png;base64,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';
+                    // 检查用户是否已领取该产品
+                    let isClaimed = false;
+                    if (currentUser && currentUser.account && Array.isArray(userOrders)) {
+                        isClaimed = userOrders.some(o =>
+                            o &&
+                            o.productId === product.id &&
+                            o.account === currentUser.account &&
+                            o.status !== 'cancelled'
+                        );
+                    }
+                    
+                    const buttonText = isClaimed ? t('getItNow') : t('claimNow');
+                    
+                    // 获取Get it now按钮颜色
+                    const getItNowButtonColor = (homepageSettings && homepageSettings.getItNowButtonColor) || '#667eea';
+                    // 为Get it now按钮应用自定义颜色（仅当按钮文本是"Get it now"时）
+                    const buttonStyle = isClaimed ? `style="background: ${getItNowButtonColor}; border-color: ${getItNowButtonColor}; color: white;"` : '';
+                    
+                    return `
+                        <article class="home-feature-card" data-product-id="${product.id}">
+                            <div class="home-feature-image">
+                                <img src="${getPrimaryProductImage(product)}" alt="${product.name || ''}">
+                                ${hasAmazonLink ? `<img class="home-feature-amazon-icon" src="${amazonIconUrl}" alt="Amazon" onerror="this.onerror=null; this.src='images/amazon-fallback.png'">` : ''}
+                            </div>
+                            <div class="home-feature-body">
+                                <div>
+                                    <h3 style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; word-break: break-word; line-height: 1.3; max-height: calc(1.3em * 2);">${product.name || ''}</h3>
+                                    <div class="home-feature-price">
+                                        <span style="text-decoration: line-through; color: #999; margin-right: 10px;">${oldPrice}</span>
+                                        <span style="color: #e74c3c; font-weight: bold; font-size: 1.2em;">${newPrice}</span>
+                                    </div>
+                                    <div class="home-feature-stock">${t('stock')} ${stock} ${t('pieces')}</div>
                                 </div>
-                                <div class="home-feature-stock">${t('stock')} ${stock} ${t('pieces')}</div>
+                                <div class="home-feature-actions">
+                                    <button class="btn btn-primary view-detail">${t('viewDetail')}</button>
+                                    <button class="btn ${isClaimed ? 'get-it-now-btn' : 'btn-secondary'} signup-btn" data-product-id="${product.id}" data-is-claimed="${isClaimed}" ${buttonStyle}>${buttonText}</button>
+                                </div>
                             </div>
-                            <div class="home-feature-actions">
-                                <button class="btn btn-primary view-detail">${t('viewDetail')}</button>
-                                <button class="btn ${isClaimed ? 'get-it-now-btn' : 'btn-secondary'} signup-btn" data-product-id="${product.id}" data-is-claimed="${isClaimed}" ${buttonStyle}>${buttonText}</button>
-                            </div>
-                        </div>
-                    </article>
-                `;
-            }).join('');
+                        </article>
+                    `;
+                }).join('');
 
-            // 重新绑定事件：报名 / Claim Now 按钮
-            document.querySelectorAll('.signup-btn').forEach(btn => {
-                bindFastTap(btn, function (e) {
-                    // 防止点击冒泡到整张卡片上，从而误触发「查看详情」
-                    if (e) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                    }
-
-                    const productId = parseInt(this.getAttribute('data-product-id'), 10);
-                    const isClaimed = this.getAttribute('data-is-claimed') === 'true';
-                    const product = products.find(p => p.id === productId);
-                    
-                    if (!product) {
-                        alert(t('systemError'));
-                        return;
-                    }
-                    
-                    // 如果已领取，显示WhatsApp模态框
-                    if (isClaimed) {
-                        // 查找对应的订单
-                        let orderId = null;
-                        let orderStatus = null;
-                        if (currentUser && currentUser.account && Array.isArray(userOrders)) {
-                            const order = userOrders.find(o =>
-                                o &&
-                                o.productId === productId &&
-                                o.account === currentUser.account &&
-                                o.status !== 'cancelled'
-                            );
-                            if (order) {
-                                orderId = order.id;
-                                orderStatus = order.status;
-                            }
+                // 重新绑定事件：报名 / Claim Now 按钮
+                document.querySelectorAll('.signup-btn').forEach(btn => {
+                    bindFastTap(btn, function (e) {
+                        // 防止点击冒泡到整张卡片上，从而误触发「查看详情」
+                        if (e) {
+                            e.preventDefault();
+                            e.stopPropagation();
                         }
+
+                        const productId = parseInt(this.getAttribute('data-product-id'), 10);
+                        const isClaimed = this.getAttribute('data-is-claimed') === 'true';
+                        const product = products.find(p => p.id === productId);
                         
-                        // 检查订单状态：如果是运输中或已完成，显示提示信息
-                        if (orderStatus === 'shipping' || orderStatus === 'completed') {
-                            if (typeof customAlert === 'function') {
-                                customAlert('You have already claimed this product.\n\nPlease select a different item.', 'Information');
-                            } else if (typeof showNotification === 'function') {
-                                showNotification('You have already claimed this product. Please select a different item.', 'warning');
-                            } else {
-                                alert('You have already claimed this product.\n\nPlease select a different item.');
-                            }
+                        if (!product) {
+                            alert(t('systemError'));
                             return;
                         }
                         
-                        // 显示WhatsApp模态框
-                        if (typeof showWhatsAppModal === 'function') {
-                            showWhatsAppModal(orderId);
+                        // 如果已领取，显示WhatsApp模态框
+                        if (isClaimed) {
+                            // 查找对应的订单
+                            let orderId = null;
+                            let orderStatus = null;
+                            if (currentUser && currentUser.account && Array.isArray(userOrders)) {
+                                const order = userOrders.find(o =>
+                                    o &&
+                                    o.productId === productId &&
+                                    o.account === currentUser.account &&
+                                    o.status !== 'cancelled'
+                                );
+                                if (order) {
+                                    orderId = order.id;
+                                    orderStatus = order.status;
+                                }
+                            }
+                            
+                            // 检查订单状态：如果是运输中或已完成，显示提示信息
+                            if (orderStatus === 'shipping' || orderStatus === 'completed') {
+                                if (typeof customAlert === 'function') {
+                                    customAlert('You have already claimed this product.\n\nPlease select a different item.', 'Information');
+                                } else if (typeof showNotification === 'function') {
+                                    showNotification('You have already claimed this product. Please select a different item.', 'warning');
+                                } else {
+                                    alert('You have already claimed this product.\n\nPlease select a different item.');
+                                }
+                                return;
+                            }
+                            
+                            // 显示WhatsApp模态框
+                            if (typeof showWhatsAppModal === 'function') {
+                                showWhatsAppModal(orderId);
+                            } else {
+                                // 如果没有showWhatsAppModal函数，直接打开WhatsApp链接
+                                const phoneNumber = '+17077902826';
+                                const message = orderId 
+                                    ? `Please confirm my Beefreebies order #${orderId}`
+                                    : `I want to get my ${product.name}`;
+                                const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+                                window.open(whatsappUrl, '_blank');
+                            }
                         } else {
-                            // 如果没有showWhatsAppModal函数，直接打开WhatsApp链接
-                            const phoneNumber = '+17077902826';
-                            const message = orderId 
-                                ? `Please confirm my Beefreebies order #${orderId}`
-                                : `I want to get my ${product.name}`;
-                            const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
-                            window.open(whatsappUrl, '_blank');
+                            // 未领取，打开报名模态框
+                            openSignupModal(product);
                         }
-                    } else {
-                        // 未领取，打开报名模态框
-                        openSignupModal(product);
-                    }
+                    });
                 });
-            });
 
-            // 详情按钮：仍然进入产品详情页
-            document.querySelectorAll('.view-detail').forEach(btn => {
-                bindFastTap(btn, function (e) {
-                    if (e) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                    }
-                    const productId = this.closest('.home-feature-card').getAttribute('data-product-id');
-                    showProductDetail(parseInt(productId, 10));
+                // 详情按钮：仍然进入产品详情页
+                document.querySelectorAll('.view-detail').forEach(btn => {
+                    bindFastTap(btn, function (e) {
+                        if (e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                        }
+                        const productId = this.closest('.home-feature-card').getAttribute('data-product-id');
+                        showProductDetail(parseInt(productId, 10));
+                    });
                 });
-            });
 
-            // 整个卡片点击仍使用普通 click，避免与内部按钮冲突
-            document.querySelectorAll('.home-feature-card').forEach(card => {
-                card.addEventListener('click', function () {
-                    const productId = this.getAttribute('data-product-id');
-                    showProductDetail(parseInt(productId, 10));
+                // 整个卡片点击仍使用普通 click，避免与内部按钮冲突
+                document.querySelectorAll('.home-feature-card').forEach(card => {
+                    card.addEventListener('click', function () {
+                        const productId = this.getAttribute('data-product-id');
+                        showProductDetail(parseInt(productId, 10));
+                    });
                 });
-            });
-        }
+            }
+
+            // 暴露防抖后的接口，减少短时间内重复完整重绘导致的闪烁
+            window.renderProducts = function (productsToRender) {
+                if (_renderTimeout) clearTimeout(_renderTimeout);
+                _renderTimeout = setTimeout(() => {
+                    _renderProductsNow(productsToRender);
+                    _renderTimeout = null;
+                }, 120);
+            };
+        })();
 
         // 显示产品详情
         function showProductDetail(productId) {
@@ -29827,8 +29838,8 @@ const paginationContainers = {
                     if (typeof showNotification === 'function') showNotification('产品未找到', 'error');
                     return;
                 }
-                const currentlyHidden = product.visible === false;
-                product.visible = !currentlyHidden;
+                // Toggle visibility correctly: invert the truthy/falsy visible flag.
+                product.visible = !product.visible;
                 // 立即更新按钮文字
                 btn.textContent = product.visible === false ? '上架' : '下架';
 
@@ -29905,7 +29916,8 @@ const paginationContainers = {
                     if (typeof showNotification === 'function') showNotification('产品未找到', 'error');
                     return;
                 }
-                product.visible = !(product.visible === false);
+                // Toggle visibility correctly in fallback handler as well
+                product.visible = !product.visible;
 
                 const p = saveProducts();
                 if (p && typeof p.then === 'function') {
