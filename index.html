@@ -18250,7 +18250,7 @@ const paginationContainers = {
 
             // 过滤掉无效的产品（undefined、null 或缺少必要属性）
             const validProducts = productsToRender.filter(product => 
-                product && typeof product === 'object' && product.id && product.name
+                product && typeof product === 'object' && product.id && product.name && (product.visible !== false)
             );
 
             if (validProducts.length === 0) {
@@ -24539,7 +24539,7 @@ const paginationContainers = {
                     }
                 });
             });
-
+            
             // 复选框变化监听
             document.querySelectorAll('.product-checkbox').forEach(checkbox => {
                 checkbox.addEventListener('change', updateBatchButtons);
@@ -28084,6 +28084,7 @@ const paginationContainers = {
                     id: newId,
                     name,
                     price,
+                    visible: true,
                     newPrice: 0,
                     stock: stock < 0 ? 0 : stock,
                     category,
@@ -29644,6 +29645,101 @@ const paginationContainers = {
             );
         })();
     </script>
-</body>
 
+    <script>
+        // Inject publish toggle buttons into admin product cards and handle toggle via delegation.
+        (function () {
+            function ensureToggleButtons() {
+                const adminGrid = document.getElementById('admin-products-grid');
+                if (!adminGrid) return;
+                adminGrid.querySelectorAll('.product-card').forEach(card => {
+                    if (!card.querySelector('.toggle-publish')) {
+                        const actions = card.querySelector('.product-actions');
+                        if (actions) {
+                            const productId = parseInt(card.getAttribute('data-product-id'), 10);
+                            const prod = products && products.find ? products.find(p => parseInt(p.id) === productId) : null;
+                            const btn = document.createElement('button');
+                            btn.className = 'btn btn-outline-secondary toggle-publish';
+                            btn.textContent = (prod && prod.visible === false) ? '上架' : '下架';
+                            // 产品下架徽章（仅管理员后台显示）
+                            const titleEl = card.querySelector('.product-title');
+                            if (prod && prod.visible === false) {
+                                if (!card.querySelector('.product-hidden-badge')) {
+                                    const badge = document.createElement('span');
+                                    badge.className = 'product-hidden-badge';
+                                    badge.textContent = '已下架';
+                                    badge.style.cssText = 'display:inline-block;background:#ff6b6b;color:#fff;padding:4px 8px;border-radius:12px;font-size:12px;margin-left:8px;';
+                                    if (titleEl && titleEl.parentNode) titleEl.parentNode.insertBefore(badge, titleEl.nextSibling);
+                                } else {
+                                    card.querySelector('.product-hidden-badge').textContent = '已下架';
+                                }
+                            } else {
+                                const existingBadge = card.querySelector('.product-hidden-badge');
+                                if (existingBadge) existingBadge.remove();
+                            }
+                            // Insert before delete button if present, otherwise append
+                            const deleteBtn = actions.querySelector('.delete-product');
+                            if (deleteBtn) {
+                                actions.insertBefore(btn, deleteBtn);
+                            } else {
+                                actions.appendChild(btn);
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Event delegation for toggle clicks
+            function onToggleClick(e) {
+                const btn = e.target.closest('.toggle-publish');
+                if (!btn) return;
+                e.preventDefault();
+                e.stopPropagation();
+                const card = btn.closest('.product-card');
+                if (!card) return;
+                const productId = parseInt(card.getAttribute('data-product-id'), 10);
+                const product = products && products.find ? products.find(p => parseInt(p.id) === productId) : null;
+                if (!product) {
+                    if (typeof showNotification === 'function') showNotification('产品未找到', 'error');
+                    return;
+                }
+                const currentlyHidden = product.visible === false;
+                product.visible = !currentlyHidden;
+                const p = saveProducts();
+                if (p && typeof p.then === 'function') {
+                    p.then(() => {
+                        renderAdminProducts();
+                        if (typeof showNotification === 'function') showNotification(product.visible === false ? '产品已下架' : '产品已上架', 'success');
+                    }).catch(err => {
+                        console.error('切换失败', err);
+                        if (typeof showNotification === 'function') showNotification('更新失败', 'error');
+                    });
+                } else {
+                    renderAdminProducts();
+                    if (typeof showNotification === 'function') showNotification(product.visible === false ? '产品已下架' : '产品已上架', 'success');
+                }
+            }
+
+            const adminGrid = document.getElementById('admin-products-grid');
+            if (adminGrid) {
+                adminGrid.addEventListener('click', onToggleClick);
+                ensureToggleButtons();
+                const observer = new MutationObserver(() => ensureToggleButtons());
+                observer.observe(adminGrid, { childList: true, subtree: true });
+            } else {
+                document.addEventListener('DOMContentLoaded', function () {
+                    setTimeout(() => {
+                        const g = document.getElementById('admin-products-grid');
+                        if (g) {
+                            g.addEventListener('click', onToggleClick);
+                            ensureToggleButtons();
+                            const observer = new MutationObserver(() => ensureToggleButtons());
+                            observer.observe(g, { childList: true, subtree: true });
+                        }
+                    }, 300);
+                });
+            }
+        })();
+    </script>
+</body>
 </html>
