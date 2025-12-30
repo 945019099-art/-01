@@ -22887,6 +22887,9 @@ const paginationContainers = {
                 showNotification(t('reviewExists'), 'info');
                 return;
             }
+            
+            // 将当前订单保存在局部变量，避免闭包内出现 name shadowing 或全局未定义的问题
+            const modalOrder = order;
 
             // 创建评价模态框
             const modal = document.createElement('div');
@@ -22894,100 +22897,240 @@ const paginationContainers = {
             modal.id = 'review-modal';
             modal.style.display = 'flex';
             modal.innerHTML = `
-                <div class="modal-content" style="max-width: 600px;">
-                    <div class="modal-header">
-                        <h3>${t('writeReview')}</h3>
-                        <button class="close-modal" onclick="this.closest('.modal').remove()">&times;</button>
+                <div class="modal-content" style="max-width: 480px; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.2);">
+                    <div class="modal-header" style="background: linear-gradient(135deg,#7a64f1,#6a56d8); color:#fff; padding:16px; display:flex; justify-content:space-between; align-items:center; font-weight:600; font-size:18px;">
+                        <span>${t('writeReview')}</span>
+                        <button class="close-modal" style="cursor:pointer; font-size:24px; line-height:1; width:32px; height:32px; display:flex; align-items:center; justify-content:center; border-radius:50%; background:transparent; border:0;">&times;</button>
                     </div>
-                    <div class="modal-body" style="padding: 20px;">
-                        <div style="margin-bottom: 20px;">
-                            <h4 style="margin-bottom: 10px;">${t('purchasedProduct')}：</h4>
-                            <div style="display: flex; gap: 15px; align-items: center; padding: 15px; background: #f8f9fa; border-radius: 8px;">
-                                <img src="${order.image || ''}" alt="${order.productName}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 4px;">
-                                <div>
-                                    <p style="margin: 0; font-weight: 500; font-size: 16px;">${order.productName}</p>
-                                    <p style="margin: 5px 0 0 0;">
-                                        <span class="order-price-old">${formatCurrency(order.originalPrice ?? order.price)}</span>
-                                        <span class="order-price-new">${formatCurrency(order.promoPrice ?? 0)}</span>
-                                    </p>
+
+                    <div class="modal-body" style="padding:20px; max-height:70vh; overflow-y:auto;">
+                        <div class="product" style="display:flex; gap:16px; margin-bottom:20px; padding-bottom:12px; border-bottom:1px solid #f0f0f0; align-items:flex-start;">
+                            <img src="${order.image || ''}" alt="${order.productName}" style="width:80px; height:80px; object-fit:cover; border-radius:8px; border:1px solid #eee; flex-shrink:0;">
+                            <div style="flex:1;">
+                                <div style="font-size:15px; line-height:1.4; color:#333; margin-bottom:8px; font-weight:500; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; word-break:break-word;">
+                                    ${order.productName}
+                                </div>
+                                <div style="font-size:16px; font-weight:600;">
+                                    <del style="color:#999; font-weight:normal; margin-right:8px;">${formatCurrency(order.originalPrice ?? order.price)}</del>
+                                    <span style="color:#ff4d4f;">${formatCurrency(order.promoPrice ?? 0)}</span>
                                 </div>
                             </div>
                         </div>
-                        
-                        <div style="margin-bottom: 20px;">
-                            <label style="display: block; margin-bottom: 10px; font-weight: 500;">${t('rating')}：</label>
-                            <div class="rating-stars" style="display: flex; gap: 10px; font-size: 30px; cursor: pointer;">
-                                <i class="far fa-star" data-rating="1" style="color: #ddd; transition: all 0.2s;"></i>
-                                <i class="far fa-star" data-rating="2" style="color: #ddd; transition: all 0.2s;"></i>
-                                <i class="far fa-star" data-rating="3" style="color: #ddd; transition: all 0.2s;"></i>
-                                <i class="far fa-star" data-rating="4" style="color: #ddd; transition: all 0.2s;"></i>
-                                <i class="far fa-star" data-rating="5" style="color: #ddd; transition: all 0.2s;"></i>
+
+                        <div class="section" style="margin-bottom:20px;">
+                            <div style="font-size:16px; margin-bottom:12px; font-weight:600; color:#333; display:flex; align-items:center;">${t('rating')}： <span style="color:#ff4d4f; margin-left:6px;">*</span></div>
+                            <div class="stars" id="review-stars" style="display:flex; gap:12px; font-size:36px; color:#ddd; cursor:pointer; justify-content:center; padding:10px 0; margin-bottom:5px;">
+                                <div class="star" data-value="1" style="transition:all 0.2s; width:44px; height:44px; display:flex; align-items:center; justify-content:center;">☆</div>
+                                <div class="star" data-value="2" style="transition:all 0.2s; width:44px; height:44px; display:flex; align-items:center; justify-content:center;">☆</div>
+                                <div class="star" data-value="3" style="transition:all 0.2s; width:44px; height:44px; display:flex; align-items:center; justify-content:center;">☆</div>
+                                <div class="star" data-value="4" style="transition:all 0.2s; width:44px; height:44px; display:flex; align-items:center; justify-content:center;">☆</div>
+                                <div class="star" data-value="5" style="transition:all 0.2s; width:44px; height:44px; display:flex; align-items:center; justify-content:center;">☆</div>
                             </div>
-                            <p id="rating-text" style="margin-top: 10px; color: #666; font-size: 14px;"></p>
+                            <div class="error-message" id="ratingError" style="color:#ff4d4f; font-size:14px; margin-top:6px; display:none; align-items:center;">⚠ ${t('ratingRequired') || '请选择评分'}</div>
                         </div>
-                        
-                        <div style="margin-bottom: 20px;">
-                            <label style="display: block; margin-bottom: 10px; font-weight: 500;">${t('comment')}：</label>
-                            <textarea id="review-comment" placeholder="${t('commentPlaceholder')}" 
-                                      style="width: 100%; min-height: 120px; padding: 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; font-family: inherit; resize: vertical;"></textarea>
+
+                        <div class="honey-reward" style="background: linear-gradient(135deg,#FFF9E6,#FFE680); border:1px solid #FFD700; border-radius:8px; padding:12px; margin:12px 0; text-align:center; font-weight:600; color:#8B4513;">
+                            <span style="font-size:18px; margin-right:8px;">🍯</span> Leave a review to get 2 HONEY! 🎉<br>
+                            <small style="display:block; font-size:13px; color:#8B4513; font-weight:500; margin-top:6px;">Redeem 1 HONEY for 1 product.</small>
                         </div>
-                        
-                        <div style="text-align: right;">
-                            <button class="btn btn-secondary" onclick="this.closest('.modal').remove()" style="margin-right: 10px;">${t('cancel')}</button>
-                            <button class="btn btn-primary" onclick="submitReview(${orderId})">${t('submitReview')}</button>
+
+                        <div class="amazon-btn-container" id="amazonBtnContainer" style="margin:12px 0; display:none; animation:fadeInUp 0.28s ease;">
+                            <a id="amazonBtn" class="amazon-btn" href="${order.amazonReviewUrl || ''}" aria-label="${t('writeOnAmazon') || 'Write a review on Amazon'}" target="_blank" rel="noopener noreferrer" style="display:flex; align-items:center; justify-content:center; width:100%; margin-top:6px; padding:14px 16px; background: linear-gradient(to bottom, #f7dfa5, #f0c14b); color:#111; border:1px solid #a88734; font-weight:700; text-decoration:none; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.10); font-size:15px;">
+                                <span class="amazon-logo" aria-hidden="true" style="display:inline-block; width:22px; height:22px; margin-right:12px; background-image:url('https://pngpai.com/pai_img/sml/33c17401-2e91-435a-ab3e-b51531336586.png'); background-size:contain; background-repeat:no-repeat; flex-shrink:0;"></span>
+                                ${t('write a review On Amazon') || 'Write a review on Amazon'}
+                            </a>
                         </div>
+
+                        <div class="form-group" style="margin-bottom:20px;">
+                            <label style="display:block; font-size:16px; margin-bottom:10px; font-weight:600; color:#333;">${t('reviewTitle') || 'Review title'}: <span style="color:#ff4d4f">*</span></label>
+                            <input type="text" id="reviewTitle" placeholder="${t('Please enter your review title...') || 'Please enter your review title...'}" style="width:100%; padding:12px; border-radius:8px; border:1px solid #ccc; font-size:15px; background:#f9f9f9;">
+                            <div class="error-message" id="titleError" style="color:#ff4d4f; font-size:14px; margin-top:6px; display:none;">⚠ ${t('titleRequired') || 'Please enter a review title'}</div>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer" style="display:flex; justify-content:space-between; gap:12px; padding:16px; border-top:1px solid #eee; background:#f9f9f9;">
+                        <button class="btn btn-secondary" id="reviewCancelBtn" style="padding:12px 18px; border-radius:8px; background:#f0f0f0; color:#666;">${t('cancel')}</button>
+                        <button class="btn btn-primary" id="reviewSubmitBtn" disabled style="padding:12px 18px; border-radius:8px; background:linear-gradient(to bottom,#6a56d8,#7a64f1); color:#fff;">${t('submitReview')}</button>
                     </div>
                 </div>
             `;
 
             document.body.appendChild(modal);
 
-            // 绑定星级评分事件
-            const stars = modal.querySelectorAll('.rating-stars i');
+            // 绑定星级评分事件（基于参考实现）
+            const stars = modal.querySelectorAll('#review-stars .star');
             let selectedRating = 0;
+            
+            // Helper: 将任意 Amazon 商品链接规范化为撰写评论页面链接（优先使用原域名）
+            // 支持的输入例子：
+            // - https://www.amazon.com/dp/B0G4672X31
+            // - https://www.amazon.com/gp/product/B0G4672X31
+            // - https://www.amazon.com/product-reviews/B0G4672X31
+            // - https://www.amazon.com/... ?asin=B0G4672X31
+            function normalizeAmazonToCreateReview(rawUrl) {
+                try {
+                    if (!rawUrl) return '';
+                    var urlStr = rawUrl.toString().trim();
+                    if (!urlStr) return '';
+                    // 如果已经是 create-review 链接，直接返回
+                    if (/\/review\/create-review/i.test(urlStr)) return urlStr;
 
-            stars.forEach((star, index) => {
-                star.addEventListener('mouseenter', function() {
-                    const rating = parseInt(this.getAttribute('data-rating'));
-                    for (let i = 0; i < rating; i++) {
-                        stars[i].classList.remove('far');
-                        stars[i].classList.add('fas');
-                        stars[i].style.color = '#ffc107';
+                    // 使用正则提取 ASIN（10 位字母数字）
+                    var asinMatch = urlStr.match(/\/dp\/([A-Z0-9]{10})/i)
+                        || urlStr.match(/\/gp\/product\/([A-Z0-9]{10})/i)
+                        || urlStr.match(/\/product-reviews\/([A-Z0-9]{10})/i)
+                        || urlStr.match(/[?&]asin=([A-Z0-9]{10})/i);
+
+                    // 解析原始域名，回退到 www.amazon.com
+                    var a = document.createElement('a');
+                    a.href = urlStr;
+                    var host = a.hostname || 'www.amazon.com';
+                    var proto = a.protocol && a.protocol.indexOf('http') === 0 ? a.protocol : 'https:';
+
+                    if (asinMatch && asinMatch[1]) {
+                        var asin = asinMatch[1];
+                        return proto + '//' + host + '/review/create-review?asin=' + asin;
                     }
-                    for (let i = rating; i < 5; i++) {
-                        stars[i].classList.remove('fas');
-                        stars[i].classList.add('far');
-                        stars[i].style.color = '#ddd';
+
+                    // 回退：如果无法解析 ASIN，则返回原始链接以保证不阻断用户
+                    return urlStr;
+                } catch (e) {
+                    console.warn('normalizeAmazonToCreateReview error', e);
+                    return rawUrl || '';
+                }
+            }
+
+            function updateStarsDisplay(value) {
+                stars.forEach((s, idx) => {
+                    if (idx < value) {
+                        s.classList.add('active');
+                        s.style.color = '#ffc107';
+                        s.textContent = '★';
+                        s.style.transform = 'scale(1.05)';
+                    } else {
+                        s.classList.remove('active');
+                        s.style.color = '#ddd';
+                        s.textContent = '☆';
+                        s.style.transform = '';
                     }
                 });
+            }
+            
+            // 简单的错误显示/隐藏辅助函数（仅作用于当前模态内的错误元素）
+            function showError(el) {
+                if (!el) return;
+                el.style.display = 'flex';
+            }
+            function hideError(el) {
+                if (!el) return;
+                el.style.display = 'none';
+            }
 
+            stars.forEach(star => {
                 star.addEventListener('click', function() {
-                    selectedRating = parseInt(this.getAttribute('data-rating'));
-                    const ratingText = modal.querySelector('#rating-text');
-                    ratingText.textContent = `${selectedRating} ${t('stars')}`;
-                });
-            });
+                    const value = parseInt(this.getAttribute('data-value'));
+                    selectedRating = value;
+                    try { console.log('DEBUG: review modal star click, value=', value); } catch(e){}
+                    updateStarsDisplay(value);
+                    hideError(modal.querySelector('#ratingError'));
 
-            modal.querySelector('.rating-stars').addEventListener('mouseleave', function() {
-                if (selectedRating === 0) {
-                    stars.forEach(star => {
-                        star.classList.remove('fas');
-                        star.classList.add('far');
-                        star.style.color = '#ddd';
+                    // 如果五星且有亚马逊链接则显示亚马逊按钮（并将链接规范化为撰写评论页面）
+                    try {
+                        // 获取订单/产品可能存在的跳转链接（优先级：order.amazonReviewUrl -> order.redirectUrl -> 产品.redirectUrl）
+                        function resolveAmazonCandidate() {
+                            try {
+                                var candidate = '';
+                                if (modalOrder && modalOrder.amazonReviewUrl) candidate = modalOrder.amazonReviewUrl;
+                                if (!candidate && modalOrder && modalOrder.redirectUrl) candidate = modalOrder.redirectUrl;
+                                if (!candidate && modalOrder && modalOrder.productId) {
+                                    var prod = products.find(p => String(p.id) === String(modalOrder.productId));
+                                    if (prod) candidate = prod.redirectUrl || prod.link || prod.amazonLink || '';
+                                }
+                                return (candidate || '').toString().trim();
+                            } catch (e) {
+                                return '';
+                            }
+                        }
+
+                        var rawAmazonUrl = resolveAmazonCandidate();
+                        try { console.log('DEBUG: rawAmazonUrl=', rawAmazonUrl); } catch(e){}
+                        if (value === 5 && rawAmazonUrl) {
+                            var reviewUrl = normalizeAmazonToCreateReview(rawAmazonUrl);
+                            var amazonContainer = modal.querySelector('#amazonBtnContainer');
+                            var amazonBtnEl = modal.querySelector('#amazonBtn');
+                            if (amazonBtnEl) {
+                                amazonBtnEl.href = reviewUrl;
+                            }
+                            if (amazonContainer) amazonContainer.style.display = 'block';
+                        } else {
+                            var amazonContainerHide = modal.querySelector('#amazonBtnContainer');
+                            if (amazonContainerHide) amazonContainerHide.style.display = 'none';
+                        }
+                    } catch (err) {
+                        console.warn('amazon button guard', err);
+                        var amazonContainerErr = modal.querySelector('#amazonBtnContainer');
+                        if (amazonContainerErr) amazonContainerErr.style.display = 'none';
+                    }
+
+                    // 更新提交按钮状态
+                    const titleFilled = modal.querySelector('#reviewTitle').value.trim().length > 0;
+                    modal.querySelector('#reviewSubmitBtn').disabled = !(selectedRating > 0 && titleFilled);
+                });
+
+                // 触摸设备反馈
+                if ('ontouchstart' in window) {
+                    star.addEventListener('touchstart', function() {
+                        if (!this.classList.contains('active')) {
+                            this.style.transform = 'scale(1.05)';
+                        }
                     });
-                } else {
-                    for (let i = 0; i < selectedRating; i++) {
-                        stars[i].classList.remove('far');
-                        stars[i].classList.add('fas');
-                        stars[i].style.color = '#ffc107';
-                    }
-                    for (let i = selectedRating; i < 5; i++) {
-                        stars[i].classList.remove('fas');
-                        stars[i].classList.add('far');
-                        stars[i].style.color = '#ddd';
-                    }
+                    star.addEventListener('touchend', function() {
+                        this.style.transform = '';
+                    });
                 }
             });
+
+            // 标题输入监听，更新提交按钮状态
+            modal.querySelector('#reviewTitle').addEventListener('input', function() {
+                hideError(modal.querySelector('#titleError'));
+                const titleFilled = this.value.trim().length > 0;
+                modal.querySelector('#reviewSubmitBtn').disabled = !(selectedRating > 0 && titleFilled);
+            });
+
+            // 关闭与取消
+            modal.querySelector('.close-modal').addEventListener('click', function() {
+                modal.remove();
+            });
+            modal.querySelector('#reviewCancelBtn').addEventListener('click', function() {
+                modal.remove();
+            });
+            
+            // 初始化时根据已有评分决定是否显示 Amazon 按钮（例如当服务端渲染已设置 5 星）
+                (function initAmazonVisibility() {
+                    try {
+                        var amazonUrlInitRaw = (modalOrder && (modalOrder.amazonReviewUrl || '') || '').toString().trim();
+                        try { console.log('DEBUG: init amazonUrlInitRaw=', amazonUrlInitRaw, ' current=', current); } catch(e){}
+                        var amazonContainerInit = modal.querySelector('#amazonBtnContainer');
+                        var amazonBtnInit = modal.querySelector('#amazonBtn');
+                        // 优先使用已选的 selectedRating 变量
+                        var current = Number(selectedRating) || 0;
+                        if (!current) {
+                            // 回退到检查 DOM 中被激活的星星数量
+                            var activeStars = modal.querySelectorAll('#review-stars .star.active');
+                            current = activeStars ? activeStars.length : 0;
+                        }
+                        if (amazonUrlInitRaw && current === 5) {
+                            var normalized = normalizeAmazonToCreateReview(amazonUrlInitRaw);
+                            if (amazonBtnInit) amazonBtnInit.href = normalized;
+                            if (amazonContainerInit) amazonContainerInit.style.display = '';
+                        } else {
+                            if (amazonContainerInit) amazonContainerInit.style.display = 'none';
+                        }
+                    } catch (err) {
+                        // 不阻塞主流程
+                        console.error('initAmazonVisibility error', err);
+                    }
+                })();
         }
 
         // 提交评价
@@ -22998,18 +23141,18 @@ const paginationContainers = {
                 return;
             }
 
-            // 获取评分
-            const stars = document.querySelectorAll('#review-modal .rating-stars i.fas');
-            const rating = stars.length;
+            // 获取评分（兼容新模态结构：使用 .star.active）
+            const rating = document.querySelectorAll('#review-modal .star.active').length;
             if (rating === 0) {
                 showNotification(t('ratingRequired'), 'error');
                 return;
             }
 
-            // 获取评价内容
-            const comment = document.getElementById('review-comment').value.trim();
-            if (!comment) {
-                showNotification(t('reviewRequired'), 'error');
+            // 获取评价标题（参考新模态，标题为必填项）
+            const titleEl = document.getElementById('reviewTitle');
+            const titleText = titleEl ? titleEl.value.trim() : '';
+            if (!titleText) {
+                showNotification(t('titleRequired') || 'Please enter a review title', 'error');
                 return;
             }
 
@@ -23029,7 +23172,8 @@ const paginationContainers = {
                 userName: order.customerInfo.name,
                 userPhone: order.customerInfo.phone ? order.customerInfo.phone.substring(0, 3) + '****' + order.customerInfo.phone.substring(7) : '',
                 rating: rating,
-                comment: comment,
+                title: titleText,
+                comment: '', // 兼容旧接口，保留 comment 字段但置空
                 createdAt: Date.now(),
                 productName: order.productName
             };
