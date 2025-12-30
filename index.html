@@ -9003,6 +9003,11 @@
                         <small style="color: #666; font-size: 12px;">仅当填写链接时，前台按钮才会展示</small>
                     </div>
                     <div class="form-group">
+                        <label for="edit-product-amazon-review-link">亚马逊撰写评论链接（可选）</label>
+                        <input type="url" id="edit-product-amazon-review-link" class="form-control" placeholder="用于 'Write a review on Amazon' 按钮（可选）">
+                        <small style="color: #666; font-size: 12px;">仅当填写此链接且买家评分为 5 星时，评论弹窗会展示“Write a review on Amazon”按钮并跳转到此链接。</small>
+                    </div>
+                    <div class="form-group">
                         <label for="edit-product-description">产品描述</label>
                         <textarea id="edit-product-description" class="form-control" rows="4" required></textarea>
                     </div>
@@ -17019,6 +17024,7 @@ const paginationContainers = {
                         .filter(url => !!url)
                         .slice(0, 6);
                     const redirectUrl = (document.getElementById('edit-product-link')?.value || '').trim();
+                    const amazonReviewUrl = (document.getElementById('edit-product-amazon-review-link')?.value || '').trim();
 
                     if (editImageUrls.length === 0) {
                         customAlert(t('pleaseEnterAtLeastOneImage'), t('errorTitle'));
@@ -17035,7 +17041,9 @@ const paginationContainers = {
                         image: editImageUrls[0],
                         imageUrls: editImageUrls,
                         description: document.getElementById('edit-product-description').value.trim(),
-                        redirectUrl
+                        redirectUrl,
+                        // 可选：用于在评论为 5 星时引导用户去亚马逊撰写评论的自定义链接
+                        amazonReviewUrl
                     };
 
                     for (let i = 1; i <= 6; i++) {
@@ -23039,13 +23047,16 @@ const paginationContainers = {
                         // 获取订单/产品可能存在的跳转链接（优先级：order.amazonReviewUrl -> order.redirectUrl -> 产品.redirectUrl）
                         function resolveAmazonCandidate() {
                             try {
+                                // 新逻辑：仅当产品填写了专用于“撰写亚马逊评论”的链接时，才返回该链接。
+                                // 目的是确保“Write a review on Amazon”按钮只在产品层配置该链接时展示。
                                 var candidate = '';
-                                if (modalOrder && modalOrder.amazonReviewUrl) candidate = modalOrder.amazonReviewUrl;
-                                if (!candidate && modalOrder && modalOrder.redirectUrl) candidate = modalOrder.redirectUrl;
-                                if (!candidate && modalOrder && modalOrder.productId) {
+                                if (modalOrder && modalOrder.productId) {
                                     var prod = products.find(p => String(p.id) === String(modalOrder.productId));
-                                    if (prod) candidate = prod.redirectUrl || prod.link || prod.amazonLink || '';
+                                    if (prod) {
+                                        candidate = prod.amazonReviewUrl || '';
+                                    }
                                 }
+                                // 如果找不到产品或产品没有该字段，则不显示按钮（返回空字符串）
                                 return (candidate || '').toString().trim();
                             } catch (e) {
                                 return '';
@@ -23108,23 +23119,31 @@ const paginationContainers = {
             // 初始化时根据已有评分决定是否显示 Amazon 按钮（例如当服务端渲染已设置 5 星）
                 (function initAmazonVisibility() {
                     try {
-                        var amazonUrlInitRaw = (modalOrder && (modalOrder.amazonReviewUrl || '') || '').toString().trim();
-                        try { console.log('DEBUG: init amazonUrlInitRaw=', amazonUrlInitRaw, ' current=', current); } catch(e){}
-                        var amazonContainerInit = modal.querySelector('#amazonBtnContainer');
-                        var amazonBtnInit = modal.querySelector('#amazonBtn');
-                        // 优先使用已选的 selectedRating 变量
-                        var current = Number(selectedRating) || 0;
-                        if (!current) {
-                            // 回退到检查 DOM 中被激活的星星数量
-                            var activeStars = modal.querySelectorAll('#review-stars .star.active');
-                            current = activeStars ? activeStars.length : 0;
-                        }
-                        if (amazonUrlInitRaw && current === 5) {
-                            var normalized = normalizeAmazonToCreateReview(amazonUrlInitRaw);
-                            if (amazonBtnInit) amazonBtnInit.href = normalized;
-                            if (amazonContainerInit) amazonContainerInit.style.display = '';
-                        } else {
-                            if (amazonContainerInit) amazonContainerInit.style.display = 'none';
+                        // 初始化时仅当对应产品配置了 amazonReviewUrl 且当前为 5 星时才显示按钮
+                        try {
+                            var amazonContainerInit = modal.querySelector('#amazonBtnContainer');
+                            var amazonBtnInit = modal.querySelector('#amazonBtn');
+                            var current = Number(selectedRating) || 0;
+                            if (!current) {
+                                var activeStars = modal.querySelectorAll('#review-stars .star.active');
+                                current = activeStars ? activeStars.length : 0;
+                            }
+                            var amazonUrlInitRaw = '';
+                            if (modalOrder && modalOrder.productId) {
+                                var prodInit = products.find(p => String(p.id) === String(modalOrder.productId));
+                                if (prodInit && prodInit.amazonReviewUrl) {
+                                    amazonUrlInitRaw = prodInit.amazonReviewUrl.toString().trim();
+                                }
+                            }
+                            if (amazonUrlInitRaw && current === 5) {
+                                var normalized = normalizeAmazonToCreateReview(amazonUrlInitRaw);
+                                if (amazonBtnInit) amazonBtnInit.href = normalized;
+                                if (amazonContainerInit) amazonContainerInit.style.display = '';
+                            } else {
+                                if (amazonContainerInit) amazonContainerInit.style.display = 'none';
+                            }
+                        } catch (err) {
+                            if (modal.querySelector('#amazonBtnContainer')) modal.querySelector('#amazonBtnContainer').style.display = 'none';
                         }
                     } catch (err) {
                         // 不阻塞主流程
@@ -24910,6 +24929,11 @@ const paginationContainers = {
             if (editProductLinkInput) {
                 // 确保每次打开时都使用当前产品的链接，避免沿用上一次的值
                 editProductLinkInput.value = product.redirectUrl || '';
+            }
+            const editProductAmazonInput = document.getElementById('edit-product-amazon-review-link');
+            if (editProductAmazonInput) {
+                // 新增：用于撰写亚马逊评论的自定义链接
+                editProductAmazonInput.value = product.amazonReviewUrl || '';
             }
 
             const editImageInputs = document.querySelectorAll('.edit-product-image-url');
