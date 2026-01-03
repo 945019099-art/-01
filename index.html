@@ -23150,6 +23150,30 @@ const paginationContainers = {
                         console.error('initAmazonVisibility error', err);
                     }
                 })();
+            
+            // 绑定提交按钮事件（确保点击时调用 submitReview 并传入当前订单 id）
+            try {
+                const submitBtnEl = modal.querySelector('#reviewSubmitBtn');
+                if (submitBtnEl) {
+                    submitBtnEl.addEventListener('click', function (e) {
+                        // 防止重复触发或默认行为
+                        e.preventDefault && e.preventDefault();
+                        try {
+                            // 使用保存在闭包内的 modalOrder
+                            if (typeof modalOrder !== 'undefined' && modalOrder && modalOrder.id) {
+                                // 调用全局的 submitReview 函数
+                                submitReview(modalOrder.id);
+                            } else {
+                                console.warn('submitReview: modalOrder 未定义或缺少 id');
+                            }
+                        } catch (err) {
+                            console.error('submitReview click handler error', err);
+                        }
+                    }, false);
+                }
+            } catch (err) {
+                console.warn('绑定提交按钮事件失败', err);
+            }
         }
 
         // 提交评价
