@@ -20253,18 +20253,37 @@ const paginationContainers = {
                 ).join('');
                 const hasOrderLink = !!review.orderId;
 
+                // 优先显示 review.comment；若为空则回退到首条用户回复或管理员回复摘要，保证表格中可见内容
+                let commentDisplay = '-';
+                if (review.comment && String(review.comment).trim()) {
+                    commentDisplay = String(review.comment).trim();
+                } else if (Array.isArray(review.replies) && review.replies.length) {
+                    // 使用首条回复的内容作为回退显示（避免表格过宽，截断长文本）
+                    commentDisplay = String(review.replies[0].message || review.replies[0].text || '').trim() || '-';
+                } else if (review.adminReply && String(review.adminReply).trim()) {
+                    commentDisplay = String(review.adminReply).trim();
+                }
+
+                // 对表格内的文本进行基本的 HTML 转义，避免注入并保证显示（简单替换）
+                const escapeHtml = (str) => String(str)
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#039;');
+
                 return `
                     <tr>
-                        <td>${review.reviewId || '-'}</td>
-                        <td>${review.productName}</td>
-                        <td>${review.userName || '-'}</td>
+                        <td>${escapeHtml(review.reviewId || '-')}</td>
+                        <td>${escapeHtml(review.productName || '-')}</td>
+                        <td>${escapeHtml(review.userName || '-')}</td>
                         <td>${ratingStars}</td>
-                        <td style="max-width: 280px;">${review.comment || '-'}</td>
-                        <td>${review.adminReply ? `<span style="color:#2c3e50;">${review.adminReply}</span>` : '<span style="color:#bbb;">未回复</span>'}</td>
-                        <td>${createdAt}</td>
+                        <td style="max-width: 280px; white-space:normal; word-break:break-word;">${escapeHtml(commentDisplay)}</td>
+                        <td>${review.adminReply ? `<span style="color:#2c3e50;">${escapeHtml(review.adminReply)}</span>` : '<span style="color:#bbb;">未回复</span>'}</td>
+                        <td>${escapeHtml(createdAt)}</td>
                         <td>
-                            <button class="btn btn-sm btn-secondary" ${hasOrderLink ? `onclick="replyToReview('${review.orderId}')"` : 'disabled'}>${t('replyReview') || '回复评价'}</button>
-                            <button class="btn btn-sm btn-danger" ${hasOrderLink ? `onclick="deleteReview('${review.orderId}')"` : 'disabled'} style="margin-left:6px;">${t('deleteReview') || '删除评价'}</button>
+                            <button class="btn btn-sm btn-secondary" ${hasOrderLink ? `onclick="replyToReview('${escapeHtml(review.orderId)}')"` : 'disabled'}>${t('replyReview') || '回复评价'}</button>
+                            <button class="btn btn-sm btn-danger" ${hasOrderLink ? `onclick="deleteReview('${escapeHtml(review.orderId)}')"` : 'disabled'} style="margin-left:6px;">${t('deleteReview') || '删除评价'}</button>
                         </td>
                     </tr>
                 `;
@@ -22949,10 +22968,12 @@ const paginationContainers = {
                             </a>
                         </div>
 
-                        <div class="form-group" style="margin-bottom:20px;">
-                            <label style="display:block; font-size:16px; margin-bottom:10px; font-weight:600; color:#333;">${t('reviewTitle') || 'Review title'}: <span style="color:#ff4d4f">*</span></label>
-                            <input type="text" id="reviewTitle" placeholder="${t('Please enter your review title...') || 'Please enter your review title...'}" style="width:100%; padding:12px; border-radius:8px; border:1px solid #ccc; font-size:15px; background:#f9f9f9;">
-                            <div class="error-message" id="titleError" style="color:#ff4d4f; font-size:14px; margin-top:6px; display:none;">⚠ ${t('titleRequired') || 'Please enter a review title'}</div>
+                        <!-- reviewTitle 已移除：使用下方的多行评论作为必填/内容来源 -->
+                        <div class="form-group" style="margin-bottom:18px;">
+                            <label style="display:block; font-size:16px; margin-bottom:8px; font-weight:600; color:#333;">${t('comment') || '评价内容'}</label>
+                            <!-- 保留多行输入，但样式与上方单行输入一致，方便视觉统一 -->
+                            <textarea id="review-comment" placeholder="${t('commentPlaceholder') || '请填写您的评价内容 (可选)'}"
+                                style="width:100%; min-height:60px; padding:12px; border-radius:8px; border:1px solid #ccc; font-size:15px; background:#f9f9f9; line-height:1.4; resize:vertical;"></textarea>
                         </div>
                     </div>
 
@@ -23083,9 +23104,19 @@ const paginationContainers = {
                         if (amazonContainerErr) amazonContainerErr.style.display = 'none';
                     }
 
-                    // 更新提交按钮状态
-                    const titleFilled = modal.querySelector('#reviewTitle').value.trim().length > 0;
-                    modal.querySelector('#reviewSubmitBtn').disabled = !(selectedRating > 0 && titleFilled);
+                    // 更新提交按钮状态（当存在标题时使用标题，否则使用评论内容）
+                    (function updateBtn() {
+                        try {
+                            const titleEl = modal.querySelector('#reviewTitle');
+                            const commentEl = modal.querySelector('#review-comment');
+                            const titleFilled = titleEl ? titleEl.value.trim().length > 0 : false;
+                            const commentFilled = commentEl ? commentEl.value.trim().length > 0 : false;
+                            modal.querySelector('#reviewSubmitBtn').disabled = !(selectedRating > 0 && (titleFilled || commentFilled));
+                        } catch (e) {
+                            // 安全回退：禁止提交，直到用户交互恢复正常
+                            try { modal.querySelector('#reviewSubmitBtn').disabled = true; } catch (e) {}
+                        }
+                    })();
                 });
 
                 // 触摸设备反馈
@@ -23101,12 +23132,19 @@ const paginationContainers = {
                 }
             });
 
-            // 标题输入监听，更新提交按钮状态
-            modal.querySelector('#reviewTitle').addEventListener('input', function() {
-                hideError(modal.querySelector('#titleError'));
-                const titleFilled = this.value.trim().length > 0;
-                modal.querySelector('#reviewSubmitBtn').disabled = !(selectedRating > 0 && titleFilled);
-            });
+            // 评论输入监听，更新提交按钮状态（兼容保留的标题输入）
+            (function bindCommentInputListener() {
+                const commentInput = modal.querySelector('#review-comment');
+                const titleInput = modal.querySelector('#reviewTitle');
+                function updateSubmitBtnState() {
+                    hideError(modal.querySelector('#titleError'));
+                    const titleFilled = titleInput ? titleInput.value.trim().length > 0 : false;
+                    const commentFilled = commentInput ? commentInput.value.trim().length > 0 : false;
+                    modal.querySelector('#reviewSubmitBtn').disabled = !(selectedRating > 0 && (titleFilled || commentFilled));
+                }
+                if (commentInput) commentInput.addEventListener('input', updateSubmitBtnState);
+                if (titleInput) titleInput.addEventListener('input', updateSubmitBtnState);
+            })();
 
             // 关闭与取消
             modal.querySelector('.close-modal').addEventListener('click', function() {
@@ -23191,12 +23229,13 @@ const paginationContainers = {
                 return;
             }
 
-            // 获取评价标题（参考新模态，标题为必填项）
+            // 获取评价标题：优先使用显式标题输入（若存在），否则使用评论内容的前80字符作为标题（允许用户仅填写评论）
             const titleEl = document.getElementById('reviewTitle');
-            const titleText = titleEl ? titleEl.value.trim() : '';
-            if (!titleText) {
-                showNotification(t('titleRequired') || 'Please enter a review title', 'error');
-                return;
+            const commentEl = document.getElementById('review-comment');
+            const commentText = commentEl ? commentEl.value.trim() : '';
+            let titleText = titleEl ? titleEl.value.trim() : '';
+            if (!titleText && commentText) {
+                titleText = commentText.substring(0, 80);
             }
 
             // 确保productId存在
@@ -23216,7 +23255,7 @@ const paginationContainers = {
                 userPhone: order.customerInfo.phone ? order.customerInfo.phone.substring(0, 3) + '****' + order.customerInfo.phone.substring(7) : '',
                 rating: rating,
                 title: titleText,
-                comment: '', // 兼容旧接口，保留 comment 字段但置空
+                comment: commentText || '', // 保存用户填写的评价内容（兼容旧接口）
                 createdAt: Date.now(),
                 productName: order.productName
             };
