@@ -15653,22 +15653,8 @@ const paginationContainers = {
                     }
                     saveCurrentUser();
 
-                    // 同步到云端（确保新用户被添加到云端的 allUsers）
-                    if (cloudSync && cloudSync.isInitialized) {
-                        try {
-                            console.log('🔄 开始同步新注册用户到云端 allUsers...');
-                            await cloudSync.syncAllUsers();
-                            await cloudSync.handleUserSessionChange();
-                            console.log('✅ 新用户已同步到云端 allUsers');
-                        } catch (syncError) {
-                            console.error('同步到云端失败:', syncError);
-                            // 即使同步失败，本地注册已成功，继续执行
-                        }
-                    } else {
-                        console.warn('⚠️ 云端同步未初始化，新用户仅保存在本地');
-                    }
-
-                    // 注册成功后：直接提示 + 自动登录并关闭注册窗口
+                    // ========== 优化：立即关闭弹窗和更新 UI，后台异步同步 ==========
+                    // 注册成功后：直接提示 + 自动登录并关闭注册窗口（不等待云端同步）
                     showNotification(t('registrationSuccess') || 'Registration successful!', 'success');
                     registerModal.style.display = 'none';
                     updateUserInterface();
@@ -15681,6 +15667,27 @@ const paginationContainers = {
                             openSignupModal(pendingSignupProduct);
                             pendingSignupProduct = null; // 清除待领取产品
                         }, 500);
+                    }
+
+                    // ========== 后台异步处理云端同步（不阻塞 UI） ==========
+                    // 使用 Promise.then() 而不是 await，这样不会阻塞主线程
+                    if (cloudSync && cloudSync.isInitialized) {
+                        // 后台异步执行，不影响 UI 响应
+                        Promise.resolve().then(async () => {
+                            try {
+                                console.log('🔄 [后台] 开始同步新注册用户到云端 allUsers...');
+                                await cloudSync.syncAllUsers();
+                                await cloudSync.handleUserSessionChange();
+                                console.log('✅ [后台] 新用户已同步到云端 allUsers');
+                            } catch (syncError) {
+                                console.error('❌ [后台] 同步到云端失败:', syncError);
+                                // 即使同步失败，本地注册已成功，用户已看到成功提示
+                            }
+                        }).catch(err => {
+                            console.error('❌ [后台] 后台同步任务出错:', err);
+                        });
+                    } else {
+                        console.warn('⚠️ 云端同步未初始化，新用户仅保存在本地');
                     }
                 } else {
                     // 注册失败，显示具体错误原因
