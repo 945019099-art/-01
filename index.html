@@ -7516,6 +7516,62 @@
             }
         }
     </style>
+
+
+<!-- 🚀 综合预判脚本：在页面渲染前预设 UI 状态和产品数据 -->
+<script>
+(function() {
+    'use strict';
+    
+    // ===== 1. 导航栏状态预判 =====
+    try {
+        var userData = localStorage.getItem('currentUser');
+        if (userData && userData !== 'null' && userData !== 'undefined') {
+            var user = JSON.parse(userData);
+            if (user && user.account) {
+                // 用户已登录，注入样式预设导航栏状态
+                var style = document.createElement('style');
+                style.id = 'pre-auth-style';
+                style.textContent = [
+                    '#login-link { display: none !important; }',
+                    '#register-link { display: none !important; }',
+                    '#logout-link { display: inline !important; }',
+                    '#user-center-link { display: inline !important; }',
+                    '#my-orders-link { display: inline !important; }',
+                    // 如果是管理员，显示管理面板链接
+                    user.role === 'admin' ? '#admin-panel-link { display: inline !important; }' : ''
+                ].join(' ');
+                document.head.appendChild(style);
+                console.log('[PreAuth] 检测到已登录用户:', user.account);
+            }
+        }
+    } catch(e) { 
+        console.log('[PreAuth] 导航栏预判跳过:', e.message); 
+    }
+    
+    // ===== 2. 产品数据预渲染准备 =====
+    // 将本地缓存的产品数据存储到全局变量，供后续渲染使用
+    try {
+        var cachedProducts = localStorage.getItem('products');
+        if (cachedProducts && cachedProducts !== '[]') {
+            var products = JSON.parse(cachedProducts);
+            if (Array.isArray(products) && products.length > 0) {
+                // 验证产品数据有效性
+                var validProducts = products.filter(function(p) {
+                    return p && typeof p === 'object' && p.id && p.name;
+                });
+                if (validProducts.length > 0) {
+                    window.__PRELOADED_PRODUCTS__ = validProducts;
+                    console.log('[PreAuth] 预加载了', validProducts.length, '个产品数据');
+                }
+            }
+        }
+    } catch(e) {
+        console.log('[PreAuth] 产品预加载跳过:', e.message);
+    }
+})();
+</script>
+
 </head>
 
 <body>
@@ -9468,7 +9524,27 @@ let currentProduct = null;
 let pendingSignupProduct = null; // 记录待领取的产品（用户登录后需要打开报名模态框）
 let pendingSignupFormData = null; // 记录用户已填写的报名表单数据
 let shouldReturnToSignup = false; // 添加地址后是否需要返回报名表单
-let currentUser = Storage.get('currentUser', null);
+// ========== 立即恢复用户登录状态（在任何其他代码之前） ==========
+let currentUser = null;
+try {
+    const savedUser = localStorage.getItem('currentUser');
+    if (savedUser) {
+        try {
+            currentUser = JSON.parse(savedUser);
+            console.log('✅ [初始化] 已从 localStorage 恢复用户登录状态:', currentUser?.account || 'unknown');
+        } catch (parseError) {
+            console.error('❌ [初始化] 解析 currentUser 失败:', parseError);
+            localStorage.removeItem('currentUser');
+            currentUser = null;
+        }
+    } else {
+        console.log('ℹ️ [初始化] localStorage 中无 currentUser，用户未登录');
+        currentUser = null;
+    }
+} catch (error) {
+    console.error('❌ [初始化] 恢复登录状态时出错:', error);
+    currentUser = null;
+}
 const selectedUserAccounts = new Set(); // 后台用户批量操作选择集合
 const selectedOrderIds = new Set(); // 后台订单批量操作选择集合
 let userFilterRole = '';
@@ -13831,7 +13907,46 @@ const paginationContainers = {
         }
 
         function saveCurrentUser() {
-            Storage.set('currentUser', currentUser);
+            console.log('📝 saveCurrentUser 被调用，currentUser:', currentUser);
+            if (!currentUser) {
+                console.warn('⚠️ saveCurrentUser: currentUser 为空，跳过保存');
+                return false;
+            }
+            
+            // 尝试使用 Storage.set
+            const result = Storage.set('currentUser', currentUser);
+            
+            // 验证保存是否成功
+            const saved = localStorage.getItem('currentUser');
+            if (saved) {
+                console.log('✅ currentUser 已成功保存到 localStorage');
+                return true;
+            } else {
+                console.error('❌ currentUser 保存失败，尝试直接写入...');
+                // 尝试直接写入
+                try {
+                    // 创建一个干净的用户对象副本（移除可能导致序列化失败的属性）
+                    const cleanUser = {
+                        account: currentUser.account,
+                        password: currentUser.password,
+                        nickname: currentUser.nickname || currentUser.account,
+                        email: currentUser.email || '',
+                        phone: currentUser.phone || '',
+                        avatar: currentUser.avatar || '',
+                        role: currentUser.role || 'user',
+                        status: currentUser.status || 'active',
+                        registerTime: currentUser.registerTime || new Date().toISOString(),
+                        lastLoginTime: new Date().toISOString(),
+                        updatedAt: Date.now()
+                    };
+                    localStorage.setItem('currentUser', JSON.stringify(cleanUser));
+                    console.log('✅ currentUser 已通过直接写入保存');
+                    return true;
+                } catch (e) {
+                    console.error('❌ 直接写入也失败:', e);
+                    return false;
+                }
+            }
         }
 
         function saveUserAddresses() {
@@ -14587,6 +14702,28 @@ const paginationContainers = {
         // ========== 彩蛋函数定义结束 ==========
 
         document.addEventListener('DOMContentLoaded', async function () {
+            // ========== 优先恢复用户登录状态 ==========
+            console.log('🔄 页面加载，检查登录状态...');
+            try {
+                const savedUser = localStorage.getItem('currentUser');
+                if (savedUser) {
+                    try {
+                        currentUser = JSON.parse(savedUser);
+                        console.log('✅ 已从 localStorage 恢复用户登录状态:', currentUser.account);
+                    } catch (parseError) {
+                        console.error('❌ 解析 currentUser 失败:', parseError);
+                        localStorage.removeItem('currentUser');
+                        currentUser = null;
+                    }
+                } else {
+                    console.log('ℹ️ localStorage 中无 currentUser，用户未登录');
+                    currentUser = null;
+                }
+            } catch (error) {
+                console.error('❌ 恢复登录状态时出错:', error);
+                currentUser = null;
+            }
+            
             const loader = DOMCache.get('#page-loader');
             const loaderProgress = DOMCache.get('#loader-progress');
 
@@ -15282,7 +15419,32 @@ const paginationContainers = {
                     console.log('🔄 登录成功，准备加载新用户数据...');
                     
                     currentUser = authResult;
-                    saveCurrentUser();
+                    console.log('🔐 登录成功，准备保存用户数据:', authResult.account);
+                    
+                    // 强制保存，带重试机制
+                    let saveAttempts = 0;
+                    const maxAttempts = 3;
+                    const forceSave = () => {
+                        saveAttempts++;
+                        console.log(`📝 尝试保存 currentUser (第 ${saveAttempts} 次)...`);
+                        const saveResult = saveCurrentUser();
+                        
+                        // 验证保存结果
+                        setTimeout(() => {
+                            const verifyUser = localStorage.getItem('currentUser');
+                            if (verifyUser) {
+                                console.log('✅ currentUser 已成功保存到 localStorage');
+                            } else if (saveAttempts < maxAttempts) {
+                                console.warn(`⚠️ 第 ${saveAttempts} 次保存失败，尝试重新保存...`);
+                                forceSave();
+                            } else {
+                                console.error('❌ 多次尝试后仍无法保存 currentUser，请检查浏览器存储权限');
+                                showNotification('登录成功，但无法保存登录状态，刷新页面后可能需要重新登录', 'warning');
+                            }
+                        }, 50);
+                    };
+                    forceSave();
+                    
                     refreshCurrentUserSnapshot(authResult.account);
 
                     showNotification(`Login successful! Loading data from cloud...`, 'success');
@@ -18092,6 +18254,13 @@ const paginationContainers = {
 
         // 更新用户界面状态
         function updateUserInterface() {
+            // 🔧 移除预判样式，确保 UI 状态由此函数完全控制
+            var preAuthStyle = document.getElementById('pre-auth-style');
+            if (preAuthStyle) {
+                preAuthStyle.remove();
+                console.log('[UpdateUI] 已移除预判样式');
+            }
+
             const loginLink = document.getElementById('login-link');
             const registerLink = document.getElementById('register-link');
             const logoutLink = document.getElementById('logout-link');
@@ -30214,6 +30383,190 @@ const paginationContainers = {
                 }
             }, true);
         })();
+    </script>
+
+<!-- 本地缓存先行渲染脚本：加速产品显示 -->
+<script>
+(function() {
+    // 等待 DOM 完全加载后执行
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initLocalFirst);
+    } else {
+        setTimeout(initLocalFirst, 100);
+    }
+    
+    function initLocalFirst() {
+        try {
+            // 检查产品是否已经渲染
+            var grid = document.getElementById('products-grid');
+            if (!grid) return;
+            
+            // 如果产品区域为空或只有加载提示，尝试从本地缓存加载
+            var hasProducts = grid.querySelectorAll('article').length > 0;
+            if (hasProducts) {
+                console.log('[LocalFirst] 产品已渲染，跳过本地缓存');
+                return;
+            }
+            
+            // 尝试从 localStorage 获取产品数据
+            var cachedProducts = localStorage.getItem('products');
+            if (!cachedProducts) {
+                console.log('[LocalFirst] 无本地缓存，等待云端数据');
+                return;
+            }
+            
+            var products = JSON.parse(cachedProducts);
+            if (!Array.isArray(products) || products.length === 0) {
+                console.log('[LocalFirst] 本地缓存为空');
+                return;
+            }
+            
+            // 检查全局 renderProducts 函数是否可用
+            if (typeof window.renderProducts === 'function') {
+                console.log('[LocalFirst] 使用 renderProducts 渲染本地缓存');
+                window.products = products;
+                window.renderProducts();
+            } else if (typeof renderProducts === 'function') {
+                console.log('[LocalFirst] 使用全局 renderProducts 渲染本地缓存');
+                if (typeof window.products !== 'undefined') {
+                    window.products = products;
+                }
+                renderProducts();
+            } else {
+                console.log('[LocalFirst] renderProducts 函数不可用，跳过');
+            }
+            
+            // 隐藏加载动画
+            var loader = document.getElementById('loader');
+            if (loader) loader.style.display = 'none';
+            
+        } catch(e) {
+            console.log('[LocalFirst] 本地缓存加载失败:', e);
+        }
+    }
+})();
+</script>
+
+
+
+<!-- 🚀 产品预渲染脚本：使用预加载的数据立即渲染产品 -->
+<script>
+(function() {
+    'use strict';
+    
+    // 等待 DOM 就绪
+    function onReady(fn) {
+        if (document.readyState !== 'loading') {
+            fn();
+        } else {
+            document.addEventListener('DOMContentLoaded', fn);
+        }
+    }
+    
+    onReady(function() {
+        // ===== 1. 移除预判样式的增强逻辑 =====
+        // 包装 updateUserInterface 函数，确保调用时移除预判样式
+        var originalUpdateUI = window.updateUserInterface;
+        if (typeof originalUpdateUI === 'function') {
+            window.updateUserInterface = function() {
+                // 移除预判样式
+                var preAuthStyle = document.getElementById('pre-auth-style');
+                if (preAuthStyle) {
+                    preAuthStyle.remove();
+                    console.log('[PostAuth] 已移除预判样式');
+                }
+                // 调用原始函数
+                return originalUpdateUI.apply(this, arguments);
+            };
+        }
+        
+        // ===== 2. 产品预渲染逻辑 =====
+        // 检查是否有预加载的产品数据
+        if (window.__PRELOADED_PRODUCTS__ && window.__PRELOADED_PRODUCTS__.length > 0) {
+            console.log('[PreRender] 检测到预加载产品数据，准备预渲染...');
+            
+            // 等待一小段时间，确保主脚本已经定义了必要的变量和函数
+            setTimeout(function() {
+                try {
+                    // 检查产品是否已经渲染
+                    var productsGrid = document.getElementById('products-grid');
+                    if (productsGrid) {
+                        var existingProducts = productsGrid.querySelectorAll('.product-card, article');
+                        if (existingProducts.length === 0) {
+                            // 产品区域为空，使用预加载数据渲染
+                            console.log('[PreRender] 产品区域为空，使用预加载数据渲染');
+                            
+                            // 如果全局 products 变量为空，先填充预加载数据
+                            if (typeof products !== 'undefined' && (!products || products.length === 0)) {
+                                products = window.__PRELOADED_PRODUCTS__;
+                                console.log('[PreRender] 已将预加载数据填充到全局 products 变量');
+                            }
+                            
+                            // 调用渲染函数
+                            if (typeof renderProducts === 'function') {
+                                renderProducts(window.__PRELOADED_PRODUCTS__);
+                                console.log('[PreRender] 预渲染完成');
+                            }
+                        } else {
+                            console.log('[PreRender] 产品已渲染，跳过预渲染');
+                        }
+                    }
+                } catch(e) {
+                    console.log('[PreRender] 预渲染出错:', e.message);
+                }
+            }, 100);
+        }
+        
+        // ===== 3. 登录状态监控 =====
+        // 监听登录弹窗关闭，确保 UI 状态正确更新
+        var loginModal = document.getElementById('login-modal');
+        if (loginModal) {
+            var observer = new MutationObserver(function(mutations) {
+                mutations.forEach(function(mutation) {
+                    if (mutation.attributeName === 'style') {
+                        var display = loginModal.style.display;
+                        if (display === 'none' || display === '') {
+                            // 登录弹窗关闭，延迟检查并更新 UI
+                            setTimeout(function() {
+                                var preAuthStyle = document.getElementById('pre-auth-style');
+                                if (preAuthStyle) {
+                                    preAuthStyle.remove();
+                                }
+                                if (typeof updateUserInterface === 'function') {
+                                    updateUserInterface();
+                                }
+                            }, 100);
+                        }
+                    }
+                });
+            });
+            observer.observe(loginModal, { attributes: true });
+        }
+    });
+})();
+</script>
+
+<script>
+    // ========== 登录状态监控（调试用） ==========
+    (function() {
+        let lastUserState = null;
+        setInterval(() => {
+            const currentState = localStorage.getItem('currentUser');
+            if (currentState !== lastUserState) {
+                if (currentState) {
+                    try {
+                        const user = JSON.parse(currentState);
+                        console.log('🔔 检测到登录状态变化: 用户已登录 -', user.account);
+                    } catch (e) {
+                        console.warn('⚠️ 检测到 currentUser 数据异常');
+                    }
+                } else {
+                    console.log('🔔 检测到登录状态变化: 用户已退出');
+                }
+                lastUserState = currentState;
+            }
+        }, 1000);
+    })();
     </script>
 </body>
 </html>
