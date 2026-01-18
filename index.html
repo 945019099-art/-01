@@ -7572,6 +7572,90 @@
 })();
 </script>
 
+    <!-- ===== 璁㈠崟璇︽儏澶嶅埗鍔熻兘鏍峰紡 ===== -->
+    <style id="order-copy-style">
+        /* 澶嶅埗鎻愮ず鏍峰紡 */
+        .copy-notification {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+            color: white;
+            padding: 16px 32px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            z-index: 10000;
+            animation: copyPulse 0.6s ease-out;
+            box-shadow: 0 10px 40px rgba(16, 185, 129, 0.3);
+            pointer-events: none;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+
+        @keyframes copyPulse {
+            0% {
+                transform: translate(-50%, -50%) scale(0.8);
+                opacity: 1;
+            }
+            70% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 0;
+            }
+        }
+
+        /* 鍙鍒剁殑瀛楁鏍峰紡 */
+        .copyable-field {
+            cursor: pointer !important;
+            position: relative;
+            transition: all 0.3s ease;
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 2px solid transparent;
+            user-select: none;
+        }
+
+        .copyable-field:hover {
+            background-color: rgba(255, 107, 53, 0.08);
+            border-color: rgba(255, 107, 53, 0.3);
+            transform: translateX(2px);
+        }
+
+        .copyable-field::after {
+            content: '馃搵';
+            position: absolute;
+            right: 4px;
+            top: 50%;
+            transform: translateY(-50%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            font-size: 12px;
+        }
+
+        .copyable-field:hover::after {
+            opacity: 1;
+        }
+
+        /* 娲昏穬鐘舵€?*/
+        .copyable-field.copying {
+            background-color: rgba(16, 185, 129, 0.1);
+            border-color: #10B981;
+            animation: copyFlash 0.4s ease;
+        }
+
+        @keyframes copyFlash {
+            0%, 100% {
+                background-color: rgba(16, 185, 129, 0.1);
+            }
+            50% {
+                background-color: rgba(16, 185, 129, 0.2);
+            }
+        }
+    </style>
 </head>
 
 <body>
@@ -14946,6 +15030,25 @@ const paginationContainers = {
                 loader.classList.add('hidden');
                 document.body.classList.remove('loading');
                 loader.remove();
+                
+                // 延迟验证产品数据，确保页面已渲染
+                setTimeout(() => {
+                    const productsInMemory = Array.isArray(products) ? products.length : 0;
+                    const productsInCache = JSON.parse(localStorage.getItem('products') || '[]');
+                    const validInCache = Array.isArray(productsInCache) 
+                        ? productsInCache.filter(p => p && typeof p === 'object' && p.id && p.name).length 
+                        : 0;
+                    
+                    console.log(`🔍 页面加载完成后验证 - 内存: ${productsInMemory}, 缓存: ${validInCache}`);
+                    
+                    // 如果内存中没有产品但缓存中有，强制重新渲染
+                    if (productsInMemory === 0 && validInCache > 0) {
+                        console.warn('⚠️ 检测到产品未显示，强制重新渲染...');
+                        const cachedProducts = productsInCache.filter(p => p && typeof p === 'object' && p.id && p.name);
+                        products = cachedProducts;
+                        renderProducts(products);
+                    }
+                }, 500);
             }
 
             // 轮播图功能 - 使用统一的初始化函数
@@ -15500,7 +15603,32 @@ const paginationContainers = {
 
                             // 立即更新界面显示（在显示通知之前）
                             updateUserInterface();
-                            renderProducts(products);
+                            
+                            // 验证产品数据是否为空
+                            const productsToDisplay = Array.isArray(products) && products.length > 0 
+                                ? products 
+                                : JSON.parse(localStorage.getItem('products') || '[]');
+                            
+                            console.log('📦 准备渲染产品数据 - 内存:', products.length, '个，localStorage:', productsToDisplay.length, '个');
+                            
+                            if (productsToDisplay.length > 0) {
+                                products = productsToDisplay;
+                                renderProducts(products);
+                            } else {
+                                // 产品为空时，等待一下再重试
+                                console.warn('⚠️ 登录后产品数据为空，1秒后重新加载');
+                                setTimeout(() => {
+                                    const retryProducts = JSON.parse(localStorage.getItem('products') || '[]');
+                                    console.log('🔄 重新加载产品数据:', retryProducts.length, '个');
+                                    if (retryProducts.length > 0) {
+                                        products = retryProducts;
+                                        renderProducts(products);
+                                    } else {
+                                        renderProducts([]);
+                                    }
+                                }, 1000);
+                            }
+                            
                             renderUserOrders();
                             renderAddressList();
 
@@ -15521,7 +15649,21 @@ const paginationContainers = {
                             
                             // 立即更新界面显示
                             updateUserInterface();
-                            renderProducts(products);
+                            
+                            // 验证产品数据
+                            const productsToDisplay = Array.isArray(products) && products.length > 0 
+                                ? products 
+                                : JSON.parse(localStorage.getItem('products') || '[]');
+                            
+                            console.log('📦 本地模式 - 产品数据:', productsToDisplay.length, '个');
+                            
+                            if (productsToDisplay.length > 0) {
+                                products = productsToDisplay;
+                                renderProducts(products);
+                            } else {
+                                renderProducts([]);
+                            }
+                            
                             renderUserOrders();
                             renderAddressList();
                             
@@ -15543,7 +15685,21 @@ const paginationContainers = {
                         
                         // 立即更新界面显示
                         updateUserInterface();
-                        renderProducts(products);
+                        
+                        // 验证产品数据
+                        const productsToDisplay = Array.isArray(products) && products.length > 0 
+                            ? products 
+                            : JSON.parse(localStorage.getItem('products') || '[]');
+                        
+                        console.log('📦 错误恢复 - 产品数据:', productsToDisplay.length, '个');
+                        
+                        if (productsToDisplay.length > 0) {
+                            products = productsToDisplay;
+                            renderProducts(products);
+                        } else {
+                            renderProducts([]);
+                        }
+                        
                         renderUserOrders();
                         renderAddressList();
                     }
@@ -18596,11 +18752,26 @@ const paginationContainers = {
 
             // 暴露防抖后的接口，减少短时间内重复完整重绘导致的闪烁
             window.renderProducts = function (productsToRender) {
+                // 如果传入的产品数据为空或无效，尝试从 localStorage 恢复
+                let dataToRender = productsToRender;
+                if (!Array.isArray(dataToRender) || dataToRender.length === 0) {
+                    console.warn('⚠️ renderProducts 收到空数据，尝试从 localStorage 恢复...');
+                    const cached = JSON.parse(localStorage.getItem('products') || '[]');
+                    const validCached = Array.isArray(cached) 
+                        ? cached.filter(p => p && typeof p === 'object' && p.id && p.name)
+                        : [];
+                    
+                    if (validCached.length > 0) {
+                        console.log(`✅ 从 localStorage 恢复了 ${validCached.length} 个产品`);
+                        dataToRender = validCached;
+                    }
+                }
+                
                 if (_renderTimeout) clearTimeout(_renderTimeout);
                 _renderTimeout = setTimeout(() => {
-                    _renderProductsNow(productsToRender);
+                    _renderProductsNow(dataToRender);
                     _renderTimeout = null;
-                }, 120);
+                }, 50); // 减少防抖延迟从 120ms 到 50ms，加快显示速度
             };
         })();
 
@@ -22210,6 +22381,133 @@ const paginationContainers = {
         }
 
         // 格式化订单地址显示
+        function copyToClipboard(text, element) {
+            // 检查是否为"未填写"
+            if (text === t('notFilled') || text === 'N/A' || !text) {
+                return;
+            }
+            
+            // 点击时的视觉反馈
+            if (element) {
+                // 缩放动画
+                element.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    element.style.transform = 'scale(1)';
+                }, 150);
+                
+                // 背景闪烁
+                const originalBg = element.style.backgroundColor;
+                element.style.backgroundColor = '#4CAF50';
+                element.style.color = 'white';
+                setTimeout(() => {
+                    element.style.backgroundColor = originalBg;
+                    element.style.color = 'inherit';
+                }, 300);
+            }
+            
+            navigator.clipboard.writeText(text).then(() => {
+                showCopyNotification('✓ 已复制');
+            }).catch(err => {
+                console.error('复制失败:', err);
+                // 降级方案：使用 document.execCommand
+                try {
+                    const textarea = document.createElement('textarea');
+                    textarea.value = text;
+                    document.body.appendChild(textarea);
+                    textarea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textarea);
+                    showCopyNotification('✓ 已复制');
+                } catch (e) {
+                    showCopyNotification('✗ 复制失败', 'error');
+                }
+            });
+        }
+
+        function showCopyNotification(message, type = 'success') {
+            // 创建一个浮动的复制提示
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${type === 'error' ? '#f44336' : '#4CAF50'};
+                color: white;
+                padding: 16px 24px;
+                border-radius: 8px;
+                font-size: 15px;
+                font-weight: 600;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+                z-index: 10000;
+                animation: slideInRight 0.3s ease-out;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            `;
+            
+            // 添加 CSS 动画
+            if (!document.getElementById('copy-notification-style')) {
+                const style = document.createElement('style');
+                style.id = 'copy-notification-style';
+                style.textContent = `
+                    @keyframes slideInRight {
+                        from {
+                            transform: translateX(400px);
+                            opacity: 0;
+                        }
+                        to {
+                            transform: translateX(0);
+                            opacity: 1;
+                        }
+                    }
+                    
+                    @keyframes slideOutRight {
+                        from {
+                            transform: translateX(0);
+                            opacity: 1;
+                        }
+                        to {
+                            transform: translateX(400px);
+                            opacity: 0;
+                        }
+                    }
+                    
+                    @keyframes pulse {
+                        0%, 100% {
+                            transform: scale(1);
+                        }
+                        50% {
+                            transform: scale(1.1);
+                        }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+            
+            // 添加图标
+            const icon = document.createElement('span');
+            if (type === 'error') {
+                icon.innerHTML = '⚠️';
+            } else {
+                icon.innerHTML = '📋';
+                icon.style.animation = 'pulse 0.6s ease-in-out';
+            }
+            
+            notification.appendChild(icon);
+            const text = document.createTextNode(message);
+            notification.appendChild(text);
+            
+            document.body.appendChild(notification);
+            
+            // 3秒后淡出并移除
+            setTimeout(() => {
+                notification.style.animation = 'slideOutRight 0.3s ease-in forwards';
+                setTimeout(() => {
+                    notification.remove();
+                }, 300);
+            }, 2500);
+        }
+
         function renderOrderContactInfo(order) {
             const info = order.customerInfo || {};
             const name = info.name || info.fullName || order.account || t('notFilled');
@@ -22238,39 +22536,75 @@ const paginationContainers = {
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px;">
                     <div>
                         <div style="font-size: 12px; color: #777;">${t('name') || 'Full Name'}</div>
-                        <div style="font-size: 15px; font-weight: 600;">${safeText(name)}</div>
+                        <div style="font-size: 15px; font-weight: 600; cursor: pointer; padding: 8px 10px; border-radius: 4px; transition: all 0.3s; user-select: text;" 
+                             onclick="copyToClipboard('${safeText(name).replace(/'/g, "\\'").replace(/"/g, '&quot;')}', this)"
+                             onmouseover="this.style.backgroundColor='rgba(76, 175, 80, 0.1)'; this.style.transform='translateY(-2px)';"
+                             onmouseout="this.style.backgroundColor='transparent'; this.style.transform='translateY(0)';"
+                             title="点击复制">${safeText(name)}</div>
                     </div>
                     <div>
                         <div style="font-size: 12px; color: #777;">${t('account') || 'Account'}</div>
-                        <div style="font-size: 15px; font-weight: 600;">${safeText(account)}</div>
+                        <div style="font-size: 15px; font-weight: 600; cursor: pointer; padding: 8px 10px; border-radius: 4px; transition: all 0.3s; user-select: text;" 
+                             onclick="copyToClipboard('${safeText(account).replace(/'/g, "\\'").replace(/"/g, '&quot;')}', this)"
+                             onmouseover="this.style.backgroundColor='rgba(76, 175, 80, 0.1)'; this.style.transform='translateY(-2px)';"
+                             onmouseout="this.style.backgroundColor='transparent'; this.style.transform='translateY(0)';"
+                             title="点击复制">${safeText(account)}</div>
                     </div>
                     <div>
                         <div style="font-size: 12px; color: #777;">${t('email') || 'Email'}</div>
-                        <div style="font-size: 15px; font-weight: 600; word-break: break-all;">${safeText(email)}</div>
+                        <div style="font-size: 15px; font-weight: 600; word-break: break-all; cursor: pointer; padding: 8px 10px; border-radius: 4px; transition: all 0.3s; user-select: text;" 
+                             onclick="copyToClipboard('${safeText(email).replace(/'/g, "\\'").replace(/"/g, '&quot;')}', this)"
+                             onmouseover="this.style.backgroundColor='rgba(76, 175, 80, 0.1)'; this.style.transform='translateY(-2px)';"
+                             onmouseout="this.style.backgroundColor='transparent'; this.style.transform='translateY(0)';"
+                             title="点击复制">${safeText(email)}</div>
                     </div>
                     <div>
                         <div style="font-size: 12px; color: #777;">${t('phone') || 'Phone'}</div>
-                        <div style="font-size: 15px; font-weight: 600;">${safeText(phone)}</div>
+                        <div style="font-size: 15px; font-weight: 600; cursor: pointer; padding: 8px 10px; border-radius: 4px; transition: all 0.3s; user-select: text;" 
+                             onclick="copyToClipboard('${safeText(phone).replace(/'/g, "\\'").replace(/"/g, '&quot;')}', this)"
+                             onmouseover="this.style.backgroundColor='rgba(76, 175, 80, 0.1)'; this.style.transform='translateY(-2px)';"
+                             onmouseout="this.style.backgroundColor='transparent'; this.style.transform='translateY(0)';"
+                             title="点击复制">${safeText(phone)}</div>
                     </div>
                     <div>
                         <div style="font-size: 12px; color: #777;">${t('street') || 'Street'}</div>
-                        <div style="font-size: 15px; font-weight: 600;">${safeText(street)}</div>
+                        <div style="font-size: 15px; font-weight: 600; cursor: pointer; padding: 8px 10px; border-radius: 4px; transition: all 0.3s; user-select: text;" 
+                             onclick="copyToClipboard('${safeText(street).replace(/'/g, "\\'").replace(/"/g, '&quot;')}', this)"
+                             onmouseover="this.style.backgroundColor='rgba(76, 175, 80, 0.1)'; this.style.transform='translateY(-2px)';"
+                             onmouseout="this.style.backgroundColor='transparent'; this.style.transform='translateY(0)';"
+                             title="点击复制">${safeText(street)}</div>
                     </div>
                     <div>
                         <div style="font-size: 12px; color: #777;">${t('unit') || 'Unit / Suite'}</div>
-                        <div style="font-size: 15px; font-weight: 600;">${safeText(unit)}</div>
+                        <div style="font-size: 15px; font-weight: 600; cursor: pointer; padding: 8px 10px; border-radius: 4px; transition: all 0.3s; user-select: text;" 
+                             onclick="copyToClipboard('${safeText(unit).replace(/'/g, "\\'").replace(/"/g, '&quot;')}', this)"
+                             onmouseover="this.style.backgroundColor='rgba(76, 175, 80, 0.1)'; this.style.transform='translateY(-2px)';"
+                             onmouseout="this.style.backgroundColor='transparent'; this.style.transform='translateY(0)';"
+                             title="点击复制">${safeText(unit)}</div>
                     </div>
                     <div>
                         <div style="font-size: 12px; color: #777;">${t('city') || 'City'}</div>
-                        <div style="font-size: 15px; font-weight: 600;">${safeText(city)}</div>
+                        <div style="font-size: 15px; font-weight: 600; cursor: pointer; padding: 8px 10px; border-radius: 4px; transition: all 0.3s; user-select: text;" 
+                             onclick="copyToClipboard('${safeText(city).replace(/'/g, "\\'").replace(/"/g, '&quot;')}', this)"
+                             onmouseover="this.style.backgroundColor='rgba(76, 175, 80, 0.1)'; this.style.transform='translateY(-2px)';"
+                             onmouseout="this.style.backgroundColor='transparent'; this.style.transform='translateY(0)';"
+                             title="点击复制">${safeText(city)}</div>
                     </div>
                     <div>
                         <div style="font-size: 12px; color: #777;">${t('state') || 'State'}</div>
-                        <div style="font-size: 15px; font-weight: 600;">${safeText(state)}</div>
+                        <div style="font-size: 15px; font-weight: 600; cursor: pointer; padding: 8px 10px; border-radius: 4px; transition: all 0.3s; user-select: text;" 
+                             onclick="copyToClipboard('${safeText(state).replace(/'/g, "\\'").replace(/"/g, '&quot;')}', this)"
+                             onmouseover="this.style.backgroundColor='rgba(76, 175, 80, 0.1)'; this.style.transform='translateY(-2px)';"
+                             onmouseout="this.style.backgroundColor='transparent'; this.style.transform='translateY(0)';"
+                             title="点击复制">${safeText(state)}</div>
                     </div>
                     <div>
                         <div style="font-size: 12px; color: #777;">${t('postal') || 'ZIP Code'}</div>
-                        <div style="font-size: 15px; font-weight: 600;">${safeText(postal)}</div>
+                        <div style="font-size: 15px; font-weight: 600; cursor: pointer; padding: 8px 10px; border-radius: 4px; transition: all 0.3s; user-select: text;" 
+                             onclick="copyToClipboard('${safeText(postal).replace(/'/g, "\\'").replace(/"/g, '&quot;')}', this)"
+                             onmouseover="this.style.backgroundColor='rgba(76, 175, 80, 0.1)'; this.style.transform='translateY(-2px)';"
+                             onmouseout="this.style.backgroundColor='transparent'; this.style.transform='translateY(0)';"
+                             title="点击复制">${safeText(postal)}</div>
                     </div>
                 </div>
                 ${info.notes ? `<div style="margin-top: 12px;"><strong>${t('notes')}：</strong>${info.notes}</div>` : ''}
@@ -30573,6 +30907,169 @@ const paginationContainers = {
                 lastUserState = currentState;
             }
         }, 1000);
+    })();
+    </script>
+    <!-- ===== 璁㈠崟璇︽儏澶嶅埗鍔熻兘鑴氭湰 ===== -->
+    <script id="order-copy-script">
+    (function() {
+        'use strict';
+
+        // 澶嶅埗鏂囨湰鍒板壀璐存澘
+        function copyToClipboard(text, element) {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(() => {
+                    showCopyNotification('宸插鍒跺埌鍓创鏉?, element);
+                    showCopyAnimation(element);
+                }).catch(() => {
+                    fallbackCopy(text, element);
+                });
+            } else {
+                fallbackCopy(text, element);
+            }
+        }
+
+        // 澶囩敤澶嶅埗鏂规
+        function fallbackCopy(text, element) {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.select();
+            try {
+                document.execCommand('copy');
+                showCopyNotification('宸插鍒跺埌鍓创鏉?, element);
+                showCopyAnimation(element);
+            } catch (err) {
+                showCopyNotification('澶嶅埗澶辫触锛岃閲嶈瘯', element, 'error');
+            }
+            document.body.removeChild(textarea);
+        }
+
+        // 鏄剧ず澶嶅埗閫氱煡
+        function showCopyNotification(message, element, type = 'success') {
+            const notification = document.createElement('div');
+            notification.className = 'copy-notification';
+            notification.textContent = (type === 'error' ? '鉁?' : '鉁?') + message;
+            
+            if (type === 'error') {
+                notification.style.background = 'linear-gradient(135deg, #EF4444 0%, #DC2626 100%)';
+            }
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 2000);
+        }
+
+        // 鏄剧ず澶嶅埗鍔ㄧ敾
+        function showCopyAnimation(element) {
+            element.classList.add('copying');
+            setTimeout(() => {
+                element.classList.remove('copying');
+            }, 400);
+        }
+
+        // 浣垮厓绱犲彲鐐瑰嚮澶嶅埗
+        function makeClickable(element) {
+            if (element.classList.contains('copyable-field')) {
+                return;
+            }
+
+            element.classList.add('copyable-field');
+            element.style.cursor = 'pointer';
+            
+            element.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const text = this.textContent.trim();
+                if (text && text.length > 1) {
+                    copyToClipboard(text, this);
+                }
+            });
+        }
+
+        // 鍒濆鍖栬鍗曡鎯呯殑澶嶅埗鍔熻兘
+        function initOrderDetailsCopy() {
+            // 鏌ユ壘璁㈠崟璇︽儏妯℃€佹
+            const modals = document.querySelectorAll('[class*="modal"], [class*="dialog"], [class*="popup"]');
+            
+            modals.forEach(modal => {
+                const modalText = modal.textContent;
+                if (modalText.includes('Order Details') || modalText.includes('Customer Information') || modalText.includes('Express Information')) {
+                    // 鎵惧埌鍖呭惈淇℃伅鐨勬墍鏈夊厓绱?
+                    const infoElements = modal.querySelectorAll('p, span, div, li');
+                    
+                    infoElements.forEach(element => {
+                        const text = element.textContent.trim();
+                        if (text.length > 1 && text.length < 200) {
+                            // 妫€鏌ユ槸鍚﹀簲璇ユ槸鍙偣鍑荤殑
+                            const parent = element.parentElement;
+                            const parentHtml = parent ? parent.innerHTML : '';
+                            
+                            const keywords = ['Name', 'Email', 'Phone', 'Order ID', 'Tracking', 'Address', 'Account', 'City', 'State', 'ZIP', 'Postal', 'Street', 'mail', 'phone', '鍚嶅瓧', '閭', '鐢佃瘽', '璁㈠崟', '璺熻釜', '鍦板潃'];
+                            
+                            // 鍒ゆ柇杩欐槸鍚︽槸淇℃伅瀛楁
+                            const isInfoField = 
+                                (parent && (parentHtml.includes(':') || parent.className.includes('info') || parent.className.includes('detail') || parent.className.includes('item') || parent.className.includes('row'))) ||
+                                element.className.includes('info') || 
+                                element.className.includes('detail') ||
+                                keywords.some(kw => parentHtml.includes(kw));
+                            
+                            if (isInfoField) {
+                                makeClickable(element);
+                            }
+                        }
+                    });
+                }
+            });
+        }
+
+        // 鐩戝惉DOM鍙樺寲
+        function setupMutationObserver() {
+            const observer = new MutationObserver((mutations) => {
+                let shouldInit = false;
+                
+                mutations.forEach((mutation) => {
+                    if (mutation.addedNodes.length) {
+                        mutation.addedNodes.forEach((node) => {
+                            if (node.nodeType === 1) {
+                                const nodeText = node.textContent || '';
+                                if ((node.className && (node.className.includes('modal') || node.className.includes('dialog'))) ||
+                                    nodeText.includes('Order Details') || 
+                                    nodeText.includes('Customer Information') ||
+                                    nodeText.includes('Express Information')) {
+                                    shouldInit = true;
+                                }
+                            }
+                        });
+                    }
+                });
+                
+                if (shouldInit) {
+                    setTimeout(initOrderDetailsCopy, 200);
+                }
+            });
+
+            observer.observe(document.body, {
+                childList: true,
+                subtree: true
+            });
+        }
+
+        // 椤甸潰鍔犺浇瀹屾垚鍚庡垵濮嬪寲
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                setTimeout(initOrderDetailsCopy, 500);
+                setupMutationObserver();
+            });
+        } else {
+            setTimeout(initOrderDetailsCopy, 500);
+            setupMutationObserver();
+        }
+
+        // 瀵煎嚭鍏ㄥ眬鍑芥暟渚涘閮ㄨ皟鐢?
+        window.initOrderDetailsCopy = initOrderDetailsCopy;
     })();
     </script>
 </body>
