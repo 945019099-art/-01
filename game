@@ -1,0 +1,3787 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>涟漪 · Ripple</title>
+<style>
+  :root {
+    --bg: #0b0d10;
+    --bg-soft: #12151a;
+    --ink: #e8ecf1;
+    --ink-dim: #6d7683;
+    --ink-faint: #2c333c;
+    --accent: #7fd1e8;
+    --accent-dim: #3d7a8c;
+    --warm: #e8b87f;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Inter", "Helvetica Neue", -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body { cursor: crosshair; }
+
+  #stage {
+    position: fixed;
+    inset: 0;
+    display: block;
+    /* 手机上禁止滚动/缩放/长按菜单，否则拖拽会被浏览器手势抢走 */
+    touch-action: none;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  html, body {
+    overscroll-behavior: none;
+    overflow: hidden;
+  }
+
+  /* ---------- HUD ---------- */
+  .hud {
+    position: fixed;
+    z-index: 10;
+    pointer-events: none;
+    user-select: none;
+  }
+
+  .hud-top-left {
+    top: 28px;
+    left: 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  /* ---------- 返回 Beefreebies ---------- */
+  /* 层级必须高于选关层 .select-screen(z-index:30)，否则会被整屏遮罩挡住 */
+  #backToSite {
+    position: fixed;
+    top: 24px;
+    left: 32px;
+    z-index: 60;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    font-size: 14px;
+    line-height: 1;
+    color: var(--ink-dim);
+    text-decoration: none;
+    border: 1px solid rgba(109, 118, 131, 0.22);
+    background: rgba(18, 21, 26, 0.5);
+    opacity: 0.32;
+    transition: opacity 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  #backToSite:hover,
+  #backToSite:focus-visible {
+    opacity: 1;
+    color: var(--accent);
+    border-color: rgba(127, 209, 232, 0.5);
+    outline: none;
+  }
+
+  /* 左上角 HUD 让出返回键的位置 */
+  .hud-top-left {
+    padding-left: 42px;
+  }
+
+  @media (max-width: 768px) {
+    #backToSite {
+      top: 20px;
+      left: 20px;
+      width: 28px;
+      height: 28px;
+    }
+
+    .hud-top-left {
+      top: 28px;
+      left: 32px;
+      padding-left: 38px;
+    }
+  }
+
+  .title {
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    color: var(--ink);
+    opacity: 0.9;
+  }
+
+  .level-name {
+    font-size: 12px;
+    letter-spacing: 0.18em;
+    color: var(--ink-dim);
+    text-transform: uppercase;
+    transition: opacity 0.4s ease;
+  }
+
+  .hud-top-right {
+    top: 28px;
+    right: 32px;
+    display: flex;
+    align-items: center;
+    gap: 22px;
+    pointer-events: auto;
+  }
+
+  .counter {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    font-size: 13px;
+    letter-spacing: 0.1em;
+    color: var(--ink-dim);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .counter .dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--accent-dim);
+    transition: background 0.35s ease, box-shadow 0.35s ease;
+  }
+
+  .counter.full .dot {
+    background: var(--accent);
+    box-shadow: 0 0 12px var(--accent);
+  }
+
+  .icon-btn {
+    width: 30px;
+    height: 30px;
+    border: none;
+    background: transparent;
+    color: var(--ink-faint);
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    transition: color 0.25s ease;
+    padding: 0;
+  }
+
+  .icon-btn:hover { color: var(--ink-dim); }
+  .icon-btn svg { width: 16px; height: 16px; display: block; }
+
+  .hud-bottom {
+    bottom: 30px;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: center;
+  }
+
+  .hint {
+    font-size: 11.5px;
+    letter-spacing: 0.2em;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+    transition: opacity 0.5s ease;
+  }
+
+  /* ---------- Progress rail ---------- */
+  .rail {
+    position: fixed;
+    left: 32px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    gap: 13px;
+    pointer-events: none;
+  }
+
+  .rail i {
+    display: block;
+    width: 2px;
+    height: 14px;
+    background: var(--ink-faint);
+    transition: background 0.4s ease, transform 0.4s ease;
+  }
+
+  .rail i.done { background: var(--accent-dim); }
+  .rail i.now {
+    background: var(--accent);
+    transform: scaleY(1.9);
+    box-shadow: 0 0 10px rgba(127, 209, 232, 0.6);
+  }
+
+  /* ---------- Overlay ---------- */
+  .overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 20;
+    display: grid;
+    place-items: center;
+    background: rgba(11, 13, 16, 0.88);
+    backdrop-filter: blur(4px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.34s ease;
+  }
+
+  .overlay.show { opacity: 1; pointer-events: auto; }
+
+  .overlay-inner {
+    text-align: center;
+    transform: translateY(8px);
+    transition: transform 0.34s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .overlay.show .overlay-inner { transform: translateY(0); }
+
+  .ov-label {
+    font-size: 11px;
+    letter-spacing: 0.4em;
+    text-transform: uppercase;
+    color: var(--accent-dim);
+    margin-bottom: 18px;
+  }
+
+  .ov-title {
+    font-size: clamp(28px, 5vw, 48px);
+    font-weight: 300;
+    letter-spacing: 0.06em;
+    margin-bottom: 14px;
+  }
+
+  .ov-desc {
+    font-size: 13px;
+    line-height: 1.9;
+    color: var(--ink-dim);
+    letter-spacing: 0.06em;
+    max-width: 380px;
+    margin: 0 auto;
+  }
+
+  .ov-actions {
+    margin-top: 34px;
+    display: flex;
+    gap: 14px;
+    justify-content: center;
+  }
+
+  .btn {
+    pointer-events: auto;
+    border: 1px solid var(--ink-faint);
+    background: transparent;
+    color: var(--ink-dim);
+    font-family: inherit;
+    font-size: 11.5px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    padding: 12px 26px;
+    cursor: pointer;
+    transition: all 0.28s ease;
+  }
+
+  .btn:hover {
+    border-color: var(--accent-dim);
+    color: var(--accent);
+  }
+
+  .btn.primary {
+    border-color: var(--accent-dim);
+    color: var(--accent);
+  }
+
+  .btn.primary:hover {
+    background: rgba(127, 209, 232, 0.09);
+    border-color: var(--accent);
+  }
+
+  /* keyboard focus only */
+  .btn:focus-visible, .icon-btn:focus-visible {
+    outline: 1px solid var(--accent);
+    outline-offset: 3px;
+  }
+
+  .fade-hidden { opacity: 0 !important; }
+
+  /* ---------- 波数 / 生命 ---------- */
+  .counter.wave-dot { color: var(--ink-dim); }
+  .counter .dot.wave-dot {
+    background: transparent;
+    border: 1px solid var(--accent-dim);
+    box-shadow: none;
+    border-radius: 1px;
+    transform: rotate(45deg);
+  }
+  .counter.empty .dot.wave-dot { border-color: var(--ink-faint); }
+  .counter.empty { color: #4a525c; }
+  #waveCounter.low { color: #d8a66f; }
+  #waveCounter.low .dot.wave-dot { border-color: #d8a66f; }
+
+  .lives {
+    display: flex;
+    gap: 7px;
+    align-items: center;
+  }
+
+  .lives i {
+    display: block;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 8px var(--accent-soft);
+    transition: background 0.4s ease, box-shadow 0.4s ease, opacity 0.4s ease;
+  }
+
+  .lives i.gone {
+    background: transparent;
+    box-shadow: none;
+    border: 1px solid var(--ink-faint);
+    opacity: 0.6;
+  }
+
+  /* ---------- 选关界面 ---------- */
+  .select-screen {
+    position: fixed;
+    inset: 0;
+    z-index: 30;
+    display: grid;
+    place-items: center;
+    background: var(--bg);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.34s ease;
+    overflow-y: auto;
+    padding: 40px 24px;
+  }
+
+  .select-screen.show { opacity: 1; pointer-events: auto; }
+
+  .select-inner {
+    width: min(760px, 100%);
+    transform: translateY(10px);
+    transition: transform 0.34s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .select-screen.show .select-inner { transform: translateY(0); }
+
+  .select-head { margin-bottom: 34px; }
+
+  .select-title {
+    font-size: 26px;
+    font-weight: 300;
+    letter-spacing: 0.14em;
+    margin-bottom: 12px;
+  }
+
+  .select-sub {
+    font-size: 12.5px;
+    letter-spacing: 0.08em;
+    color: var(--ink-dim);
+    line-height: 1.8;
+    min-height: 1em;
+  }
+
+  .level-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+  }
+
+  .lv {
+    position: relative;
+    border: 1px solid var(--ink-faint);
+    background: transparent;
+    color: var(--ink-dim);
+    font-family: inherit;
+    text-align: left;
+    padding: 15px 14px 14px;
+    cursor: pointer;
+    transition: border-color 0.25s ease, color 0.25s ease, background 0.25s ease, transform 0.25s ease;
+    min-height: 92px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .lv:not(.locked):hover {
+    border-color: var(--accent-dim);
+    color: var(--ink);
+    background: rgba(255, 255, 255, 0.018);
+    transform: translateY(-2px);
+  }
+
+  .lv .lv-num {
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    color: var(--ink-faint);
+  }
+
+  .lv .lv-name {
+    font-size: 12.5px;
+    letter-spacing: 0.04em;
+    line-height: 1.5;
+  }
+
+  .lv .lv-theme {
+    font-size: 10.5px;
+    letter-spacing: 0.16em;
+    color: var(--accent-dim);
+    text-transform: uppercase;
+  }
+
+  .lv.cleared { border-color: var(--accent-dim); }
+  .lv.cleared .lv-num { color: var(--accent-dim); }
+
+  .lv.current {
+    border-color: var(--accent);
+    color: var(--ink);
+    background: rgba(255, 255, 255, 0.025);
+  }
+
+  .lv.current .lv-num { color: var(--accent); }
+
+  .lv.locked {
+    cursor: not-allowed;
+    opacity: 0.4;
+  }
+
+  .lv.locked .lv-name { color: var(--ink-faint); }
+  .lv.locked .lv-theme {
+    color: var(--ink-faint);
+    opacity: 0.6;
+  }
+
+  .lv .lv-mark {
+    position: absolute;
+    top: 13px;
+    right: 13px;
+    font-size: 10px;
+    color: var(--accent);
+    letter-spacing: 0.1em;
+  }
+
+  .select-foot {
+    margin-top: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+
+  .select-lives {
+    font-size: 11.5px;
+    letter-spacing: 0.14em;
+    color: var(--ink-dim);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .select-actions { display: flex; gap: 12px; }
+
+  @media (max-width: 640px) {
+    .level-grid { grid-template-columns: repeat(2, 1fr); }
+    .select-inner { width: 100%; }
+    .rail { display: none; }
+
+    /* 手机：HUD 拆成两行，避免计数挤到标题上 */
+    .hud-top-left { top: max(14px, env(safe-area-inset-top)); left: 16px; gap: 4px; }
+    .title { font-size: 13px; letter-spacing: 0.28em; }
+    .level-name { font-size: 10px; letter-spacing: 0.14em; }
+
+    .hud-top-right {
+      top: auto;
+      left: 16px;
+      right: 16px;
+      bottom: max(12px, env(safe-area-inset-bottom));
+      gap: 14px;
+      align-items: center;
+      justify-content: flex-start;
+      flex-wrap: nowrap;
+    }
+    .counter { font-size: 12px; gap: 7px; }
+    .lives { margin-left: auto; flex-shrink: 0; }
+    .icon-btn { padding: 6px; }
+    /* 提示移到计数行上方，居中且不重叠 */
+    .hud-bottom {
+      bottom: calc(max(12px, env(safe-area-inset-bottom)) + 38px);
+      justify-content: center;
+      padding: 0 16px;
+    }
+    .hint {
+      font-size: 10.5px;
+      letter-spacing: 0.14em;
+      text-align: center;
+    }
+    /* 选关界面在竖屏更紧凑 */
+    .select-inner { padding: 0 20px; }
+    .select-title { font-size: 22px; }
+  }
+
+  @media (max-width: 400px) {
+    .hud-top-right { gap: 12px; }
+    .counter { font-size: 11px; }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="stage"></canvas>
+
+<!-- 返回 Beefreebies 的低调入口 -->
+<a id="backToSite" href="aboutUs.html" aria-label="返回 Beefreebies" title="返回 Beefreebies">&larr;</a>
+
+<div class="hud hud-top-left">
+  <div class="title">Ripple</div>
+  <div class="level-name" id="levelName">Level 01</div>
+</div>
+
+<div class="hud hud-top-right">
+  <div class="counter" id="counter">
+    <span class="dot"></span>
+    <span id="counterText">0 / 2</span>
+  </div>
+  <div class="counter" id="waveCounter" title="本关剩余波纹">
+    <span class="dot wave-dot"></span>
+    <span id="waveText">3 / 3</span>
+  </div>
+  <div class="lives" id="lives" title="剩余生命"></div>
+  <button class="icon-btn" id="soundBtn" title="音效开关" aria-label="音效开关">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M11 5 6 9H3v6h3l5 4V5z"/>
+      <path id="waveA" d="M15.5 8.5a5 5 0 0 1 0 7"/>
+      <path id="waveB" d="M18.5 5.5a9 9 0 0 1 0 13"/>
+    </svg>
+  </button>
+  <button class="icon-btn" id="menuBtn" title="返回选关 (Esc)" aria-label="返回选关">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M4 6h16M4 12h16M4 18h16"/>
+    </svg>
+  </button>
+  <button class="icon-btn" id="resetBtn" title="重置本关 (R)" aria-label="重置本关">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M3 12a9 9 0 1 0 3-6.7"/>
+      <path d="M3 4v5h5"/>
+    </svg>
+  </button>
+</div>
+
+<div class="rail" id="rail"></div>
+
+<div class="hud hud-bottom">
+  <div class="hint" id="hint">按住并向外拖动，松手释放声波</div>
+</div>
+
+<!-- 选关界面 -->
+<div class="select-screen" id="selectScreen">
+  <div class="select-inner">
+    <div class="select-head">
+      <div class="ov-label" id="selectLabel">Ripple</div>
+      <div class="select-title">选择关卡</div>
+      <div class="select-sub" id="selectSub"></div>
+    </div>
+    <div class="level-grid" id="levelGrid"></div>
+    <div class="select-foot">
+      <div class="select-lives" id="selectLives"></div>
+      <div class="select-actions">
+        <button class="btn primary" id="continueBtn">继续</button>
+        <button class="btn" id="wipeBtn">清除进度</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="overlay-inner">
+    <div class="ov-label" id="ovLabel">Ripple</div>
+    <div class="ov-title" id="ovTitle">涟漪</div>
+    <div class="ov-desc" id="ovDesc">
+      从水面的核向外拖动鼠标，<br>
+      松手释放一圈声波。<br><br>
+      让所有碎片同时停进核的光圈里。
+    </div>
+    <div class="ov-actions" id="ovActions">
+      <button class="btn primary" id="ovPrimary">开始</button>
+    </div>
+  </div>
+</div>
+
+<script>
+"use strict";
+
+/* =========================================================
+   涟漪 Ripple — 单文件解压益智游戏
+   机制：从核拖拽发射一圈扩散波，波推动碎片，
+        让所有碎片同时停在核的光圈内即可通关。
+   ========================================================= */
+
+/* ------------------ 基础工具 ------------------ */
+const clamp = (v, a, b) => v < a ? a : (v > b ? b : v);
+const lerp = (a, b, t) => a + (b - a) * t;
+const TAU = Math.PI * 2;
+
+// 与帧率无关的指数趋近
+function damp(cur, target, lambda, dt) {
+  return lerp(cur, target, 1 - Math.exp(-lambda * dt));
+}
+
+// 线性同余确定性随机数：同一 seed 永远产生同一串数值。
+// 只用于视觉（碎片姿态相位、粒子），判定路径完全不依赖它。
+function seeded(seed) {
+  let x = seed >>> 0;
+  return () => {
+    x = (1664525 * x + 1013904223) >>> 0;
+    return x / 4294967296;
+  };
+}
+
+// 粒子使用独立种子流，避免粒子消耗随机数影响物理取值。
+function nextParticleRand() {
+  return (game.particleRnd || seeded(1))();
+}
+
+/* ------------------ 关卡数据 ------------------ */
+// core: 核的初始位置（相对画布的比例，0.5/0.5 表示正中）
+// goal: 核的光圈半径（像素，会按屏幕缩放）
+// shards: [{ x, y, r, mass }]  x/y 为相对核的像素偏移（设计基准 900x600）
+// waves: 允许同时存在的波数量上限
+const BASE_W = 900, BASE_H = 600;
+// 最小有效力度：低于它的一下推不动任何目标，不消耗波纹次数。
+// 避免"轻轻蹭一下"成为绕过力度设计的免费补救手段。
+const MIN_WAVE_STRENGTH = 0.12;
+
+/* ------------------ 主题系统 ------------------
+   每关是一个独立的小世界：配色、背景、核心形态、碎片形态、
+   波的表现、音效基频都由主题决定。视觉统一由 CSS 变量与
+   绘制函数读取，避免每关写一大段重复代码。
+------------------------------------------------- */
+const THEMES = {
+  space: {
+    label: "太空",
+    bg: "#05070d",
+    bgDeep: "#020308",
+    ink: "#dfe8f5",
+    accent: "#8fb8ff",
+    accentSoft: "rgba(143, 184, 255, 0.14)",
+    coreName: "行星",
+    shardName: "小行星",
+    backdrop: "stars",
+    waveStyle: "nebula",
+    coreStyle: "planet",
+    audio: { base: 168, enter: 430, scale: [0, 3, 7, 10], tail: 1.5, type: "sine", fx: "space" },
+  },
+  water: {
+    label: "水面",
+    bg: "#071018",
+    bgDeep: "#03080d",
+    ink: "#e2f2f6",
+    accent: "#6fd8d0",
+    accentSoft: "rgba(111, 216, 208, 0.14)",
+    coreName: "荷叶",
+    shardName: "游鱼",
+    backdrop: "caustics",
+    waveStyle: "ripple",
+    coreStyle: "pad",
+    audio: { base: 220, enter: 560, scale: [0, 2, 5, 9], tail: 1.1, type: "triangle", fx: "water" },
+  },
+  deep: {
+    label: "深海",
+    bg: "#040a14",
+    bgDeep: "#010408",
+    ink: "#d6e6f5",
+    accent: "#4fc3e8",
+    accentSoft: "rgba(79, 195, 232, 0.13)",
+    coreName: "水母",
+    shardName: "发光鱼",
+    backdrop: "depth",
+    waveStyle: "sonar",
+    coreStyle: "jelly",
+    audio: { base: 110, enter: 340, scale: [0, 4, 7, 11], tail: 2.0, type: "sine", fx: "deep" },
+  },
+  aurora: {
+    label: "极光",
+    bg: "#060a12",
+    bgDeep: "#02040a",
+    ink: "#e6f0fa",
+    accent: "#9ff0d0",
+    accentSoft: "rgba(159, 240, 208, 0.14)",
+    coreName: "光核",
+    shardName: "冰晶",
+    backdrop: "aurora",
+    waveStyle: "aurora",
+    coreStyle: "crystal",
+    audio: { base: 262, enter: 660, scale: [0, 5, 9, 12], tail: 1.3, type: "sine", fx: "aurora" },
+  },
+  desert: {
+    label: "荒漠",
+    bg: "#100c08",
+    bgDeep: "#070503",
+    ink: "#f2e6d6",
+    accent: "#e8a95f",
+    accentSoft: "rgba(232, 169, 95, 0.14)",
+    coreName: "水洼",
+    shardName: "沙砾",
+    backdrop: "dunes",
+    waveStyle: "dust",
+    coreStyle: "oasis",
+    audio: { base: 196, enter: 494, scale: [0, 3, 5, 10], tail: 1.2, type: "triangle", fx: "desert" },
+  },
+  forest: {
+    label: "林间",
+    bg: "#060d09",
+    bgDeep: "#020604",
+    ink: "#e4f2e6",
+    accent: "#7fd68f",
+    accentSoft: "rgba(127, 214, 143, 0.14)",
+    coreName: "树桩",
+    shardName: "萤火",
+    backdrop: "canopy",
+    waveStyle: "pollen",
+    coreStyle: "stump",
+    audio: { base: 147, enter: 392, scale: [0, 4, 7, 9], tail: 1.4, type: "sine", fx: "forest" },
+  },
+  ice: {
+    label: "冰原",
+    bg: "#070b14",
+    bgDeep: "#03060c",
+    ink: "#e8f2ff",
+    accent: "#a8d8ff",
+    accentSoft: "rgba(168, 216, 255, 0.14)",
+    coreName: "冰眼",
+    shardName: "雪块",
+    backdrop: "frost",
+    waveStyle: "chill",
+    coreStyle: "icecore",
+    audio: { base: 233, enter: 587, scale: [0, 5, 7, 12], tail: 1.6, type: "sine", fx: "ice" },
+  },
+  ember: {
+    label: "熔岩",
+    bg: "#120705",
+    bgDeep: "#080302",
+    ink: "#fbe6dc",
+    accent: "#ff8a5c",
+    accentSoft: "rgba(255, 138, 92, 0.14)",
+    coreName: "火心",
+    shardName: "炭块",
+    backdrop: "ash",
+    waveStyle: "ember",
+    coreStyle: "embercore",
+    audio: { base: 131, enter: 349, scale: [0, 3, 7, 10], tail: 1.8, type: "sawtooth", fx: "ember" },
+  },
+};
+
+// 关卡设计：4 章 × 2 关，每关只引入一个新概念。
+// seed 固定 → 同一关的初始布局、相位、粒子全部可复现。
+//
+// 几何原则（实测推动曲线决定）：
+// 波纹是圆形等强面，同一距离上的碎片会被同样力度推动，因此
+//   - 单波关卡：所有碎片必须落在同一个"能停进光圈"的距离带内；
+//   - 多波关卡：按距离分带，每一波负责一带，顺序即"由远到近 / 由近到远"；
+//   - 最佳力度随目标距离上升而下降，这就是难度曲线的主要旋钮。
+const LEVELS = [
+  {
+    // 章节一 · 控制波纹
+    chapter: "一 · 控制波纹",
+    name: "Starfield 星野",
+    theme: "space",
+    core: [0.5, 0.5], goal: 50,
+    seed: 3101,
+    waveBudget: 1,
+    settleFactor: 0.42,
+    note: "三个目标几乎等距，一次波纹就够了",
+    intro: "拖动核心释放星河，把小行星带回引力环。",
+    shards: [
+      { x: -96, y: 62, r: 14, mass: 1 },      // 114
+      { x: 104, y: -46, r: 14, mass: 1 },     // 114
+      { x: 8, y: -118, r: 14, mass: 1 },      // 118
+    ],
+  },
+  {
+    chapter: "一 · 控制波纹",
+    name: "Pond 涟漪",
+    theme: "water",
+    core: [0.5, 0.5], goal: 48,
+    seed: 3102,
+    waveBudget: 2,
+    multiWave: true,
+    settleFactor: 0.38,
+    captureScale: 1.02,
+    order: true,
+    note: "先处理外圈标记目标，再处理内圈",
+    intro: "先处理外圈标记的目标，再收拢内圈。",
+    shards: [
+      { x: -124, y: 58, r: 14, mass: 1, order: 1 },    // 137，第一波
+      { x: 130, y: -48, r: 14, mass: 1, order: 1 },    // 139
+      { x: -34, y: -54, r: 13, mass: 1, order: 2 },    //  64，第二波
+      { x: 44, y: 46, r: 13, mass: 1, order: 2 },      //  64
+    ],
+  },
+  {
+    // 章节二 · 管理顺序
+    chapter: "二 · 管理顺序",
+    name: "Abyss 深渊",
+    theme: "deep",
+    core: [0.5, 0.5], goal: 48,
+    seed: 3201,
+    waveBudget: 2,
+    multiWave: true,
+    settleFactor: 0.38,
+    captureScale: 1.02,
+    note: "等移动光鱼游到轨迹端点再释放",
+    intro: "声呐只能响两次。等移动的光鱼停在轨迹端点再释放。",
+    shards: [
+      { x: -106, y: -44, r: 15, mass: 1, order: 1 },   // 115
+      { x: 10, y: -132, r: 13, mass: 1, order: 1,      // 132 ± 34 横向移动，端点有停留
+        driftMode: "pause", driftAmplitude: 34, driftPeriod: 4.0, driftStart: 0 },
+      { x: 34, y: 50, r: 13, mass: 1, order: 2 },      //  60，第二波
+    ],
+  },
+  {
+    chapter: "二 · 管理顺序",
+    name: "Aurora 极光",
+    theme: "aurora",
+    core: [0.5, 0.5], goal: 46,
+    seed: 3202,
+    waveBudget: 2,
+    multiWave: true,
+    settleFactor: 0.34,
+    captureScale: 0.955,
+    order: true,
+    note: "第一波解锁外圈，第二波收拢剩下的",
+    intro: "冰晶先被极光触碰才能解锁，解锁后才能进入光核。",
+    shards: [
+      { x: -114, y: -40, r: 15, mass: 1.05, locked: true, unlockOrder: 1, order: 1 }, // 121
+      { x: 112, y: -46, r: 15, mass: 1.05, locked: true, unlockOrder: 1, order: 1 },  // 121
+      { x: -30, y: 30, r: 13, mass: 1, order: 2 },       //  42，第二波
+      { x: 36, y: 20, r: 13, mass: 1, order: 2 },        //  41
+    ],
+  },
+  {
+    // 章节三 · 处理空间限制
+    chapter: "三 · 处理空间限制",
+    name: "Dunes 流沙",
+    theme: "desert",
+    core: [0.5, 0.5], goal: 44,
+    seed: 3301,
+    waveBudget: 2,
+    multiWave: true,
+    settleFactor: 0.32,
+    captureScale: 0.96,
+    note: "危险扇区里的沙砾推不动，要用另一波处理",
+    intro: "危险扇区里的沙砾推不动，先把它们带出来再收拢。",
+    shards: [
+      { x: -46, y: 64, r: 14, mass: 1 },      //  79，落在 angle 126 的危险扇区
+      { x: 52, y: 58, r: 14, mass: 1 },       //  78，落在 angle 48 的危险扇区
+      { x: -118, y: -78, r: 14, mass: 1 },    // 141，外圈，必须由第一波处理
+      { x: 128, y: -56, r: 14, mass: 1 },     // 140
+    ],
+    obstacles: [
+      { angle: 48, width: 22, inner: 0.9, outer: 2.1 },
+      { angle: 126, width: 22, inner: 0.9, outer: 2.1 },
+    ],
+  },
+  {
+    chapter: "三 · 处理空间限制",
+    name: "Grove 幽林",
+    theme: "forest",
+    core: [0.5, 0.5], goal: 40,
+    seed: 3302,
+    waveBudget: 2,
+    multiWave: true,
+    settleFactor: 0.28,
+    captureScale: 1.015,
+    note: "金色目标要在树桩里停稳一会儿",
+    intro: "金色的萤火要在树桩里停留片刻才算归位。",
+    shards: [
+      { x: -72, y: -30, r: 15, mass: 1, settleDuration: 0.55 },  //  78，需要停驻
+      { x: 18, y: -78, r: 13, mass: 1 },                         //  80
+      { x: -32, y: 24, r: 13, mass: 1 },                         //  40，第二波
+      { x: 40, y: 26, r: 13, mass: 1 },                          //  48
+    ],
+  },
+  {
+    // 章节四 · 组合挑战
+    chapter: "四 · 组合挑战",
+    name: "Floe 冰原",
+    theme: "ice",
+    core: [0.5, 0.5], goal: 44,
+    seed: 3401,
+    waveBudget: 2,
+    multiWave: true,
+    settleFactor: 0.28,
+    captureScale: 1.01,
+    waveGap: [0.75, 1.0],
+    note: "第二道寒潮要在 0.7 ~ 1.1 秒内释放",
+    intro: "两道寒潮必须间隔约 1 秒：太早互相干扰，太晚目标已经滑走。",
+    shards: [
+      { x: -106, y: 42, r: 14, mass: 1, order: 1 },    // 114，第一波
+      { x: 100, y: -56, r: 14, mass: 1, order: 1 },    // 115
+      { x: 4, y: 92, r: 13, mass: 1, order: 1 },       //  92
+      { x: -40, y: 14, r: 13, mass: 1, order: 2 },     //  42，第二波
+      { x: 44, y: 18, r: 13, mass: 1, order: 2 },      //  48
+    ],
+  },
+  {
+    chapter: "四 · 组合挑战",
+    name: "Ember 熔岩",
+    theme: "ember",
+    core: [0.5, 0.5], goal: 42,
+    seed: 3402,
+    waveBudget: 2,
+    multiWave: true,
+    settleFactor: 0.24,
+    captureScale: 1.02,
+    waveGap: [0.7, 1.3],
+    order: true,
+    note: "第一波处理外圈，第二波解锁并收拢内圈",
+    intro: "先处理外圈三个炭块，再用第二波解锁并收拢内圈。",
+    shards: [
+      { x: -70, y: -26, r: 14, mass: 1.05, order: 1 },   //  75，落在危险扇区
+      { x: 100, y: -52, r: 13, mass: 1, order: 1 },      // 113
+      { x: -18, y: 82, r: 13, mass: 1, order: 1 },       //  84
+      { x: -36, y: 16, r: 15, mass: 1.05, locked: true, unlockOrder: 2, order: 2 },  //  39，第二波解锁
+      { x: 40, y: -12, r: 15, mass: 1.05, locked: true, unlockOrder: 2, order: 2 },  //  42
+    ],
+    obstacles: [
+      { angle: 200, width: 34, inner: 0.4, outer: 2.0 },
+    ],
+  },
+];
+
+/* ------------------ 画布与坐标 ------------------ */
+const canvas = document.getElementById("stage");
+const ctx = canvas.getContext("2d");
+
+let W = 0, H = 0, DPR = 1;
+let SCALE = 1;          // 设计尺寸 → 屏幕尺寸
+let CX = 0, CY = 0;     // 核的屏幕坐标
+
+// 光圈半径：随屏幕缩放，但保留可读下限，避免小屏上缩到看不见。
+// 手机上还要保证手指能舒服地按到，所以下限随屏幕宽度变化。
+function goalRadius() {
+  const floor = W < 720 ? 34 : 26;
+  return Math.max(LEVELS[game.index].goal * SCALE, floor);
+}
+
+// 竖屏手机：关卡横向空间很窄，若按 3:2 的设计比例缩放，
+// 整个场景会缩得极小。这里改成以屏幕自身比例计算可用的缩放，
+// 让竖屏也能把光圈和碎片撑到可点按的大小。
+function resize() {
+  DPR = Math.min(window.devicePixelRatio || 1, 2);
+  W = window.innerWidth;
+  H = window.innerHeight;
+  canvas.width = Math.floor(W * DPR);
+  canvas.height = Math.floor(H * DPR);
+  canvas.style.width = W + "px";
+  canvas.style.height = H + "px";
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+
+  const padX = W < 720 ? 36 : 90;
+  const padY = H < 720 ? 96 : 90;   // 横屏顶部 HUD + 底部提示占位
+
+  const sx = (W - padX * 2) / BASE_W;
+  const sy = (H - padY * 2) / BASE_H;
+  const portrait = H > W * 1.15;
+
+  // 竖屏：关卡内容只占中心一小块，纵向留白很多。
+  // 横向铺满后再适度放大，让光圈和碎片达到适合手指的尺寸；
+  // 同时受纵向可用高度约束，避免放大后碎片被挤出屏幕。
+  if (portrait) {
+    SCALE = Math.min(sx * 1.25, (H * 0.62) / BASE_H);
+  } else {
+    SCALE = Math.min(sx, sy);
+  }
+  SCALE = clamp(SCALE, 0.16, 1.35);
+
+  // 核的屏幕位置：横竖屏都放在中间。
+  CX = W / 2;
+  CY = H / 2;
+}
+
+/* ------------------ 音频 ------------------ */
+const Audio_ = {
+  ctx: null,
+  enabled: true,
+  master: null,
+
+  init() {
+    if (this.ctx) return;
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) { this.enabled = false; return; }
+    try {
+      this.ctx = new AC();
+      this.master = this.ctx.createGain();
+      this.master.gain.value = 0.5;
+      this.master.connect(this.ctx.destination);
+    } catch (e) { this.enabled = false; }
+  },
+
+  resume() {
+    if (!this.enabled) return;
+    this.init();
+    if (this.ctx && this.ctx.state === "suspended") this.ctx.resume();
+  },
+
+  // 释放波：按主题给出不同的音色
+  wave(strength, theme) {
+    if (!this.enabled || !this.ctx) return;
+    const A = (theme && theme.audio) || THEMES.space.audio;
+    const t = this.ctx.currentTime;
+    const o = this.ctx.createOscillator();
+    const g = this.ctx.createGain();
+    const f = this.ctx.createBiquadFilter();
+    f.type = "lowpass";
+
+    let base = A.base;
+    let tail = A.tail;
+    let filt = 700 + strength * 500;
+    let dur = 0.8;
+
+    if (A.fx === "water") {
+      // 水面：高频的水滴感，尾音短
+      o.type = "sine";
+      filt = 1400 + strength * 900;
+      o.frequency.setValueAtTime(base + 260 - strength * 60, t);
+      o.frequency.exponentialRampToValueAtTime(base + 40, t + 0.42);
+      dur = 0.7;
+    } else if (A.fx === "deep") {
+      // 深海：低频声呐，尾音长，带下潜
+      o.type = "sine";
+      filt = 320;
+      o.frequency.setValueAtTime(base + 60, t);
+      o.frequency.exponentialRampToValueAtTime(base - 28, t + 1.5);
+      dur = 1.7;
+    } else if (A.fx === "aurora") {
+      // 极光：清冷的铃音，基频更高
+      o.type = "triangle";
+      filt = 2200 + strength * 1200;
+      o.frequency.setValueAtTime(base + 180, t);
+      o.frequency.exponentialRampToValueAtTime(base + 40, t + 0.9);
+      dur = 1.1;
+    } else if (A.fx === "desert") {
+      // 荒漠：干燥的沙沙感，中频短促
+      o.type = "triangle";
+      filt = 900 + strength * 500;
+      o.frequency.setValueAtTime(base + 90, t);
+      o.frequency.exponentialRampToValueAtTime(base + 20, t + 0.55);
+      dur = 0.8;
+    } else if (A.fx === "forest") {
+      // 林间：木质感的柔和敲击
+      o.type = "sine";
+      filt = 1100 + strength * 700;
+      o.frequency.setValueAtTime(base + 200, t);
+      o.frequency.exponentialRampToValueAtTime(base + 60, t + 0.7);
+      dur = 0.9;
+    } else if (A.fx === "ice") {
+      // 冰原：清脆的晶体音，高频带尾韵
+      o.type = "triangle";
+      filt = 2600 + strength * 1400;
+      o.frequency.setValueAtTime(base + 320, t);
+      o.frequency.exponentialRampToValueAtTime(base + 70, t + 1.3);
+      dur = 1.5;
+    } else if (A.fx === "ember") {
+      // 熔岩：粗糙的低吼，尾音下沉
+      o.type = "sawtooth";
+      filt = 380;
+      o.frequency.setValueAtTime(base + 48, t);
+      o.frequency.exponentialRampToValueAtTime(base - 22, t + 1.4);
+      dur = 1.6;
+    } else {
+      // 太空：低沉的空间感嗡鸣 + 缓慢下沉
+      o.type = "sine";
+      filt = 600 + strength * 420;
+      o.frequency.setValueAtTime(base + 132 - strength * 50, t);
+      o.frequency.exponentialRampToValueAtTime(base - 18, t + tail);
+      dur = 1.0;
+    }
+
+    f.frequency.value = filt;
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.085 * (0.5 + strength), t + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+
+    o.connect(f); f.connect(g); g.connect(this.master);
+    o.start(t); o.stop(t + dur + 0.05);
+  },
+
+  // 碎片进入光圈：按主题音阶给出清脆的点
+  enter(pitch, theme) {
+    if (!this.enabled || !this.ctx) return;
+    const A = (theme && theme.audio) || THEMES.space.audio;
+    const t = this.ctx.currentTime;
+    const o = this.ctx.createOscillator();
+    const g = this.ctx.createGain();
+    o.type = A.type || "triangle";
+
+    // 用主题音阶把音高量化，避免每次随机音听起来杂乱
+    const steps = A.scale || [0, 3, 7, 10];
+    const step = steps[Math.abs(Math.round(pitch)) % steps.length];
+    const f0 = A.enter * Math.pow(2, step / 12);
+
+    o.frequency.setValueAtTime(f0, t);
+    o.frequency.exponentialRampToValueAtTime(f0 * 1.5, t + 0.16);
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.05, t + 0.012);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.3);
+    o.connect(g); g.connect(this.master);
+    o.start(t); o.stop(t + 0.32);
+  },
+
+  // 通关：按主题给出不同的和弦色彩
+  complete(theme) {
+    if (!this.enabled || !this.ctx) return;
+    const A = (theme && theme.audio) || THEMES.space.audio;
+    const chords = {
+      space: [392.00, 587.33, 783.99],   // G 大三和弦，开阔
+      water: [440.00, 554.37, 659.25],   // A 大三和弦，明亮
+      deep:  [261.63, 392.00, 523.25],   // C 大三和弦，低沉
+      aurora:[523.25, 659.25, 987.77],   // C 高音区，清澈
+      desert:[349.23, 466.16, 698.46],   // F 大三和弦，干燥温暖
+      forest:[293.66, 440.00, 587.33],   // D 大三和弦，自然
+      ice:   [493.88, 739.99, 987.77],   // B 大三和弦，凛冽
+      ember: [233.08, 349.23, 466.16],   // Bb 大三和弦，厚重
+    };
+    const notes = chords[Object.keys(THEMES).find(k => THEMES[k] === theme)] || chords.space;
+    const t0 = this.ctx.currentTime;
+    notes.forEach((f, i) => {
+      const t = t0 + i * 0.11;
+      const o = this.ctx.createOscillator();
+      const g = this.ctx.createGain();
+      o.type = A.type || "sine";
+      o.frequency.value = f;
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(0.07, t + 0.05);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 1.4);
+      o.connect(g); g.connect(this.master);
+      o.start(t); o.stop(t + 1.45);
+    });
+  },
+
+  // 失败：一声下坠的低音
+  fail() {
+    if (!this.enabled || !this.ctx) return;
+    const t = this.ctx.currentTime;
+    const o = this.ctx.createOscillator();
+    const g = this.ctx.createGain();
+    const f = this.ctx.createBiquadFilter();
+    f.type = "lowpass";
+    f.frequency.value = 420;
+    o.type = "sine";
+    o.frequency.setValueAtTime(220, t);
+    o.frequency.exponentialRampToValueAtTime(88, t + 0.7);
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.075, t + 0.03);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.85);
+    o.connect(f); f.connect(g); g.connect(this.master);
+    o.start(t); o.stop(t + 0.9);
+  },
+
+  // 拖拽蓄力：持续的细嗡声，可实时改频率与音量
+  beginDrag() {
+    if (!this.enabled || !this.ctx || this.dragOsc) return;
+    const o = this.ctx.createOscillator();
+    const g = this.ctx.createGain();
+    o.type = "sine";
+    o.frequency.value = 90;
+    g.gain.value = 0.0001;
+    o.connect(g); g.connect(this.master);
+    o.start();
+    this.dragOsc = o;
+    this.dragGain = g;
+  },
+
+  updateDrag(t) {
+    if (!this.dragOsc) return;
+    const now = this.ctx.currentTime;
+    this.dragOsc.frequency.setTargetAtTime(90 + t * 130, now, 0.06);
+    this.dragGain.gain.setTargetAtTime(0.0001 + t * 0.035, now, 0.06);
+  },
+
+  endDrag() {
+    if (!this.dragOsc) return;
+    const now = this.ctx.currentTime;
+    const o = this.dragOsc, g = this.dragGain;
+    g.gain.setTargetAtTime(0.0001, now, 0.05);
+    o.stop(now + 0.25);
+    this.dragOsc = null;
+    this.dragGain = null;
+  },
+};
+
+/* ------------------ 实体 ------------------ */
+// 轨迹方向：决定偏移作用在哪个轴上。
+// 数值必须是 0 或 1，否则会按比例削减 driftAmplitude（例如 0.35 会让振幅只剩 35%）。
+const DRIFT_MODES = {
+  none:       { x: 0, y: 0 },
+  horizontal: { x: 1, y: 0 },
+  vertical:   { x: 0, y: 1 },
+  orbit:      { x: 1, y: 1 },
+  pause:      { x: 1, y: 0 },
+};
+
+// 碎片一旦停稳就"锁存"在光圈里，不会因为后续波纹、轨迹或余速被重新推出去。
+// 记录已停稳的位置，每帧被拉回该位置，保证复访稳定、判定不回退。
+function latchShard(s, dt) {
+  if (!s.latch) s.latch = [s.x, s.y];
+  // 轻轻收敛到记录点，而不是硬钉住，避免视觉上突然停顿
+  const k = 1 - Math.exp(-14 * dt);
+  s.x += (s.latch[0] - s.x) * k;
+  s.y += (s.latch[1] - s.y) * k;
+  s.vx = 0;
+  s.vy = 0;
+  s.inside = true;
+  s.insideTime += dt;
+  s.holdTime = 0;
+}
+
+class Shard {
+  constructor(cfg, index, seed) {
+    // 半径下限随屏幕调整：手机上要看得清、也方便判断位置
+    this.r = Math.max((cfg.r || 14) * SCALE, W < 720 ? 11 : 8);
+    this.mass = cfg.mass || 1;
+    this.index = index;
+    this.order = cfg.order || 0;          // 顺序目标：0 表示不限制
+    this.lockedAtStart = !!cfg.locked;
+    this.unlockOrder = cfg.unlockOrder || 0; // locked 碎片被第几号波纹解锁
+    this.settleDuration = cfg.settleDuration || 0;
+    this.bounce = cfg.bounce || 0;
+
+    // 预设轨迹：完全由配置 + 关卡 seed 决定，不使用自由随机漂移
+    this.driftMode = cfg.driftMode || (cfg.drift ? "horizontal" : "none");
+    const amp = cfg.driftAmplitude != null ? cfg.driftAmplitude
+      : (cfg.drift ? Math.hypot(cfg.drift[0], cfg.drift[1]) : 0);
+    this.driftAmplitude = amp * SCALE;
+    this.driftPeriod = cfg.driftPeriod || 3.2;
+    this.driftStart = cfg.driftStart || 0;
+    this.driftAxis = DRIFT_MODES[this.driftMode] || DRIFT_MODES.none;
+    this.driftAngle = ((cfg.driftAngle != null ? cfg.driftAngle : 0) * Math.PI) / 180;
+
+    this.home = [CX + cfg.x * SCALE, CY + cfg.y * SCALE];
+    this.x = this.home[0];
+    this.y = this.home[1];
+    this.vx = 0;
+    this.vy = 0;
+
+    this.inside = false;       // 是否在光圈内
+    this.insideTime = 0;       // 在光圈内累计停留时长
+    this.holdTime = 0;         // 满足停驻条件后的持续计时
+    this.settled = false;      // 已完成
+    this.glow = 0;             // 进入时的闪光
+    this.pulse = 0;            // 被波推动时的挤压
+    this.driftNow = 0;         // 当前轨迹偏移（供绘制轨迹线用）
+    this.obstacleHitAt = -1;   // 上一次穿过危险区的时刻
+
+    // 视觉姿态相位：由关卡 seed 固定，保证同一关每次一致
+    const rnd = seeded((seed || 1) * 7919 + index * 613);
+    this.phase = rnd() * TAU;
+    this.driftPhase = rnd() * TAU;
+
+    this.resetToStart();
+  }
+
+  resetToStart() {
+    this.locked = this.lockedAtStart;
+    this.entryWave = 0;
+    this.fullyUnlocked = !this.lockedAtStart;
+    return this.reset();
+  }
+
+  reset() {
+    this.x = this.home[0];
+    this.y = this.home[1];
+    this.vx = 0; this.vy = 0;
+    this.inside = false; this.insideTime = 0; this.holdTime = 0; this.settled = false;
+    this.glow = 0; this.pulse = 0; this.driftNow = 0; this.obstacleHitAt = -1;
+    this.released = false; this.held = false; this.repelled = 0;
+    this.latch = null;
+    this.prevX = this.x; this.prevY = this.y;
+  }
+
+  isMovable() { return !this.locked; }
+
+  // 轨迹偏移：正弦往返，周期与幅度由关卡配置固定，方向由 driftAngle 控制。
+  // pause 模式在两端停留更久，形成可读的"窗口期"。
+  trajectoryOffset(t) {
+    if (this.driftMode === "none" || this.driftAmplitude <= 0) return [0, 0];
+    if (t < this.driftStart) return [0, 0];
+    const u = (t - this.driftStart) / this.driftPeriod;
+    if (this.driftMode === "pause") {
+      // 每周期分四段：去程 30%、端点停留 20%、回程 30%、端点停留 20%
+      const k = ((u % 1) + 1) % 1;
+      let s;
+      if (k < 0.3) s = k / 0.3;
+      else if (k < 0.5) s = 1;
+      else if (k < 0.8) s = 1 - (k - 0.5) / 0.3;
+      else s = -1;
+      // 平滑端点附近的速度，避免"瞬间折返"的视觉跳变。
+      // 注意：这里不能再叠加 driftPhase，否则端点停留会被相位偏移吃掉，
+      // 实际振幅缩到只有配置值的 1/3。
+      return this.rotateOffset(s);
+    }
+    // 普通往返：相位由关卡 seed 固定，保证不同关卡轨迹形态不同但完全可复现。
+    // driftPhase 只作为小幅起始偏移，避免"配置 34px 实际只走 11px"的振幅缩水。
+    const swing = Math.sin(u * TAU + this.driftPhase * 0.5);
+    return this.rotateOffset(swing);
+  }
+
+  rotateOffset(s) {
+    const ca = Math.cos(this.driftAngle), sa = Math.sin(this.driftAngle);
+    const ox = this.driftAxis.x * this.driftAmplitude * s;
+    const oy = this.driftAxis.y * this.driftAmplitude * s;
+    return [ox * ca - oy * sa, ox * sa + oy * ca];
+  }
+
+  update(dt, t, core) {
+    const startX = this.x, startY = this.y;
+
+    // 预设轨迹：位置 = 固定起点 + 固定轨迹偏移。
+    // 绝对定位而非速度积分，因此相同时间点必然得到相同位置。
+    // 一旦被波纹推动过就彻底交给物理：轨迹只负责"推动前"的位置。
+    // （中途接管轨迹会把已经被推走的碎片硬拉回轨迹线上，导致永远进不了光核。）
+    if (this.driftMode !== "none" && !this.locked && !this.settled && !this.released) {
+      const offset = this.trajectoryOffset(t);
+      this.x = this.home[0] + offset[0];
+      this.y = this.home[1] + offset[1];
+    }
+
+    if (!this.locked) {
+      // 阻尼决定滑行距离：v0/k 即总位移。
+      // k=1.9 时，弱波约滑 90px、强波约滑 300px，正好覆盖关卡的 150~240px 尺度。
+      const drag = Math.exp(-1.9 * dt);
+      this.vx *= drag;
+      this.vy *= drag;
+
+      this.x += this.vx * dt;
+      this.y += this.vy * dt;
+
+      // 边界（软反弹）
+      const m = this.r + 6;
+      if (this.x < m) { this.x = m; this.vx = Math.abs(this.vx) * 0.5; }
+      if (this.x > W - m) { this.x = W - m; this.vx = -Math.abs(this.vx) * 0.5; }
+      if (this.y < m) { this.y = m; this.vy = Math.abs(this.vy) * 0.5; }
+      if (this.y > H - m) { this.y = H - m; this.vy = -Math.abs(this.vy) * 0.5; }
+    }
+
+    this.pulse = damp(this.pulse, 0, 5, dt);
+    this.glow = damp(this.glow, 0, 3.2, dt);
+
+    // 光圈判定：必须"进圈 + 慢下来"才算停稳。
+    // 这一条给拖拽强度加上了上限——推得太猛会高速穿过光圈，停不下来。
+    const d = Math.hypot(this.x - core.x, this.y - core.y);
+    const wasInside = this.inside;
+    // 判定环略大于可见光圈：只要最终停在光核边缘附近、速度足够低，
+    // 就算收拢成功。避免"明明已经停下，却卡在光圈外几像素"的死局。
+    const captureR = core.goalR * (core.captureScale || 1);
+    this.inside = d < captureR - this.r * 0.35;
+
+    // 本帧由位置差得出的真实位移速度。
+    // 直接积分的 vx/vy 会比实际位移大（阻尼在位移前已经衰减），
+    // 用它判断"是否慢下来"会让重目标永远达不到停稳门槛。
+    const actualSpeed = dt > 0
+      ? Math.hypot(this.x - startX, this.y - startY) / dt
+      : 0;
+    // 停稳门槛：随光圈大小放宽，避免小光圈关卡过于苛刻
+    const settleSpeed = Math.max(core.goalR * (game.settleFactor || 0.42), 26) * SCALE;
+
+    if (this.locked) {
+      // 锁定碎片只有被对应波纹解锁后才能被收拢
+      this.holdTime = 0;
+    } else if (this.settled) {
+      latchShard(this, dt);
+      return;
+    } else if (core.requireOrder !== null && core.requireOrder !== undefined
+               && this.order > 0 && this.order !== core.requireOrder) {
+      // 顺序未轮到：进圈不算完成
+      this.holdTime = 0;
+    } else {
+      const slowEnough = actualSpeed < settleSpeed;
+      if (this.inside && slowEnough) {
+        const need = this.settleDuration || 0;
+        if (need <= 0) {
+          this.settled = true;
+          this.latch = [this.x, this.y];
+          this.holdTime = 0;
+        } else {
+          this.holdTime += dt;
+          if (this.holdTime >= need) {
+            this.settled = true;
+            this.latch = [this.x, this.y];
+          }
+        }
+        this.held = true;
+      } else {
+        this.holdTime = 0;
+        this.held = false;
+      }
+    }
+
+    if (this.inside && !wasInside) {
+      this.glow = 1;
+      Audio_.enter(Math.round(d / Math.max(core.goalR, 1) * 4), game.theme);
+    }
+    if (this.inside) this.insideTime += dt;
+    else this.insideTime = 0;
+  }
+
+  // 被波纹扫过。返回 "unlocked" 或 "unlocked-pushed"。
+  // 解锁与收拢可以在同一波里完成：波锋到达时先把碎片解锁，
+  // 再让它以"从起点出发"的方式继续参与本波的推动计算。
+  receiveWave(wave) {
+    if (this.settled) return "settled";
+    if (this.locked) {
+      if (this.unlockOrder > 0 && wave.index !== this.unlockOrder) return "wrong-unlock";
+      this.locked = false;
+      this.fullyUnlocked = true;
+      this.glow = 1;
+      this.pulse = 1;
+      // 解锁瞬间把它放回起点，避免它被解锁前的残余位置影响
+      this.x = this.home[0];
+      this.y = this.home[1];
+      this.vx = 0;
+      this.vy = 0;
+      this.inside = false;
+      this.insideTime = 0;
+      return "unlocked-pushed";
+    }
+    return "pushed";
+  }
+
+  draw(t, th) {
+    th = th || game.theme;
+    const r = this.r * (1 + this.pulse * 0.22);
+
+    // 光晕
+    if (this.glow > 0.01 || this.inside) {
+      const g = ctx.createRadialGradient(this.x, this.y, r * 0.4, this.x, this.y, r * 3.4);
+      const a = 0.05 + this.glow * 0.24 + (this.inside ? 0.08 : 0);
+      g.addColorStop(0, rgba(th.accentRGB, a));
+      g.addColorStop(1, rgba(th.accentRGB, 0));
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, r * 3.4, 0, TAU);
+      ctx.fill();
+    }
+
+    const breathe = 1 + Math.sin(t * 1.6 + this.phase) * 0.02;
+    const rr = r * breathe;
+
+    ctx.save();
+    ctx.translate(this.x, this.y);
+
+    const bodyFill = this.settled
+      ? rgba(th.accentRGB, 0.26)
+      : (this.inside ? rgba(th.accentRGB, 0.10)
+        : (this.locked ? "rgba(232, 184, 127, 0.10)" : rgba(th.inkRGB, 0.055)));
+    const bodyLine = this.settled
+      ? rgba(th.accentRGB, 0.98)
+      : (this.inside ? rgba(th.accentRGB, 0.55)
+        : (this.locked ? "rgba(232, 184, 127, 0.72)" : rgba(th.inkRGB, 0.62)));
+
+    // 每个主题的碎片形态不同：小行星 / 游鱼 / 发光鱼 / 冰晶
+    if (th.waveStyle === "ripple") {
+      // 游鱼：水滴形身体 + 分叉尾鳍 + 背鳍
+      const sway = Math.sin(t * 2.2 + this.phase) * 0.2;
+      ctx.rotate(Math.sin(t * 0.4 + this.phase) * 0.1);
+
+      // 身体（前圆后尖）
+      ctx.beginPath();
+      ctx.moveTo(rr * 1.28, 0);
+      ctx.quadraticCurveTo(rr * 0.3, -rr * 0.86, -rr * 0.72, -rr * 0.3);
+      ctx.quadraticCurveTo(-rr * 0.95, 0, -rr * 0.72, rr * 0.3);
+      ctx.quadraticCurveTo(rr * 0.3, rr * 0.86, rr * 1.28, 0);
+      ctx.closePath();
+      ctx.fillStyle = bodyFill;
+      ctx.fill();
+      ctx.lineWidth = this.locked ? 1.6 : 1.1;
+      ctx.strokeStyle = bodyLine;
+      ctx.stroke();
+
+      // 尾鳍：分两片
+      const tailX = -rr * 0.78;
+      ctx.beginPath();
+      ctx.moveTo(tailX, 0);
+      ctx.lineTo(-rr * 1.62, -rr * 0.72 + sway * rr * 1.6);
+      ctx.lineTo(-rr * 1.28, 0);
+      ctx.closePath();
+      ctx.strokeStyle = rgba(th.accentRGB, this.inside ? 0.8 : 0.5);
+      ctx.lineWidth = 0.9;
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(tailX, 0);
+      ctx.lineTo(-rr * 1.62, rr * 0.72 + sway * rr * 1.6);
+      ctx.lineTo(-rr * 1.28, 0);
+      ctx.closePath();
+      ctx.stroke();
+
+      // 背鳍
+      ctx.beginPath();
+      ctx.moveTo(rr * 0.1, -rr * 0.72);
+      ctx.quadraticCurveTo(-rr * 0.25, -rr * 1.35, -rr * 0.6, -rr * 0.5);
+      ctx.strokeStyle = rgba(th.accentRGB, this.inside ? 0.7 : 0.4);
+      ctx.lineWidth = 0.8;
+      ctx.stroke();
+
+      // 眼睛
+      ctx.beginPath();
+      ctx.arc(rr * 0.62, -rr * 0.16, rr * 0.15, 0, TAU);
+      ctx.fillStyle = rgba(th.accentRGB, 0.9);
+      ctx.fill();
+
+    } else if (th.waveStyle === "sonar") {
+      // 发光鱼：菱形身体 + 发光点
+      ctx.rotate(Math.sin(t * 0.5 + this.phase) * 0.15);
+      ctx.beginPath();
+      ctx.moveTo(rr * 1.25, 0);
+      ctx.lineTo(0, -rr * 0.92);
+      ctx.lineTo(-rr * 1.1, 0);
+      ctx.lineTo(0, rr * 0.92);
+      ctx.closePath();
+      ctx.fillStyle = bodyFill;
+      ctx.fill();
+      ctx.lineWidth = this.locked ? 1.6 : 1.15;
+      ctx.strokeStyle = bodyLine;
+      ctx.stroke();
+
+      const glowPulse = 0.5 + 0.5 * Math.sin(t * 2.6 + this.phase);
+      ctx.beginPath();
+      ctx.arc(rr * 0.35, 0, rr * 0.22 * (0.8 + glowPulse * 0.4), 0, TAU);
+      ctx.fillStyle = rgba(th.accentRGB, 0.55 + glowPulse * 0.4);
+      ctx.fill();
+
+    } else if (th.waveStyle === "aurora") {
+      // 冰晶：六角形
+      ctx.rotate(t * 0.25 + this.phase);
+      ctx.beginPath();
+      for (let i = 0; i < 6; i++) {
+        const a = (i / 6) * TAU - Math.PI / 2;
+        const px = Math.cos(a) * rr * 1.12;
+        const py = Math.sin(a) * rr * 1.12;
+        if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+      }
+      ctx.closePath();
+      ctx.fillStyle = bodyFill;
+      ctx.fill();
+      ctx.lineWidth = this.locked ? 1.6 : 1.1;
+      ctx.strokeStyle = bodyLine;
+      ctx.stroke();
+
+      // 内部折射线
+      for (let i = 0; i < 3; i++) {
+        const a = (i / 3) * Math.PI;
+        ctx.beginPath();
+        ctx.moveTo(Math.cos(a) * rr * 0.95, Math.sin(a) * rr * 0.95);
+        ctx.lineTo(-Math.cos(a) * rr * 0.95, -Math.sin(a) * rr * 0.95);
+        ctx.strokeStyle = rgba(th.accentRGB, 0.28);
+        ctx.lineWidth = 0.7;
+        ctx.stroke();
+      }
+
+    } else if (th.waveStyle === "dust") {
+      // 沙砾：粗糙的多面颗粒
+      ctx.rotate(t * 0.3 + this.phase);
+      ctx.beginPath();
+      for (let i = 0; i < 5; i++) {
+        const a = (i / 5) * TAU - Math.PI / 2;
+        const wob = 1 + Math.sin(i * 3.1 + this.phase) * 0.24;
+        const px = Math.cos(a) * rr * wob, py = Math.sin(a) * rr * wob;
+        if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+      }
+      ctx.closePath();
+      ctx.fillStyle = bodyFill;
+      ctx.fill();
+      ctx.lineWidth = this.locked ? 1.6 : 1.1;
+      ctx.strokeStyle = bodyLine;
+      ctx.stroke();
+      // 高光棱面
+      ctx.beginPath();
+      ctx.moveTo(0, -rr * 0.5);
+      ctx.lineTo(rr * 0.45, 0);
+      ctx.lineTo(0, rr * 0.4);
+      ctx.closePath();
+      ctx.strokeStyle = rgba(th.accentRGB, 0.3);
+      ctx.lineWidth = 0.7;
+      ctx.stroke();
+
+    } else if (th.waveStyle === "pollen") {
+      // 萤火：小光球带轻微上下浮动
+      const flick = 0.55 + 0.45 * Math.sin(t * 2.4 + this.phase);
+      const g = ctx.createRadialGradient(0, 0, 0, 0, 0, rr * 2.6);
+      g.addColorStop(0, rgba(th.accentRGB, 0.5 + flick * 0.4));
+      g.addColorStop(0.45, rgba(th.accentRGB, 0.14));
+      g.addColorStop(1, rgba(th.accentRGB, 0));
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(0, 0, rr * 2.6, 0, TAU);
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.arc(0, 0, rr * 0.82, 0, TAU);
+      ctx.fillStyle = rgba(th.accentRGB, 0.5 + flick * 0.35);
+      ctx.fill();
+      ctx.strokeStyle = bodyLine;
+      ctx.lineWidth = this.locked ? 1.5 : 1;
+      ctx.stroke();
+
+      // 小翅膀
+      ctx.beginPath();
+      ctx.ellipse(-rr * 0.7, -rr * 0.25, rr * 0.5, rr * 0.26, -0.5, 0, TAU);
+      ctx.ellipse(rr * 0.7, -rr * 0.25, rr * 0.5, rr * 0.26, 0.5, 0, TAU);
+      ctx.strokeStyle = rgba(th.inkRGB, 0.35);
+      ctx.lineWidth = 0.7;
+      ctx.stroke();
+
+    } else if (th.waveStyle === "chill") {
+      // 雪块：带切面的圆润冰块
+      ctx.rotate(Math.sin(t * 0.35 + this.phase) * 0.2);
+      ctx.beginPath();
+      ctx.moveTo(-rr * 0.9, -rr * 0.55);
+      ctx.quadraticCurveTo(0, -rr * 1.12, rr * 0.95, -rr * 0.45);
+      ctx.quadraticCurveTo(rr * 1.15, rr * 0.35, rr * 0.1, rr * 0.95);
+      ctx.quadraticCurveTo(-rr * 0.95, rr * 0.75, -rr * 1.0, -rr * 0.1);
+      ctx.closePath();
+      ctx.fillStyle = bodyFill;
+      ctx.fill();
+      ctx.lineWidth = this.locked ? 1.6 : 1.15;
+      ctx.strokeStyle = bodyLine;
+      ctx.stroke();
+
+      // 内部裂纹
+      ctx.beginPath();
+      ctx.moveTo(-rr * 0.5, -rr * 0.3);
+      ctx.lineTo(rr * 0.1, rr * 0.1);
+      ctx.lineTo(-rr * 0.2, rr * 0.5);
+      ctx.strokeStyle = rgba(th.accentRGB, 0.35);
+      ctx.lineWidth = 0.7;
+      ctx.stroke();
+
+    } else if (th.waveStyle === "ember") {
+      // 炭块：方形焦块 + 内部余烬纹
+      ctx.rotate(Math.sin(t * 0.4 + this.phase) * 0.16 + this.phase * 0.5);
+      const s2 = rr * 0.82;
+      ctx.beginPath();
+      ctx.moveTo(-s2, -s2 * 0.85);
+      ctx.lineTo(s2 * 0.7, -s2);
+      ctx.lineTo(s2, s2 * 0.6);
+      ctx.lineTo(-s2 * 0.5, s2 * 0.95);
+      ctx.lineTo(-s2, s2 * 0.2);
+      ctx.closePath();
+      // 焦块本身用深色填充，比背景略亮一点，避免在暖色底上发白
+      ctx.fillStyle = this.settled
+        ? rgba(th.accentRGB, 0.3)
+        : (this.inside ? rgba(th.accentRGB, 0.14) : "rgba(28,14,10,0.85)");
+      ctx.fill();
+      ctx.lineWidth = this.locked ? 1.6 : 1.15;
+      ctx.strokeStyle = this.settled
+        ? rgba(th.accentRGB, 0.98)
+        : (this.locked ? "rgba(232, 184, 127, 0.72)" : rgba(th.accentRGB, 0.55));
+      ctx.stroke();
+
+      // 裂缝里的火光
+      const heat = 0.4 + 0.6 * (0.5 + 0.5 * Math.sin(t * 3.4 + this.phase));
+      ctx.beginPath();
+      ctx.moveTo(-s2 * 0.45, -s2 * 0.4);
+      ctx.lineTo(s2 * 0.1, 0);
+      ctx.lineTo(-s2 * 0.15, s2 * 0.55);
+      ctx.strokeStyle = rgba(th.accentRGB, 0.45 + heat * 0.5);
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+    } else {
+      // 小行星：不规则多边形
+      ctx.rotate(Math.sin(t * 0.4 + this.phase) * 0.14 + this.phase);
+      ctx.beginPath();
+      const verts = 7;
+      for (let i = 0; i < verts; i++) {
+        const a = (i / verts) * TAU;
+        const wob = 1 + Math.sin(i * 2.7 + this.phase) * 0.18;
+        const px = Math.cos(a) * rr * wob;
+        const py = Math.sin(a) * rr * wob;
+        if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+      }
+      ctx.closePath();
+      ctx.fillStyle = bodyFill;
+      ctx.fill();
+      ctx.lineWidth = this.locked ? 1.6 : 1.15;
+      ctx.strokeStyle = bodyLine;
+      ctx.stroke();
+
+      // 陨石坑
+      ctx.beginPath();
+      ctx.arc(-rr * 0.28, -rr * 0.2, rr * 0.2, 0, TAU);
+      ctx.strokeStyle = rgba(th.inkRGB, 0.22);
+      ctx.lineWidth = 0.7;
+      ctx.stroke();
+    }
+
+    // 锁定标记：十字
+    if (this.locked) {
+      ctx.beginPath();
+      ctx.moveTo(-rr * 0.75, 0); ctx.lineTo(rr * 0.75, 0);
+      ctx.moveTo(0, -rr * 0.75); ctx.lineTo(0, rr * 0.75);
+      ctx.strokeStyle = "rgba(232, 184, 127, 0.35)";
+      ctx.lineWidth = 0.7;
+      ctx.stroke();
+    }
+
+    ctx.restore();
+  }
+}
+
+class Wave {
+  constructor(x, y, strength, index) {
+    this.x = x;
+    this.y = y;
+    this.r = 6 * SCALE;
+    this.prevR = this.r;
+    this.strength = strength;
+    this.index = index || 1;     // 本关第几道波纹（用于锁定碎片的解锁顺序）
+    // 强波：更快、更远、推动更强；弱波：柔和短促
+    this.speed = lerp(200, 430, strength) * SCALE;
+    // 范围贴合关卡尺度（碎片最远约 210px），避免波纹铺满整屏失去层次
+    this.maxR = lerp(250, 560, strength) * SCALE;
+    this.life = 0;
+    this.hit = new Set();
+  }
+
+  update(dt) {
+    this.prevR = this.r;
+    // 波在扩散中轻微减速
+    const progress = clamp(this.r / this.maxR, 0, 1);
+    const decel = lerp(1, 0.6, progress);
+    this.r += this.speed * decel * dt;
+    this.life += dt;
+    return this.r < this.maxR;
+  }
+
+  // 波锋扫过碎片时施加一次冲量。
+  // 用 prevR→r 的扫掠区间判断是否在这一帧穿过碎片，避免漏检也避免重复施加。
+  // 方向：把碎片朝波源（核）收拢，波像引力涟漪一样把碎片带向中心。
+  apply(shard, coreX, coreY, game_) {
+    // 已停稳的目标不再参与后续波纹的推动
+    if (shard.settled) return "settled";
+    if (this.hit.has(shard)) return;
+
+    const dx = shard.x - this.x;
+    const dy = shard.y - this.y;
+    const d = Math.hypot(dx, dy) || 0.001;
+
+    // 这一帧波锋扫过的半径区间是否经过碎片
+    const reached = d <= this.r;
+    const notPassed = d >= this.prevR - shard.r;
+    if (!reached) return;              // 波还没到
+
+    this.hit.add(shard);
+    if (!notPassed) return;            // 已经被更早的波锋越过，不再施加
+
+    // 危险区：碎片停在危险扇区内时，这一波不能把它收拢，
+    // 而是把它从扇区里推开一点（温和惩罚，不会造成死局）。
+    // 玩家需要先把目标"清出"危险区，再用下一波收拢。
+    if (game_ && game_.obstacles && inObstacle(game_, shard, coreX, coreY)) {
+      shard.repelled = (shard.repelled || 0) + 1;
+      shard.pulse = Math.min(1, shard.pulse + 0.6);
+      const ox = shard.x - coreX, oy = shard.y - coreY;
+      const od = Math.hypot(ox, oy) || 1;
+      // 沿径向外推，把它带出扇区外缘
+      const push = lerp(26, 46, this.strength) * SCALE;
+      shard.x += (ox / od) * push;
+      shard.y += (oy / od) * push;
+      shard.released = true;
+      shard.settled = false;
+      return "obstacle";
+    }
+
+    if (shard.locked) {
+      const verdict = shard.receiveWave(this);
+      // 解锁后立刻用同一波把碎片推向光核：
+      // 这样"先解锁、再收拢"是同一波里的一次连锁，而不是等下一波（下一波只会把它推过头）。
+      if (verdict !== "unlocked-pushed") return verdict;
+    }
+
+    shard.released = true;
+    shard.locked = false;
+    // 命中位置决定力度：波锋正切碎片中心时最强
+    const ideal = Math.abs(d - (this.prevR + this.r) / 2);
+    const band = shard.r + 10 * SCALE;
+    const falloff = clamp(1 - ideal / band, 0.15, 1);
+    // 波扩散越远越弱（衰减比原来更平缓，保证外圈目标有可用的力度窗口）
+    const rangeFalloff = 1 - clamp(this.r / this.maxR, 0, 1) * 0.24;
+    // 拖得越长越强：滑行距离约 60px(弱) ~ 230px(强)
+    const power = lerp(170, 560, this.strength) * SCALE;
+
+    const impulse = falloff * rangeFalloff * power / shard.mass;
+
+    // 指向核
+    let tx = coreX - shard.x;
+    let ty = coreY - shard.y;
+    const td = Math.hypot(tx, ty) || 0.001;
+
+    shard.vx += (tx / td) * impulse;
+    shard.vy += (ty / td) * impulse;
+    shard.released = true;
+    shard.pulse = Math.min(1, shard.pulse + 0.3 + this.strength * 0.45);
+    return shard.entryWave ? "unlocked-pushed" : "pushed";
+  }
+
+  draw(alpha, th) {
+    th = th || game.theme;
+    const p = this.r / this.maxR;
+    const a = (1 - p) * (0.16 + this.strength * 0.42) * alpha;
+    const style = th.waveStyle;
+
+    // 主波锋
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.r, 0, TAU);
+    ctx.lineWidth = lerp(2.6, 1.0, p) * SCALE;
+    ctx.strokeStyle = rgba(th.accentRGB, clamp(a, 0, 0.8));
+    ctx.stroke();
+
+    if (style === "ripple") {
+      // 水波：外侧再叠两层同心细环，随主环一起衰减、逐渐散开
+      for (let i = 1; i <= 2; i++) {
+        const rr = this.r - i * 7 * SCALE;
+        if (rr <= 0) continue;
+        // 越往外越淡、越细，避免形成"靶环"感
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, rr, 0, TAU);
+        ctx.lineWidth = lerp(1.2, 0.4, p) * SCALE;
+        ctx.strokeStyle = rgba(th.accentRGB, clamp(a * (0.34 - i * 0.11), 0, 0.3));
+        ctx.stroke();
+      }
+    } else if (style === "sonar") {
+      // 声呐：断续的弧段，带扫描感
+      const segs = 10;
+      for (let i = 0; i < segs; i++) {
+        if (i % 2) continue;
+        const a0 = (i / segs) * TAU + this.life * 0.6;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.r * (0.97 + (i % 3) * 0.012), a0, a0 + TAU / segs * 0.8);
+        ctx.lineWidth = lerp(2.2, 0.9, p) * SCALE;
+        ctx.strokeStyle = rgba(th.accentRGB, clamp(a * 1.1, 0, 0.75));
+        ctx.stroke();
+      }
+    } else if (style === "aurora") {
+      // 极光：主环外再画一条略微偏移的柔和彩环
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.r * 1.03, 0, TAU);
+      ctx.lineWidth = 6 * SCALE;
+      ctx.strokeStyle = rgba(th.accentRGB, clamp(a * 0.22, 0, 0.22));
+      ctx.stroke();
+    } else if (style === "dust") {
+      // 风沙：主环外侧散布颗粒，形成被吹起的沙尘
+      for (let i = 0; i < 14; i++) {
+        const ang = (i / 14) * TAU + this.life * 0.35;
+        const jitter = (0.94 + ((i * 37) % 11) / 90);
+        const px = this.x + Math.cos(ang) * this.r * jitter;
+        const py = this.y + Math.sin(ang) * this.r * jitter;
+        ctx.beginPath();
+        ctx.arc(px, py, (1 + ((i * 13) % 5) * 0.35) * SCALE, 0, TAU);
+        ctx.fillStyle = rgba(th.accentRGB, clamp(a * 0.5, 0, 0.4));
+        ctx.fill();
+      }
+    } else if (style === "pollen") {
+      // 花粉：断续的小点沿环飘散，像光尘被推开
+      const dots = 26;
+      for (let i = 0; i < dots; i++) {
+        if (i % 3 === 1) continue;
+        const ang = (i / dots) * TAU;
+        const rr = this.r * (1 + 0.03 * Math.sin(this.life * 3 + i));
+        ctx.beginPath();
+        ctx.arc(this.x + Math.cos(ang) * rr, this.y + Math.sin(ang) * rr,
+                1.5 * SCALE, 0, TAU);
+        ctx.fillStyle = rgba(th.accentRGB, clamp(a * 0.75, 0, 0.55));
+        ctx.fill();
+      }
+    } else if (style === "chill") {
+      // 寒潮：主环加一圈细碎的冰晶点
+      for (let i = 0; i < 16; i++) {
+        const ang = (i / 16) * TAU + this.life * 0.2;
+        const px = this.x + Math.cos(ang) * this.r * 1.02;
+        const py = this.y + Math.sin(ang) * this.r * 1.02;
+        ctx.beginPath();
+        for (let k = 0; k < 3; k++) {
+          const aa = ang + k * Math.PI / 3;
+          ctx.moveTo(px - Math.cos(aa) * 3 * SCALE, py - Math.sin(aa) * 3 * SCALE);
+          ctx.lineTo(px + Math.cos(aa) * 3 * SCALE, py + Math.sin(aa) * 3 * SCALE);
+        }
+        ctx.strokeStyle = rgba(th.accentRGB, clamp(a * 0.5, 0, 0.32));
+        ctx.lineWidth = 0.6;
+        ctx.stroke();
+      }
+    } else if (style === "ember") {
+      // 炽焰：主环偏粗且带热浪抖动
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.r * 1.01, 0, TAU);
+      ctx.lineWidth = lerp(7, 3, p) * SCALE;
+      ctx.strokeStyle = rgba(th.accentRGB, clamp(a * 0.34, 0, 0.3));
+      ctx.stroke();
+
+      for (let i = 0; i < 18; i++) {
+        const ang = (i / 18) * TAU + Math.sin(this.life * 2 + i) * 0.06;
+        const rr = this.r * (0.96 + 0.09 * Math.sin(this.life * 4 + i * 1.7));
+        ctx.beginPath();
+        ctx.arc(this.x + Math.cos(ang) * rr, this.y + Math.sin(ang) * rr,
+                2.2 * SCALE, 0, TAU);
+        ctx.fillStyle = rgba(th.accentRGB, clamp(a * 0.7, 0, 0.5));
+        ctx.fill();
+      }
+    } else {
+      // 星河：主环带一层雾状拖尾
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.r * 0.99, 0, TAU);
+      ctx.lineWidth = 7 * SCALE;
+      ctx.strokeStyle = rgba(th.accentRGB, clamp(a * 0.14, 0, 0.18));
+      ctx.stroke();
+    }
+
+    // 内侧薄雾，让波更有体积感
+    if (p < 0.85) {
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.r * 0.94, 0, TAU);
+      ctx.lineWidth = 5 * SCALE;
+      ctx.strokeStyle = rgba(th.accentRGB, clamp(a * 0.16, 0, 0.2));
+      ctx.stroke();
+    }
+  }
+}
+
+/* ------------------ 游戏主体 ------------------ */
+const game = {
+  level: null,
+  index: 0,
+  theme: THEMES.space,
+  shards: [],
+  waves: [],
+  particles: [],
+
+  dragging: false,
+  pointerDown: false,
+  dragId: null,
+  dragMaxDist: 0,
+  dragFrom: [0, 0],
+  dragTo: [0, 0],
+  strength: 0,
+
+  solved: false,
+  solvedTimer: 0,
+  completeDelay: 0,
+  started: false,
+
+  // 波数限制：本关剩余可释放次数（不是同时存在数）
+  waveBudget: 0,
+  waveBudgetMax: 0,
+  waveLimitReached: false,
+  waveIndex: 0,          // 本关已释放的波纹序号（从 1 开始）
+  lastWaveAt: 0,         // 上一次发射的游戏时刻
+
+  maxWaves: 3,     // 同时存在的波上限（视觉层）
+  time: 0,
+  interference: false,
+  note: "",
+  seed: 1,
+  particleRnd: seeded(1),
+  obstacles: [],
+  requireOrder: null,   // 顺序目标：当前必须优先处理的 order 值
+  orderActive: false,
+  waveGapMin: 0,        // 双波纹节奏：两次发射的最小间隔
+  waveGapMax: 0,        // 最大间隔（超过即错过窗口）
+  captureScale: 1.12,   // 判定环相对可见光圈的放大比例，给"停稳"留出容错
+  multiWave: false,     // 是否允许本关发射多次（顺序 / 双拍机制）
+  failReason: "",       // 失败原因（面向玩家的短提示）
+  lastPush: 0,
+};
+
+/* ------------------ 进度存档与生命 ------------------ */
+const SAVE_KEY = "ripple.progress.v1";
+
+const progress = {
+  unlocked: 1,          // 已解锁到第几关（1 表示只解锁第 1 关）
+  cleared: [],          // 已通关的关卡索引
+  lives: 3,             // 剩余生命
+  failsInARow: 0,       // 连续失败次数，达到阈值才扣命
+  lastLevel: 0,
+};
+
+const FAILS_PER_LIFE = 3;
+
+function loadProgress() {
+  try {
+    const raw = localStorage.getItem(SAVE_KEY);
+    if (!raw) return;
+    const d = JSON.parse(raw);
+    if (typeof d.unlocked === "number") progress.unlocked = clamp(d.unlocked, 1, LEVELS.length);
+    if (Array.isArray(d.cleared)) progress.cleared = d.cleared.filter(n => Number.isInteger(n));
+    if (typeof d.lives === "number") progress.lives = clamp(d.lives, 0, 3);
+    if (typeof d.failsInARow === "number") progress.failsInARow = Math.max(0, d.failsInARow);
+    if (typeof d.lastLevel === "number") progress.lastLevel = clamp(d.lastLevel, 0, LEVELS.length - 1);
+  } catch (e) { /* 存档损坏则忽略，用默认值 */ }
+}
+
+function saveProgress() {
+  try {
+    localStorage.setItem(SAVE_KEY, JSON.stringify({
+      unlocked: progress.unlocked,
+      cleared: progress.cleared,
+      lives: progress.lives,
+      failsInARow: progress.failsInARow,
+      lastLevel: progress.lastLevel,
+    }));
+  } catch (e) { /* 隐私模式等场景下写入失败，不影响游戏 */ }
+}
+
+function resetProgress() {
+  progress.unlocked = 1;
+  progress.cleared = [];
+  progress.lives = 3;
+  progress.failsInARow = 0;
+  progress.lastLevel = 0;
+  saveProgress();
+}
+
+loadProgress();
+
+
+const overlay = document.getElementById("overlay");
+const ovLabel = document.getElementById("ovLabel");
+const ovTitle = document.getElementById("ovTitle");
+const ovDesc = document.getElementById("ovDesc");
+const ovActions = document.getElementById("ovActions");
+const levelNameEl = document.getElementById("levelName");
+const counterEl = document.getElementById("counter");
+const counterText = document.getElementById("counterText");
+const hintEl = document.getElementById("hint");
+const railEl = document.getElementById("rail");
+const waveCounterEl = document.getElementById("waveCounter");
+const waveTextEl = document.getElementById("waveText");
+const livesEl = document.getElementById("lives");
+const selectScreen = document.getElementById("selectScreen");
+const levelGrid = document.getElementById("levelGrid");
+const selectSub = document.getElementById("selectSub");
+const selectLives = document.getElementById("selectLives");
+const continueBtn = document.getElementById("continueBtn");
+
+/* ------------------ 关卡选择与进度 ------------------ */
+function isUnlocked(i) { return i < progress.unlocked; }
+function isCleared(i) { return progress.cleared.includes(i); }
+
+function renderLives(container) {
+  container.innerHTML = "";
+  for (let i = 0; i < 3; i++) {
+    const el = document.createElement("i");
+    if (i >= progress.lives) el.className = "gone";
+    container.appendChild(el);
+  }
+}
+
+function renderSelect() {
+  levelGrid.innerHTML = "";
+  LEVELS.forEach((cfg, i) => {
+    const theme = THEMES[cfg.theme] || THEMES.space;
+    const unlocked = isUnlocked(i);
+    const cleared = isCleared(i);
+
+    const el = document.createElement("button");
+    el.className = "lv" + (unlocked ? "" : " locked") +
+      (cleared ? " cleared" : "") +
+      (i === progress.lastLevel && unlocked ? " current" : "");
+    el.disabled = !unlocked;
+    el.innerHTML =
+      `<span class="lv-num">${String(i + 1).padStart(2, "0")}</span>` +
+      `<span class="lv-name">${cfg.name}</span>` +
+      `<span class="lv-theme">${theme.label}</span>` +
+      (cleared ? `<span class="lv-mark">&#10003;</span>` : "");
+
+    if (unlocked) {
+      el.addEventListener("click", () => {
+        selectScreen.classList.remove("show");
+        game.started = true;
+        Audio_.resume();
+        loadLevel(i, false);
+      });
+    }
+    levelGrid.appendChild(el);
+  });
+
+  const total = LEVELS.length;
+  const done = progress.cleared.length;
+  selectSub.textContent = done >= total
+    ? `全部 ${total} 个世界已归于平静。`
+    : `已完成 ${done} / ${total} · 每过一关解锁下一个世界`;
+
+  renderLives(selectLives);
+  selectLives.appendChild(Object.assign(document.createElement("span"), {
+    textContent: `生命 ${progress.lives} / 3`,
+  }));
+
+  const nextIdx = clamp(progress.unlocked - 1, 0, LEVELS.length - 1);
+  continueBtn.textContent = progress.cleared.length === 0 ? "开始" : "继续";
+  continueBtn.dataset.target = String(nextIdx);
+}
+
+function openSelect() {
+  game.started = false;
+  game.dragging = false;
+  game.pointerDown = false;
+  game.dragId = null;
+  game.dragMaxDist = 0;
+  Audio_.endDrag();
+  hideOverlay();
+  renderSelect();
+  selectScreen.classList.add("show");
+}
+
+// 释放波时检查预算
+function consumeWave() {
+  if (game.waveBudget <= 0) return false;
+  game.waveBudget--;
+  updateWaveHud();
+  return true;
+}
+
+function updateWaveHud() {
+  waveTextEl.textContent = `${game.waveBudget} / ${game.waveBudgetMax}`;
+  waveCounterEl.classList.toggle("empty", game.waveBudget === 0);
+  waveCounterEl.classList.toggle("low", game.waveBudget === 1 && game.waveBudgetMax > 1);
+}
+
+function updateLives() {
+  renderLives(livesEl);
+}
+
+function buildRail() {
+  railEl.innerHTML = "";
+  LEVELS.forEach(() => {
+    const i = document.createElement("i");
+    railEl.appendChild(i);
+  });
+}
+buildRail();
+
+function updateRail() {
+  [...railEl.children].forEach((el, i) => {
+    el.className = i < game.index ? "done" : (i === game.index ? "now" : "");
+  });
+}
+
+function placeLevel(cfg) {
+  CX = W * cfg.core[0];
+  CY = H * cfg.core[1];
+  game.theme = THEMES[cfg.theme] || THEMES.space;
+  game.maxWaves = cfg.simultaneousWaves || 3;
+  game.interference = !!cfg.interference;
+  game.settleFactor = cfg.settleFactor || 0.42;
+  game.note = cfg.note || {};
+  game.seed = cfg.seed || (3100 + game.index + 1);
+  game.particleRnd = seeded(game.seed * 104729 + 17);
+  game.obstacles = (cfg.obstacles || []).map(o => ({
+    angle: (o.angle || 0) * Math.PI / 180,
+    width: (o.width || 30) * Math.PI / 180,
+    // inner/outer 是"光圈半径的倍数"，因此要乘 goalRadius()。
+    // 直接乘 SCALE 会让所有扇区内径都变成 0，等于障碍形状完全失效。
+    inner: (o.inner != null ? o.inner : 0.4) * goalRadius(),
+    outer: (o.outer != null ? o.outer : 1.2) * goalRadius(),
+    strength: o.strength || 0,
+  }));
+  game.waveGapMin = cfg.waveGap ? cfg.waveGap[0] : 0;
+  game.waveGapMax = cfg.waveGap ? cfg.waveGap[1] : 0;
+  game.captureScale = cfg.captureScale || 1.12;
+  game.waveIndex = 0;
+  game.lastWaveAt = 0;
+  game.failReason = "";
+
+  game.shards = cfg.shards.map((s, i) => new Shard(s, i, game.seed));
+  syncOrderState(true);
+
+  // 双拍 / 顺序机制：只有明确配置时才允许多次发射；
+  // 否则第二波会变成"万能补救"，把关卡难度和顺序约束一起抹平。
+  game.multiWave = !!cfg.multiWave;
+  // 波数限制：cfg.waveBudget 表示本关总共能放几次
+  game.waveBudgetMax = game.multiWave ? (cfg.waveBudget || 2) : 1;
+  game.waveBudget = game.waveBudgetMax;
+  game.waveLimitReached = false;
+  applyTheme(game.theme);
+}
+
+// 顺序目标：维护"当前应该处理第几号目标"。
+// 只统计尚未完成的目标，全部完成的小组会自动推进到下一号。
+function syncOrderState(force) {
+  const groups = [...new Set(game.shards.map(s => s.order).filter(n => n > 0))].sort((a, b) => a - b);
+  if (!groups.length) {
+    game.requireOrder = null;
+    game.orderActive = false;
+    return;
+  }
+  game.orderActive = true;
+  let required = groups[groups.length - 1];
+  for (const g of groups) {
+    const pending = game.shards.some(s => s.order === g && !s.settled);
+    if (pending) { required = g; break; }
+  }
+  if (force || game.requireOrder !== required) game.requireOrder = required;
+}
+
+// 危险区判定：碎片是否落在某个障碍扇区内
+function inObstacle(g, shard, coreX, coreY) {
+  if (!g.obstacles || !g.obstacles.length) return false;
+  const dx = shard.x - coreX, dy = shard.y - coreY;
+  const d = Math.hypot(dx, dy);
+  if (d <= 0.001) return false;
+  const a = Math.atan2(dy, dx);
+  for (const o of g.obstacles) {
+    if (d < o.inner || d > o.outer) continue;
+    let diff = Math.abs(((a - o.angle + Math.PI * 3) % (Math.PI * 2)) - Math.PI);
+    if (diff <= o.width / 2) return true;
+  }
+  return false;
+}
+
+// 把主题配色写进 CSS 变量，让 HUD 与画布保持一致
+function applyTheme(theme) {
+  const root = document.documentElement.style;
+  root.setProperty("--bg", theme.bg);
+  root.setProperty("--bg-deep", theme.bgDeep);
+  root.setProperty("--ink", theme.ink);
+  root.setProperty("--accent", theme.accent);
+  root.setProperty("--accent-soft", theme.accentSoft);
+}
+
+function loadLevel(i, quiet) {
+  game.index = clamp(i, 0, LEVELS.length - 1);
+  const cfg = LEVELS[game.index];
+
+  placeLevel(cfg);
+
+  game.waves.length = 0;
+  game.particles.length = 0;
+  game.solved = false;
+  game.solvedTimer = 0;
+  game.completeDelay = 0;
+  game.dragging = false;
+  game.pointerDown = false;
+  game.dragId = null;
+  game.dragMaxDist = 0;
+  Audio_.endDrag();
+  game.strength = 0;
+  game.failed = false;
+  game.failCheckAt = 0;
+  // 载入关卡即进入可操作状态。之前失败流程会把 started 置 false，
+  // 若这里不恢复，点「重试本关」后鼠标会完全失效。
+  game.started = true;
+
+  progress.lastLevel = game.index;
+  saveProgress();
+
+  levelNameEl.textContent = cfg.name;
+  hideOverlay();
+  updateRail();
+  updateCounter();
+  updateWaveHud();
+  setHint(cfg.note ? cfg.note : "按住并向外拖动，松手释放" + themeWord(cfg, "wave"));
+
+  if (!quiet) {
+    // 入场：所有碎片从核中心轻轻散开
+    game.shards.forEach(s => {
+      s.resetToStart();
+      const sx = s.home[0], sy = s.home[1];
+      const dx = sx - CX, dy = sy - CY;
+      const d = Math.hypot(dx, dy) || 1;
+      s.x = CX + dx / d * 40;
+      s.y = CY + dy / d * 40;
+      s.vx = dx / d * (d * 1.4);
+      s.vy = dy / d * (d * 1.4);
+    });
+    syncOrderState(true);
+  }
+}
+
+function themeWord(cfg, kind) {
+  const t = THEMES[cfg.theme] || THEMES.space;
+  if (kind === "wave") {
+    const names = {
+      ripple: "波纹", sonar: "声呐", aurora: "极光",
+      dust: "风沙", pollen: "光尘", chill: "寒潮", ember: "震波",
+      nebula: "星河",
+    };
+    return names[t.waveStyle] || "波纹";
+  }
+  return t.shardName;
+}
+
+function setHint(text) {
+  hintEl.textContent = text;
+}
+
+function updateCounter() {
+  const total = game.shards.length;
+  const n = game.shards.filter(s => s.settled).length;
+  counterText.textContent = `${n} / ${total}`;
+  // 空关卡不算完成：没有碎片时 0 === 0 会造成"开局即通关"的误判
+  const complete = total > 0 && n === total;
+  counterEl.classList.toggle("full", complete);
+  return complete;
+}
+
+/* ------------------ 覆盖层 ------------------ */
+function showOverlay(label, title, desc, buttons) {
+  ovLabel.textContent = label;
+  ovTitle.textContent = title;
+  ovDesc.innerHTML = desc;
+  ovActions.innerHTML = "";
+  buttons.forEach((b, i) => {
+    const el = document.createElement("button");
+    el.className = "btn" + (b.primary ? " primary" : "");
+    if (i === 0) el.id = "ovPrimary";   // 主按钮保持稳定 id
+    el.textContent = b.text;
+    el.addEventListener("click", b.onClick);
+    ovActions.appendChild(el);
+  });
+  overlay.classList.add("show");
+}
+
+function hideOverlay() {
+  overlay.classList.remove("show");
+}
+
+/* ------------------ 输入 ------------------ */
+function pointerPos(e) {
+  const r = canvas.getBoundingClientRect();
+  return [e.clientX - r.left, e.clientY - r.top];
+}
+
+canvas.addEventListener("pointerdown", e => {
+  if (!game.started || game.solved || game.failed) return;
+  if (e.button !== 0) return;
+  // 记录鼠标物理按下状态：即使这次按下不允许起拖（比如没波纹了），
+  // 也要保证按住期间不做失败结算。
+  game.pointerDown = true;
+  // 没有剩余波纹时不允许起手拖拽：否则玩家会拖到一半就被判定失败
+  if (game.waveBudget <= 0) {
+    setHint("波纹已用完");
+    return;
+  }
+  Audio_.resume();
+  const [x, y] = pointerPos(e);
+
+  // 点击容错：从核附近按下即可开始拖拽（而不必精确点在几像素的核上）
+  const pressDist = Math.hypot(x - CX, y - CY);
+  const tolerantR = Math.max(goalRadius() * 1.6, 64);
+  if (pressDist > tolerantR) return;
+
+  game.dragging = true;
+  game.dragFrom = [x, y];
+  game.dragTo = [x, y];
+  game.dragMaxDist = 0;      // 记录真实拖动距离，用于区分"点击"和"拖拽"
+  game.dragId = e.pointerId;
+  game.strength = 0;
+  Audio_.beginDrag();
+  // 指针捕获在触摸设备上可能抛异常（没有活动指针时），不能让它中断后续状态
+  try {
+    canvas.setPointerCapture(e.pointerId);
+  } catch (err) { /* 忽略：不影响拖拽逻辑 */ }
+});
+
+canvas.addEventListener("pointermove", e => {
+  if (!game.dragging) return;
+  // 多指触摸时只跟随发起拖拽的那根手指
+  if (game.dragId !== null && e.pointerId !== game.dragId) return;
+  const [x, y] = pointerPos(e);
+  game.dragTo = [x, y];
+  // 记录从按下点算起的真实拖动距离
+  const moved = Math.hypot(x - game.dragFrom[0], y - game.dragFrom[1]);
+  if (moved > game.dragMaxDist) game.dragMaxDist = moved;
+  // 强度按"离核的距离"计算，而不是按按下点算，
+  // 这样无论从哪里起拖，同样的拖拽长度都得到同样的强度。
+  const d = Math.hypot(x - CX, y - CY);
+  game.strength = clamp((d - 18) / 200, 0.06, 1);
+  Audio_.updateDrag(game.strength);
+});
+
+function releaseWave(e) {
+  // 松开非拖拽的那根手指时忽略
+  if (e && game.dragId !== null && e.pointerId !== game.dragId) return;
+  if (!game.dragging) {
+    game.pointerDown = false;
+    return;
+  }
+  game.dragging = false;
+  game.dragId = null;
+  Audio_.endDrag();
+
+  // 点击不算一次操作：必须是真实的拖拽动作才会释放波纹。
+  // 之前只判断强度，导致光标停在远处时轻点一下也会消耗次数。
+  const MIN_DRAG = 16 * Math.max(SCALE, 0.6);
+  if (game.dragMaxDist < MIN_DRAG) {
+    game.strength = 0;
+    return;
+  }
+  // 力度下限：太轻的一下推不动任何目标。
+  // 没有这个下限，玩家可以用"几乎为零的第二波"把残余目标免费蹭进光核。
+  if (game.strength < MIN_WAVE_STRENGTH) {
+    game.strength = 0;
+    setHint("力度太轻，波纹推不动目标");
+    return;
+  }
+
+  // 波数限制：没次数了就不允许再放
+  if (!consumeWave()) {
+    setHint("波纹已用完");
+    game.strength = 0;
+    return;
+  }
+
+  // 双波纹节奏：超过窗口上限后无法再发射（必须重新开始本关）
+  if (game.waveIndex >= 1 && game.waveGapMax > 0) {
+    const gap = game.time - game.lastWaveAt;
+    if (gap > game.waveGapMax) {
+      // 已经错过窗口，这次拖拽不消耗波纹
+      game.waveBudget++;
+      updateWaveHud();
+      game.failReason = "波纹间隔过长，错过了节奏窗口";
+      setHint("间隔过长，第二次波纹必须更早释放");
+      game.strength = 0;
+      return;
+    }
+  }
+
+  if (game.waves.length >= game.maxWaves) {
+    // 同时存在的波太多时，最老的一圈自然消散
+    game.waves.shift();
+  }
+
+  game.waveIndex++;
+  game.lastWaveAt = game.time;
+  const w = new Wave(CX, CY, game.strength, game.waveIndex);
+  game.waves.push(w);
+  Audio_.wave(game.strength, game.theme);
+
+  // 释放粒子（确定性视觉，不参与判定）
+  const n = Math.floor(lerp(10, 30, game.strength));
+  const rnd = game.particleRnd;
+  for (let i = 0; i < n; i++) {
+    const a = rnd() * TAU;
+    const sp = lerp(40, 190, rnd()) * SCALE * (0.4 + game.strength);
+    game.particles.push({
+      x: CX + Math.cos(a) * 26 * SCALE,
+      y: CY + Math.sin(a) * 26 * SCALE,
+      vx: Math.cos(a) * sp,
+      vy: Math.sin(a) * sp,
+      life: 1,
+      r: lerp(0.8, 2.1, rnd()) * SCALE,
+    });
+  }
+
+  game.strength = 0;
+
+  // 用完最后一次后不立刻倒计时，改成等物理真正停下来再判定。
+  // 固定 2.6s 会在碎片还在滑行时就把玩家判负，手感很突兀。
+  if (game.waveBudget === 0) {
+    game.failCheckAt = -1;   // -1 = 等待运动停止
+  }
+}
+
+canvas.addEventListener("pointerup", e => {
+  game.pointerDown = false;
+  releaseWave(e);
+});
+canvas.addEventListener("pointercancel", () => {
+  game.pointerDown = false;
+  game.dragging = false;
+  game.dragId = null;
+  Audio_.endDrag();
+  game.strength = 0;
+});
+
+// 安全网：在画布外松手、窗口失焦、切到后台时清理拖拽状态。
+// 否则 pointerDown 会一直留着，导致之后再也拖不动。
+window.addEventListener("pointerup", e => {
+  if (e.target === canvas) return;   // 画布上的已由上面的监听处理
+  game.pointerDown = false;
+  if (game.dragging) {
+    game.dragging = false;
+    game.dragId = null;
+    Audio_.endDrag();
+    game.strength = 0;
+  }
+});
+function clearPointerState() {
+  game.pointerDown = false;
+  game.dragging = false;
+  game.dragId = null;
+  Audio_.endDrag();
+  game.strength = 0;
+}
+window.addEventListener("blur", clearPointerState);
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) clearPointerState();
+});
+
+window.addEventListener("keydown", e => {
+  // 选关界面打开时，只响应 Esc 返回
+  if (selectScreen.classList.contains("show")) {
+    if (e.key === "Escape") selectScreen.classList.remove("show");
+    return;
+  }
+  if (e.key === "r" || e.key === "R") { if (game.started) loadLevel(game.index, true); }
+  if (e.key === "m" || e.key === "M") toggleSound();
+  if (e.key === "Escape") {
+    if (overlay.classList.contains("show") && game.started) hideOverlay();
+    else if (game.started) openSelect();
+  }
+});
+
+/* ------------------ 按钮 ------------------ */
+document.getElementById("resetBtn").addEventListener("click", () => {
+  // 按住 R / 重置按钮会重新开始本关，并恢复波纹次数
+  if (game.started) loadLevel(game.index, false);
+});
+
+const soundBtn = document.getElementById("soundBtn");
+const waveA = document.getElementById("waveA");
+const waveB = document.getElementById("waveB");
+
+function toggleSound() {
+  Audio_.enabled = !Audio_.enabled;
+  Audio_.init();
+  if (Audio_.enabled) Audio_.resume();
+  waveA.style.opacity = Audio_.enabled ? "1" : "0.25";
+  waveB.style.opacity = Audio_.enabled ? "1" : "0.25";
+  soundBtn.style.color = Audio_.enabled ? "" : "#2c333c";
+}
+soundBtn.addEventListener("click", toggleSound);
+
+/* ------------------ 主循环 ------------------ */
+// 统一判定时钟：物理固定 1/60 秒步长，视觉照常按真实帧率渲染。
+// 切后台或掉帧时不会出现"碎片瞬移"，判定结果与设备性能无关。
+const STEP = 1 / 60;
+const MAX_STEPS_PER_FRAME = 8;
+let last = performance.now();
+let accumulator = 0;
+let lastNow = 0;
+
+function frame(now) {
+  const rawDt = Math.min((now - last) / 1000, 0.5);
+  last = now;
+  lastNow = now;
+  accumulator += rawDt;
+
+  let steps = 0;
+  while (accumulator >= STEP && steps < MAX_STEPS_PER_FRAME) {
+    game.time += STEP;
+    update(STEP);
+    accumulator -= STEP;
+    steps++;
+  }
+  if (steps === MAX_STEPS_PER_FRAME) accumulator = 0;
+
+  render();
+  requestAnimationFrame(frame);
+}
+
+function update(dt) {
+  const core = {
+    x: CX, y: CY,
+    goalR: goalRadius(),
+    requireOrder: game.requireOrder,
+    captureScale: game.captureScale,
+  };
+
+  // 波
+  for (let i = game.waves.length - 1; i >= 0; i--) {
+    const w = game.waves[i];
+    const alive = w.update(dt);
+    if (!alive) { game.waves.splice(i, 1); continue; }
+    for (const s of game.shards) {
+      const verdict = w.apply(s, CX, CY, game);
+      if (verdict === "unlocked") {
+        const idx = game.shards.indexOf(s);
+        game.particles.push(...burstParticles(s.x, s.y, 14, 0.7));
+        Audio_.enter(2, game.theme);
+        void idx;
+      } else if (verdict === "wrong-unlock") {
+        game.failReason = "解锁顺序错误";
+      } else if (verdict === "obstacle") {
+        game.failReason = "目标停在危险区里，波纹无法收拢";
+      }
+    }
+  }
+
+  // 碎片
+  for (const s of game.shards) s.update(dt, game.time, core);
+
+  // 顺序目标推进
+  if (game.orderActive) {
+    const before = game.requireOrder;
+    syncOrderState(false);
+    if (before !== game.requireOrder && game.requireOrder !== null) {
+      Audio_.enter(3, game.theme);
+    }
+  }
+
+  // 碎片之间的碰撞
+  for (let i = 0; i < game.shards.length; i++) {
+    for (let j = i + 1; j < game.shards.length; j++) {
+      collide(game.shards[i], game.shards[j]);
+    }
+  }
+
+  // 粒子
+  for (let i = game.particles.length - 1; i >= 0; i--) {
+    const p = game.particles[i];
+    p.x += p.vx * dt;
+    p.y += p.vy * dt;
+    p.vx *= Math.exp(-3.4 * dt);
+    p.vy *= Math.exp(-3.4 * dt);
+    p.life -= dt * 1.5;
+    if (p.life <= 0) game.particles.splice(i, 1);
+  }
+
+  // 计数与通关：必须先真正开始游戏（有碎片、且已进入关卡）才判定，
+  // 否则开场遮罩期间的空状态会被误判成通关。
+  updateCounter();
+  const all = game.started && game.shards.length > 0 &&
+    game.shards.every(s => s.settled);
+  if (all && !game.solved) {
+    // 全部入圈后，额外加强阻尼让它们安静停下，再判定通关
+    for (const s of game.shards) {
+      s.vx *= Math.exp(-6 * dt);
+      s.vy *= Math.exp(-6 * dt);
+    }
+    // 需要同时停留 0.4 秒，避免一瞬间穿过判定区
+    const minTime = Math.min(...game.shards.map(s => s.insideTime));
+    if (minTime > 0.4) {
+      game.solved = true;
+      game.failed = false;          // 通关优先于失败，避免同一帧被判负
+      game.failReason = "";
+      game.failCheckAt = -1;
+      game.completeDelay = 1.0;
+      Audio_.complete(game.theme);
+      // 通关粒子
+      game.particles.push(...burstParticles(CX, CY, 60, 1.6));
+    }
+  }
+
+  if (game.solved) {
+    game.failed = false;
+    game.failReason = "";
+    game.solvedTimer += dt;
+    if (game.completeDelay > 0) {
+      game.completeDelay -= dt;
+      if (game.completeDelay <= 0) nextLevelPrompt();
+    }
+  }
+
+  // 失败判定：波纹用完，等所有碎片都停下来再结算。
+  // 这样玩家松手后还能看完整个滑行过程，不会在运动中被判负。
+  if (!game.solved && !game.failed && game.started && game.waveBudget === 0) {
+    // 鼠标还按着就不结算，避免"手没松就被判失败"
+    if (game.dragging || game.pointerDown) {
+      // 保持"等待中"，但不能永远停在这里：松手后仍要能结算
+      if (game.failCheckAt > 0) game.failCheckAt = -1;
+    } else {
+      // 波还在扩散、碎片还在滑动时，都不结算
+      const wavesGone = game.waves.length === 0;
+      const allStill = game.shards.every(s =>
+        s.locked || s.settled || Math.hypot(s.vx, s.vy) < 6 * SCALE);
+      if (game.failCheckAt < 0) {
+        // 等待运动停止；一旦真的停了就进入倒计时
+        if (wavesGone && allStill) game.failCheckAt = 0.5;
+      } else if (game.failCheckAt > 0) {
+        game.failCheckAt -= dt;
+        if (game.failCheckAt <= 0) failLevel();
+      }
+    }
+  }
+}
+
+// 生成一圈粒子。视觉用确定性随机，不影响判定。
+function burstParticles(x, y, n, speedScale) {
+  const out = [];
+  const rnd = game.particleRnd;
+  for (let i = 0; i < n; i++) {
+    const a = rnd() * TAU;
+    const sp = lerp(80, 300, rnd()) * SCALE * (speedScale || 1);
+    out.push({
+      x, y,
+      vx: Math.cos(a) * sp,
+      vy: Math.sin(a) * sp,
+      life: 1,
+      r: lerp(0.9, 2.4, rnd()) * SCALE,
+    });
+  }
+  return out;
+}
+
+// 判定失败原因：让玩家知道"哪一个决策错了"。
+function diagnoseFailure() {
+  if (game.failReason) return game.failReason;
+  const pending = game.shards.filter(s => !s.settled);
+  const lockedLeft = pending.filter(s => s.locked).length;
+  if (lockedLeft) return "还有目标没有被解锁";
+  const ordered = pending.filter(s => s.order > 0 && s.order !== game.requireOrder).length;
+  if (ordered) return "顺序错误：应先处理编号更小的目标";
+  const overshoot = pending.filter(s => {
+    const d = Math.hypot(s.x - CX, s.y - CY);
+    return s.insideTime === 0 && d > goalRadius() * 2.2;
+  }).length;
+  if (overshoot) return "力度过大，目标冲出了光核";
+  const repelled = game.shards.filter(s => s.repelled > 0).length;
+  if (repelled) return "目标停在危险区或力度不足";
+  return "力度不足，目标没能进入光核";
+}
+
+/* ------------------ 失败流程 ------------------ */
+function failLevel() {
+  if (game.failed || game.solved) return;
+  game.failed = true;
+  // 不再把 started 置 false：失败时遮挡输入的是失败浮层，
+  // 而 started 表示"本关会话进行中"。两者混用会让重试后鼠标失效。
+  game.dragging = false;
+  Audio_.endDrag();
+  game.strength = 0;
+  Audio_.fail();
+
+  progress.failsInARow++;
+  let lostLife = false;
+  if (progress.failsInARow >= FAILS_PER_LIFE) {
+    progress.failsInARow = 0;
+    progress.lives--;
+    lostLife = true;
+  }
+  saveProgress();
+  updateLives();
+
+  if (progress.lives <= 0) {
+    progress.lives = 0;
+    saveProgress();
+    showOverlay(
+      "No Lives",
+      "能量耗尽",
+      `连续 ${FAILS_PER_LIFE} 次未能让世界归于平静，生命耗尽了。<br><br>回到选关界面，进度仍然保留。`,
+      [{ text: "回到选关", primary: true, onClick: () => { progress.lives = 3; progress.failsInARow = 0; saveProgress(); openSelect(); } }]
+    );
+    return;
+  }
+
+  const remain = FAILS_PER_LIFE - progress.failsInARow;
+  const reason = diagnoseFailure();
+  showOverlay(
+    "Waves Spent",
+    "波纹用尽",
+    `<span style="color:var(--accent)">${reason}</span><br>` +
+    (lostLife
+      ? `没能把所有${themeWord(LEVELS[game.index], "shard")}收拢。失去一条生命，还剩 ${progress.lives} 条。`
+      : `没能把所有${themeWord(LEVELS[game.index], "shard")}收拢。再连续失败 ${remain} 次会失去一条生命。`),
+    [
+      { text: "重试本关", primary: true, onClick: () => loadLevel(game.index, false) },
+      { text: "选关", onClick: openSelect },
+    ]
+  );
+}
+
+function collide(a, b) {
+  const dx = b.x - a.x, dy = b.y - a.y;
+  const d = Math.hypot(dx, dy) || 0.001;
+  const minD = a.r + b.r;
+  if (d >= minD) return;
+
+  const nx = dx / d, ny = dy / d;
+  const overlap = minD - d;
+
+  const mA = a.locked ? Infinity : a.mass;
+  const mB = b.locked ? Infinity : b.mass;
+
+  // 位置分离
+  if (mA === Infinity && mB === Infinity) return;
+  if (mA === Infinity) {
+    b.x += nx * overlap; b.y += ny * overlap;
+  } else if (mB === Infinity) {
+    a.x -= nx * overlap; a.y -= ny * overlap;
+  } else {
+    const total = mA + mB;
+    a.x -= nx * overlap * (mB / total);
+    a.y -= ny * overlap * (mB / total);
+    b.x += nx * overlap * (mA / total);
+    b.y += ny * overlap * (mA / total);
+  }
+
+  // 冲量
+  const rvx = b.vx - a.vx, rvy = b.vy - a.vy;
+  const sep = rvx * nx + rvy * ny;
+  if (sep > 0) return;
+
+  const e = Math.min(a.bounce || 0.28, b.bounce || 0.28);
+  if (mA === Infinity) {
+    const j = -(1 + e) * sep;
+    b.vx += nx * j; b.vy += ny * j;
+    b.pulse = Math.min(1, b.pulse + 0.5);
+  } else if (mB === Infinity) {
+    const j = -(1 + e) * sep;
+    a.vx -= nx * j; a.vy -= ny * j;
+    a.pulse = Math.min(1, a.pulse + 0.5);
+  } else {
+    const j = -(1 + e) * sep / (1 / mA + 1 / mB);
+    a.vx -= nx * j / mA; a.vy -= ny * j / mA;
+    b.vx += nx * j / mB; b.vy += ny * j / mB;
+    a.pulse = Math.min(1, a.pulse + 0.4);
+    b.pulse = Math.min(1, b.pulse + 0.4);
+  }
+}
+
+function nextLevelPrompt() {
+  const idx = game.index;
+  const cfg = LEVELS[idx];
+  const theme = THEMES[cfg.theme] || THEMES.space;
+
+  // 记录通关、解锁下一关、重置连续失败计数
+  if (!progress.cleared.includes(idx)) progress.cleared.push(idx);
+  progress.failsInARow = 0;
+  const unlockedNew = progress.unlocked === idx + 1 && idx + 1 < LEVELS.length;
+  if (unlockedNew) progress.unlocked = idx + 2;
+  saveProgress();
+
+  const isLast = idx >= LEVELS.length - 1;
+  const used = game.waveBudgetMax - game.waveBudget;
+  const perfect = used === 1;
+
+  // 本章主题的收尾文案
+  const epilogue = {
+    space: "小行星都已回到行星的引力环中。",
+    water: "游鱼安静下来，水面重新变得平滑。",
+    deep: "声呐的回响散去，深渊归于沉寂。",
+    aurora: "冰晶停驻，极光缓缓流过光核。",
+  }[cfg.theme] || "一切归于平静。";
+
+  if (isLast) {
+    showOverlay(
+      "All Worlds Cleared",
+      "全部完成",
+      `${epilogue}<br><br>每个世界都已归于平静。<br>你可以回到选关界面重玩任意一关。`,
+      [{ text: "回到选关", primary: true, onClick: openSelect }]
+    );
+    game.started = false;
+    return;
+  }
+
+  const nextCfg = LEVELS[idx + 1];
+  const nextTheme = THEMES[nextCfg.theme] || THEMES.space;
+  const extra = perfect ? "<br><br><span style='color:var(--accent)'>一次波纹就完成。</span>" : "";
+  const unlockLine = unlockedNew
+    ? `<br><br>新世界已解锁：<span style='color:var(--accent)'>${nextTheme.label} · ${nextCfg.name}</span>`
+    : `<br><br>下一关：<span style='color:var(--accent)'>${nextCfg.name}</span>`;
+
+  showOverlay(
+    "Level " + String(idx + 1).padStart(2, "0") + " Clear",
+    epilogue,
+    `用了 ${used} / ${game.waveBudgetMax} 道${themeWord(cfg, "wave")}。${unlockLine}${extra}`,
+    [
+      { text: "下一关", primary: true, onClick: () => loadLevel(idx + 1, false) },
+      { text: "选关", onClick: openSelect },
+    ]
+  );
+}
+
+/* ------------------ 渲染 ------------------ */
+function render() {
+  const t = game.time;
+  const goalR = goalRadius();
+  const th = game.theme;
+
+  ctx.fillStyle = th.bg;
+  ctx.fillRect(0, 0, W, H);
+
+  drawBackdrop(t, th);
+
+  // 危险区先画，位于光圈之下，保持低对比度
+  drawObstacles(th);
+
+  // 移动目标的固定轨迹
+  drawTrajectories(t, th);
+
+  // 光圈
+  drawGoalCore(t, goalR, th);
+
+  // 波
+  for (const w of game.waves) w.draw(1, th);
+
+  // 碎片
+  for (const s of game.shards) s.draw(t, th);
+
+  // 顺序编号 / 停驻进度画在最上层
+  for (const s of game.shards) {
+    drawShardMarks(s, th);
+    drawOrderBadge(s, th);
+    drawSettleRing(s, th);
+  }
+
+  // 粒子
+  for (const p of game.particles) {
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.r * p.life, 0, TAU);
+    ctx.fillStyle = rgba(th.accentRGB, 0.55 * p.life);
+    ctx.fill();
+  }
+
+  // 拖拽指示
+  if (game.dragging) drawDragAim(th);
+
+  // 通关时的整体呼吸
+  if (game.solved) {
+    const a = Math.sin(game.solvedTimer * 3.2) * 0.5 + 0.5;
+    ctx.beginPath();
+    ctx.arc(CX, CY, goalR * (2.2 + a * 0.5), 0, TAU);
+    ctx.strokeStyle = rgba(th.accentRGB, 0.05 + a * 0.07);
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  }
+}
+
+// 危险扇区：暖灰低对比度的可读几何区域（不使用高饱和警告色）
+function drawObstacles(th) {
+  if (!game.obstacles || !game.obstacles.length) return;
+  for (const o of game.obstacles) {
+    const a0 = o.angle - o.width / 2;
+    const a1 = o.angle + o.width / 2;
+    ctx.beginPath();
+    ctx.arc(CX, CY, o.outer, a0, a1);
+    ctx.arc(CX, CY, o.inner, a1, a0, true);
+    ctx.closePath();
+    ctx.fillStyle = "rgba(176, 148, 128, 0.10)";
+    ctx.fill();
+    ctx.strokeStyle = "rgba(206, 176, 152, 0.42)";
+    ctx.lineWidth = 1;
+    ctx.setLineDash([5, 6]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // 外缘再补一条实线弧，让边界在浅色主题下也读得出来
+    ctx.beginPath();
+    ctx.arc(CX, CY, o.outer, a0, a1);
+    ctx.strokeStyle = "rgba(206, 176, 152, 0.30)";
+    ctx.lineWidth = 1.4;
+    ctx.stroke();
+  }
+}
+
+// 移动目标的固定轨迹：极低透明度细线 + 两端的静默端点，
+// 让玩家在释放前就能看清目标会走到哪里。
+function drawTrajectories(t, th) {
+  for (const s of game.shards) {
+    if (s.driftMode === "none" || s.driftAmplitude <= 0) continue;
+    const [ax, ay] = s.rotateOffset(1);
+    const p0 = [s.home[0] - ax, s.home[1] - ay];
+    const p1 = [s.home[0] + ax, s.home[1] + ay];
+    ctx.beginPath();
+    ctx.moveTo(p0[0], p0[1]);
+    ctx.lineTo(p1[0], p1[1]);
+    ctx.strokeStyle = rgba(th.inkRGB, s.settled ? 0.04 : 0.13);
+    ctx.lineWidth = 1;
+    ctx.setLineDash([2, 7]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    for (const p of [p0, p1]) {
+      ctx.beginPath();
+      ctx.arc(p[0], p[1], 2.2 * SCALE, 0, TAU);
+      ctx.fillStyle = rgba(th.inkRGB, 0.18);
+      ctx.fill();
+    }
+  }
+}
+
+// 目标标记：只保留"解锁虚环"与"当前目标环"，不再重复画停驻环。
+function drawShardMarks(s, th) {
+  const r = s.r;
+
+  // 危险扇区里的目标：在扇区外缘补一条"这里推不动"的提示弧，
+  // 而不是贴着碎片画环，避免与碎片自身的圆环混在一起。
+  if (game.obstacles && game.obstacles.length && !s.settled) {
+    const dx = s.x - CX, dy = s.y - CY;
+    const dist = Math.hypot(dx, dy);
+    const ang = Math.atan2(dy, dx);
+    for (const o of game.obstacles) {
+      let diff = Math.abs(((ang - o.angle + Math.PI * 3) % (Math.PI * 2)) - Math.PI);
+      if (diff > o.width / 2) continue;
+      const rr = Math.max(o.outer, dist + 26 * SCALE);
+      ctx.beginPath();
+      ctx.arc(CX, CY, rr, ang - 0.16, ang + 0.16);
+      ctx.strokeStyle = "rgba(206, 176, 152, 0.55)";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(CX, CY, rr + 5 * SCALE, ang - 0.10, ang + 0.10);
+      ctx.strokeStyle = "rgba(206, 176, 152, 0.28)";
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+  }
+
+  if (s.locked) {
+    ctx.beginPath();
+    ctx.arc(s.x, s.y, r + 11 * SCALE, 0, TAU);
+    ctx.strokeStyle = "rgba(232, 184, 127, 0.34)";
+    ctx.lineWidth = 1;
+    ctx.setLineDash([1.5, 3.5]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  // 当前必须处理的目标用更明显的细环提示
+  const isCurrent = s.order > 0 && !s.settled &&
+    (!game.orderActive || s.order === game.requireOrder);
+  if (isCurrent) {
+    ctx.beginPath();
+    ctx.arc(s.x, s.y, r + 7 * SCALE, 0, TAU);
+    ctx.strokeStyle = rgba(th.accentRGB, 0.45);
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  }
+}
+
+// 停驻进度环：只对需要"停留一段时间"的目标显示
+function drawSettleRing(s, th) {
+  if (!s.settleDuration || s.settled) return;
+  const r = s.r;
+  if (!s.inside) {
+    // 未进圈时画一圈极淡的底环，提示"这个目标需要停稳"
+    ctx.beginPath();
+    ctx.arc(s.x, s.y, r + 12 * SCALE, 0, TAU);
+    ctx.strokeStyle = rgba(th.inkRGB, 0.14);
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    return;
+  }
+  const p = clamp(s.holdTime / s.settleDuration, 0, 1);
+  ctx.beginPath();
+  ctx.arc(s.x, s.y, r + 12 * SCALE, -Math.PI / 2, -Math.PI / 2 + TAU * p);
+  ctx.strokeStyle = rgba(th.accentRGB, 0.8);
+  ctx.lineWidth = 2;
+  ctx.stroke();
+}
+
+// 顺序编号：只画一个极简数字，不堆叠文字
+function drawOrderBadge(s, th) {
+  if (!s.order || s.settled) return;
+  const r = s.r;
+  const x = s.x + r * 0.92;
+  const y = s.y - r * 0.92;
+  const active = !game.orderActive || s.order === game.requireOrder;
+  ctx.beginPath();
+  ctx.arc(x, y, 7 * SCALE, 0, TAU);
+  ctx.fillStyle = active ? rgba(th.accentRGB, 0.22) : "rgba(11, 13, 16, 0.55)";
+  ctx.fill();
+  ctx.strokeStyle = active ? rgba(th.accentRGB, 0.85) : rgba(th.inkRGB, 0.25);
+  ctx.lineWidth = 1;
+  ctx.stroke();
+  ctx.fillStyle = active ? rgba(th.accentRGB, 0.98) : rgba(th.inkRGB, 0.45);
+  ctx.font = `${Math.max(8, 8.5 * SCALE)}px "Inter", -apple-system, sans-serif`;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText(String(s.order), x, y + 0.5);
+}
+
+// 把十六进制主题色转成 rgb 分量，便于按透明度使用
+function toRGB(hex) {
+  const h = hex.replace("#", "");
+  const n = parseInt(h.length === 3 ? h.split("").map(c => c + c).join("") : h, 16);
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+}
+function rgba(rgb, a) {
+  if (!rgb) return `rgba(232,236,241,${a})`;
+  return `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${a})`;
+}
+
+// 预计算每个主题的 rgb 分量，避免每帧解析字符串
+for (const key of Object.keys(THEMES)) {
+  const th = THEMES[key];
+  th.accentRGB = toRGB(th.accent);
+  th.inkRGB = toRGB(th.ink);
+}
+
+/* ------------------ 主题化背景 ------------------ */
+// 星野种子：每个主题一份固定的随机星点，避免每帧闪烁
+const starField = (() => {
+  const seeds = [];
+  let s = 20240911;
+  const rnd = () => (s = (s * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff;
+  for (let i = 0; i < 190; i++) {
+    seeds.push({
+      x: rnd(), y: rnd(), r: 0.4 + rnd() * 1.5,
+      ph: rnd() * TAU, sp: 0.3 + rnd() * 1.4,
+    });
+  }
+  return seeds;
+})();
+
+function drawBackdrop(t, th) {
+  ctx.save();
+
+  if (th.backdrop === "stars") {
+    // 太空：缓慢闪烁的星点 + 极淡的星系旋臂
+    for (const s of starField) {
+      const a = 0.10 + 0.30 * (0.5 + 0.5 * Math.sin(t * s.sp + s.ph));
+      ctx.beginPath();
+      ctx.arc(s.x * W, s.y * H, s.r * SCALE, 0, TAU);
+      ctx.fillStyle = rgba(th.accentRGB, a * 0.8);
+      ctx.fill();
+    }
+    for (let i = 1; i <= 4; i++) {
+      const r = i * 130 * SCALE + Math.sin(t * 0.3 + i) * 6 * SCALE;
+      ctx.beginPath();
+      ctx.arc(CX, CY, r, 0, TAU);
+      ctx.strokeStyle = rgba(th.accentRGB, 0.028 - i * 0.004);
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+  } else if (th.backdrop === "caustics") {
+    // 水面：横向的柔和水波光带
+    for (let i = 0; i < 7; i++) {
+      const y = H * (0.14 + i * 0.12) + Math.sin(t * 0.45 + i * 1.3) * 9 * SCALE;
+      const amp = (10 + i * 2) * SCALE;
+      ctx.beginPath();
+      for (let x = 0; x <= W; x += 14) {
+        const yy = y + Math.sin(x * 0.008 + t * 0.8 + i) * amp;
+        if (x === 0) ctx.moveTo(x, yy); else ctx.lineTo(x, yy);
+      }
+      ctx.strokeStyle = rgba(th.accentRGB, 0.05 - i * 0.004);
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+    for (let i = 1; i <= 5; i++) {
+      const r = i * 120 * SCALE + Math.sin(t * 0.6 + i * 0.9) * 8 * SCALE;
+      ctx.beginPath();
+      ctx.arc(CX, CY, r, 0, TAU);
+      ctx.strokeStyle = rgba(th.accentRGB, 0.03 - i * 0.004);
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+  } else if (th.backdrop === "depth") {
+    // 深海：柔和的斜向光晕（不用硬边色带，避免割裂画面）+ 悬浮微粒
+    for (let i = 0; i < 3; i++) {
+      const x = W * (0.22 + i * 0.28) + Math.sin(t * 0.22 + i * 1.7) * 26 * SCALE;
+      const g = ctx.createRadialGradient(x, -H * 0.1, 0, x, -H * 0.1, H * 0.95);
+      g.addColorStop(0, rgba(th.accentRGB, 0.055 - i * 0.01));
+      g.addColorStop(0.55, rgba(th.accentRGB, 0.022 - i * 0.005));
+      g.addColorStop(1, rgba(th.accentRGB, 0));
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.ellipse(x, H * 0.28, W * 0.17, H * 0.62, 0, 0, TAU);
+      ctx.fill();
+    }
+    // 深处更暗的渐隐，营造下沉感
+    const dark = ctx.createLinearGradient(0, 0, 0, H);
+    dark.addColorStop(0, "rgba(0,0,0,0)");
+    dark.addColorStop(1, "rgba(0,0,0,0.45)");
+    ctx.fillStyle = dark;
+    ctx.fillRect(0, 0, W, H);
+
+    for (const s of starField.slice(0, 80)) {
+      const y = (s.y + t * 0.012 * s.sp) % 1;
+      ctx.beginPath();
+      ctx.arc(s.x * W, y * H, s.r * SCALE * 0.8, 0, TAU);
+      ctx.fillStyle = rgba(th.accentRGB, 0.10 + 0.16 * Math.sin(t * s.sp + s.ph));
+      ctx.fill();
+    }
+  } else if (th.backdrop === "dunes") {
+    // 荒漠：层层起伏的沙丘轮廓 + 缓慢飘移的沙尘
+    for (let i = 0; i < 4; i++) {
+      const baseY = H * (0.46 + i * 0.14);
+      ctx.beginPath();
+      ctx.moveTo(-20, H);
+      for (let x = -20; x <= W + 20; x += 16) {
+        const y = baseY + Math.sin(x * 0.004 + i * 1.3 + t * 0.12) * 26 * SCALE
+          + Math.sin(x * 0.011 + i) * 8 * SCALE;
+        ctx.lineTo(x, y);
+      }
+      ctx.lineTo(W + 20, H);
+      ctx.closePath();
+      ctx.fillStyle = rgba(th.accentRGB, 0.018 + i * 0.01);
+      ctx.fill();
+      ctx.strokeStyle = rgba(th.accentRGB, 0.06 - i * 0.011);
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+    for (const s of starField.slice(0, 60)) {
+      const x = ((s.x + t * 0.02 * s.sp) % 1 + 1) % 1;
+      ctx.beginPath();
+      ctx.arc(x * W, s.y * H, s.r * SCALE * 0.7, 0, TAU);
+      ctx.fillStyle = rgba(th.accentRGB, 0.05 + 0.08 * Math.sin(t * s.sp + s.ph));
+      ctx.fill();
+    }
+  } else if (th.backdrop === "canopy") {
+    // 林间：斜射的光柱 + 顶部树冠剪影 + 飘浮孢子
+    for (let i = 0; i < 4; i++) {
+      const x = W * (0.18 + i * 0.22) + Math.sin(t * 0.16 + i * 1.4) * 16 * SCALE;
+      const topW = 34 * SCALE;
+      const botW = 96 * SCALE;
+      const g = ctx.createLinearGradient(0, 0, 0, H);
+      g.addColorStop(0, rgba(th.accentRGB, 0.075 - i * 0.011));
+      g.addColorStop(0.6, rgba(th.accentRGB, 0.03 - i * 0.005));
+      g.addColorStop(1, rgba(th.accentRGB, 0));
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      // 下宽上窄的斜光柱，比椭圆光斑更像穿过树冠的光
+      ctx.moveTo(x - topW / 2, -10);
+      ctx.lineTo(x + topW / 2, -10);
+      ctx.lineTo(x + botW / 2 + 40 * SCALE, H);
+      ctx.lineTo(x - botW / 2 + 40 * SCALE, H);
+      ctx.closePath();
+      ctx.fill();
+    }
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    for (let x = 0; x <= W; x += 22) {
+      ctx.lineTo(x, 26 * SCALE + Math.sin(x * 0.006 + t * 0.1) * 20 * SCALE);
+    }
+    ctx.lineTo(W, 0);
+    ctx.closePath();
+    ctx.fillStyle = "rgba(0,0,0,0.42)";
+    ctx.fill();
+
+    for (const s of starField.slice(0, 80)) {
+      const y = (s.y + t * 0.01 * s.sp) % 1;
+      const x = s.x * W + Math.sin(t * 0.5 + s.ph) * 12 * SCALE;
+      ctx.beginPath();
+      ctx.arc(x, y * H, s.r * SCALE * 0.9, 0, TAU);
+      ctx.fillStyle = rgba(th.accentRGB, 0.10 + 0.24 * (0.5 + 0.5 * Math.sin(t * s.sp * 2 + s.ph)));
+      ctx.fill();
+    }
+  } else if (th.backdrop === "frost") {
+    // 冰原：顶部极地辉光 + 细密霜纹 + 细小冰晶
+    const glow = ctx.createRadialGradient(CX, H * 0.06, 0, CX, H * 0.06, H * 0.92);
+    glow.addColorStop(0, rgba(th.accentRGB, 0.08));
+    glow.addColorStop(1, rgba(th.accentRGB, 0));
+    ctx.fillStyle = glow;
+    ctx.fillRect(0, 0, W, H);
+
+    for (let i = 0; i < 30; i++) {
+      const s = starField[i];
+      const x = s.x * W, y = s.y * H;
+      const len = (7 + s.r * 9) * SCALE;
+      const a = s.ph + t * 0.05;
+      ctx.beginPath();
+      for (let k = 0; k < 3; k++) {
+        const ang = a + k * Math.PI / 3;
+        ctx.moveTo(x - Math.cos(ang) * len, y - Math.sin(ang) * len);
+        ctx.lineTo(x + Math.cos(ang) * len, y + Math.sin(ang) * len);
+      }
+      ctx.strokeStyle = rgba(th.accentRGB, 0.05 + 0.05 * Math.sin(t * 0.6 + s.ph));
+      ctx.lineWidth = 0.7;
+      ctx.stroke();
+    }
+    for (const s of starField.slice(30, 86)) {
+      ctx.beginPath();
+      ctx.arc(s.x * W, s.y * H, s.r * SCALE * 0.8, 0, TAU);
+      ctx.fillStyle = rgba(th.inkRGB, 0.16 + 0.2 * Math.sin(t * s.sp + s.ph));
+      ctx.fill();
+    }
+  } else if (th.backdrop === "ash") {
+    // 熔岩：底部余烬辉光 + 自下而上飘升的火星
+    const glow = ctx.createRadialGradient(CX, H * 1.08, 0, CX, H * 1.08, H * 1.02);
+    glow.addColorStop(0, rgba(th.accentRGB, 0.17));
+    glow.addColorStop(0.5, rgba(th.accentRGB, 0.05));
+    glow.addColorStop(1, rgba(th.accentRGB, 0));
+    ctx.fillStyle = glow;
+    ctx.fillRect(0, 0, W, H);
+
+    for (const s of starField.slice(0, 90)) {
+      const y = ((s.y - t * 0.03 * s.sp) % 1 + 1) % 1;
+      const x = s.x * W + Math.sin(t * 0.8 + s.ph) * 14 * SCALE;
+      const a = 0.10 + 0.34 * (0.5 + 0.5 * Math.sin(t * s.sp * 3 + s.ph));
+      ctx.beginPath();
+      ctx.arc(x, y * H, s.r * SCALE * 0.75, 0, TAU);
+      ctx.fillStyle = rgba(th.accentRGB, a);
+      ctx.fill();
+    }
+  } else {
+    // 极光：缓慢流动的弧形光带
+    for (let band = 0; band < 3; band++) {
+      const baseY = H * (0.18 + band * 0.14);
+      const grd = ctx.createLinearGradient(0, baseY, W, baseY + 120 * SCALE);
+      grd.addColorStop(0, rgba(th.accentRGB, 0.0));
+      grd.addColorStop(0.5, rgba(th.accentRGB, 0.055 - band * 0.012));
+      grd.addColorStop(1, rgba(th.accentRGB, 0.0));
+      ctx.strokeStyle = grd;
+      ctx.lineWidth = (26 + band * 10) * SCALE;
+      ctx.beginPath();
+      for (let x = -40; x <= W + 40; x += 18) {
+        const yy = baseY + Math.sin(x * 0.0035 + t * 0.4 + band * 1.7) * 46 * SCALE
+          + Math.sin(x * 0.011 + t * 0.7) * 12 * SCALE;
+        if (x <= -40) ctx.moveTo(x, yy); else ctx.lineTo(x, yy);
+      }
+      ctx.stroke();
+    }
+  }
+
+  ctx.restore();
+}
+
+function drawGoalCore(t, goalR, th) {
+  const n = game.shards.filter(s => s.inside).length;
+  const total = game.shards.length;
+  const full = total > 0 && n === total;
+
+  // 光圈填充
+  const g = ctx.createRadialGradient(CX, CY, 0, CX, CY, goalR);
+  g.addColorStop(0, rgba(th.accentRGB, full ? 0.15 : 0.06));
+  g.addColorStop(1, rgba(th.accentRGB, 0));
+  ctx.fillStyle = g;
+  ctx.beginPath();
+  ctx.arc(CX, CY, goalR, 0, TAU);
+  ctx.fill();
+
+  // 光圈边界
+  ctx.beginPath();
+  ctx.arc(CX, CY, goalR, 0, TAU);
+  ctx.strokeStyle = rgba(th.accentRGB, full ? 0.85 : 0.34);
+  ctx.lineWidth = 1;
+  ctx.stroke();
+
+  // 进度弧：光圈里已就位的碎片比例
+  if (total > 0) {
+    const start = -Math.PI / 2;
+    ctx.beginPath();
+    ctx.arc(CX, CY, goalR + 7 * SCALE, start, start + TAU * (n / total));
+    ctx.strokeStyle = rgba(th.accentRGB, 0.62);
+    ctx.lineWidth = 1.6;
+    ctx.lineCap = "round";
+    ctx.stroke();
+  }
+
+  drawCoreShape(t, goalR, th);
+
+  // 通关时的整体呼吸环
+  if (game.solved) {
+    const a = 0.5 + 0.5 * Math.sin(game.solvedTimer * 3.2);
+    ctx.beginPath();
+    ctx.arc(CX, CY, goalR * (1.35 + a * 0.3), 0, TAU);
+    ctx.strokeStyle = rgba(th.accentRGB, 0.10 + a * 0.12);
+    ctx.lineWidth = 1.2;
+    ctx.stroke();
+  }
+}
+
+// 每个主题的核心形态不同：行星 / 荷叶 / 水母 / 光核
+function drawCoreShape(t, goalR, th) {
+  const pulse = 1 + Math.sin(t * 1.9) * 0.12;
+  const style = th.coreStyle;
+
+  if (style === "planet") {
+    // 行星：实心球 + 倾斜的引力环
+    const r = 9 * SCALE * pulse;
+    const cg = ctx.createRadialGradient(CX - r * 0.3, CY - r * 0.3, 0, CX, CY, r);
+    cg.addColorStop(0, rgba(th.accentRGB, 0.95));
+    cg.addColorStop(0.55, rgba(th.accentRGB, 0.42));
+    cg.addColorStop(1, rgba(th.accentRGB, 0.12));
+    ctx.fillStyle = cg;
+    ctx.beginPath();
+    ctx.arc(CX, CY, r, 0, TAU);
+    ctx.fill();
+
+    ctx.save();
+    ctx.translate(CX, CY);
+    ctx.rotate(-0.42);
+    ctx.beginPath();
+    ctx.ellipse(0, 0, r * 3.1, r * 0.95, 0, 0, TAU);
+    ctx.strokeStyle = rgba(th.accentRGB, 0.4);
+    ctx.lineWidth = 1.1;
+    ctx.stroke();
+    ctx.restore();
+
+    const halo = ctx.createRadialGradient(CX, CY, 0, CX, CY, r * 6);
+    halo.addColorStop(0, rgba(th.accentRGB, 0.16));
+    halo.addColorStop(1, rgba(th.accentRGB, 0));
+    ctx.fillStyle = halo;
+    ctx.beginPath();
+    ctx.arc(CX, CY, r * 6, 0, TAU);
+    ctx.fill();
+
+  } else if (style === "pad") {
+    // 荷叶：带缺口的椭圆叶面，尺寸放大以便在光圈里清晰可辨
+    const r = 26 * SCALE * pulse;
+    ctx.save();
+    ctx.translate(CX, CY);
+
+    // 叶面
+    ctx.beginPath();
+    ctx.ellipse(0, 0, r * 1.22, r, 0, 0.34, TAU + 0.1);
+    ctx.closePath();
+    ctx.fillStyle = rgba(th.accentRGB, 0.26);
+    ctx.fill();
+    ctx.strokeStyle = rgba(th.accentRGB, 0.8);
+    ctx.lineWidth = 1.2;
+    ctx.stroke();
+
+    // 叶脉：从中心放射
+    for (let i = 0; i < 7; i++) {
+      const a = -Math.PI / 2 + i * (TAU / 7) + 0.42;
+      ctx.beginPath();
+      ctx.moveTo(Math.cos(a) * r * 0.12, Math.sin(a) * r * 0.1);
+      ctx.lineTo(Math.cos(a) * r * 1.1, Math.sin(a) * r * 0.88);
+      ctx.strokeStyle = rgba(th.accentRGB, 0.3);
+      ctx.lineWidth = 0.7;
+      ctx.stroke();
+    }
+
+    // 叶缘的浅色描边，强化轮廓
+    ctx.beginPath();
+    ctx.ellipse(0, 0, r * 1.22, r, 0, 0.34, TAU + 0.1);
+    ctx.strokeStyle = rgba(th.accentRGB, 0.9);
+    ctx.lineWidth = 0.9;
+    ctx.stroke();
+
+    // 中心水珠高光
+    const drop = ctx.createRadialGradient(-r * 0.1, -r * 0.12, 0, 0, 0, r * 0.3);
+    drop.addColorStop(0, rgba(th.accentRGB, 1));
+    drop.addColorStop(0.6, rgba(th.accentRGB, 0.5));
+    drop.addColorStop(1, rgba(th.accentRGB, 0));
+    ctx.fillStyle = drop;
+    ctx.beginPath();
+    ctx.arc(0, 0, r * 0.3, 0, TAU);
+    ctx.fill();
+    ctx.restore();
+
+  } else if (style === "jelly") {
+    // 水母：伞盖 + 飘动的触须
+    const r = 12 * SCALE * pulse;
+    ctx.beginPath();
+    ctx.arc(CX, CY, r, Math.PI, TAU);
+    ctx.quadraticCurveTo(CX + r, CY, CX, CY);
+    ctx.quadraticCurveTo(CX - r, CY, CX - r, CY);
+    ctx.closePath();
+    ctx.fillStyle = rgba(th.accentRGB, 0.2);
+    ctx.fill();
+    ctx.strokeStyle = rgba(th.accentRGB, 0.65);
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    for (let i = -2; i <= 2; i++) {
+      const x0 = CX + i * r * 0.42;
+      const sway = Math.sin(t * 1.5 + i) * 5 * SCALE;
+      ctx.beginPath();
+      ctx.moveTo(x0, CY);
+      ctx.quadraticCurveTo(x0 + sway, CY + r * 1.5, x0 + sway * 0.6, CY + r * 2.6);
+      ctx.strokeStyle = rgba(th.accentRGB, 0.3);
+      ctx.lineWidth = 0.8;
+      ctx.stroke();
+    }
+
+    const halo = ctx.createRadialGradient(CX, CY, 0, CX, CY, r * 5.5);
+    halo.addColorStop(0, rgba(th.accentRGB, 0.15));
+    halo.addColorStop(1, rgba(th.accentRGB, 0));
+    ctx.fillStyle = halo;
+    ctx.beginPath();
+    ctx.arc(CX, CY, r * 5.5, 0, TAU);
+    ctx.fill();
+
+  } else if (style === "oasis") {
+    // 水洼：一圈水边缘 + 不断扩散的细微涟漪
+    const r = 22 * SCALE;
+    const g = ctx.createRadialGradient(CX, CY, 0, CX, CY, r);
+    g.addColorStop(0, rgba(th.accentRGB, 0.3));
+    g.addColorStop(0.7, rgba(th.accentRGB, 0.12));
+    g.addColorStop(1, rgba(th.accentRGB, 0.03));
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.ellipse(CX, CY, r * 1.15, r * 0.86, 0, 0, TAU);
+    ctx.fill();
+    ctx.strokeStyle = rgba(th.accentRGB, 0.75);
+    ctx.lineWidth = 1.2;
+    ctx.stroke();
+
+    for (let i = 1; i <= 3; i++) {
+      const k = ((t * 0.22 + i * 0.33) % 1);
+      ctx.beginPath();
+      ctx.ellipse(CX, CY, r * (0.3 + k * 0.9) * 1.15, r * (0.3 + k * 0.9) * 0.86, 0, 0, TAU);
+      ctx.strokeStyle = rgba(th.accentRGB, 0.28 * (1 - k));
+      ctx.lineWidth = 0.8;
+      ctx.stroke();
+    }
+
+  } else if (style === "stump") {
+    // 树桩：年轮截面
+    const r = 20 * SCALE * pulse;
+    ctx.beginPath();
+    ctx.arc(CX, CY, r, 0, TAU);
+    ctx.fillStyle = rgba(th.accentRGB, 0.14);
+    ctx.fill();
+    ctx.strokeStyle = rgba(th.accentRGB, 0.72);
+    ctx.lineWidth = 1.2;
+    ctx.stroke();
+
+    for (let i = 1; i <= 4; i++) {
+      ctx.beginPath();
+      // 年轮略不规则，避免看起来像靶心
+      ctx.arc(CX + Math.sin(i * 1.7) * r * 0.06,
+              CY + Math.cos(i * 2.1) * r * 0.06,
+              r * (i / 5), 0, TAU);
+      ctx.strokeStyle = rgba(th.accentRGB, 0.30 - i * 0.045);
+      ctx.lineWidth = 0.8;
+      ctx.stroke();
+    }
+    ctx.beginPath();
+    ctx.arc(CX, CY, r * 0.12, 0, TAU);
+    ctx.fillStyle = rgba(th.accentRGB, 0.85);
+    ctx.fill();
+
+  } else if (style === "icecore") {
+    // 冰眼：多层旋转的六边形，中心冷凝
+    const r = 18 * SCALE * pulse;
+    ctx.save();
+    ctx.translate(CX, CY);
+    for (let layer = 0; layer < 2; layer++) {
+      const rr = r * (1 + layer * 0.5);
+      ctx.save();
+      ctx.rotate(t * (layer ? -0.22 : 0.3));
+      ctx.beginPath();
+      for (let i = 0; i < 6; i++) {
+        const a = (i / 6) * TAU - Math.PI / 2;
+        const px = Math.cos(a) * rr, py = Math.sin(a) * rr;
+        if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+      }
+      ctx.closePath();
+      ctx.strokeStyle = rgba(th.accentRGB, layer ? 0.28 : 0.7);
+      ctx.lineWidth = layer ? 0.7 : 1.1;
+      ctx.stroke();
+      if (!layer) {
+        ctx.fillStyle = rgba(th.accentRGB, 0.16);
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+    ctx.restore();
+
+    const halo = ctx.createRadialGradient(CX, CY, 0, CX, CY, r * 3.2);
+    halo.addColorStop(0, rgba(th.accentRGB, 0.26));
+    halo.addColorStop(1, rgba(th.accentRGB, 0));
+    ctx.fillStyle = halo;
+    ctx.beginPath();
+    ctx.arc(CX, CY, r * 3.2, 0, TAU);
+    ctx.fill();
+
+  } else if (style === "embercore") {
+    // 火心：跳动的核心 + 向外放射的短芒
+    const r = 11 * SCALE;
+    const flick = 0.86 + 0.14 * Math.sin(t * 5.3) + 0.06 * Math.sin(t * 11.7);
+    const g = ctx.createRadialGradient(CX, CY, 0, CX, CY, r * 4.2 * flick);
+    g.addColorStop(0, rgba(th.accentRGB, 0.55));
+    g.addColorStop(0.35, rgba(th.accentRGB, 0.18));
+    g.addColorStop(1, rgba(th.accentRGB, 0));
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.arc(CX, CY, r * 4.2 * flick, 0, TAU);
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.arc(CX, CY, r * 0.5 * flick, 0, TAU);
+    ctx.fillStyle = rgba(th.accentRGB, 0.95);
+    ctx.fill();
+
+    const rays = 8;
+    for (let i = 0; i < rays; i++) {
+      const a = (i / rays) * TAU + t * 0.18;
+      const len = r * (1.5 + 0.5 * Math.sin(t * 3.1 + i));
+      ctx.beginPath();
+      ctx.moveTo(CX + Math.cos(a) * r * 0.6, CY + Math.sin(a) * r * 0.6);
+      ctx.lineTo(CX + Math.cos(a) * len, CY + Math.sin(a) * len);
+      ctx.strokeStyle = rgba(th.accentRGB, 0.34);
+      ctx.lineWidth = 0.9;
+      ctx.stroke();
+    }
+
+  } else {
+    // 光核：旋转的菱形晶体
+    const r = 10 * SCALE * pulse;
+    ctx.save();
+    ctx.translate(CX, CY);
+    ctx.rotate(t * 0.35);
+    ctx.beginPath();
+    ctx.moveTo(0, -r);
+    ctx.lineTo(r * 0.7, 0);
+    ctx.lineTo(0, r);
+    ctx.lineTo(-r * 0.7, 0);
+    ctx.closePath();
+    ctx.fillStyle = rgba(th.accentRGB, 0.24);
+    ctx.fill();
+    ctx.strokeStyle = rgba(th.accentRGB, 0.75);
+    ctx.lineWidth = 1.1;
+    ctx.stroke();
+    ctx.rotate(-t * 0.35 * 2);
+    ctx.beginPath();
+    ctx.arc(0, 0, r * 1.9, 0, TAU);
+    ctx.strokeStyle = rgba(th.accentRGB, 0.2);
+    ctx.lineWidth = 0.7;
+    ctx.stroke();
+    ctx.restore();
+
+    const halo = ctx.createRadialGradient(CX, CY, 0, CX, CY, r * 6);
+    halo.addColorStop(0, rgba(th.accentRGB, 0.18));
+    halo.addColorStop(1, rgba(th.accentRGB, 0));
+    ctx.fillStyle = halo;
+    ctx.beginPath();
+    ctx.arc(CX, CY, r * 6, 0, TAU);
+    ctx.fill();
+  }
+}
+
+function drawDragAim(th) {
+  const s = game.strength;
+  th = th || game.theme;
+
+  // 预估强度半径：与 Wave.maxR 保持一致，只画到屏幕可见范围内
+  const previewR = lerp(250, 560, s) * SCALE;
+  const maxVisible = Math.min(W, H) * 0.46;
+  const showRing = previewR < maxVisible;
+
+  // 指引线：从按下点画到当前位置
+  ctx.beginPath();
+  ctx.moveTo(game.dragFrom[0], game.dragFrom[1]);
+  ctx.lineTo(game.dragTo[0], game.dragTo[1]);
+  ctx.strokeStyle = rgba(th.accentRGB, 0.28 + s * 0.5);
+  ctx.lineWidth = 1.4;
+  ctx.stroke();
+
+  // 按下点标记，明确"我已经抓住你了"
+  ctx.beginPath();
+  ctx.arc(game.dragFrom[0], game.dragFrom[1], 5 * SCALE + s * 2, 0, TAU);
+  ctx.strokeStyle = rgba(th.accentRGB, 0.4 + s * 0.4);
+  ctx.lineWidth = 1;
+  ctx.stroke();
+
+  // 预估波锋：只在完整可见时才画，否则改用强度条表达
+  if (showRing) {
+    ctx.beginPath();
+    ctx.arc(CX, CY, previewR, 0, TAU);
+    ctx.setLineDash([3, 7]);
+    ctx.strokeStyle = rgba(th.accentRGB, 0.07 + s * 0.2);
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  // 拖拽点
+  ctx.beginPath();
+  ctx.arc(game.dragTo[0], game.dragTo[1], 3.4 * SCALE + s * 2, 0, TAU);
+  ctx.fillStyle = rgba(th.accentRGB, 0.35 + s * 0.5);
+  ctx.fill();
+
+  // 强度条：核下方的一段细横线，比环绕刻度更安静、也更易读
+  const barW = 92 * SCALE;
+  const barY = CY + 78 * SCALE;
+  ctx.beginPath();
+  ctx.moveTo(CX - barW / 2, barY);
+  ctx.lineTo(CX + barW / 2, barY);
+  ctx.strokeStyle = rgba(th.inkRGB, 0.10);
+  ctx.lineWidth = 1;
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.moveTo(CX - barW / 2, barY);
+  ctx.lineTo(CX - barW / 2 + barW * s, barY);
+  ctx.strokeStyle = rgba(th.accentRGB, 0.5 + s * 0.45);
+  ctx.lineWidth = 1.6;
+  ctx.stroke();
+}
+
+/* ------------------ 启动 ------------------ */
+resize();
+window.addEventListener("resize", () => {
+  const p = game.shards.map(s => [s.vx, s.vy]);
+  resize();
+  // 尺寸变化后按当前 SCALE 重建每个碎片，保持关卡比例一致
+  game.shards.forEach((s, i) => {
+    const cfg = LEVELS[game.index].shards[i];
+    s.r = (cfg.r || 14) * SCALE;
+    s.home = [CX + cfg.x * SCALE, CY + cfg.y * SCALE];
+    s.x = clamp(s.x, s.r, W - s.r);
+    s.y = clamp(s.y, s.r, H - s.r);
+    s.vx = p[i][0];
+    s.vy = p[i][1];
+  });
+});
+
+// 开场进入选关界面
+openSelect();
+
+continueBtn.addEventListener("click", () => {
+  const target = Number(continueBtn.dataset.target || 0);
+  selectScreen.classList.remove("show");
+  game.started = true;
+  Audio_.resume();
+  loadLevel(clamp(target, 0, LEVELS.length - 1), false);
+});
+
+document.getElementById("wipeBtn").addEventListener("click", () => {
+  resetProgress();
+  progress.lives = 3;
+  game.started = false;
+  renderSelect();
+});
+
+document.getElementById("menuBtn").addEventListener("click", () => {
+  if (game.started) openSelect();
+});
+
+// 自动化测试钩子：用固定步长离线跑一关，不依赖 rAF 时序。
+// 传入的操作序列形如 [{ t: 0, strength: 0.5 }, { t: 0.9, strength: 0.7 }]。
+function simulateLevel(levelIdx, ops, maxSeconds) {
+  loadLevel(levelIdx, true);
+  game.shards.forEach(s => s.resetToStart());
+  game.waves.length = 0;
+  game.particles.length = 0;
+  game.time = 0;
+  game.solved = false;
+  game.failed = false;
+  game.failCheckAt = -1;
+  game.failReason = "";
+  game.waveIndex = 0;
+  game.lastWaveAt = 0;
+  syncOrderState(true);
+
+  const pending = (ops || []).slice().sort((a, b) => a.t - b.t);
+  const limit = maxSeconds || 12;
+  let clock = 0;
+  const events = [];
+
+  while (clock < limit) {
+    while (pending.length && clock >= pending[0].t) {
+      const op = pending.shift();
+      // 与真实输入一致：低于最小有效力度的一下不算一次发射
+      if (game.waveBudget > 0 && op.strength >= MIN_WAVE_STRENGTH) {
+        game.waveIndex++;
+        game.lastWaveAt = game.time;
+        game.waveBudget--;
+        game.waves.push(new Wave(CX, CY, op.strength, game.waveIndex));
+      }
+    }
+    game.time += STEP;
+    update(STEP);
+    clock += STEP;
+    if (game.solved) return { ok: true, t: clock, wavesUsed: game.waveBudgetMax - game.waveBudget, events };
+    if (game.failed) return { ok: false, t: clock, reason: diagnoseFailure(), events };
+  }
+  return {
+    ok: false, t: clock, timeout: true,
+    settled: game.shards.filter(s => s.settled).length,
+    total: game.shards.length,
+    reason: diagnoseFailure(),
+  };
+}
+
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>
