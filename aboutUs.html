@@ -63,6 +63,12 @@
             line-height: 1;
         }
 
+        /* 让 logo 与隐藏圆点排在一条基线上 */
+        .brand {
+            display: inline-flex;
+            align-items: center;
+        }
+
         .logo-bee {
             color: #FFD166;
             text-shadow: 0 2px 4px rgba(255, 209, 102, 0.3);
@@ -71,6 +77,42 @@
         .logo-freebies {
             color: #333333;
             font-weight: 700;
+        }
+
+        /* 隐藏在 logo 末尾的小圆点：外观与 Bee 的黄点一致，看不出是按钮 */
+        .logo-dot {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 8px;
+            height: 8px;
+            margin-left: 6px;
+            border-radius: 50%;
+            background-color: var(--accent);
+            opacity: 0.55;
+            text-decoration: none;
+            transition: opacity 0.35s ease, box-shadow 0.35s ease;
+            /* 触屏上放大命中区域，但不改变视觉大小 */
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .logo-dot:hover,
+        .logo-dot:focus-visible {
+            opacity: 1;
+            box-shadow: 0 0 10px rgba(255, 209, 102, 0.75);
+            outline: none;
+        }
+
+        /* 扩大点击热区，视觉上仍是那个小点 */
+        .logo-dot::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 44px;
+            height: 44px;
+            transform: translate(-50%, -50%);
         }
 
         /* Main Content */
@@ -529,9 +571,13 @@
     <!-- Header -->
     <header>
         <div class="container">
-            <a href="#" class="logo">
-                <span class="logo-bee">Bee</span><span class="logo-freebies">freebies</span>
-            </a>
+            <div class="brand">
+                <a href="#" class="logo" aria-label="Beefreebies">
+                    <span class="logo-bee">Bee</span><span class="logo-freebies">freebies</span>
+                </a>
+                <!-- 隐藏入口：点击黄点进入小游戏 -->
+                <a href="game/index.html" class="logo-dot" id="gameEntry" aria-label="Play a game"></a>
+            </div>
         </div>
     </header>
 
